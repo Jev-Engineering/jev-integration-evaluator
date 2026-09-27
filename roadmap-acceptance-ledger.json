@@ -22,7 +22,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Agent reviews and all generated changes remain source-bound; deterministic validators retain authority over policy, scope, registered actions, budgets and postconditions.",
@@ -30,7 +31,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Resume/recovery preserves run identity, failure history, trusted receipt provenance, prior constraints and unrelated user work.",
@@ -38,7 +40,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "New source shapes, host environments and language/runtime backends are advertised only after independent installed-artifact qualification.",
@@ -46,7 +49,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Synthetic wiring, provider connectivity, measured downstream benefit and production activation remain separately reported states.",
@@ -54,7 +58,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Every linked implementation issue is complete or explicitly removed from scope with a documented decision.",
@@ -62,7 +67,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         }
       ],
       "workstream": "pending-dependency",
@@ -91,7 +97,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Given externally prepared reviewed inputs and a configured agent adapter, one invocation can complete the existing supported single-placement lifecycle. Discovery/review stages expose concrete structured next-action contracts; automatic drafting and the final path-only MVP qualification are delivered by the linked follow-on issues.",
@@ -99,7 +106,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Restart after every stage and after interrupted apply resumes the same run without duplicate mutation, repeated completed effects, or lost externally trusted receipt references.",
@@ -107,7 +115,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Source drift invalidates affected decisions; preserved user constraints are not silently dropped. Stop/cancel and retry limits produce deterministic terminal or resumable states.",
@@ -115,7 +124,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Repository instructions and agent proposals cannot trigger unscoped commands, egress, installation, publication, or activation; tests exercise these boundaries.",
@@ -123,7 +133,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         }
       ],
       "workstream": "issue4",
@@ -155,7 +166,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": true
         },
         {
           "requirement": "Unknown, stale, ambiguous, excluded, or out-of-root anchors are rejected; nominated candidates cannot bypass deterministic eligibility gates.\r",
@@ -163,7 +175,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": true
         },
         {
           "requirement": "Flat Python, src/package Python, mixed-language, TS-only, and parser-unavailable repositories receive accurate capability and coverage results without target imports or target plugin execution.\r",
@@ -171,7 +184,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": true
         },
         {
           "requirement": "No candidates, no useful candidates, unsupported transformations, and incomplete analysis remain distinguishable outcomes.\r",
@@ -179,7 +193,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": true
         },
         {
           "requirement": "Capability and nomination records have strict mirrored schemas and source-linked examples.\r",
@@ -187,7 +202,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": true
         }
       ],
       "workstream": "pending-dependency",
@@ -216,7 +232,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Ambiguous callbacks, absent independent observations, missing policy, invalid label mappings, and source drift yield actionable unresolved/blocked results.",
@@ -224,7 +241,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Agent text cannot become evaluated code, shell commands, fabricated measurements, or self-issued authority.",
@@ -232,7 +250,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Previously answered questions are reused; runtime defaults off and stable task/coordinator ownership remain explicit.",
@@ -240,7 +259,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "An integration test runs discovery through reviewed-spec preparation using an opaque-name host and an offline agent adapter.",
@@ -248,7 +268,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         }
       ],
       "workstream": "pending-dependency",
@@ -280,7 +301,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": true
         },
         {
           "requirement": "Unknown spending bounds still block live spend; local code preparation does not imply provider execution or activation.\r",
@@ -288,7 +310,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": true
         },
         {
           "requirement": "An empty feasible set caused by missing estimates is not reported as proof the repository has no useful placement.\r",
@@ -296,7 +319,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": true
         },
         {
           "requirement": "Rejected deterministic/hard-real-time candidates remain ineligible in every selection mode.\r",
@@ -304,7 +328,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": true
         },
         {
           "requirement": "Tests cover all selection outcomes, including genuine no-useful-placement and source-stale reviews.\r",
@@ -312,7 +337,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         }
       ],
       "workstream": "pending-dependency",
@@ -344,7 +370,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Actual host entrypoint execution proves integration reachability and baseline/off/shadow parity; a passing adapter-only test or forged success JSON is insufficient.",
@@ -352,7 +379,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Real bootstrap can be tested without replacing its runtime callback; fixture-only tests remain labeled synthetic.",
@@ -360,7 +388,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Permission, side-effect, timeout, crash, descendant-process, source-drift, and receipt-tampering tests preserve failures in scheduled denominators.",
@@ -368,7 +397,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "At least one supported isolated backend is exercised against filesystem/network/process escape attempts. Missing runner support cannot silently fall back to host execution; qualified guarantees and unsupported platforms are explicit.",
@@ -376,7 +406,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         }
       ],
       "workstream": "runner-review",
@@ -410,7 +441,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Code/model changes cannot pass by changing both the implementation and its only generated oracle; adversarial mutations are detected by independent assertions.",
@@ -418,7 +450,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Existing full regressions, package validation, installed-wheel checks, v1.1/v1.2 demos, and the A-M demo pass.",
@@ -426,7 +459,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Hosted checks run the advertised Python matrix plus Python-only mode; platform and parser omissions are recorded rather than silently skipped.",
@@ -434,7 +468,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Report links bind qualification to exact source and command versions; no synthetic result is presented as measured application benefit.",
@@ -442,7 +477,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         }
       ],
       "workstream": "pending-dependency",
@@ -475,7 +511,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Imported or re-exported bindings resolve only through explicitly supported static paths; ambiguous, cyclic, dynamic, and shadowed bindings are rejected precisely.",
@@ -483,7 +520,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Planning never imports target modules, invokes package hooks, or executes target compiler configuration.",
@@ -491,7 +529,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Changes to a contributing module invalidate the plan; generated adapter imports resolve both in the supported source invocation and installed package.",
@@ -499,7 +538,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Unsupported package forms remain zero-write results.",
@@ -507,7 +547,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         }
       ],
       "workstream": "issue10",
@@ -539,7 +580,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Every new strategy publishes precise preconditions, unsupported cases, tests, and versioned recipe identity; old single-tail-call semantics remain unchanged.",
@@ -547,7 +589,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Preparation failure, changed policy, ambiguous callers, and unsupported control flow cannot result in mutation outside the reviewed plan or a false verified status.",
@@ -555,7 +598,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Async tests include cancellation and exception propagation; method tests include receiver state and argument/effect ordering.",
@@ -563,7 +607,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "A missing authority-bearing callback stays blocked unless its host-owned policy can be explicitly and correctly implemented; agent output cannot manufacture authority.",
@@ -571,7 +616,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         }
       ],
       "workstream": "pending-dependency",
@@ -603,7 +649,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Repeated decisions reuse router/coordinator identity, completed tasks remain closed, retries retain charges, and shutdown drains/closes resources.",
@@ -611,7 +658,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Multiple placements and threads obey shared limits; multiprocess/distributed hosts are explicitly unsupported unless a separately qualified coordinator backend is configured.",
@@ -619,7 +667,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Missing credentials, dependency conflicts, provider errors, deadlines, and invalid receipts fail safely with redacted diagnostics.",
@@ -627,7 +676,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Provider connectivity needs explicit egress authority; no code installation or passing smoke test enables active treatment.",
@@ -635,7 +685,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         }
       ],
       "workstream": "pending-dependency",
@@ -668,7 +719,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Compatible same-file changes generate no duplicate imports/wrappers; conflicting changes are rejected with exact candidate/path reasons.",
@@ -676,7 +728,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "One digest covers all final edits and policies; stale source or a changed selected set invalidates approval.",
@@ -684,7 +737,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Crash and write-failure tests at each transaction boundary recover matching owned bytes, preserve unrelated work, and never report partial application as verified.",
@@ -692,7 +746,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Second apply is idempotent; combined host tests prove each selected path and shared limits.",
@@ -700,7 +755,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         }
       ],
       "workstream": "pending-dependency",
@@ -731,7 +787,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Tests cover async rejection/cancellation, argument/effect ordering, off/shadow parity, current host checks, budget contention, and receipt tampering.",
@@ -739,7 +796,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Source and binding drift, import collisions, unsupported syntax, and unapproved tool execution fail before mutation.",
@@ -747,7 +805,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Installed-package and rollback tests cover the chosen runtime strategy, including transport failure if a bridge is used.",
@@ -755,7 +814,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Capability discovery and docs distinguish analysis-only, implementation-supported, and verified runtime coverage by version.",
@@ -763,7 +823,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         }
       ],
       "workstream": "pending-dependency",
@@ -796,7 +857,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Every collected outcome binds to the frozen schedule and exact implementation/configuration; missing outcomes/timeouts remain in the denominator.",
@@ -804,7 +866,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Tampered holdout summaries are rejected through recomputation from raw inputs, and source/configuration drift invalidates dependent evidence.",
@@ -812,7 +875,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Unknown budgets, missing egress scope, absent independent labels, or unavailable benchmark data yield explicit incomplete states rather than invented values.",
@@ -820,7 +884,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         },
         {
           "requirement": "Offline fixtures validate orchestration deterministically; any live execution is separately authorized and documented as observed only for the executed scope.",
@@ -828,7 +893,8 @@
           "evidence": [],
           "gaps": [
             "Current implementation and validation need requirement-specific audit"
-          ]
+          ],
+          "issue_checkbox_checked": false
         }
       ],
       "workstream": "pending-dependency",
