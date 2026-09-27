@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Redacted placement selection CLI summary",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "selection_version": {
+      "const": "placement-selection-v1"
+    },
+    "selection_status": {
+      "enum": [
+        "incomplete_analysis",
+        "no_candidates_discovered",
+        "deterministic_rejection",
+        "no_useful_placement_within_reviewed_inventory",
+        "stale_semantic_review",
+        "semantic_review_required",
+        "semantic_rejection",
+        "selection_review_required",
+        "experimental_selected",
+        "estimate_based_optimization",
+        "insufficient_estimates",
+        "missing_estimate_provenance",
+        "no_feasible_positive_set_under_declared_model"
+      ]
+    },
+    "selection_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "request_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "selected_candidate_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^JEV-[A-Z0-9-]+$"
+      },
+      "maxItems": 2000
+    },
+    "implementation_status": {
+      "enum": [
+        "not_prepared",
+        "planned",
+        "unsupported_implementation",
+        "missing_prerequisite"
+      ]
+    },
+    "bundle_digest": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      ]
+    },
+    "target_modified": {
+      "const": false
+    },
+    "target_executed": {
+      "const": false
+    },
+    "live_spend_authorized": {
+      "const": false
+    },
+    "runtime_activation_authorized": {
+      "const": false
+    },
+    "benefit_demonstrated": {
+      "const": false
+    },
+    "selection_engine_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "selection_version",
+    "selection_status",
+    "selection_sha256",
+    "request_sha256",
+    "selected_candidate_ids",
+    "implementation_status",
+    "bundle_digest",
+    "target_modified",
+    "target_executed",
+    "live_spend_authorized",
+    "runtime_activation_authorized",
+    "benefit_demonstrated",
+    "selection_engine_sha256"
+  ]
+}

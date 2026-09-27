@@ -34,7 +34,20 @@ def optimize(scan: dict, constraints: dict, exact_limit: int = 18, beam_width: i
     for c in scan["candidates"]:
         e = c["estimates"]
         missing = [k for k in REQUIRED if e.get(k) is None]
-        reason = "Tier 0 / rejected" if c["tier"] == 0 else "Semantic review not approved" if not c.get("semantic_review", {}).get("approved") else "Unknown estimates: " + ", ".join(missing) if missing else None
+        review = c.get("semantic_review", {})
+        rejected = (c["tier"] == 0 or c.get("pattern") == "NONE"
+                    or c.get("hard_real_time") is True
+                    or c.get("deterministic_alternative") in ("preferred", "mandatory"))
+        # Preserve minimal legacy optimization records, but never ignore stale
+        # source metadata when a real inventory includes it. New selection
+        # contracts require full source-bound inventory validation separately.
+        source = c.get("source")
+        stale = source is not None and (not isinstance(source, dict)
+                    or not source.get("source_sha256")
+                    or review.get("source_sha256") != source["source_sha256"])
+        reason = ("Tier 0 / rejected" if rejected else "Stale semantic review" if stale
+                  else "Semantic review not approved" if review.get("approved") is not True
+                  else "Unknown estimates: " + ", ".join(missing) if missing else None)
         if reason:
             excluded.append({"candidate_id": c["candidate_id"], "reason": reason}); continue
         if not e.get("provenance"):

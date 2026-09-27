@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Placement selection stdin envelope",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "inventory": {
+      "type": "object"
+    },
+    "request": {
+      "type": "object"
+    },
+    "specification": {
+      "type": [
+        "object",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "inventory",
+    "request",
+    "specification"
+  ],
+  "additionalProperties": false,
+  "description": "Nested inventory, request and specification are separately validated against their versioned contracts by the selector."
+}

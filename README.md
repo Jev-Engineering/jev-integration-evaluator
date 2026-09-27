@@ -1,4 +1,4 @@
-# JEV Integration Evaluator 1.3.0.dev6
+# JEV Integration Evaluator 1.3.0.dev7
 
 **CompleteTech LLC · Evidence-driven integration analysis and evaluation**
 
@@ -9,6 +9,20 @@ The skill, Python distribution, and console command are named `jev-integration-e
 The [original executable implementation specification](references/executable-implementation-prompt.md) is retained as requirements provenance. The supported commands and deliberately bounded implementation coverage in this development build are documented in [the current support contract](references/executable-integrations.md).
 
 The default is deliberately conservative: **read-only analysis; no network; runtime off; no target code execution; no automatic adoption**. An unfamiliar repository can produce “no justified integration set.” That is a successful result, not an error.
+
+## Experimental selection in 1.3.0.dev7
+
+The [placement selection contract](references/experimental-selection.md) can
+select a source-matched, semantically reviewed candidate for bounded **plan
+preparation** even when benefit and cost estimates are unknown. It keeps
+estimate-based optimization separate and reports why a candidate was rejected,
+needs review, lacks estimates, or is unsupported by the current implementation
+recipes. Use `python -m jev_integration_evaluator.selection` with a private
+reviewed envelope; the exact request requires external approval before
+preparation. Selection does not execute target code, authorize live spend or
+activation, or establish measured benefit. [Current validation](validation/SELECTION-VALIDATION-1.3.0.dev7.md)
+uses synthetic host wiring. Issue #7 and the broader repository command remain
+open.
 
 ## Review exclusions in 1.3.0.dev6
 
