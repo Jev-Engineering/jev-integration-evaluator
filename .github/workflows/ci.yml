@@ -19,7 +19,7 @@ jobs:
       - run: python -m pip install -e ".[test]"
       - run: npm install --ignore-scripts --no-audit --no-fund
       - run: python -m pytest -q
-      - run: python scripts/validate_package.py
+      - run: python scripts/validate_package.py --check-manifest
       - run: python scripts/run_v11_demo.py --out "$RUNNER_TEMP/jev-v11-demo"
       - run: python scripts/run_v12_demo.py --out "$RUNNER_TEMP/jev-v12-demo"
 
@@ -32,6 +32,7 @@ jobs:
         with:
           python-version: "3.13"
       - run: python -m pip install -e ".[test]"
-      - run: python scripts/validate_package.py
+      - run: python scripts/validate_package.py --check-manifest
       - run: python -m pytest -q tests/test_executable_recipes.py tests/test_executable_runtime.py tests/test_executable_safety.py tests/test_executable_cli.py tests/test_executable_wheel.py tests/test_executable_host_boundaries.py tests/test_executable_source_scope.py tests/test_executable_verification_identity.py tests/test_executable_failure_receipts.py tests/test_executable_source_fidelity.py tests/test_executable_command_receipts.py
+      - run: python -m pytest -q tests/test_capabilities.py tests/test_capabilities_adversarial.py tests/test_capabilities_examples.py tests/test_capabilities_cli.py tests/test_capabilities_wheel.py
       - run: python scripts/run_implementation_demo.py --out "$RUNNER_TEMP/jev-python-only-implementation"

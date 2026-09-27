@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "discovery_version": "python-static-capabilities-v1",
+  "candidate_id": "JEV-NOM-99A3209CB8DC1D1CF39E9518",
+  "report_sha256": "2b3b26faa1814d106e6b5ce5dd29152084dc1ed66404b54eef63c33948b0432f",
+  "nomination_sha256": "9bdcaf6dc6ad3fecfcd83e1f4aec804fdecd707767027773f99d075b18867e07",
+  "source": {
+    "file": "opaque.py",
+    "qualified_symbol": "v8",
+    "start_line": 8,
+    "end_line": 9,
+    "file_sha256": "0fb28b87a6a08670b4e3d5904506b8fea850a5b1e9a730b33cd78f1882e6d1aa",
+    "ast_sha256": "d84e45af43dac8bc9ac53e57be962f0e536f798dc41ef200dfb78edcf547f3b0"
+  },
+  "pattern": "C",
+  "proposer": "assistant-authored-synthetic-example",
+  "rationale": "A finite dispatch hypothesis requiring separate semantic and host-binding review; no measured benefit.",
+  "evidence": [
+    {
+      "file": "opaque.py",
+      "file_sha256": "0fb28b87a6a08670b4e3d5904506b8fea850a5b1e9a730b33cd78f1882e6d1aa",
+      "start_line": 8,
+      "end_line": 9
+    }
+  ],
+  "shape": "module-tail-call-v1-preflight",
+  "status": "nominated_pending_semantic_and_binding_review",
+  "semantic_review": "not_performed",
+  "benefit": null,
+  "execution_qualified": false,
+  "analysis_complete_within_policy": true,
+  "authorization": {
+    "execution": false,
+    "mutation": false,
+    "egress": false,
+    "activation": false
+  }
+}

@@ -123,4 +123,15 @@ Historical dev2 validation remains in `validation/SAFETY-VALIDATION-1.3.0.dev2.m
 | Durable process-interruption recovery | Baseline and modified start events exclude stale passes; mutation disposition retained | KeyboardInterrupt and actual subprocess `os._exit` tests; fresh verification/rollback |
 | Preserve source layout and encoding | Imports outside unrelated single-line/multiline decorators; explicit UTF-8 cookie check | `test_executable_source_fidelity.py`, actual modified-host lifecycle and exact rollback |
 
-The current release record is `validation/SAFETY-VALIDATION-1.3.0.dev3.md`. Local evidence is not hosted CI, independent PR approval, live provider validation, production activation or measured benefit.
+The historical dev3 release record is `validation/SAFETY-VALIDATION-1.3.0.dev3.md`. Local evidence is not hosted CI, independent PR approval, live provider validation, production activation or measured benefit.
+
+## 1.3.0.dev4 partial discovery delivery
+
+Roadmap issue #5 gains `capabilities.py`, `discover-capabilities`,
+`nominate-candidate`, three mirrored contracts, source-linked synthetic examples
+and `tests/test_capabilities*.py`. These cover bounded source discovery and fresh
+nomination admission without target execution. The existing semantic-review and
+inventory pipeline does not yet consume admitted nominations; issue #5 remains
+open. The repository command and later roadmap capabilities remain outstanding.
+The support contract is `references/capabilities.md`; current execution evidence
+is `validation/DISCOVERY-VALIDATION-1.3.0.dev4.md`.

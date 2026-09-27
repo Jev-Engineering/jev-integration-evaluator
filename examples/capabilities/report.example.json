@@ -1,0 +1,105 @@
+{
+  "schema_version": "1.0",
+  "discovery_version": "python-static-capabilities-v1",
+  "engine_sha256": "2a2cff1d2cfb4c671c62dc9ed6cebbef886ce05659fc8e3c36293dc2cda46cd3",
+  "parser_identity": "cpython-3.12-ast",
+  "repository_identity": "770e3ff00f5424e4e0afe0124fc42f4639fcb9591dc8031f1d452f9d18528563",
+  "policy": {
+    "exclude": [],
+    "hard_real_time": [],
+    "max_ast_nodes": 50000,
+    "max_depth": 16,
+    "max_entries": 20000,
+    "max_file_bytes": 1048576,
+    "max_files": 1000,
+    "max_report_bytes": 4194304,
+    "max_symbols": 2000,
+    "max_total_bytes": 16777216
+  },
+  "snapshot_scope": "bounded_source_and_configuration_not_full_repository",
+  "snapshot_sha256": "0c41b14f4581a88ec53bc304ec08624ebd5bfc7fce979d1f90c9b49e3d7df632",
+  "files": [
+    {
+      "file": "opaque.py",
+      "sha256": "0fb28b87a6a08670b4e3d5904506b8fea850a5b1e9a730b33cd78f1882e6d1aa",
+      "mode": 511,
+      "language": "python",
+      "parser": "python_ast",
+      "line_count": 12,
+      "configuration_sighting": false,
+      "test_sighting": false
+    }
+  ],
+  "layouts": [
+    "flat_module"
+  ],
+  "seams": [
+    {
+      "seam_id": "9e41ef78804f1e5611cd87b7d14713e73900d9f131af7d0d4603a3a75938615a",
+      "source": {
+        "file": "opaque.py",
+        "qualified_symbol": "n4",
+        "start_line": 4,
+        "end_line": 5,
+        "file_sha256": "0fb28b87a6a08670b4e3d5904506b8fea850a5b1e9a730b33cd78f1882e6d1aa",
+        "ast_sha256": "90fbb621226ad983d8fba17b8006a499fb9649a8823d19bdc65358c8c3fbaf1c"
+      },
+      "kind": "function",
+      "module_level": true,
+      "shape": "unsupported_or_unresolved",
+      "eligibility": "unknown",
+      "semantic_suitability": "unreviewed",
+      "binding_review": "not_performed",
+      "execution_qualified": false,
+      "reasons": [
+        "legacy_recipe_preconditions_not_established"
+      ]
+    },
+    {
+      "seam_id": "d2ff83cf263b377cf4b1af8c4eb5ca2bec216c176fbe05f88a4ff5b51b9436cc",
+      "source": {
+        "file": "opaque.py",
+        "qualified_symbol": "v8",
+        "start_line": 8,
+        "end_line": 9,
+        "file_sha256": "0fb28b87a6a08670b4e3d5904506b8fea850a5b1e9a730b33cd78f1882e6d1aa",
+        "ast_sha256": "d84e45af43dac8bc9ac53e57be962f0e536f798dc41ef200dfb78edcf547f3b0"
+      },
+      "kind": "function",
+      "module_level": true,
+      "shape": "module-tail-call-v1-preflight",
+      "eligibility": "unknown",
+      "semantic_suitability": "unreviewed",
+      "binding_review": "not_performed",
+      "execution_qualified": false,
+      "reasons": []
+    }
+  ],
+  "registry_possibilities": [
+    {
+      "file": "opaque.py",
+      "symbol": "R2",
+      "start_line": 12,
+      "end_line": 12,
+      "file_sha256": "0fb28b87a6a08670b4e3d5904506b8fea850a5b1e9a730b33cd78f1882e6d1aa",
+      "entry_count": 1,
+      "status": "static_possibility_not_binding_review"
+    }
+  ],
+  "coverage": {
+    "entries_considered": 1,
+    "files_read": 1,
+    "bytes_read": 172,
+    "excluded_entries": 0,
+    "complete_within_policy": true,
+    "limitations": []
+  },
+  "discovery_outcome": "review_required",
+  "authorization": {
+    "execution": false,
+    "mutation": false,
+    "egress": false,
+    "activation": false
+  },
+  "report_sha256": "2b3b26faa1814d106e6b5ce5dd29152084dc1ed66404b54eef63c33948b0432f"
+}

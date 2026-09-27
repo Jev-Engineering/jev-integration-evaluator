@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0",
+  "discovery_version": "python-static-capabilities-v1",
+  "report_sha256": "2b3b26faa1814d106e6b5ce5dd29152084dc1ed66404b54eef63c33948b0432f",
+  "seam_id": "d2ff83cf263b377cf4b1af8c4eb5ca2bec216c176fbe05f88a4ff5b51b9436cc",
+  "source": {
+    "file": "opaque.py",
+    "qualified_symbol": "v8",
+    "start_line": 8,
+    "end_line": 9,
+    "file_sha256": "0fb28b87a6a08670b4e3d5904506b8fea850a5b1e9a730b33cd78f1882e6d1aa",
+    "ast_sha256": "d84e45af43dac8bc9ac53e57be962f0e536f798dc41ef200dfb78edcf547f3b0"
+  },
+  "pattern": "C",
+  "proposer": "assistant-authored-synthetic-example",
+  "rationale": "A finite dispatch hypothesis requiring separate semantic and host-binding review; no measured benefit.",
+  "evidence": [
+    {
+      "file": "opaque.py",
+      "file_sha256": "0fb28b87a6a08670b4e3d5904506b8fea850a5b1e9a730b33cd78f1882e6d1aa",
+      "start_line": 8,
+      "end_line": 9
+    }
+  ]
+}

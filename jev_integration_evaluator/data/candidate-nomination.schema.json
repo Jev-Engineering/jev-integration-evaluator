@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jev-integration-evaluator.invalid/schemas/candidate-nomination.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "discovery_version": {
+      "const": "python-static-capabilities-v1"
+    },
+    "report_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "seam_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "qualified_symbol": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "start_line": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000000
+        },
+        "end_line": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000000
+        },
+        "file_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "ast_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "file",
+        "qualified_symbol",
+        "start_line",
+        "end_line",
+        "file_sha256",
+        "ast_sha256"
+      ]
+    },
+    "pattern": {
+      "enum": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M"
+      ]
+    },
+    "proposer": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "file": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "start_line": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000000
+          },
+          "end_line": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000000
+          },
+          "file_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "required": [
+          "file",
+          "start_line",
+          "end_line",
+          "file_sha256"
+        ]
+      },
+      "maxItems": 16,
+      "minItems": 1
+    }
+  },
+  "required": [
+    "schema_version",
+    "discovery_version",
+    "report_sha256",
+    "seam_id",
+    "source",
+    "pattern",
+    "proposer",
+    "rationale",
+    "evidence"
+  ]
+}
