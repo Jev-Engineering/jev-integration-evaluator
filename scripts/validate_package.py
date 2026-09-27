@@ -34,7 +34,7 @@ def validate(check_manifest=False):
               'schemas/implementation-manifest.schema.json','schemas/implementation-tests.schema.json',
               'tests/test_executable_recipes.py','tests/test_executable_runtime.py','tests/test_executable_safety.py','tests/test_executable_cli.py','tests/test_executable_wheel.py',
               'tests/test_executable_host_boundaries.py','tests/test_executable_source_scope.py','tests/test_executable_verification_identity.py',
-              'validation/DISCOVERY-VALIDATION-1.3.0.dev4.md',
+              'validation/SEMANTIC-BRIDGE-VALIDATION-1.3.0.dev5.md',
               'jev_integration_evaluator/integrations/observations.py','schemas/implementation-observation.schema.json',
               'tests/test_executable_failure_receipts.py','tests/test_executable_source_fidelity.py','tests/test_executable_command_receipts.py',
               'examples/implementation/observation.example.json',
@@ -44,6 +44,12 @@ def validate(check_manifest=False):
               'tests/test_capabilities_cli.py','tests/test_capabilities_wheel.py',
               'examples/capabilities/report.example.json','examples/capabilities/nomination.example.json',
               'examples/capabilities/admitted.example.json','examples/capabilities/opaque_host/opaque.py']
+    required += ['jev_integration_evaluator/nomination_inventory.py',
+                 'jev_integration_evaluator/repository_discovery.py',
+                 'scripts/prepare_repository_inventory.py', 'scripts/run_capability_demo.py',
+                 'references/repository-discovery-v1.md',
+                 'tests/test_nomination_inventory.py', 'tests/test_repository_discovery_cli.py',
+                 'tests/test_repository_discovery_wheel.py', 'tests/test_capabilities_bridge_guards.py']
     for item in required:
         if not (ROOT/item).is_file():raise InputError('Required package file missing: '+item)
     front=(ROOT/'SKILL.md').read_text().split('---',2)
@@ -91,6 +97,41 @@ def validate(check_manifest=False):
         path=safe_child(ROOT/'examples/capabilities/opaque_host',source['file'])
         if file_hash(path)!=source['file_sha256'] or not 1<=source['start_line']<=source['end_line']<=len(path.read_bytes().splitlines()):
             raise InputError('Capability example source identity mismatch')
+    from jev_integration_evaluator.io import digest
+    bridge_examples = {}
+    for name, kind in (('capabilities','repository-capabilities'), ('nomination','candidate-nomination'),
+                       ('admission','admitted-nomination'), ('prepared','repository-nominated-inventory-v1'),
+                       ('review','repository-semantic-review-v1'), ('reviewed','repository-reviewed-inventory-v1')):
+        value=read_json(ROOT/'examples/repository-capabilities'/(name+'.example.json'))
+        jsonschema.validate(value,schemas[kind]);bridge_examples[name]=value
+    cap_report,proposal,admission,prepared,review,reviewed=(bridge_examples[name] for name in
+        ('capabilities','nomination','admission','prepared','review','reviewed'))
+    for value,key in ((prepared,'prepared_sha256'),(reviewed,'reviewed_sha256')):
+        if value[key]!=digest({k:v for k,v in value.items() if k!=key}):
+            raise InputError('Bridge example digest mismatch')
+    bridge_seams=[s for s in cap_report['seams'] if s['seam_id']==proposal['seam_id']]
+    if (cap_report['report_sha256']!=capability_digest({k:v for k,v in cap_report.items() if k!='report_sha256'})
+            or cap_report['snapshot_sha256']!=capability_digest(cap_report['files'])
+            or len(bridge_seams)!=1 or bridge_seams[0]['source']!=proposal['source']
+            or proposal['report_sha256']!=cap_report['report_sha256']
+            or prepared['report_sha256']!=cap_report['report_sha256']
+            or prepared['nominations']!=[proposal] or prepared['admissions']!=[admission]
+            or admission['nomination_sha256']!=capability_digest(proposal)
+            or admission['report_sha256']!=cap_report['report_sha256']
+            or admission['source']!=proposal['source']
+            or review['prepared_sha256']!=prepared['prepared_sha256']
+            or reviewed['prepared_sha256']!=prepared['prepared_sha256']
+            or reviewed['report_sha256']!=cap_report['report_sha256']
+            or reviewed['bridge_engine_sha256']!=prepared['bridge_engine_sha256']
+            or reviewed['review_sha256']!=digest(review)):
+        raise InputError('Bridge example provenance mismatch')
+    for envelope in (prepared,reviewed):
+        jsonschema.validate(envelope['inventory'],schemas['inventory'])
+        if envelope['inventory_sha256']!=digest(envelope['inventory']):
+            raise InputError('Bridge example inventory digest mismatch')
+        for item in envelope['inventory']['files']:
+            if file_hash(safe_child(ROOT/'examples/repository-capabilities/host',item['file']))!=item['sha256']:
+                raise InputError('Bridge example source identity mismatch')
     cfg=load_config(ROOT/'templates/jev-config.yaml')
     jsonschema.validate({'jev_analysis':cfg},schemas['config'])
     fixture_records=0
@@ -137,6 +178,7 @@ def validate(check_manifest=False):
             'implementation_examples_validated_without_execution':implementation_examples,
             'synthetic_observation_examples_validated':1,
             'capability_examples_validated_without_execution':len(capability_examples),
+            'bridge_examples_validated_without_execution':len(bridge_examples),
             'offline_replay_decisions':result['evaluated'],'manifest_files_verified':checked,
             'network_requests':0,'target_code_executed':False}
 

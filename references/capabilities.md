@@ -1,9 +1,10 @@
 # Source capability discovery and nominations
 
-Status: **partial issue #5 implementation in 1.3.0.dev4**.
+Status: **dev4 discovery contracts retained in 1.3.0.dev5**.
 The integrated read-only discovery contract is available through the central CLI
-and standalone module/script. The inventory/semantic-review bridge remains
-outstanding, so issue #5 and the repository implementation roadmap remain open.
+and standalone module/script. The [dev5 inventory/semantic-review bridge](repository-discovery-v1.md)
+uses these contracts. A complete source-reviewed no-useful-placement outcome
+remains outstanding, so issue #5 and the repository implementation roadmap remain open.
 Discovery preserves the existing scanner,
 recipe, review, optimizer, lifecycle, runtime, receipt and safety validators.
 
@@ -131,11 +132,13 @@ Its secure artifact reader has the same POSIX requirement and rejects special,
 linked or oversized input files. Use `nominate-candidate` for fresh
 source/policy/report checks.
 
-See `validation/DISCOVERY-VALIDATION-1.3.0.dev4.md` for executed qualification,
+See `validation/SEMANTIC-BRIDGE-VALIDATION-1.3.0.dev5.md` for current qualification,
 including its actual platforms and interpreters. The original checkpoint's
 fragment-only Python 3.13.5 run is historical and does not establish full-package
 qualification. Native Windows discovery, new-language rewriting, independently
 authored host qualification, provider connectivity and application benefit
 remain unestablished. The nominal structural preflight does not authorize any
-rewrite. The remaining issue #5 bridge must admit candidates into real semantic
-review without manufacturing a legacy inventory or weakening eligibility gates.
+rewrite. The dev5 bridge constructs a real source-matched inventory and applies
+semantic review with eligibility gates intact. Issue #5 remains open for a
+complete source-reviewed no-useful-placement outcome; dev4 qualification remains
+historical in `validation/DISCOVERY-VALIDATION-1.3.0.dev4.md`.

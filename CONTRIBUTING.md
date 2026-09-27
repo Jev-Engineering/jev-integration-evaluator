@@ -21,5 +21,9 @@ POSIX filesystem, including the installed-wheel CLI check. Retain the native
 unsupported-platform result, redacted failures, exclusive external outputs,
 source/policy/parser identity guards and mandatory eligibility exclusions.
 Historical examples bind their recorded parser; regenerate fresh anchors for a
-different interpreter or repository. Keep issue #5 open while the inventory and
-semantic-review bridge remains absent.
+different interpreter or repository. Also run the nomination-inventory, repository
+discovery CLI and installed-wheel suites, plus `scripts/run_capability_demo.py`
+with a new external private directory. Bind bridge engine identity and all
+source/policy restrictions; semantic review cannot override eligibility or
+provide measured estimates, bindings or authority. Keep issue #5 open until its
+complete source-reviewed no-useful-placement acceptance criterion is delivered.

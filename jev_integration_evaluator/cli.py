@@ -26,6 +26,8 @@ def parser():
     sub=p.add_subparsers(dest="command",required=True)
     def common(name,help):
         q=sub.add_parser(name,help=help); q.add_argument("--config"); return q
+    from .repository_discovery import add_arguments as discovery_arguments
+    discovery_arguments(sub.add_parser("repository-discovery",help="Discover, prepare an inventory and apply semantic review without target execution"))
     for name, description in (
         ("discover-capabilities", "Discover bounded source capabilities without executing target code"),
         ("nominate-candidate", "Admit a source-anchored nomination; semantic and binding review remain pending"),
@@ -283,6 +285,13 @@ def execute(args):
         from .traceability import link_artifact
         return _save(args.out,link_artifact(read_json(args.inventory),args.candidate,args.kind,args.artifact))
     if cmd=="validate":
+        if args.kind in ("repository-nominated-inventory-v1", "repository-semantic-review-v1", "repository-reviewed-inventory-v1"):
+            from .capabilities import _load
+            from .contracts import validate_contract
+            from .nomination_inventory import MAX_RECORD_BYTES
+            data=_load(Path(args.input),max_bytes=MAX_RECORD_BYTES)
+            validate_contract(data,args.kind)
+            return {"status":"valid","kind":args.kind,"records":1,"source_revalidated":False}
         if args.kind in ("repository-capabilities", "candidate-nomination", "admitted-nomination"):
             from .capabilities import _schema, _digest, _load, MAX_INPUT_BYTES
             limit=16_777_217 if args.kind=="repository-capabilities" else MAX_INPUT_BYTES
@@ -365,6 +374,12 @@ def execute(args):
 
 
 def main(argv=None):
+    supplied=list(sys.argv[1:] if argv is None else argv)
+    if supplied and supplied[0]=="repository-discovery":
+        # Route before generic argparse so untrusted argument values cannot leak
+        # through its diagnostics. The staged CLI owns exclusive private output.
+        from .repository_discovery import main as discovery_main
+        return discovery_main(supplied[1:])
     args=parser().parse_args(argv)
     try:
         if args.command in ("discover-capabilities", "nominate-candidate"):

@@ -1,0 +1,2255 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:jev-integration-evaluator:repository-reviewed-inventory-v1",
+  "title": "repository-reviewed-inventory-v1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "contract": {
+      "const": "repository-reviewed-inventory-v1"
+    },
+    "prepared_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "report_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "review_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "inventory": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "1.0"
+        },
+        "repository_name": {
+          "type": "string"
+        },
+        "git": {
+          "type": "object"
+        },
+        "depth": {
+          "enum": [
+            "QUICK",
+            "STANDARD",
+            "RESEARCH"
+          ]
+        },
+        "coverage": {
+          "type": "object"
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "configuration_evidence": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "architecture": {
+          "type": "object"
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "candidate_id": {
+                "type": "string",
+                "pattern": "^JEV-[A-Z0-9-]+$"
+              },
+              "pattern": {
+                "enum": [
+                  "A",
+                  "B",
+                  "C",
+                  "D",
+                  "E",
+                  "F",
+                  "G",
+                  "H",
+                  "I",
+                  "J",
+                  "K",
+                  "L",
+                  "M",
+                  "NONE"
+                ]
+              },
+              "category": {
+                "type": "string"
+              },
+              "source": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string"
+                  },
+                  "symbol": {
+                    "type": "string"
+                  },
+                  "start_line": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "end_line": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "file_sha256": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  },
+                  "source_sha256": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  },
+                  "parser": {
+                    "enum": [
+                      "python_ast",
+                      "typescript_ast",
+                      "lexical_review_only"
+                    ]
+                  }
+                },
+                "required": [
+                  "file",
+                  "symbol",
+                  "start_line",
+                  "end_line",
+                  "file_sha256",
+                  "source_sha256",
+                  "parser"
+                ],
+                "additionalProperties": false
+              },
+              "evidence_status": {
+                "enum": [
+                  "review_required",
+                  "structurally_supported"
+                ]
+              },
+              "semantic_review": {
+                "type": "object",
+                "properties": {
+                  "approved": {
+                    "type": "boolean"
+                  },
+                  "reviewer": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "reason": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "source_sha256": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "approved",
+                  "reviewer",
+                  "reason",
+                  "source_sha256"
+                ],
+                "additionalProperties": false
+              },
+              "current_behavior": {
+                "type": "object"
+              },
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              },
+              "deterministic_alternative": {
+                "enum": [
+                  "none",
+                  "weak",
+                  "equivalent",
+                  "preferred",
+                  "mandatory"
+                ]
+              },
+              "proposed_jev_role": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string"
+                  },
+                  "timing": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "timing"
+                ],
+                "additionalProperties": false
+              },
+              "jev_questions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "question": {
+                      "type": "string"
+                    },
+                    "answer_type": {
+                      "enum": [
+                        "choice",
+                        "noul",
+                        "score"
+                      ]
+                    },
+                    "allowed_answers": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "criteria": {},
+                    "purpose": {
+                      "type": "string"
+                    },
+                    "evidence_inputs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "confidence_usage": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "question",
+                    "answer_type",
+                    "allowed_answers",
+                    "criteria",
+                    "purpose",
+                    "evidence_inputs",
+                    "confidence_usage"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "choices": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "deterministic_checks": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "expected_benefits": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              },
+              "risks": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "leverage": {
+                "type": "object"
+              },
+              "fallback": {
+                "type": "object"
+              },
+              "policy": {
+                "type": "object"
+              },
+              "estimates": {
+                "type": "object"
+              },
+              "recommended_experiment": {
+                "type": "object"
+              },
+              "traceability": {
+                "type": "object"
+              },
+              "limitations": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "dimensions": {
+                "type": "object",
+                "properties": {
+                  "semantic_uncertainty": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "decision_boundedness": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "downstream_consequence": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "decision_frequency": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "cost_of_wrong_decision": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "recoverability_value": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "observability": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "deterministic_alternative_quality": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "current_failure_rate": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "current_llm_dependency": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "latency_sensitivity": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "cost_sensitivity": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "implementation_complexity": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "testability": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "expected_reuse": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "confidence_calibration_value": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "semantic_uncertainty",
+                  "decision_boundedness",
+                  "downstream_consequence",
+                  "decision_frequency",
+                  "cost_of_wrong_decision",
+                  "recoverability_value",
+                  "observability",
+                  "deterministic_alternative_quality",
+                  "current_failure_rate",
+                  "current_llm_dependency",
+                  "latency_sensitivity",
+                  "cost_sensitivity",
+                  "implementation_complexity",
+                  "testability",
+                  "expected_reuse",
+                  "confidence_calibration_value"
+                ],
+                "additionalProperties": false
+              },
+              "placement_score": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "score_interval": {
+                "type": "array",
+                "items": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "score_breakdown": {
+                "type": "object",
+                "properties": {
+                  "semantic_uncertainty": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      },
+                      "weight": {
+                        "type": "number"
+                      },
+                      "contribution": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs",
+                      "weight",
+                      "contribution"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "decision_boundedness": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      },
+                      "weight": {
+                        "type": "number"
+                      },
+                      "contribution": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs",
+                      "weight",
+                      "contribution"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "downstream_consequence": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      },
+                      "weight": {
+                        "type": "number"
+                      },
+                      "contribution": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs",
+                      "weight",
+                      "contribution"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "decision_frequency": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      },
+                      "weight": {
+                        "type": "number"
+                      },
+                      "contribution": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs",
+                      "weight",
+                      "contribution"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "cost_of_wrong_decision": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      },
+                      "weight": {
+                        "type": "number"
+                      },
+                      "contribution": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs",
+                      "weight",
+                      "contribution"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "recoverability_value": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      },
+                      "weight": {
+                        "type": "number"
+                      },
+                      "contribution": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs",
+                      "weight",
+                      "contribution"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "observability": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      },
+                      "weight": {
+                        "type": "number"
+                      },
+                      "contribution": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs",
+                      "weight",
+                      "contribution"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "deterministic_alternative_quality": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      },
+                      "weight": {
+                        "type": "number"
+                      },
+                      "contribution": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs",
+                      "weight",
+                      "contribution"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "current_failure_rate": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      },
+                      "weight": {
+                        "type": "number"
+                      },
+                      "contribution": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs",
+                      "weight",
+                      "contribution"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "current_llm_dependency": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      },
+                      "weight": {
+                        "type": "number"
+                      },
+                      "contribution": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs",
+                      "weight",
+                      "contribution"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "latency_sensitivity": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      },
+                      "weight": {
+                        "type": "number"
+                      },
+                      "contribution": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs",
+                      "weight",
+                      "contribution"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "cost_sensitivity": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      },
+                      "weight": {
+                        "type": "number"
+                      },
+                      "contribution": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs",
+                      "weight",
+                      "contribution"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "implementation_complexity": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      },
+                      "weight": {
+                        "type": "number"
+                      },
+                      "contribution": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs",
+                      "weight",
+                      "contribution"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "testability": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      },
+                      "weight": {
+                        "type": "number"
+                      },
+                      "contribution": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs",
+                      "weight",
+                      "contribution"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "expected_reuse": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      },
+                      "weight": {
+                        "type": "number"
+                      },
+                      "contribution": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs",
+                      "weight",
+                      "contribution"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "confidence_calibration_value": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "lower": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "upper": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "status": {
+                        "enum": [
+                          "unknown",
+                          "inferred",
+                          "observed",
+                          "measured",
+                          "owner_estimate"
+                        ]
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence_refs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      },
+                      "weight": {
+                        "type": "number"
+                      },
+                      "contribution": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "lower",
+                      "upper",
+                      "status",
+                      "rationale",
+                      "evidence_refs",
+                      "weight",
+                      "contribution"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "semantic_uncertainty",
+                  "decision_boundedness",
+                  "downstream_consequence",
+                  "decision_frequency",
+                  "cost_of_wrong_decision",
+                  "recoverability_value",
+                  "observability",
+                  "deterministic_alternative_quality",
+                  "current_failure_rate",
+                  "current_llm_dependency",
+                  "latency_sensitivity",
+                  "cost_sensitivity",
+                  "implementation_complexity",
+                  "testability",
+                  "expected_reuse",
+                  "confidence_calibration_value"
+                ],
+                "additionalProperties": false
+              },
+              "score_formula": {
+                "type": "string"
+              },
+              "unknown_dimensions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "rejection_reasons": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "tier": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 3
+              },
+              "recommendation": {
+                "type": "string"
+              },
+              "deployment_status": {
+                "type": "string"
+              },
+              "runtime_evidence": {
+                "type": "object"
+              },
+              "hard_real_time": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "candidate_id",
+              "pattern",
+              "category",
+              "source",
+              "evidence_status",
+              "semantic_review",
+              "current_behavior",
+              "evidence",
+              "deterministic_alternative",
+              "proposed_jev_role",
+              "jev_questions",
+              "choices",
+              "deterministic_checks",
+              "expected_benefits",
+              "risks",
+              "leverage",
+              "fallback",
+              "policy",
+              "estimates",
+              "recommended_experiment",
+              "traceability",
+              "limitations",
+              "dimensions",
+              "placement_score",
+              "score_interval",
+              "score_breakdown",
+              "score_formula",
+              "unknown_dimensions",
+              "rejection_reasons",
+              "tier",
+              "recommendation",
+              "deployment_status"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "interactions": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "scan_fingerprint": {
+          "type": "string"
+        },
+        "trace_correlation": {
+          "type": "object"
+        },
+        "analysis_identity": {
+          "type": "object",
+          "properties": {
+            "identity_version": {
+              "const": "1.1"
+            },
+            "analyzer_version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source_digest": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "configuration_digest": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "settings_digest": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "coverage_digest": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "parser_digest": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "identity_version",
+            "analyzer_version",
+            "source_digest",
+            "configuration_digest",
+            "settings_digest",
+            "coverage_digest",
+            "parser_digest"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "repository_name",
+        "git",
+        "depth",
+        "coverage",
+        "files",
+        "configuration_evidence",
+        "architecture",
+        "candidates",
+        "interactions",
+        "scan_fingerprint"
+      ],
+      "additionalProperties": false
+    },
+    "inventory_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "binding_review": {
+      "const": "not_performed"
+    },
+    "implementation_verified": {
+      "const": false
+    },
+    "provider_execution_authorized": {
+      "const": false
+    },
+    "mutation_authorized": {
+      "const": false
+    },
+    "runtime_activation_authorized": {
+      "const": false
+    },
+    "reviewed_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "bridge_engine_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "schema_version",
+    "contract",
+    "prepared_sha256",
+    "report_sha256",
+    "review_sha256",
+    "inventory",
+    "inventory_sha256",
+    "binding_review",
+    "implementation_verified",
+    "provider_execution_authorized",
+    "mutation_authorized",
+    "runtime_activation_authorized",
+    "reviewed_sha256",
+    "bridge_engine_sha256"
+  ],
+  "additionalProperties": false
+}

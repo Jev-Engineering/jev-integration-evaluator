@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:jev-integration-evaluator:repository-semantic-review-v1",
+  "title": "repository-semantic-review-v1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "prepared_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "reviews": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^JEV-[A-Z0-9-]+$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "source_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "reviewer": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "approved": {
+            "type": "boolean"
+          },
+          "deterministic_alternative": {
+            "enum": [
+              "preferred",
+              "mandatory"
+            ]
+          },
+          "hard_real_time": {
+            "const": true
+          }
+        },
+        "required": [
+          "source_sha256",
+          "reviewer",
+          "reason",
+          "approved"
+        ],
+        "additionalProperties": false
+      },
+      "maxProperties": 512
+    }
+  },
+  "required": [
+    "schema_version",
+    "prepared_sha256",
+    "reviews"
+  ],
+  "additionalProperties": false
+}

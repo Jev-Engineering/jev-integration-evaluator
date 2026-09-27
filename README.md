@@ -1,4 +1,4 @@
-# JEV Integration Evaluator 1.3.0.dev4
+# JEV Integration Evaluator 1.3.0.dev5
 
 **CompleteTech LLC · Evidence-driven integration analysis and evaluation**
 
@@ -10,28 +10,33 @@ The [original executable implementation specification](references/executable-imp
 
 The default is deliberately conservative: **read-only analysis; no network; runtime off; no target code execution; no automatic adoption**. An unfamiliar repository can produce “no justified integration set.” That is a successful result, not an error.
 
-## Source-bound discovery in 1.3.0.dev4
+## Source-bound discovery and semantic review in 1.3.0.dev5
 
-Read-only structural discovery now records Python seams even when their names
-are opaque, together with source/AST hashes, package-layout sightings, registry
-possibilities and explicit coverage limits. A strict nomination can reference a
-current seam without renaming source. Admission preserves pending semantic and
-binding review, unknown benefit and no execution or mutation authority.
+The `repository-discovery` command builds the existing inventory from current
+Python source and accepts a separately authored semantic review. Opaque symbols
+can be nominated without renaming source or inventing inventory entries.
+Preparation and review recheck source, policy, parser and engine identity.
+Deterministic and hard-real-time exclusions apply to every generated candidate.
 
 ```bash
-python -m jev_integration_evaluator discover-capabilities --repo TARGET --out NEW_EXTERNAL_REPORT.json
-python -m jev_integration_evaluator nominate-candidate --repo TARGET --nomination NOMINATION.json --report-sha256 EXTERNALLY_RETAINED_REPORT_SHA256 --out NEW_EXTERNAL_NOMINATION.json
+python -m jev_integration_evaluator repository-discovery TARGET --out NEW_EXTERNAL_REPORT.json
+python -m jev_integration_evaluator repository-discovery TARGET --stage prepare --capabilities REPORT.json --nominations NOMINATIONS.json --out NEW_EXTERNAL_PREPARED.json
+python -m jev_integration_evaluator repository-discovery TARGET --stage review --capabilities REPORT.json --prepared PREPARED.json --review SEMANTIC_REVIEW.json --out NEW_EXTERNAL_REVIEWED.json
+python -I scripts/run_capability_demo.py --out NEW_PRIVATE_DIRECTORY
 ```
 
-Read [the discovery contract](references/capabilities.md) for policy, private
-outputs and supported POSIX filesystem operations. This is a partial delivery for
-[issue #5](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/5):
-the nomination-to-inventory/semantic-review bridge remains outstanding. It does
-not provide the repository implementation command. Native Windows discovery is
-unsupported; JS/TS files remain explicitly unparsed in this new contract.
-The existing scanner and rewrite support retain their separate coverage.
+Read [the stage contracts](references/repository-discovery-v1.md) for exact input,
+external policy, private output and review requirements. Existing
+`discover-capabilities` and `nominate-candidate` commands retain their
+[published contracts](references/capabilities.md). New stages use the same
+discovery engine. Native Windows discovery is unsupported; JS/TS coverage in this
+command remains explicitly incomplete.
 
-Current qualification is in [the dev4 validation record](validation/DISCOVERY-VALIDATION-1.3.0.dev4.md).
+This is a partial delivery for [issue #5](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/5).
+A complete source-reviewed no-useful-placement outcome and the repository
+implementation session remain outstanding. A semantic opinion supplies neither
+host bindings nor execution/activation authority. Current qualification is in
+[the dev5 validation record](validation/SEMANTIC-BRIDGE-VALIDATION-1.3.0.dev5.md).
 
 ## Executable integrations retained from 1.3.0.dev3
 
@@ -195,7 +200,7 @@ Static analysis cannot recover every reflective/dynamic call, macro, callback, g
 
 A socket timeout and bounded thread pool are not hard real-time guarantees. The test runner is not a security sandbox; use an isolated runner for untrusted projects. Externally retained hash/length checkpoints detect mismatching audit prefixes, but hash chains do not authenticate an adversarial writer. Frozen local manifests cannot prove an untouched holdout or independent trials; their statistical assumptions remain explicit. API fixtures and receipts can be forged by an untrusted editor; authorization and independent experiment review remain host responsibilities.
 
-Development validation is in [the dev4 discovery report](validation/DISCOVERY-VALIDATION-1.3.0.dev4.md), with supplied-fragment and full integration qualification distinguished. Earlier v1.1, v1.2 and dev1–dev3 validation records are retained byte-for-byte as historical evidence; they are not measurements for this build. Live JEV accuracy, cost, latency and calibration were not measured during package construction. The tested model interface uses mocked HTTP and exact local fixtures.
+Development validation is in [the dev5 semantic bridge report](validation/SEMANTIC-BRIDGE-VALIDATION-1.3.0.dev5.md), with supplied-fragment and full integration qualification distinguished. Earlier v1.1, v1.2 and dev1–dev4 validation records are retained byte-for-byte as historical evidence; they are not measurements for this build. Live JEV accuracy, cost, latency and calibration were not measured during package construction. The tested model interface uses mocked HTTP and exact local fixtures.
 
 ## License
 
