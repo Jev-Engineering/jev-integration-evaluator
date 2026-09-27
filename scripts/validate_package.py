@@ -34,7 +34,7 @@ def validate(check_manifest=False):
               'schemas/implementation-manifest.schema.json','schemas/implementation-tests.schema.json',
               'tests/test_executable_recipes.py','tests/test_executable_runtime.py','tests/test_executable_safety.py','tests/test_executable_cli.py','tests/test_executable_wheel.py',
               'tests/test_executable_host_boundaries.py','tests/test_executable_source_scope.py','tests/test_executable_verification_identity.py',
-              'validation/SEMANTIC-BRIDGE-VALIDATION-1.3.0.dev5.md',
+              'validation/REVIEW-GATE-VALIDATION-1.3.0.dev6.md',
               'jev_integration_evaluator/integrations/observations.py','schemas/implementation-observation.schema.json',
               'tests/test_executable_failure_receipts.py','tests/test_executable_source_fidelity.py','tests/test_executable_command_receipts.py',
               'examples/implementation/observation.example.json',
@@ -49,7 +49,8 @@ def validate(check_manifest=False):
                  'scripts/prepare_repository_inventory.py', 'scripts/run_capability_demo.py',
                  'references/repository-discovery-v1.md',
                  'tests/test_nomination_inventory.py', 'tests/test_repository_discovery_cli.py',
-                 'tests/test_repository_discovery_wheel.py', 'tests/test_capabilities_bridge_guards.py']
+                 'tests/test_repository_discovery_wheel.py', 'tests/test_capabilities_bridge_guards.py',
+                 'tests/test_review_gate_invariants.py', 'references/review-gate-invariants.md']
     for item in required:
         if not (ROOT/item).is_file():raise InputError('Required package file missing: '+item)
     front=(ROOT/'SKILL.md').read_text().split('---',2)

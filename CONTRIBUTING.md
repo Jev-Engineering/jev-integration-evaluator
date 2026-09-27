@@ -27,3 +27,9 @@ with a new external private directory. Bind bridge engine identity and all
 source/policy restrictions; semantic review cannot override eligibility or
 provide measured estimates, bindings or authority. Keep issue #5 open until its
 complete source-reviewed no-useful-placement acceptance criterion is delivered.
+
+For review-gate changes, run `tests/test_review_gate_invariants.py` and current
+traceability/scoring callers. A failed batch must leave the input inventory intact;
+success must preserve existing candidate references. Rebuild source-linked bridge
+examples when scoring or bridge code changes, because engine hashes invalidate old
+preparations. Keep issue #7 open until its full selection contract is delivered.

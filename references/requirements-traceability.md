@@ -146,3 +146,13 @@ source-linked examples, CLI/adversarial tests and installed-wheel qualification
 cover the bridge. The complete reviewed no-useful-placement outcome remains
 outstanding; issues #4 and #6–#15 retain their separate requirements. See
 `references/repository-discovery-v1.md` and the dev5 validation record.
+
+## Review exclusion invariants (1.3.0.dev6)
+
+The existing `apply_reviews` path now retains hard-real-time and deterministic
+exclusions across semantic review, validates complete batches before mutation,
+rejects duplicate candidate IDs, and preserves existing candidate references on
+success. Synthetic regressions cover these boundaries and the dev5 bridge caller.
+See `references/review-gate-invariants.md` and the dev6 validation record. This is
+partial support for issue #7; its selection contract and issue #5's complete
+reviewed no-useful-placement outcome remain open.
