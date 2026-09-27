@@ -42,7 +42,7 @@ jobs:
       - run: python scripts/run_implementation_demo.py --out "$RUNNER_TEMP/jev-python-only-implementation"
       - run: python -m pytest -q tests/test_nomination_inventory.py tests/test_repository_discovery_cli.py tests/test_repository_discovery_wheel.py tests/test_capabilities_bridge_guards.py tests/test_review_gate_invariants.py
       - run: python -m pytest -q tests/test_placement_selection.py tests/test_placement_selection_cli.py tests/test_placement_selection_wheel.py tests/test_inputs_optimizer.py
-      - run: python -m pytest -q tests/test_repository_placement_selection.py tests/test_repository_placement_wheel.py
+      - run: python -m pytest -q tests/test_repository_placement_selection.py tests/test_repository_placement_wheel.py tests/test_scope_review_conflicts.py tests/test_placement_review_consistency.py tests/test_placement_review_consistency_cli.py
       - run: python -m pytest -q tests/test_repository_conclusion.py tests/test_repository_conclusion_cli.py tests/test_repository_conclusion_wheel.py
       - run: python -I scripts/run_placement_selection_demo.py --out "$RUNNER_TEMP/jev-python-only-scope"
       - run: python -I scripts/run_repository_conclusion_demo.py --out "$RUNNER_TEMP/jev-python-only-conclusion"

@@ -51,9 +51,15 @@ placement taxonomy. There must be no duplicate, unknown, stale or missing row.
 A completely empty repository does not pass by vacuous truth.
 
 Only complete analysis plus a complete, all-negative source review can produce
-`no_useful_placement`. A positive candidate review contradicting that negative
-scope review produces `insufficient_evidence`; missing review rows remain in
-explicit denominators. Parser failures, unparsed languages, exhausted bounds
+`no_useful_placement`. An approved candidate contradicts a negative judgment
+on its exact seam or entire source file even when another reviewed source is
+useful. Such a conflict produces `insufficient_evidence` and blocks selection
+while retaining every requested candidate in its denominator. A useful seam
+judgment inside a negatively reviewed whole file is also inconsistent even
+when that seam was not nominated. Scope-review input is bounded before expansion
+and copied before validation to preserve the reviewed decision. A negative
+unselected seam alone does not reject a consistently positive selected seam.
+Missing review rows remain in explicit denominators. Parser failures, unparsed languages, exhausted bounds
 and withheld ambiguous candidates cannot be waived by a negative judgment.
 A negative individual candidate review requires further scope review, not a
 claim about the entire repository.
@@ -131,6 +137,6 @@ contract. JS/TS,
 methods, async seams, installed host wiring and composite mutation do not inherit
 Python selection qualification. Package-aware binding, agent-drafted specs,
 sessions/recovery, real isolation, runtime bootstrap and study/monitor collection
-remain their separately tracked roadmap work. Current qualification is recorded
-in `validation/SCOPE-OUTCOME-VALIDATION-1.3.0.dev8.md`; prior packet tests do
-not establish the current release result.
+remain their separately tracked roadmap work. The current conflict correction
+is qualified in `validation/SCOPE-CONFLICT-VALIDATION-1.3.0.dev10.md`;
+`validation/SCOPE-OUTCOME-VALIDATION-1.3.0.dev8.md` remains historical.

@@ -1,7 +1,7 @@
 # Synthetic, source-linked placement-selection examples
 
-These records were generated from `host/opaque.py` against the recovered
-`1.3.0.dev8` analysis/review code and the integrated repository-scope component.
+These records were regenerated from `host/opaque.py` against the
+`1.3.0.dev10` analysis/review code after the mixed-review conflict correction.
 They do not execute the host, implement its callbacks, establish connectivity,
 measure benefit, authenticate a reviewer, or authorize activation.
 

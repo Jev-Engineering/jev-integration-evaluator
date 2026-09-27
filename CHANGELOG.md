@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.3.0.dev10 — mixed scope-review conflict guard
+
+- Block experimental selection when an approved candidate conflicts with a
+  negative judgment on its exact seam or entire source file, even when another
+  reviewed source is useful. Retain requested IDs and failure denominators.
+- Preserve consistent mixed reviews and the existing no-review experimental
+  path. No runtime, recipe, provider or activation authority changes.
+- Reject a useful seam judgment inside a negatively reviewed whole file, even
+  when the seam was not nominated. Bound and snapshot scope-review input before
+  validation so later caller mutation cannot change a prepared decision.
+- Add source-matched regressions and refresh engine-bound synthetic examples.
+
 ## 1.3.0.dev9 — pattern-by-pattern repository conclusions
 
 - Add a read-only `repository-discovery --stage conclude` operation with

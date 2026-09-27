@@ -46,10 +46,14 @@ def _bounded(value: Any) -> None:
         if seen > 200_000 or depth > 64:
             raise cap.CapabilityError("selection_structure_budget")
         if type(item) is dict:
+            if seen + len(stack) + len(item) > 200_000:
+                raise cap.CapabilityError("selection_structure_budget")
             if any(type(k) is not str for k in item):
                 raise cap.CapabilityError("invalid_selection_json")
             stack.extend((v, depth + 1) for v in item.values())
         elif type(item) is list:
+            if seen + len(stack) + len(item) > 200_000:
+                raise cap.CapabilityError("selection_structure_budget")
             stack.extend((v, depth + 1) for v in item)
         elif item is None or type(item) in (str, bool):
             continue
@@ -233,12 +237,32 @@ def prepare_placement_context(repo: str | Path, report: dict, prepared: dict,
     reviewed = _fresh(repo, report, prepared, semantic_review, cfg, policy)
     inventory = reviewed["inventory"]
     rows = _candidate_rows(report, inventory)
+    if scope_review is not None:
+        # Validate one detached snapshot so a caller cannot change its negative
+        # rows between scope validation and candidate conflict checking.
+        _bounded(scope_review)
+        scope_review = json.loads(canonical(scope_review))
     scope = _scope_assessment(report, prepared, scope_review)
     # These are review judgments, not measurements. Contradictory judgments are
     # unresolved even when one envelope has a more recent-looking timestamp.
     approved_ids = {c["candidate_id"] for c in inventory["candidates"]
                     if c.get("semantic_review", {}).get("approved") is True}
-    contradictory = scope["no_useful_judgment"] and bool(approved_ids)
+    # Compare each approved placement with its own reviewed source. A useful
+    # judgment elsewhere cannot override a negative file or seam judgment.
+    # _scope_assessment has already checked every supplied source anchor.
+    negative_seams = {item["seam_id"] for item in (scope_review or {}).get("seams", [])
+                      if item["disposition"] == "no_useful_placement"}
+    negative_files = {item["file"] for item in (scope_review or {}).get("files", [])
+                      if item["disposition"] == "no_useful_placement"}
+    positive_seam_in_negative_file = any(
+        item["disposition"] == "useful" and item["source"]["file"] in negative_files
+        for item in (scope_review or {}).get("seams", [])
+    )
+    contradictory = (scope["no_useful_judgment"] and bool(approved_ids)) or positive_seam_in_negative_file or any(
+        row["candidate_id"] in approved_ids
+        and (row["seam_id"] in negative_seams or row["source"]["file"] in negative_files)
+        for row in rows
+    )
     coverage_complete = (report["coverage"]["complete_within_policy"] is True
                          and inventory["coverage"]["analysis_complete_within_policy"] is True
                          and not inventory["coverage"]["nomination_bridge"]["withheld_candidates"])
