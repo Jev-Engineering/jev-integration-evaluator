@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.3.0.dev7 — experimental placement selection
+
+- Add a source-bound, externally approved experimental-selection contract that
+  permits plan preparation with explicitly unknown benefit and cost estimates.
+  Preserve estimate-based optimizer requirements and deterministic exclusions.
+- Add strict mirrored schemas, a metadata-only standalone CLI, an offline
+  synthetic lifecycle demonstration, installed-wheel and adversarial tests.
+- Keep the existing implementation planner responsible for source, binding,
+  recipe and policy checks. No live provider, production activation or measured
+  benefit is established. Issue #7 and its dependency #5 remain open.
+- Current qualification is recorded in
+  `validation/SELECTION-VALIDATION-1.3.0.dev7.md`.
+
 ## 1.3.0.dev6 — review exclusion and batch safety
 
 - Reject semantic reviews that clear a hard-real-time gate, remove a preferred or mandatory deterministic exclusion, or downgrade a mandatory exclusion to preferred.

@@ -1,0 +1,789 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://complete.tech/schemas/jev/placement-selection.schema.json",
+  "title": "placement-selection",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "selection_version": {
+      "const": "placement-selection-v1"
+    },
+    "mode": {
+      "enum": [
+        "experimental",
+        "optimize"
+      ]
+    },
+    "request_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "inventory_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "inventory_fingerprint": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "coverage_complete_within_inventory": {
+      "type": "boolean"
+    },
+    "status": {
+      "enum": [
+        "incomplete_analysis",
+        "no_candidates_discovered",
+        "deterministic_rejection",
+        "no_useful_placement_within_reviewed_inventory",
+        "stale_semantic_review",
+        "semantic_review_required",
+        "semantic_rejection",
+        "selection_review_required",
+        "experimental_selected",
+        "estimate_based_optimization",
+        "insufficient_estimates",
+        "missing_estimate_provenance",
+        "no_feasible_positive_set_under_declared_model"
+      ]
+    },
+    "candidate_assessments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "candidate_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "\\S"
+          },
+          "source_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "review_status": {
+            "enum": [
+              "deterministic_rejection",
+              "stale_semantic_review",
+              "semantic_review_required",
+              "semantic_rejection",
+              "reviewed_candidate"
+            ]
+          },
+          "missing_estimates": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "quality_gain",
+                "reliability_gain",
+                "failure_reduction",
+                "model_call_reduction",
+                "added_latency_ms",
+                "added_cost",
+                "calls_per_task",
+                "complexity",
+                "maintenance",
+                "false_positive_rate",
+                "false_negative_rate",
+                "risk",
+                "throughput"
+              ]
+            },
+            "minItems": 0,
+            "maxItems": 13
+          },
+          "estimate_provenance_present": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "candidate_id",
+          "source_sha256",
+          "review_status",
+          "missing_estimates",
+          "estimate_provenance_present"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 2000
+    },
+    "selected_candidate_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "\\S"
+      },
+      "minItems": 0,
+      "maxItems": 2000
+    },
+    "selected_estimates": {
+      "type": "object",
+      "maxProperties": 2000,
+      "propertyNames": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "\\S"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "quality_gain": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reliability_gain": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "failure_reduction": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "model_call_reduction": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "added_latency_ms": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "added_cost": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "calls_per_task": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "complexity": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "maintenance": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "false_positive_rate": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "false_negative_rate": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "risk": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "throughput": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "provenance": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 8192,
+                "pattern": "\\S"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "quality_gain",
+          "reliability_gain",
+          "failure_reduction",
+          "model_call_reduction",
+          "added_latency_ms",
+          "added_cost",
+          "calls_per_task",
+          "complexity",
+          "maintenance",
+          "false_positive_rate",
+          "false_negative_rate",
+          "risk",
+          "throughput",
+          "provenance"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "optimizer_result": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "method": {
+              "enum": [
+                "exact_enumeration",
+                "bounded_beam_heuristic"
+              ]
+            },
+            "optimality_proven_for_declared_model": {
+              "type": "boolean"
+            },
+            "eligible_candidates": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000
+            },
+            "feasible_sets_examined": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000
+            },
+            "excluded": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "candidate_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "\\S"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 8192,
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "candidate_id",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 0,
+              "maxItems": 2000
+            },
+            "recommended_minimal_set": {
+              "type": "object",
+              "properties": {
+                "candidate_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "\\S"
+                  },
+                  "minItems": 0,
+                  "maxItems": 2000
+                },
+                "utility": {
+                  "type": "number"
+                },
+                "quality_gain": {
+                  "type": "number"
+                },
+                "reliability_gain": {
+                  "type": "number"
+                },
+                "failure_reduction": {
+                  "type": "number"
+                },
+                "model_call_reduction": {
+                  "type": "number"
+                },
+                "measured_interaction_utility": {
+                  "type": "number"
+                },
+                "added_latency_ms": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "added_cost": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "calls_per_task": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "complexity": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "candidate_ids",
+                "utility",
+                "quality_gain",
+                "reliability_gain",
+                "failure_reduction",
+                "model_call_reduction",
+                "measured_interaction_utility",
+                "added_latency_ms",
+                "added_cost",
+                "calls_per_task",
+                "complexity"
+              ],
+              "additionalProperties": false
+            },
+            "recommended_balanced_set": {
+              "type": "object",
+              "properties": {
+                "candidate_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "\\S"
+                  },
+                  "minItems": 0,
+                  "maxItems": 2000
+                },
+                "utility": {
+                  "type": "number"
+                },
+                "quality_gain": {
+                  "type": "number"
+                },
+                "reliability_gain": {
+                  "type": "number"
+                },
+                "failure_reduction": {
+                  "type": "number"
+                },
+                "model_call_reduction": {
+                  "type": "number"
+                },
+                "measured_interaction_utility": {
+                  "type": "number"
+                },
+                "added_latency_ms": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "added_cost": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "calls_per_task": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "complexity": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "candidate_ids",
+                "utility",
+                "quality_gain",
+                "reliability_gain",
+                "failure_reduction",
+                "model_call_reduction",
+                "measured_interaction_utility",
+                "added_latency_ms",
+                "added_cost",
+                "calls_per_task",
+                "complexity"
+              ],
+              "additionalProperties": false
+            },
+            "recommended_maximum_reliability_set": {
+              "type": "object",
+              "properties": {
+                "candidate_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "\\S"
+                  },
+                  "minItems": 0,
+                  "maxItems": 2000
+                },
+                "utility": {
+                  "type": "number"
+                },
+                "quality_gain": {
+                  "type": "number"
+                },
+                "reliability_gain": {
+                  "type": "number"
+                },
+                "failure_reduction": {
+                  "type": "number"
+                },
+                "model_call_reduction": {
+                  "type": "number"
+                },
+                "measured_interaction_utility": {
+                  "type": "number"
+                },
+                "added_latency_ms": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "added_cost": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "calls_per_task": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "complexity": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "candidate_ids",
+                "utility",
+                "quality_gain",
+                "reliability_gain",
+                "failure_reduction",
+                "model_call_reduction",
+                "measured_interaction_utility",
+                "added_latency_ms",
+                "added_cost",
+                "calls_per_task",
+                "complexity"
+              ],
+              "additionalProperties": false
+            },
+            "pareto_display_subset": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "candidate_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "\\S"
+                    },
+                    "minItems": 0,
+                    "maxItems": 2000
+                  },
+                  "utility": {
+                    "type": "number"
+                  },
+                  "quality_gain": {
+                    "type": "number"
+                  },
+                  "reliability_gain": {
+                    "type": "number"
+                  },
+                  "failure_reduction": {
+                    "type": "number"
+                  },
+                  "model_call_reduction": {
+                    "type": "number"
+                  },
+                  "measured_interaction_utility": {
+                    "type": "number"
+                  },
+                  "added_latency_ms": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "added_cost": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "calls_per_task": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "complexity": {
+                    "type": "number",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "candidate_ids",
+                  "utility",
+                  "quality_gain",
+                  "reliability_gain",
+                  "failure_reduction",
+                  "model_call_reduction",
+                  "measured_interaction_utility",
+                  "added_latency_ms",
+                  "added_cost",
+                  "calls_per_task",
+                  "complexity"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 0,
+              "maxItems": 516
+            },
+            "status": {
+              "enum": [
+                "no_justified_integration_set",
+                "conditional_on_declared_estimates"
+              ]
+            },
+            "assumptions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 8192,
+                "pattern": "\\S"
+              },
+              "minItems": 0,
+              "maxItems": 64
+            }
+          },
+          "required": [
+            "method",
+            "optimality_proven_for_declared_model",
+            "eligible_candidates",
+            "feasible_sets_examined",
+            "excluded",
+            "recommended_minimal_set",
+            "recommended_balanced_set",
+            "recommended_maximum_reliability_set",
+            "pareto_display_subset",
+            "status",
+            "assumptions"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "preparation_scope_ref": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "pattern": "\\S"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "implementation_status": {
+      "const": "not_checked"
+    },
+    "live_limits": {
+      "type": "object",
+      "properties": {
+        "max_total_cost": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "max_total_calls": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "max_concurrent_calls": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "max_total_cost",
+        "max_total_calls",
+        "max_concurrent_calls"
+      ],
+      "additionalProperties": false
+    },
+    "missing_live_bounds": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "max_total_cost",
+          "max_total_calls",
+          "max_concurrent_calls"
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 3
+    },
+    "execution_authorized": {
+      "const": false
+    },
+    "target_mutation_authorized": {
+      "const": false
+    },
+    "live_spend_authorized": {
+      "const": false
+    },
+    "runtime_activation_authorized": {
+      "const": false
+    },
+    "benefit_demonstrated": {
+      "const": false
+    },
+    "adoption_recommendation": {
+      "type": "null"
+    },
+    "contract_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "selection_engine_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "schema_version",
+    "selection_version",
+    "mode",
+    "request_sha256",
+    "inventory_sha256",
+    "inventory_fingerprint",
+    "coverage_complete_within_inventory",
+    "status",
+    "candidate_assessments",
+    "selected_candidate_ids",
+    "selected_estimates",
+    "optimizer_result",
+    "preparation_scope_ref",
+    "implementation_status",
+    "live_limits",
+    "missing_live_bounds",
+    "execution_authorized",
+    "target_mutation_authorized",
+    "live_spend_authorized",
+    "runtime_activation_authorized",
+    "benefit_demonstrated",
+    "adoption_recommendation",
+    "contract_digest",
+    "selection_engine_sha256"
+  ],
+  "additionalProperties": false
+}

@@ -4,7 +4,7 @@ description: Discover, score, design, optimize, and experimentally validate high
 license: MIT
 metadata:
   author: CompleteTech LLC
-  version: 1.3.0.dev6
+  version: 1.3.0.dev7
 ---
 
 # JEV Integration Evaluator
@@ -33,6 +33,19 @@ inventory; duplicate candidate IDs fail closed. Source-matched reviewer text is 
 semantic opinion, not permission to relax these gates or activate a provider.
 Successful review retains candidate references used by later trace analysis.
 Read `references/review-gate-invariants.md` for the dev6 contract.
+
+## Experimental placement selection
+
+Use the standalone `python -m jev_integration_evaluator.selection` command
+with a private, reviewed inventory and a versioned request. A source-matched
+semantic review and an externally approved exact request can select one
+candidate for **preparation** even when benefit and cost estimates are unknown.
+`--prepare` delegates exact source and binding checks to the existing Python
+implementation planner; it does not apply or execute the result. Optimization
+still requires declared estimates and provenance. Missing estimates, incomplete
+coverage, unsupported implementation shapes, and a reviewed negative outcome
+remain distinct. The selector never authorizes spending, target execution,
+runtime activation, or adoption. See `references/experimental-selection.md`.
 
 ## Activation and scope
 

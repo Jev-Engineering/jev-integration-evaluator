@@ -1,0 +1,327 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://complete.tech/schemas/jev/placement-selection-request.schema.json",
+  "title": "placement-selection-request",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "mode": {
+      "enum": [
+        "experimental",
+        "optimize"
+      ]
+    },
+    "inventory_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "candidate_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "\\S"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "decision_review": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "reviewer": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "\\S"
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 8192,
+              "pattern": "\\S"
+            },
+            "evidence_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1024,
+                "pattern": "\\S"
+              },
+              "minItems": 1,
+              "maxItems": 64
+            }
+          },
+          "required": [
+            "reviewer",
+            "reason",
+            "evidence_refs"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "preparation_scope_ref": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "pattern": "\\S"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "implementation_spec_sha256": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "constraints": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "max_added_latency_ms": {
+              "type": "number",
+              "minimum": 0
+            },
+            "max_cost_per_task": {
+              "type": "number",
+              "minimum": 0
+            },
+            "max_calls_per_task": {
+              "type": "number",
+              "minimum": 0
+            },
+            "max_complexity": {
+              "type": "number",
+              "minimum": 0
+            },
+            "max_risk": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "required_throughput": {
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "max_added_latency_ms",
+            "max_cost_per_task",
+            "max_calls_per_task",
+            "max_complexity",
+            "max_risk",
+            "required_throughput"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "live_limits": {
+      "type": "object",
+      "properties": {
+        "max_total_cost": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "max_total_calls": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "max_concurrent_calls": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "max_total_cost",
+        "max_total_calls",
+        "max_concurrent_calls"
+      ],
+      "additionalProperties": false
+    },
+    "selection_engine_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "schema_version",
+    "mode",
+    "inventory_sha256",
+    "candidate_id",
+    "decision_review",
+    "preparation_scope_ref",
+    "implementation_spec_sha256",
+    "constraints",
+    "live_limits",
+    "selection_engine_sha256"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "experimental"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "candidate_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "\\S"
+          },
+          "decision_review": {
+            "type": "object",
+            "properties": {
+              "reviewer": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "\\S"
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 8192,
+                "pattern": "\\S"
+              },
+              "evidence_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1024,
+                  "pattern": "\\S"
+                },
+                "minItems": 1,
+                "maxItems": 64
+              }
+            },
+            "required": [
+              "reviewer",
+              "reason",
+              "evidence_refs"
+            ],
+            "additionalProperties": false
+          },
+          "preparation_scope_ref": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024,
+            "pattern": "\\S"
+          },
+          "constraints": {
+            "type": "null"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "candidate_id": {
+            "type": "null"
+          },
+          "decision_review": {
+            "type": "null"
+          },
+          "preparation_scope_ref": {
+            "type": "null"
+          },
+          "implementation_spec_sha256": {
+            "type": "null"
+          },
+          "constraints": {
+            "type": "object",
+            "properties": {
+              "max_added_latency_ms": {
+                "type": "number",
+                "minimum": 0
+              },
+              "max_cost_per_task": {
+                "type": "number",
+                "minimum": 0
+              },
+              "max_calls_per_task": {
+                "type": "number",
+                "minimum": 0
+              },
+              "max_complexity": {
+                "type": "number",
+                "minimum": 0
+              },
+              "max_risk": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "required_throughput": {
+                "type": "number",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "max_added_latency_ms",
+              "max_cost_per_task",
+              "max_calls_per_task",
+              "max_complexity",
+              "max_risk",
+              "required_throughput"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    }
+  ]
+}

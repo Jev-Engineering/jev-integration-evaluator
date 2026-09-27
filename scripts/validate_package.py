@@ -34,7 +34,7 @@ def validate(check_manifest=False):
               'schemas/implementation-manifest.schema.json','schemas/implementation-tests.schema.json',
               'tests/test_executable_recipes.py','tests/test_executable_runtime.py','tests/test_executable_safety.py','tests/test_executable_cli.py','tests/test_executable_wheel.py',
               'tests/test_executable_host_boundaries.py','tests/test_executable_source_scope.py','tests/test_executable_verification_identity.py',
-              'validation/REVIEW-GATE-VALIDATION-1.3.0.dev6.md',
+              'validation/SELECTION-VALIDATION-1.3.0.dev7.md',
               'jev_integration_evaluator/integrations/observations.py','schemas/implementation-observation.schema.json',
               'tests/test_executable_failure_receipts.py','tests/test_executable_source_fidelity.py','tests/test_executable_command_receipts.py',
               'examples/implementation/observation.example.json',
@@ -51,6 +51,16 @@ def validate(check_manifest=False):
                  'tests/test_nomination_inventory.py', 'tests/test_repository_discovery_cli.py',
                  'tests/test_repository_discovery_wheel.py', 'tests/test_capabilities_bridge_guards.py',
                  'tests/test_review_gate_invariants.py', 'references/review-gate-invariants.md']
+    required += ['jev_integration_evaluator/selection.py',
+                 'scripts/select_placement.py', 'scripts/run_selection_demo.py',
+                 'references/experimental-selection.md',
+                 'tests/test_placement_selection.py', 'tests/test_placement_selection_cli.py',
+                 'tests/test_placement_selection_wheel.py']
+    required += [f'{directory}/{name}.schema.json'
+                 for directory in ('schemas', 'jev_integration_evaluator/data')
+                 for name in ('placement-estimates', 'placement-interaction',
+                              'placement-selection-envelope', 'placement-selection-request',
+                              'placement-selection-summary', 'placement-selection')]
     for item in required:
         if not (ROOT/item).is_file():raise InputError('Required package file missing: '+item)
     front=(ROOT/'SKILL.md').read_text().split('---',2)
