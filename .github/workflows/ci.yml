@@ -17,7 +17,7 @@ jobs:
         with:
           node-version: "22"
       - run: python -m pip install -e ".[test]"
-      - run: npm install --ignore-scripts --no-audit --no-fund
+      - run: npm install --ignore-scripts --no-audit --no-fund --package-lock=false
       - run: python -m pytest -q
       - run: python scripts/validate_package.py --check-manifest
       - run: python scripts/run_v11_demo.py --out "$RUNNER_TEMP/jev-v11-demo"

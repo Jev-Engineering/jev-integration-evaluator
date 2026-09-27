@@ -43,8 +43,8 @@ the ordinary supported structural preflight. No blocking findings remained.
 The complete package was copied into a native Linux temporary directory and all
 661 file bytes were matched against the integration worktree before execution.
 After qualification, the same file set still matched. Only this report and its
-release checksum entry changed afterward; code, tests, schemas and examples did
-not change.
+release checksum entry changed afterward, followed by the CI installation fix
+described below; code, tests, schemas and examples did not change.
 
 | Check | Actual result |
 | --- | --- |
@@ -67,6 +67,18 @@ Python 3.10/3.13 and trusted TypeScript are not claimed as local execution. The
 hosted workflow runs those environments against the published commit and now
 enforces the exact checksum manifest. Its Python-only job also runs all five
 discovery test files. Hosted outcomes are recorded on the PR after execution.
+
+The first hosted matrix at commit `ec3767628c5e561d59395c6eb6054813858305aa`
+ran Python 3.10.21, 3.12.14 and 3.13.15 with trusted Node/TypeScript: all three
+full suites passed 845 tests with three native-Windows-only skips. The subsequent
+manifest gate failed because `npm install` created an untracked root
+`package-lock.json`. That workflow run was therefore not successful. The CI
+install now explicitly sets `--package-lock=false`, retaining the exact manifest
+gate and the pinned trusted parser dependency. Final-head hosted qualification
+must pass after that CI-only correction.
+An isolated native Windows Node 24.18.0/npm 11.16.0 reproduction confirmed the
+old command created the lockfile and the corrected command did not; both
+installed the same pinned TypeScript 5.8.3 package with lifecycle scripts off.
 
 ## Evidence limits
 
