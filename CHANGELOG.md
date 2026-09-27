@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.0.dev2 — executable-integration safety follow-up
+
+- Preserve host exception objects and exactly-once effects even when executors, finishers, recovery callbacks or guard cleanup raise `PolicyBlock` or `UseFallback`. Router fallback cannot replay an attempted host operation. Off/shadow baseline calls run outside router-signal handlers.
+- Retain bounded process-local weak-reference ownership tombstones after a router/coordinator is collected; recreating either object does not reset the existing workflow's budgets. Host-selected new scopes still require separate review/receipts.
+- Reject parameter-shadowed seam/registry/executor bindings, exception/match-capture rebinding, and rebinding in module-level definition expressions before target mutation. The supported source shape is unchanged; previously accepted ambiguous shapes now fail closed.
+- Bind isolated probe copies to the exact reviewed phase hashes/modes, retain raced or unavailable cases in the denominator, and recheck all integration-owned files after the authorized command. A successful command that changes/removes the generated adapter cannot establish verified state.
+- Add backward-readable `file_identity_valid` receipt metadata in both schema copies. New receipts record the final check; `false` cannot accompany `passed`. Historical receipts without the field remain identifiable through their engine digest, not retroactively recertified.
+- Add focused regression files to package validation and the Python-only CI job. No new dependencies, source-shape expansion, activation bypass, live provider claim or application-benefit claim.
+- This development follow-up requires its own signed publication/review/CI qualification; local execution is recorded separately from historical dev1 evidence.
+
 ## 1.3.0.dev1 — bounded executable integrations
 
 - Added strict reviewed binding specifications and executable AST-selected host edits for thirteen A–M Python recipes; no caller-authored replacement source required.

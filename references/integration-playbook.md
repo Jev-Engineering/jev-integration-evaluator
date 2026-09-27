@@ -43,3 +43,9 @@ The generated adapter attaches source location, candidate ID and experiment ID t
 Use `link` to attach the actual integration manifest, test receipt or outcome receipt to the inventory. Each receipt must match opportunity, source hash and experiment ID. The record stores the artifact filename and SHA-256. Linking evidence never grants deployment authority or silently upgrades a tier.
 
 Collect shadow resources/disagreements and independent labels; obtain actual paired task outcomes before claiming rescues. Freeze a calibrated policy, evaluate ablations, review useful-effect and safety/resource evidence, and authorize only a bounded canary. Roll back through the host feature flag when declared limits are exceeded. Document keep/modify/disable/needs_more_evidence, diff summary, completed/failed/not-run tests, fallback operation and residual risks.
+
+## Correctness checks for the dev2 implementation engine
+
+Review the supported source names in their scopes, not just their spelling. Parameter shadowing and exception/match capture rebinding must fail before mutation. Preserve the original host exception object through executor/finisher and guard cleanup; do not translate an attempted operation's exception into a new baseline execution. Keep the reviewed router and shared coordinator alive for the workflow; ownership tombstones prevent garbage collection from becoming a budget reset.
+
+A command exit of zero is insufficient when it changed an integration-owned file. Inspect the new `file_identity_valid` receipt field together with exact phase hashes and behavioral assertions. Copied source must already match the plan before executing the isolated probe. A failed identity/copy check cannot be replaced by a success-shaped manifest, and unavailable cases remain in the denominator. Recovery still reconciles existing bytes and never overwrites unrelated edits.

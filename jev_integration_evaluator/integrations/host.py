@@ -76,9 +76,9 @@ def _register_owner(spec, router):
         raise PolicyBlock('runtime_configuration_binding_mismatch')
     scope, placement = router.canary_scope, (router.canary_scope, spec['candidate_id'])
     with _ownership_lock:
-        for records in (_coordinators, _routers):
-            for key in list(records):
-                if records[key]() is None: del records[key]
+        # Dead weak references are bounded ownership tombstones, not permission
+        # to reconstruct a router/coordinator and erase previously charged work.
+        # A new workflow scope needs separate host review and runtime receipts.
         if len(_routers) >= 1024 and placement not in _routers:
             raise PolicyBlock('host_ownership_registry_full')
         existing = _coordinators.get(scope)
@@ -95,6 +95,11 @@ class Context:
     def __init__(self, spec, original, request, bindings, router):
         self.spec, self.original, self.request, self.b = spec, original, request, bindings
         self.router = router
+        # Once a host operation starts, no outer router fallback may replay it.
+        # Keep the actual exception object: host guards must see its real type.
+        self.host_operation_started = False
+        self.host_operation_exception = None
+        self.host_guard_exception = None
         self.policy = spec['policy']
         self.task_field = spec['runtime']['task_field']
         if not isinstance(request, dict) or not isinstance(request.get(self.task_field), str) or not request[self.task_field]:
@@ -109,6 +114,15 @@ class Context:
         if not isinstance(self.baseline, str) or self.baseline not in self.options:
             raise PolicyBlock('baseline_is_not_a_registered_option')
 
+    def host_operation(self, function, *args):
+        """Cross the host-effect boundary without converting host control flow."""
+        self.host_operation_started = True
+        try:
+            return function(*args)
+        except (PolicyBlock, UseFallback) as exc:
+            self.host_operation_exception = exc
+            raise
+
     def stable(self):
         if self.request.get(self.task_field) != self.task_id or digest(self.request) != self.request_hash:
             raise PolicyBlock('task_or_arguments_changed_after_assessment')
@@ -118,9 +132,21 @@ class Context:
         cm = _read(self.b['guard'], self.request)
         if not hasattr(cm, '__enter__') or not hasattr(cm, '__exit__'):
             raise PolicyBlock('host_atomic_guard_required')
-        # Do not catch an exception from an executed host operation and replay it.
-        with cm:
-            yield
+        # A guard may raise its own signal while entering or cleaning up. Keep
+        # it distinct from a policy signal raised by the guarded body, without
+        # changing the exception the host's __exit__ receives.
+        body_exception = None
+        try:
+            with cm:
+                try:
+                    yield
+                except BaseException as exc:
+                    body_exception = exc
+                    raise
+        except (PolicyBlock, UseFallback) as exc:
+            if exc is not body_exception:
+                self.host_guard_exception = exc
+            raise
 
     def audit_intent(self, action):
         try:
@@ -181,11 +207,11 @@ class Context:
 
     def fallback(self, reason):
         if self.policy['fallback'] != 'baseline':
-            return self.b['blocked'](self.request, reason)
+            return self.host_operation(self.b['blocked'], self.request, reason)
         with self.guard():
             self.audit_intent(self.baseline)
             self.late(self.baseline, receipt=False)
-            return self.original(self.request)
+            return self.host_operation(self.original, self.request)
 
     def execute(self, action, extra=None):
         fn = self.options.get(action)
@@ -195,7 +221,7 @@ class Context:
             if extra is not None: extra()
             self.late(action, expected=fn)
             # There is deliberately no retry or fallback surrounding this call.
-            return fn(self.request)
+            return self.host_operation(fn, self.request)
 
 
 def _action_a(c):
@@ -258,7 +284,7 @@ def _action_d(c):
         if _items(c, provenance=True) != records: raise PolicyBlock('retrieved_evidence_changed')
         if c.late(action) != c.options[action]: raise PolicyBlock('evidence_selection_changed')
         # Relevance only selects supplied records. It never turns them into facts.
-        return c.b['generate'](c.request, selected)
+        return c.host_operation(c.b['generate'], c.request, selected)
 
 
 def _lookup(value, path):
@@ -293,10 +319,10 @@ def _action_e(c):
         c.audit_intent(c.baseline)
         c.late(c.baseline, receipt=False)
         before = copy.deepcopy(_read(c.b['observe'], c.request))
-        outcome = c.original(c.request)
+        outcome = c.host_operation(c.original, c.request)
         # A completed side effect is never described as rolled back by this handler.
         try: after = copy.deepcopy(_read(c.b['observe'], c.request))
-        except PolicyBlock: return c.b['finish'](c.request, outcome, c.policy['failure_action'])
+        except PolicyBlock: return c.host_operation(c.b['finish'], c.request, outcome, c.policy['failure_action'])
     disposition = c.policy['failure_action']
     try:
         action = c.select({'host': c.evidence(copy.deepcopy(outcome)), 'before': before, 'after': after, 'outcome': outcome})
@@ -306,10 +332,12 @@ def _action_e(c):
             c.late(action)
             if action == c.policy['success_action'] and independently_valid and host_valid:
                 disposition = action
-    except (PolicyBlock, UseFallback):
+    except (PolicyBlock, UseFallback) as exc:
+        if exc is c.host_guard_exception:
+            raise
         pass
     # The host's read-only finishing operation receives the REAL completed outcome.
-    return c.b['finish'](c.request, outcome, disposition)
+    return c.host_operation(c.b['finish'], c.request, outcome, disposition)
 
 
 def _transition_value(c, action, values):
@@ -354,12 +382,14 @@ def _action_g(c):
             with c.guard():
                 c.audit_intent(step)
                 fn = c.late(step, registry=c.b['step_registry'], expected=steps[step])
-                results.append(fn(c.request))
+                results.append(c.host_operation(fn, c.request))
         except PolicyBlock as exc:
+            if exc is c.host_operation_exception or exc is c.host_guard_exception:
+                raise
             if results:
                 raise PartialPlanError(results, step) from exc
             raise
-    return c.b['finish'](c.request, results)
+    return c.host_operation(c.b['finish'], c.request, results)
 
 
 def _action_h(c):
@@ -372,7 +402,7 @@ def _action_h(c):
         c.audit_intent(action)
         if _items(c) != records: raise PolicyBlock('context_changed_after_assessment')
         if c.late(action) != c.options[action]: raise PolicyBlock('retention_option_changed')
-        return c.b['retain'](c.request, selected)
+        return c.host_operation(c.b['retain'], c.request, selected)
 
 
 def _action_i(c):
@@ -381,7 +411,7 @@ def _action_i(c):
         raise PolicyBlock('explicit_effect_state_required')
     if state.get('state') == 'completed':
         c.stable()
-        return c.b['completed'](c.request)
+        return c.host_operation(c.b['completed'], c.request)
     if state.get('state') not in ('not_started', 'unknown') or (state['state'] == 'unknown' and not state['idempotent']):
         raise PolicyBlock('nonidempotent_effect_must_not_be_repeated')
     attempt = _read(c.b['attempt'], c.request)
@@ -422,7 +452,7 @@ def _action_j(c):
             valid = valid and _read(c.b['verify_child'], c.request, action, result) is True
         except PolicyBlock:
             valid = False  # The child already completed; retain its real outcome for inspection.
-        return c.b['finish'](c.request, result, 'accept' if valid else 'inspect')
+        return c.host_operation(c.b['finish'], c.request, result, 'accept' if valid else 'inspect')
     finally:
         slots.release()
 
@@ -475,8 +505,8 @@ def invoke_bound(spec, original, request, bindings):
     try:
         router = _read(bindings['runtime'], request)
         if isinstance(router, SafeRouter) and router.config['mode'] == 'off':
-            return original(request)
-        if isinstance(router, SafeRouter) and router.config['mode'] == 'shadow':
+            pass  # Run the original below, outside the router-signal handlers.
+        elif isinstance(router, SafeRouter) and router.config['mode'] == 'shadow':
             # Evaluate only observational evidence. No treatment handler or host
             # execution gate can change the original return/exception/state here.
             try:
@@ -484,14 +514,25 @@ def invoke_bound(spec, original, request, bindings):
                 c = Context(spec, original, request, bindings, router)
                 if spec['recipe']['id'] != 'python.E': c.select()
             except (PolicyBlock, UseFallback, InputError): pass
-            return original(request)
-        _register_owner(spec, router)
-        c = Context(spec, original, request, bindings, router)
-        return HANDLERS[spec['recipe']['id'].split('.')[-1]](c)
+        else:
+            _register_owner(spec, router)
+            c = Context(spec, original, request, bindings, router)
+            return HANDLERS[spec['recipe']['id'].split('.')[-1]](c)
     except UseFallback as exc:
         if c is not None:
-            try: return c.fallback(str(exc))
-            except PolicyBlock as blocked: return bindings['blocked'](request, str(blocked))
+            if c.host_operation_started:
+                raise
+            try:
+                return c.fallback(str(exc))
+            except PolicyBlock as blocked:
+                if c.host_operation_started:
+                    raise
+                return bindings['blocked'](request, str(blocked))
         return bindings['blocked'](request, 'runtime_fallback_without_context')
     except PolicyBlock as exc:
+        if c is not None and c.host_operation_started:
+            raise
         return bindings['blocked'](request, str(exc))
+    # A host is allowed to raise the same exception classes used internally by
+    # the router. Off/shadow must propagate those exceptions without fallback.
+    return original(request)

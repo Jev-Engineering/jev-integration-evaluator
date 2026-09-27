@@ -99,3 +99,15 @@ This extends, rather than replaces, the original section-by-section map. No scor
 | Support/activation boundaries | `references/executable-integrations.md` | Flat Python modules and explicit registries only; synthetic tests, not live/provider/bootstrap/benefit certification; JS/TS rewriting unsupported |
 
 Repository publication, signed commits, external review/CI and merge are delivery actions, not capabilities inferred from a local plan or test receipt. Consult the current delivery report for actions actually performed.
+
+## dev2 executable-integration safety regressions
+
+| Original requirement | Correction | Executable evidence |
+|---|---|---|
+| Host exceptions and exactly-once effects | Explicit host-operation boundary; baseline outside router catches; real exception through guard | `test_executable_host_boundaries.py`, existing runtime cases |
+| No per-decision runtime/coordinator reconstruction | Bounded ownership tombstones remain after collection | Both dropped-router and dropped-coordinator host-entry tests |
+| Unambiguous parsed bindings before mutation | Parameter scopes, exception/match captures and definition-time expression stores | `test_executable_source_scope.py` |
+| Exact reviewed execution and post-check identity | Plan-hash probe copies; generated-byte/mode/absence recheck; complete failure denominator | `test_executable_verification_identity.py` |
+| Strict receipts and truthful status | Mirrored optional historical-compatible identity field; false-success rejection | Receipt compatibility/forgery tests, existing CLI/status/rollback tests |
+
+Fresh validation belongs to `validation/SAFETY-VALIDATION-1.3.0.dev2.md`. Neither this table nor a local receipt certifies publication, CI, live activation or measured application benefit.

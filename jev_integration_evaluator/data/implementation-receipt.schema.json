@@ -230,6 +230,10 @@
     "contract_digest": {
       "type": "string",
       "pattern": "^[a-f0-9]{64}$"
+    },
+    "file_identity_valid": {
+      "type": "boolean",
+      "description": "Final phase bytes and mode check after scheduled execution. Optional only for historical receipts; not execution authority."
     }
   },
   "required": [
@@ -257,5 +261,26 @@
   ],
   "additionalProperties": false,
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:completetech:jev:implementation-receipt:1.0"
+  "$id": "urn:completetech:jev:implementation-receipt:1.0",
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "file_identity_valid": {
+            "const": false
+          }
+        },
+        "required": [
+          "file_identity_valid"
+        ]
+      },
+      "then": {
+        "properties": {
+          "status": {
+            "const": "failed"
+          }
+        }
+      }
+    }
+  ]
 }

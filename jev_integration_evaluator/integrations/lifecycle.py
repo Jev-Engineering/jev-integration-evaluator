@@ -234,6 +234,8 @@ def _receipt(root, bundle, plan, spec, phase, trusted_sha256=None):
     receipt = read_json(p)
     validate_contract(receipt, 'implementation-receipt')
     verify(receipt)
+    if receipt.get('file_identity_valid') is False and receipt['status']=='passed':
+        raise InputError('Passing execution receipt contradicts its final file identity check')
     if (receipt['bundle_digest'] != plan['contract_digest'] or receipt['phase'] != phase
             or receipt['spec_digest'] != plan['spec_digest'] or receipt['engine_identity'] != plan['engine_identity']
             or receipt['command_definition_digest'] != digest(spec['verification'])
