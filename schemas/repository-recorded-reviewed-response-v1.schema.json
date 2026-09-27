@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:repository-recorded-reviewed-response-v1:1.0",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "adapter": {
+      "const": "recorded-reviewed-input-v1"
+    },
+    "inventory": {
+      "type": "object"
+    },
+    "spec": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "adapter",
+    "inventory",
+    "spec"
+  ],
+  "additionalProperties": false
+}

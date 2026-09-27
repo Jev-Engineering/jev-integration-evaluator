@@ -19,8 +19,37 @@ jev-integration-evaluator repository-run /absolute/target
 It uses the existing bounded static discovery implementation. It imports no target
 module, runs no target commands, creates no session or bundle, and grants no scope.
 It reports the discovery classification rather than interpreting an empty scan as
-proof of no useful placement. A fully source-reviewed negative conclusion is not
-wired into this contribution.
+proof of no useful placement.
+
+Every inspection and session result also contains `next_action_contract`, a
+`repository-next-action-v1` record. Its `code` repeats the existing
+`next_action` string for older callers. `required_inputs` names the missing
+caller-supplied evidence, `authorization` classifies the external authority
+needed, `effect` describes the possible next operation, and `resume_same_run`
+states whether the current session can continue. The record itself grants no
+capability. Unknown codes fail closed. Incomplete path-only coverage asks for
+coverage review rather than source-reviewed implementation inputs.
+
+A path-only invocation can also consume a separately reviewed, complete source
+opinion using `--capabilities`, `--coverage-review`, and independently retained
+`--review-sha256`. Optional `--conclusion-config` and the context's objective and
+discovery policy must match those used to prepare the review. The command calls
+the existing repository conclusion verifier, which re-reads the source and
+rejects drift or an unanchored review. Only its complete negative outcome yields
+`no_useful_placement`; all other outcomes retain the conclusion and request
+review of missing opinions. This path executes no target and creates no session.
+The returned `review_principal_authenticated: false` remains explicit; digest
+equality alone cannot authenticate who supplied the review.
+
+When reviewed implementation inputs are needed, `agent_request` is a strict
+`repository-agent-request-v1` record with run ID (null for path-only inspection),
+repository and report identities, bounded source file hashes and modes, the
+preserved objective and saved answers, and the required response contract. Its
+six capability flags are all false. The compatible recorded adapter response is
+now also described by the mirrored `repository-recorded-reviewed-response-v1`
+schema; its inventory and spec still undergo the existing source, semantic and
+recipe checks before planning. A schema-valid response cannot grant execution,
+egress, installation, publication or activation.
 
 The same command accepts a caller-selected private session directory outside the
 target, an optional context, recorded reviewed inputs, and a separate scope:

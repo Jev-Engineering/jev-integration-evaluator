@@ -29,6 +29,9 @@ from .integrations import lifecycle as engine
 from .integrations.contracts import validate_spec, validate_inventory
 from .integrations.verification import verify_implementation
 from .io import InputError, digest as engine_digest, read_json
+from .repository_actions import next_action_contract
+from .repository_conclusion import conclude_repository, DEFAULT_OBJECTIVE
+from .config import load_config
 
 FORMAT = "repository-session-v1"
 ADAPTER = "recorded-reviewed-input-v1"
@@ -91,13 +94,58 @@ def _file_map(report: dict) -> dict:
     return {row["file"]: dict(sha256=row["sha256"], mode=row["mode"]) for row in report["files"]}
 
 
-def inspect_repository(repo: str | Path, *, context: dict | None = None) -> dict:
+def _agent_request(run_id: str | None, repository_identity: str, report_sha256: str,
+                   context: dict, source_files: dict) -> dict:
+    """Source-bound data to hand to an offline reviewer, never authority."""
+    request = dict(schema_version="1.0", kind="repository-agent-request-v1",
+                   run_id=run_id, repository_identity=repository_identity,
+                   report_sha256=report_sha256, context_sha256=cap._digest(context),
+                   objective=context["objective"], saved_answers=copy.deepcopy(context["saved_answers"]),
+                   source_files=copy.deepcopy(source_files), adapter=ADAPTER,
+                   response_contract="repository-recorded-reviewed-response-v1",
+                   authorization=dict(execution=False, mutation=False, egress=False,
+                                      installation=False, publication=False, activation=False))
+    cap._schema("repository-agent-request-v1", request)
+    return request
+
+
+def inspect_repository(repo: str | Path, *, context: dict | None = None,
+                       capabilities: dict | None = None, coverage_review: dict | None = None,
+                       review_sha256: str | None = None, conclusion_config: dict | None = None) -> dict:
     """Path-only entry: no session, bundle, target import, or target mutation."""
     context = request_context() if context is None else _validate_context(context)
     report = cap.discover_repository(repo, cap.DiscoveryPolicy.from_json(context["policy"]))
+    supplied_conclusion = any(value is not None for value in
+                              (capabilities, coverage_review, review_sha256, conclusion_config))
+    if supplied_conclusion:
+        if capabilities is None or coverage_review is None or review_sha256 is None:
+            raise SessionError("complete_conclusion_inputs_required")
+        conclusion = conclude_repository(
+            repo, capabilities, load_config() if conclusion_config is None else conclusion_config,
+            objective=context["objective"] or DEFAULT_OBJECTIVE,
+            review=coverage_review, expected_review_sha256=review_sha256,
+            policy=cap.DiscoveryPolicy.from_json(context["policy"]))
+        if conclusion["outcome"] == "no_useful_placement":
+            action = "no_further_placement_action"
+        else:
+            action = "review_repository_conclusion_and_missing_opinions"
+        return dict(schema_version="1.0", kind="repository-run-inspection-v1",
+                    status=conclusion["outcome"], context_sha256=cap._digest(context),
+                    report=report, conclusion=conclusion, next_action=action,
+                    next_action_contract=next_action_contract(action),
+                    agent_request=None,
+                    target_executed=False, target_modified=False,
+                    runtime_activation_authorized=False, benefit_demonstrated=False)
+    action = ("resolve_scan_coverage_before_implementation"
+              if not report["coverage"]["complete_within_policy"]
+              else "supply_source_reviewed_inputs")
     return dict(schema_version="1.0", kind="repository-run-inspection-v1",
                 status=report["discovery_outcome"], context_sha256=cap._digest(context),
-                report=report, next_action="supply_source_reviewed_inputs",
+                report=report, next_action=action,
+                next_action_contract=next_action_contract(action),
+                agent_request=(_agent_request(None, report["repository_identity"],
+                    report["report_sha256"], context, _file_map(report))
+                    if action == "supply_source_reviewed_inputs" else None),
                 target_executed=False, target_modified=False,
                 runtime_activation_authorized=False, benefit_demonstrated=False)
 
@@ -116,6 +164,7 @@ def _prepared(value: Any) -> dict:
     _exact(value, {"schema_version", "adapter", "inventory", "spec"}, "invalid_prepared_response")
     if value["schema_version"] != "1.0" or value["adapter"] != ADAPTER:
         raise SessionError("unsupported_agent_adapter")
+    cap._schema("repository-recorded-reviewed-response-v1", value)
     try:
         value["spec"] = validate_spec(value["spec"])
     except (InputError, KeyError, TypeError, ValueError, RecursionError):
@@ -340,6 +389,10 @@ def _summary(journal: Journal, status: str, next_action: str, **extra: Any) -> d
                 run_id=state["run_id"], session_head_sha256=journal.head,
                 context_sha256=state["context_sha256"], repository_identity=state["repository_identity"],
                 stage=state["stage"], pending_operation=state["pending"], next_action=next_action,
+                next_action_contract=next_action_contract(next_action),
+                agent_request=(_agent_request(state["run_id"], state["repository_identity"],
+                    state["initial_report_sha256"], state["context"], state["source_files"])
+                    if next_action == "supply_recorded_source_reviewed_inventory_and_spec" else None),
                 bundle_digest=state["bundle"]["digest"] if state["bundle"] else None,
                 receipt_references=copy.deepcopy(state["receipts"]), attempts=copy.deepcopy(state["attempts"]),
                 failed_attempts=len(state["failures"]),
@@ -730,6 +783,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("repo", type=Path)
     parser.add_argument("--session", type=Path)
     parser.add_argument("--context", type=Path)
+    parser.add_argument("--capabilities", type=Path)
+    parser.add_argument("--coverage-review", type=Path)
+    parser.add_argument("--review-sha256")
+    parser.add_argument("--conclusion-config", type=Path)
     parser.add_argument("--prepared", type=Path)
     parser.add_argument("--bundle", type=Path)
     parser.add_argument("--scope", type=Path)
@@ -743,8 +800,14 @@ def main(argv: list[str] | None = None) -> int:
         if args.session is None:
             if any((args.prepared, args.bundle, args.scope, args.cancel, args.retry, args.recover, args.stop_after)):
                 raise SessionError("explicit_external_session_required")
-            result = inspect_repository(args.repo, context=context)
+            result = inspect_repository(args.repo, context=context,
+                capabilities=_external(args.capabilities, args.repo) if args.capabilities else None,
+                coverage_review=_external(args.coverage_review, args.repo) if args.coverage_review else None,
+                review_sha256=args.review_sha256,
+                conclusion_config=_external(args.conclusion_config, args.repo) if args.conclusion_config else None)
         else:
+            if any((args.capabilities, args.coverage_review, args.review_sha256, args.conclusion_config)):
+                raise SessionError("conclusion_inputs_are_path_only")
             result = run_repository(args.repo, args.session, context=context,
                 prepared=_external(args.prepared, args.repo) if args.prepared else None,
                 bundle=args.bundle, scope=_external(args.scope, args.repo) if args.scope else None,
