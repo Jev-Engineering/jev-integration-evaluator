@@ -1,5 +1,7 @@
 # Authorized integration playbook
 
+For development of scripts that generate and verify host call-site edits, see [the executable implementation engineering prompt](executable-implementation-prompt.md). The current commands below provide adapter generation and exact patch application; the prompt describes the missing orchestration and transformations as future work.
+
 ## Establish the baseline first
 
 Read the candidate's exact source/hash, callers, consumers, policy and tests. Determine the actual objective, legal choices and available evidence. Reject a placement when exact checks suffice. Record current behavior and observable postconditions before changing code. Running repository tests executes arbitrary code; obtain separate execution scope and use isolation for untrusted projects.

@@ -6,6 +6,8 @@ A reusable agent skill and Python command-line toolkit for deciding **where JEV 
 
 The skill, Python distribution, and console command are named `jev-integration-evaluator`. The Python module is `jev_integration_evaluator`.
 
+The [executable implementation engineering prompt](references/executable-implementation-prompt.md) reviews the current adapter and patch tooling and specifies the source transformations, host wiring, and verification needed for automated implementations. It is a development specification; its proposed commands are not yet implemented.
+
 The default is deliberately conservative: **read-only analysis; no network; runtime off; no target code execution; no automatic adoption**. An unfamiliar repository can produce “no justified integration set.” That is a successful result, not an error.
 
 ## New in 1.2
