@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0",
+  "evidence_kind": "synthetic_independent_oracle",
+  "source_sha256": {
+    "main.py": "febba000726f5cc2a8fcc317e0a1b724a2d3a170479f4fc40c01598f1a7ada3f",
+    "service.py": "b31e26f882c3beb5a045b2bc7e952dbe163fb67691e5407966829aba6ae3b67e"
+  }
+}
