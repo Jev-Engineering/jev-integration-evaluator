@@ -11,6 +11,8 @@
   provider qualification, production activation or measured benefit.
 - Add strict mirrored schemas, a fresh synthetic demonstration, installed-wheel
   and adversarial checks, and the dev9 validation record.
+- Keep release ZIP manifest paths in the same portable order as the checksum
+  rebuilder, so building an archive preserves the validated release manifest.
 
 ## 1.3.0.dev8 — reviewed repository-scope outcomes
 

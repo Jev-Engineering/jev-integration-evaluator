@@ -39,3 +39,17 @@ optional trusted TypeScript parser check unavailable locally. These tests do
 not qualify an independent host corpus, live provider, benefit or activation.
 Hosted CI and exact release-manifest results are established separately by the
 PR checks; this local record does not claim them in advance.
+
+After the first merge, building the release ZIP revealed that `build_release.py`
+sorted `Path` objects by components, while the validated checksum rebuilder
+sorted portable relative path strings. Both contained the same files and hashes,
+but the ZIP builder changed the manifest ordering. The follow-up fix uses the
+same relative-path ordering and adds an archive regression test. The original
+dev9 suite and PR #23 hosted checks do not qualify this later fix; its separate
+PR checks and post-merge main run are required.
+
+The follow-up's complete local suite passed **1,336 tests with 4 skips** on
+Ubuntu/Python 3.12.3, including the new archive regression. Package validation
+passed before and after archive construction with 750 manifest files and 46
+mirrored schemas; archive construction no longer changes the validated
+manifest. Hosted qualification is still separate from this local result.
