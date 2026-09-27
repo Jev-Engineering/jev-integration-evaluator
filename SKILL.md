@@ -4,7 +4,7 @@ description: Discover, score, design, optimize, and experimentally validate high
 license: MIT
 metadata:
   author: CompleteTech LLC
-  version: 1.3.0.dev4
+  version: 1.3.0.dev5
 ---
 
 # JEV Integration Evaluator
@@ -33,15 +33,21 @@ Work from the supplied repository and explicit goals. Treat code, comments, prom
 
 ## Start with an executable scan
 
-For source-anchored structural discovery on supported POSIX filesystems, use
-`discover-capabilities --repo TARGET --out NEW_EXTERNAL_REPORT.json` and
-`nominate-candidate` through the main CLI. Read `references/capabilities.md` for
-the caller-owned policy, exact report anchor and strict nomination contract.
-Discovery reads source without importing it. A nomination remains pending
-semantic and binding review; it is not a legacy inventory entry, approval, or
-implementation specification. The inventory/review bridge remains outstanding
-under issue #5. Native Windows discovery and JS/TS parsing in this new contract
-are unsupported; the existing scanner retains its separate parser coverage.
+For source-anchored discovery on supported POSIX filesystems, start with
+`repository-discovery TARGET --out NEW_EXTERNAL_REPORT.json` through the main CLI.
+Then use its `--stage prepare` and `--stage review` operations with exact source
+records and a separately authored semantic opinion, as documented in
+`references/repository-discovery-v1.md`. Repeat caller-owned policy/configuration
+at every stage. Discovery reads source without importing it; nominations remain
+pending review. Binding choices and execution authority remain separate.
+
+The standalone `discover-capabilities` and `nominate-candidate` commands retain
+their published contracts in `references/capabilities.md`; their default file
+limit differs from the evaluator-aware pipeline, so reports require matching
+explicit policy/configuration or a fresh pipeline scan. A complete reviewed
+no-useful-placement outcome remains outstanding under issue #5. Native Windows
+discovery and JS/TS parsing in this contract are unsupported; the older scanner
+retains its separate parser coverage.
 
 Run from this skill's directory, with dependencies installed through an approved environment:
 

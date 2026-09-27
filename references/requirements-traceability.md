@@ -125,13 +125,24 @@ Historical dev2 validation remains in `validation/SAFETY-VALIDATION-1.3.0.dev2.m
 
 The historical dev3 release record is `validation/SAFETY-VALIDATION-1.3.0.dev3.md`. Local evidence is not hosted CI, independent PR approval, live provider validation, production activation or measured benefit.
 
-## 1.3.0.dev4 partial discovery delivery
+## Historical 1.3.0.dev4 partial discovery delivery
 
-Roadmap issue #5 gains `capabilities.py`, `discover-capabilities`,
+At dev4, roadmap issue #5 gained `capabilities.py`, `discover-capabilities`,
 `nominate-candidate`, three mirrored contracts, source-linked synthetic examples
 and `tests/test_capabilities*.py`. These cover bounded source discovery and fresh
 nomination admission without target execution. The existing semantic-review and
-inventory pipeline does not yet consume admitted nominations; issue #5 remains
-open. The repository command and later roadmap capabilities remain outstanding.
-The support contract is `references/capabilities.md`; current execution evidence
+inventory pipeline did not yet consume admitted nominations; issue #5 remained
+open. The dev5 section below records the subsequent bridge delivery.
+The support contract is `references/capabilities.md`; historical execution evidence
 is `validation/DISCOVERY-VALIDATION-1.3.0.dev4.md`.
+
+## Source-matched review bridge (1.3.0.dev5)
+
+Issue #5 now has read-only discover/prepare/review stages in the installed CLI.
+`nomination_inventory.py` reuses dev4 capability discovery and the original
+inventory/review constructors, binds engine/source/policy identity, and preserves
+eligibility for heuristic and nominated candidates. Three mirrored contracts,
+source-linked examples, CLI/adversarial tests and installed-wheel qualification
+cover the bridge. The complete reviewed no-useful-placement outcome remains
+outstanding; issues #4 and #6–#15 retain their separate requirements. See
+`references/repository-discovery-v1.md` and the dev5 validation record.

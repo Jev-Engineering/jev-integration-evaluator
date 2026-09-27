@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.3.0.dev5 — source-matched inventory and semantic review
+
+- Add read-only `repository-discovery` discover/prepare/review stages to the installed CLI, with mandatory private external output and redacted status/error summaries.
+- Reuse dev4 discovery and the existing candidate, scoring and review constructors. Bind preparation to the complete source snapshot, policy, parser and bridge implementation. Reject stale or caller-forged inventories.
+- Apply deterministic and hard-real-time exclusions to every candidate, including heuristic discoveries. Semantic reviews cannot add measured estimates, weaken exclusions, approve bindings or authorize execution/activation.
+- Add three mirrored inventory/review contracts, source-linked synthetic examples, adversarial regression tests and installed-wheel pipeline qualification. Preserve all dev4 discovery contracts and source/platform guardrails.
+- Integrate the partial checkpoint without replacing the published analyzer with its older alternate implementation. Issue #5 and the wider implementation roadmap remain open; a complete reviewed no-useful-placement conclusion remains outstanding.
+- Qualification is recorded in `validation/SEMANTIC-BRIDGE-VALIDATION-1.3.0.dev5.md`. Discovery and the review demonstration execute no target code; existing implementation demonstrations remain synthetic host-wiring evidence.
+
 ## 1.3.0.dev4 — source-bound discovery and nominations
 
 - Integrate the supplied issue #5 checkpoint into the complete evaluator. Add bounded read-only Python capability discovery, opaque-name source/AST anchors, package/test/configuration sightings, static registry possibilities and explicit incomplete-coverage outcomes.

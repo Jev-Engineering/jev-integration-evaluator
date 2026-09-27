@@ -1,0 +1,93 @@
+"""Read-only discovery, inventory preparation and source-matched semantic review.
+
+This command does not execute targets, implement the #4 mutation lifecycle,
+activate a provider or publish Git. Supplied configuration and reviews are data.
+"""
+from __future__ import annotations
+
+import argparse
+import copy
+from dataclasses import asdict
+import json
+from pathlib import Path
+
+from . import capabilities as cap
+from .config import DEFAULT
+from .io import InputError
+from .nomination_inventory import (MAX_RECORD_BYTES, _settings, discover_repository_capabilities,
+                                   prepare_nominated_inventory, review_nominated_inventory)
+
+
+class _ArgumentParser(argparse.ArgumentParser):
+    def error(self, message):
+        # Argument-parser messages can contain private paths or review text.
+        print(json.dumps({'status': 'blocked', 'reason': 'invalid_command_arguments'}))
+        raise SystemExit(2)
+
+
+def add_arguments(parser):
+    parser.add_argument('repo', help='Repository to read without importing target code')
+    parser.add_argument('--stage', choices=('discover', 'prepare', 'review'), default='discover')
+    parser.add_argument('--out', required=True, help='New private JSON file outside the target')
+    parser.add_argument('--config', help='External complete evaluator configuration as JSON data')
+    parser.add_argument('--policy', help='External published discovery-policy JSON')
+    parser.add_argument('--capabilities', help='Prior source-bound capability report JSON')
+    parser.add_argument('--nominations', help='JSON array of published source-bound nominations')
+    parser.add_argument('--prepared', help='Unreviewed inventory preparation JSON')
+    parser.add_argument('--review', help='Source-bound semantic-review JSON; not execution authority')
+
+
+def _external_data(path, repo):
+    # Check resolved location but read the original path with the canonical
+    # descriptor-relative no-follow loader, so links cannot bypass the check.
+    try:
+        root, external = Path(repo).resolve(strict=True), Path(path).resolve(strict=True)
+    except (OSError, RuntimeError):
+        raise cap.CapabilityError('input_unavailable_or_invalid') from None
+    if external == root or root in external.parents:
+        raise cap.CapabilityError('configuration_must_be_external')
+    return cap._load(Path(path))
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = _ArgumentParser(description=__doc__)
+    add_arguments(parser)
+    args = parser.parse_args(argv)
+    try:
+        present = {k for k in ('capabilities', 'nominations', 'prepared', 'review') if getattr(args, k)}
+        required = {'discover': set(), 'prepare': {'capabilities', 'nominations'},
+                    'review': {'capabilities', 'prepared', 'review'}}[args.stage]
+        if present != required:
+            raise cap.CapabilityError('stage_input_mismatch')
+        cfg = _external_data(args.config, args.repo) if args.config else copy.deepcopy(DEFAULT)
+        policy = None
+        if args.policy:
+            supplied = _external_data(args.policy, args.repo)
+            if type(supplied) is not dict:
+                raise cap.CapabilityError('invalid_discovery_policy')
+            defaults = json.loads(cap._json(asdict(_settings(cfg, None)[1])))
+            policy = cap.DiscoveryPolicy.from_json({**defaults, **supplied})
+        if args.stage == 'discover':
+            result = discover_repository_capabilities(args.repo, cfg, policy=policy)
+        else:
+            report = cap._load(Path(args.capabilities), max_bytes=MAX_RECORD_BYTES)
+            if args.stage == 'prepare':
+                nominations = cap._load(Path(args.nominations), max_bytes=MAX_RECORD_BYTES)
+                result = prepare_nominated_inventory(args.repo, report, nominations, cfg, policy=policy)
+            else:
+                prepared = cap._load(Path(args.prepared), max_bytes=MAX_RECORD_BYTES)
+                review = cap._load(Path(args.review), max_bytes=MAX_RECORD_BYTES)
+                result = review_nominated_inventory(args.repo, report, prepared, review, cfg, policy=policy)
+        if len(cap._json(result)) + 1 > MAX_RECORD_BYTES:
+            raise cap.CapabilityError('inventory_bridge_byte_bound')
+        cap._write_out(Path(args.out), Path(args.repo), result)
+        print(json.dumps({'status': 'written', 'artifact_sha256': cap._digest(result)}))
+        return 0
+    except (cap.CapabilityError, InputError, OSError, ValueError, TypeError, KeyError, RecursionError) as exc:
+        reason = exc.code if isinstance(exc, cap.CapabilityError) else 'invalid_repository_discovery_input'
+        print(json.dumps({'status': 'blocked', 'reason': reason}))
+        return 2
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())
