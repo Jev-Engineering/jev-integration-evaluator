@@ -1,0 +1,13 @@
+flowchart TD
+  %% Display capped at 200 nodes; architecture.json contains the full bounded map.
+  Nf9f40d2762["agent.py::dispatch_once"]
+  N2b41106b5d["agent.py::run_steps"]
+  N457ea7b80b["agent.py::retain_history"]
+  N76ece2dde2["agent.py::distribute"]
+  Nc5add245c8["agent.py::review_change"]
+  N46fbe6d76a["agent.py::publish_proposal"]
+  N5f28b78278["agent.py:: module "]
+  N8dfad210cc["test_agent.py::test_unregistered_action_does_not_execute"]
+  Nda55a9769c["test_agent.py::test_unregistered_action_does_not_execute.LLM.choose"]
+  Ne2c65267da["test_agent.py::test_unregistered_action_does_not_execute.Executor.execute_tool"]
+  N8dfad210cc --> Nf9f40d2762

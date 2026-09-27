@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:experiment:1.0",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "scan_fingerprint": {
+      "type": "string"
+    },
+    "candidate_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "primary_metric": {
+      "type": "string"
+    },
+    "minimum_useful_effect": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "assignment_unit": {
+      "type": "string"
+    },
+    "pairing_keys": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "arms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "split_policy": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "validation": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "scan_fingerprint",
+    "candidate_ids",
+    "primary_metric",
+    "minimum_useful_effect",
+    "assignment_unit",
+    "pairing_keys",
+    "arms",
+    "split_policy",
+    "status",
+    "validation"
+  ],
+  "additionalProperties": false
+}

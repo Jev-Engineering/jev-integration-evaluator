@@ -1,0 +1,265 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:monitor:1.2",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.2"
+    },
+    "kind": {
+      "const": "frozen_monitor"
+    },
+    "frozen_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "specification": {
+      "type": "object",
+      "properties": {
+        "deployment_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "study_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "runtime_contracts": {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 128,
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "window_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_type": {
+          "enum": [
+            "observed",
+            "synthetic"
+          ]
+        },
+        "starts_at": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ends_at": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reporting_grace_s": {
+          "type": "number",
+          "minimum": 0
+        },
+        "max_report_age_s": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "minimum_tasks_per_arm": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "minimum_action_observations": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "assignment_salt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "canary_fraction": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "exclusiveMaximum": 1
+        },
+        "tasks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "task_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "task_hash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "cluster_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "cohort": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "task_id",
+              "task_hash",
+              "cluster_id",
+              "cohort"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 2,
+          "maxItems": 100000
+        },
+        "required_cohorts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0,
+          "maxItems": 100,
+          "uniqueItems": true
+        },
+        "action_reference": {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 255,
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "limits": {
+          "type": "object",
+          "properties": {
+            "unsafe_actions": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "failure_rate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "timeout_rate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "failure_rate_increase": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "p95_added_latency_ms": {
+              "type": "number",
+              "minimum": 0
+            },
+            "mean_added_cost": {
+              "type": "number",
+              "minimum": 0
+            },
+            "fallback_rate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "action_distribution_tv": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": [
+            "unsafe_actions",
+            "failure_rate",
+            "timeout_rate",
+            "failure_rate_increase",
+            "p95_added_latency_ms",
+            "mean_added_cost",
+            "fallback_rate",
+            "action_distribution_tv"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "deployment_id",
+        "study_digest",
+        "runtime_contracts",
+        "window_id",
+        "evidence_type",
+        "starts_at",
+        "ends_at",
+        "reporting_grace_s",
+        "max_report_age_s",
+        "minimum_tasks_per_arm",
+        "minimum_action_observations",
+        "assignment_salt",
+        "canary_fraction",
+        "tasks",
+        "required_cohorts",
+        "action_reference",
+        "limits"
+      ],
+      "additionalProperties": false
+    },
+    "assignments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "task_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "cluster_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "cohort": {
+            "type": "string",
+            "minLength": 1
+          },
+          "arm": {
+            "enum": [
+              "baseline",
+              "jev"
+            ]
+          }
+        },
+        "required": [
+          "task_id",
+          "task_hash",
+          "cluster_id",
+          "cohort",
+          "arm"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 2,
+      "maxItems": 100000
+    },
+    "authorization": {
+      "const": "no_network_no_execution_no_exposure_expansion"
+    },
+    "contract_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  },
+  "required": [
+    "schema_version",
+    "kind",
+    "frozen_at",
+    "specification",
+    "assignments",
+    "authorization",
+    "contract_digest"
+  ],
+  "additionalProperties": false
+}

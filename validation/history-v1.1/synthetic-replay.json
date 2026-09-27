@@ -1,0 +1,40 @@
+{
+  "decision_count": 1,
+  "evaluated": 1,
+  "evaluation_failures": 0,
+  "agreement_rate": 0.0,
+  "labeled_decisions": 1,
+  "decision_accuracy_rescues": 1,
+  "decision_accuracy_regressions": 0,
+  "decision_accuracy_denominator_note": "Only successfully evaluated labeled decisions; report failures separately, do not hide missing outcomes.",
+  "downstream_task_success": "not identifiable from decision replay alone",
+  "decisions": [
+    {
+      "decision_id": "synthetic-decision-001",
+      "source_location": {
+        "file": "synthetic-fixture.py",
+        "source_sha256": "2aae6ca4f909bc804bf34563a1c948d72b55861abe3f118444b95b6b8224c521",
+        "symbol": "route"
+      },
+      "state_hash": "d3ea7f1e6a62a4ac0450c40ce9922e5781063e8c4c6fd3b166050da7c983adb2",
+      "questions_hash": "9921d597447919a2db04167f25f9479137445eea7dbdab23ccb317655e403d0f",
+      "baseline_decision": "stop",
+      "evidence_type": "synthetic",
+      "jev_decision": "inspect",
+      "probabilities": {
+        "inspect": 0.95,
+        "stop": 0.02,
+        "uncertain": 0.03
+      },
+      "provider_confidence": 0.8,
+      "agreement": false,
+      "usage": {
+        "input_tokens": 200,
+        "output_tokens": 0
+      },
+      "status": "evaluated",
+      "baseline_correct": false,
+      "jev_correct": true
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:threshold-spec:1.1",
+  "type": "object",
+  "properties": {
+    "probability_floor": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "confidence_floor": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "action_probability_floors": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      }
+    },
+    "abstention_labels": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "maximum_error": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "alpha": {
+      "type": "number",
+      "minimum": 1e-10,
+      "maximum": 0.5
+    },
+    "minimum_accepted": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "required_subgroups": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "holdout_schedule": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "observation_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "task_hash": {
+            "type": "string",
+            "minLength": 1
+          },
+          "cluster_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "subgroup": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "observation_id",
+          "task_hash",
+          "cluster_id",
+          "subgroup"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 100000
+    }
+  },
+  "required": [
+    "probability_floor",
+    "confidence_floor",
+    "action_probability_floors",
+    "abstention_labels",
+    "maximum_error",
+    "alpha",
+    "minimum_accepted",
+    "required_subgroups",
+    "holdout_schedule"
+  ],
+  "additionalProperties": false
+}

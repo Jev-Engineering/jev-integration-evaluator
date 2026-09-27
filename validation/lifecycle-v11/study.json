@@ -1,0 +1,699 @@
+{
+  "schema_version": "1.1",
+  "kind": "paired_study",
+  "frozen_at": "2026-09-26T09:48:28.524889+00:00",
+  "specification": {
+    "experiment_id": "synthetic-v11-demo",
+    "dataset_id": "synthetic-placement-demo-v1",
+    "evidence_type": "synthetic",
+    "primary_metric": "success",
+    "schedule": [
+      {
+        "task_id": "synthetic-task-000",
+        "replicate": 0,
+        "task_hash": "61a13f14af9cd97b2aa5d5217635374d5cf2ce58ab136e793430c134def5a9b0",
+        "cluster_id": "synthetic-task-000",
+        "seed": 731,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-001",
+        "replicate": 0,
+        "task_hash": "57f42bf9b614e4ed42d91cb21a00831d765dfd0ee504dd09c305b1a80766f430",
+        "cluster_id": "synthetic-task-001",
+        "seed": 732,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-002",
+        "replicate": 0,
+        "task_hash": "92059b98370aecdf82d20f4f42407dc056c753a751419b5f15f2413b634938e8",
+        "cluster_id": "synthetic-task-002",
+        "seed": 733,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-003",
+        "replicate": 0,
+        "task_hash": "594771a1678bd309cfc4e48c14b9e53ae7344c9a03ca10282fca5e034cbd35cc",
+        "cluster_id": "synthetic-task-003",
+        "seed": 734,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-004",
+        "replicate": 0,
+        "task_hash": "7f1341b6c64ae9df05ff2ed0ef67071960b29df8444e3f42e0c03a5d18976ffe",
+        "cluster_id": "synthetic-task-004",
+        "seed": 735,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-005",
+        "replicate": 0,
+        "task_hash": "a47038b4cc87cdd790bdee389d4801fd4d71de2d3f4d772dd3da36fa105c85c2",
+        "cluster_id": "synthetic-task-005",
+        "seed": 736,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-006",
+        "replicate": 0,
+        "task_hash": "55192c551cdc111537c7ae914a3e71b2e33d6178a23ffbce90136ade0da007ef",
+        "cluster_id": "synthetic-task-006",
+        "seed": 737,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-007",
+        "replicate": 0,
+        "task_hash": "82e197210e2f08c17e06baac0a2c45318731fadedfa1819dcc98bcd4b5fd7cee",
+        "cluster_id": "synthetic-task-007",
+        "seed": 738,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-008",
+        "replicate": 0,
+        "task_hash": "225de32173090a43c8d1d896f128280fc3b6226d22e88ca9314263a207834343",
+        "cluster_id": "synthetic-task-008",
+        "seed": 739,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-009",
+        "replicate": 0,
+        "task_hash": "3f6d6ffe224ee6e8ecff35f1ab9a69f74c029329ff46a562eb507d3e8bae119b",
+        "cluster_id": "synthetic-task-009",
+        "seed": 740,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-010",
+        "replicate": 0,
+        "task_hash": "2b8e7afda2754f13582a42bae961f2688354dcd640c16c09fb32de9e7a9a562a",
+        "cluster_id": "synthetic-task-010",
+        "seed": 741,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-011",
+        "replicate": 0,
+        "task_hash": "24e340c1c1691ed1a326978f219983afb7b0fde7d73aba5536e2f638f673d3aa",
+        "cluster_id": "synthetic-task-011",
+        "seed": 742,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-012",
+        "replicate": 0,
+        "task_hash": "e4c3b9981df5381e57777fe5fbe6bb93964799b47568e3894295eafd73d9201d",
+        "cluster_id": "synthetic-task-012",
+        "seed": 743,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-013",
+        "replicate": 0,
+        "task_hash": "b69556743ee0fbacf0466f75538950bf1b5537e0bbcd79125bff723cf75d6f05",
+        "cluster_id": "synthetic-task-013",
+        "seed": 744,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-014",
+        "replicate": 0,
+        "task_hash": "8d3a182b39ea0bb8f5d68d24c11b0d95c6c0eeb5399c4b7ff2f150961bdfdb4b",
+        "cluster_id": "synthetic-task-014",
+        "seed": 745,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-015",
+        "replicate": 0,
+        "task_hash": "df08c938a855e5b939888c2dbea68d309ae3b80e7d9527146f64bcd5915bdde1",
+        "cluster_id": "synthetic-task-015",
+        "seed": 746,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-016",
+        "replicate": 0,
+        "task_hash": "5ad44c6e999947c41e70d5e5197da9fc4d6ce6f372e6b00c47f961dade7a3501",
+        "cluster_id": "synthetic-task-016",
+        "seed": 747,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-017",
+        "replicate": 0,
+        "task_hash": "65c18c78395c4e54643d73949f438ecdf85270757026ce99ad66f2163040ccc2",
+        "cluster_id": "synthetic-task-017",
+        "seed": 748,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-018",
+        "replicate": 0,
+        "task_hash": "d85a98528da88df9ea6c5ed5a6c74fe65e2cfad2b35c34d2fb556c6eab1002d6",
+        "cluster_id": "synthetic-task-018",
+        "seed": 749,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-019",
+        "replicate": 0,
+        "task_hash": "29133d6a548527b10decbb6b4952a478b5e37f8f0b7b1d07b68b4b9f8d9d6f7a",
+        "cluster_id": "synthetic-task-019",
+        "seed": 750,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-020",
+        "replicate": 0,
+        "task_hash": "96a688709306aeae54070d087e4506b8dd2e777c410dd216895dbd6475a1e85b",
+        "cluster_id": "synthetic-task-020",
+        "seed": 751,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-021",
+        "replicate": 0,
+        "task_hash": "abd848bc1fd657a7c96d6f50ee2157198ed3e336b2814e42d0e46f23a7737ce7",
+        "cluster_id": "synthetic-task-021",
+        "seed": 752,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-022",
+        "replicate": 0,
+        "task_hash": "39a8dd7084cc9748b2e2059e07d8be29a846cfefb4fd0bc41198d271a1040ddf",
+        "cluster_id": "synthetic-task-022",
+        "seed": 753,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-023",
+        "replicate": 0,
+        "task_hash": "64e34890261a7c74a0169b7d03ae4208c61689f50405a1abe49b724200e85f1b",
+        "cluster_id": "synthetic-task-023",
+        "seed": 754,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-024",
+        "replicate": 0,
+        "task_hash": "504c7006b71144f63cd303d2feaf30332cdcc52d7e322ece9286f4d340f6f3eb",
+        "cluster_id": "synthetic-task-024",
+        "seed": 755,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-025",
+        "replicate": 0,
+        "task_hash": "2aa02bc226d09db8178c2c2f383c1bb85ac45a949e782bd95317173c6837e4df",
+        "cluster_id": "synthetic-task-025",
+        "seed": 756,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-026",
+        "replicate": 0,
+        "task_hash": "d9f9a3a7f409b85b01b8325624fb0e7c20918a880c37b78cb6e2208dd8fa2723",
+        "cluster_id": "synthetic-task-026",
+        "seed": 757,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-027",
+        "replicate": 0,
+        "task_hash": "4fd9ca273d524076035590fe508f1f3e2724628fd63b7769edbf9a832751dfd7",
+        "cluster_id": "synthetic-task-027",
+        "seed": 758,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-028",
+        "replicate": 0,
+        "task_hash": "a129a79194afb439ab667cd74754cd2ed48a22dc740d9078871dc2aebb065460",
+        "cluster_id": "synthetic-task-028",
+        "seed": 759,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-029",
+        "replicate": 0,
+        "task_hash": "66bd37203f97daa0cc5a4647bba63210a8a8867e3a0f7ece7c7f578485563296",
+        "cluster_id": "synthetic-task-029",
+        "seed": 760,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-030",
+        "replicate": 0,
+        "task_hash": "717d7417775630a4e17ffadd8fc1f093e823974d7558357d8cbb0893c64a10c3",
+        "cluster_id": "synthetic-task-030",
+        "seed": 761,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-031",
+        "replicate": 0,
+        "task_hash": "2e8eedb50607590a0f158b707a82f755402b0b5718f8b0b6da0b169445afbd5d",
+        "cluster_id": "synthetic-task-031",
+        "seed": 762,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-032",
+        "replicate": 0,
+        "task_hash": "dbe6e8bcc8d7a8e3c74c96ecca2843a19ce6c5db3684f4a4f44430b9c0aa6b89",
+        "cluster_id": "synthetic-task-032",
+        "seed": 763,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-033",
+        "replicate": 0,
+        "task_hash": "bd6ade4ff933819e298263427789d2a4d349363298be313ac3d7c60966bb06a2",
+        "cluster_id": "synthetic-task-033",
+        "seed": 764,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-034",
+        "replicate": 0,
+        "task_hash": "171106c0ebf25e5f131d4a78f80fae025e91c36571b3d4d24b4a9aa006dac6eb",
+        "cluster_id": "synthetic-task-034",
+        "seed": 765,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-035",
+        "replicate": 0,
+        "task_hash": "a553a7ca451802787e1e088ba5f9be56da91a01c751ca58a26ade071d18d66c8",
+        "cluster_id": "synthetic-task-035",
+        "seed": 766,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-036",
+        "replicate": 0,
+        "task_hash": "5b73c703ca8a29ba9e79b812fab81d5ad156a57a07c0f268267825e101659311",
+        "cluster_id": "synthetic-task-036",
+        "seed": 767,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-037",
+        "replicate": 0,
+        "task_hash": "e2ebc0fd502c67650caef0238e5438065c0eb21914fc370aa59b3d4ea89acbf7",
+        "cluster_id": "synthetic-task-037",
+        "seed": 768,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-038",
+        "replicate": 0,
+        "task_hash": "735127895a5b0dfd2c222127e424b4d91057fc8b3e77fc118677c22d1a703697",
+        "cluster_id": "synthetic-task-038",
+        "seed": 769,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-039",
+        "replicate": 0,
+        "task_hash": "65d5317426485baa9ca8d6d361c5947fe9f794289e9045c4725e8004371819bc",
+        "cluster_id": "synthetic-task-039",
+        "seed": 770,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-040",
+        "replicate": 0,
+        "task_hash": "faef865ccbbba980d862f732534d4b0f1038d7d1ab7dff94050c8b45d8dd52cb",
+        "cluster_id": "synthetic-task-040",
+        "seed": 771,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-041",
+        "replicate": 0,
+        "task_hash": "1e94fcb4b85288a7b712366c4a76162f9ca255e97416837cb3db72694981140e",
+        "cluster_id": "synthetic-task-041",
+        "seed": 772,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-042",
+        "replicate": 0,
+        "task_hash": "77350b1f70a421dcc5c77cb437c1afb036187bac40fbde2fc1ebcc3db4d72872",
+        "cluster_id": "synthetic-task-042",
+        "seed": 773,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-043",
+        "replicate": 0,
+        "task_hash": "17a20b49a46dc00cc03901fa2abd53095f387c7ee0b3dff84ae9e26d83e5e6d1",
+        "cluster_id": "synthetic-task-043",
+        "seed": 774,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-044",
+        "replicate": 0,
+        "task_hash": "b299497d4ce2e8cc4f921a153950c958c2e59c7c1b8aeaab4b27f5d7d011684c",
+        "cluster_id": "synthetic-task-044",
+        "seed": 775,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-045",
+        "replicate": 0,
+        "task_hash": "ece938a3164fb527f007760bc73e9a830fe153c20ad32899398f4c6092661cd9",
+        "cluster_id": "synthetic-task-045",
+        "seed": 776,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-046",
+        "replicate": 0,
+        "task_hash": "756407edfdc5036958d036ce815c0d5d36732e9a72a81f6af9342f91fb09a439",
+        "cluster_id": "synthetic-task-046",
+        "seed": 777,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-047",
+        "replicate": 0,
+        "task_hash": "573a98cec3a69f75b92539d486d60b55fe2d57c3482fb8107ce397f61a31e30c",
+        "cluster_id": "synthetic-task-047",
+        "seed": 778,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-048",
+        "replicate": 0,
+        "task_hash": "a694a28a703356f948765d9efa32261f08d8ccd9a6af1f98237e216a5c3b6a75",
+        "cluster_id": "synthetic-task-048",
+        "seed": 779,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-049",
+        "replicate": 0,
+        "task_hash": "5819e3479ca48e753accd99913096c162135b175d47d352b13a479bfb8628401",
+        "cluster_id": "synthetic-task-049",
+        "seed": 780,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-050",
+        "replicate": 0,
+        "task_hash": "cecd3f44a67027a7c42261cc8a292c0cdc13e9b93e4a2282b1fcd86458847f74",
+        "cluster_id": "synthetic-task-050",
+        "seed": 781,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-051",
+        "replicate": 0,
+        "task_hash": "118cdf046a8e3637bf2ed467e3560d20393593c46e34debac5301fc92d466958",
+        "cluster_id": "synthetic-task-051",
+        "seed": 782,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-052",
+        "replicate": 0,
+        "task_hash": "d8a432d9aa6deed52b2ae163592000976a61babba59feb0ab143f927d46ada39",
+        "cluster_id": "synthetic-task-052",
+        "seed": 783,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-053",
+        "replicate": 0,
+        "task_hash": "b65455504291417fe617bd2cec5aab241fc4622a001f23172ff5310e5050149b",
+        "cluster_id": "synthetic-task-053",
+        "seed": 784,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-054",
+        "replicate": 0,
+        "task_hash": "b2597abd12220c78741b1a536acaf31c80db1942a1dadace8e9a3a6a43a5d8ed",
+        "cluster_id": "synthetic-task-054",
+        "seed": 785,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-055",
+        "replicate": 0,
+        "task_hash": "f4afd495c34e5933472f9b538b78522ab24e0495d334dfae3158c6a24dc7ee6a",
+        "cluster_id": "synthetic-task-055",
+        "seed": 786,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-056",
+        "replicate": 0,
+        "task_hash": "eac2ddd2a9d75df7849c17d6579d4a441eb0e9329d70a46087bfa208ecd2ed80",
+        "cluster_id": "synthetic-task-056",
+        "seed": 787,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-057",
+        "replicate": 0,
+        "task_hash": "7f3d9450b85360c9fc86a705ef1f8446121bbc8db232ff3643ac2239c9e491f3",
+        "cluster_id": "synthetic-task-057",
+        "seed": 788,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-058",
+        "replicate": 0,
+        "task_hash": "0d2d7544eaf1f016d241f46e1348afa22c6fc82be8fadeb4009355726432a8f4",
+        "cluster_id": "synthetic-task-058",
+        "seed": 789,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-059",
+        "replicate": 0,
+        "task_hash": "72baed865ec76fc04075cb0ff274b32ec2ff2651cce47b5996a343f35ffe9ee0",
+        "cluster_id": "synthetic-task-059",
+        "seed": 790,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-060",
+        "replicate": 0,
+        "task_hash": "38a731af4fa548e70f0751f6dec13442efc78ffe7bd232999140373356bf37bc",
+        "cluster_id": "synthetic-task-060",
+        "seed": 791,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-061",
+        "replicate": 0,
+        "task_hash": "5cc898fea055e5dd75aea158c74319958cc28d88423e3aaa192dc1892139abea",
+        "cluster_id": "synthetic-task-061",
+        "seed": 792,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-062",
+        "replicate": 0,
+        "task_hash": "a637cf6b17832b44e2569a73e371c723fbec4679350c4c970c8e7901f804dbd5",
+        "cluster_id": "synthetic-task-062",
+        "seed": 793,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-063",
+        "replicate": 0,
+        "task_hash": "bd4956ebed998aa56fd34a459f1cb8e659eb01ef8875f656059192995403d7f6",
+        "cluster_id": "synthetic-task-063",
+        "seed": 794,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-064",
+        "replicate": 0,
+        "task_hash": "44b11a22440c44902f32100bfa3e19b9c8630515058d23f56eda6c5b8582f3c2",
+        "cluster_id": "synthetic-task-064",
+        "seed": 795,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-065",
+        "replicate": 0,
+        "task_hash": "ed479a8107276cb24312a3fbeff8ad85b49490b4fa6e24d80f908cbfcd3dba64",
+        "cluster_id": "synthetic-task-065",
+        "seed": 796,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-066",
+        "replicate": 0,
+        "task_hash": "c9b27015b2b39de50bab65b8ffb28635ca7905d6595e2100d157662e4a4d237f",
+        "cluster_id": "synthetic-task-066",
+        "seed": 797,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-067",
+        "replicate": 0,
+        "task_hash": "e1a2f9086919071175ab7347390a25f3d3ac003fa3ffd84c2f502bc095a65eba",
+        "cluster_id": "synthetic-task-067",
+        "seed": 798,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-068",
+        "replicate": 0,
+        "task_hash": "675ede2f8a6dffdd3436f31778314d8442312fb07c8f31da071a595511b28967",
+        "cluster_id": "synthetic-task-068",
+        "seed": 799,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-069",
+        "replicate": 0,
+        "task_hash": "c8516168211cecf5fd49871fa40971919e06e9cb9aa708b8cae4cc302ddb212b",
+        "cluster_id": "synthetic-task-069",
+        "seed": 800,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-070",
+        "replicate": 0,
+        "task_hash": "e209d6bc3e51b2141da4fbbe29f3311db7eb69314712c423a832fbdd9ccc7e2a",
+        "cluster_id": "synthetic-task-070",
+        "seed": 801,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-071",
+        "replicate": 0,
+        "task_hash": "1800cb177857ea7864c5093026d0865b616616c4dff91c77f979b310be606dd8",
+        "cluster_id": "synthetic-task-071",
+        "seed": 802,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-072",
+        "replicate": 0,
+        "task_hash": "b188fb586ea5792cac8951d45831153035d223120a0c0da2cba22deb9ded4d24",
+        "cluster_id": "synthetic-task-072",
+        "seed": 803,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-073",
+        "replicate": 0,
+        "task_hash": "0120caeee0835be1aef612cfdadc66c755acc0a8e072e1a18e856d4b96b95f3b",
+        "cluster_id": "synthetic-task-073",
+        "seed": 804,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-074",
+        "replicate": 0,
+        "task_hash": "62aa987329e254e2b3adec5278009e42c7cce850a4edb571b6de820d5587087c",
+        "cluster_id": "synthetic-task-074",
+        "seed": 805,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-075",
+        "replicate": 0,
+        "task_hash": "e2414ad444feafa65afda52dc430f2508d68c9d18c9995b7beb0aa04bb739f32",
+        "cluster_id": "synthetic-task-075",
+        "seed": 806,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-076",
+        "replicate": 0,
+        "task_hash": "295d0c8d0c9e77531c93aaa06e503c70e98e21b69a13d930d8ae4e1edcdc00fb",
+        "cluster_id": "synthetic-task-076",
+        "seed": 807,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-077",
+        "replicate": 0,
+        "task_hash": "b1f05d878cd9fc1a7e41905bf6d58b9619ea0834477a706547baa9668f80b3ae",
+        "cluster_id": "synthetic-task-077",
+        "seed": 808,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-078",
+        "replicate": 0,
+        "task_hash": "c9765fc0d58e0f508451b22440c2f79448061fc9a6459f8a8e6ac81807cbe868",
+        "cluster_id": "synthetic-task-078",
+        "seed": 809,
+        "split": "test"
+      },
+      {
+        "task_id": "synthetic-task-079",
+        "replicate": 0,
+        "task_hash": "97da9377cd8292e4acc9b339dafa38da70c7cdd542fbf846c2242ff522cfdacf",
+        "cluster_id": "synthetic-task-079",
+        "seed": 810,
+        "split": "test"
+      }
+    ],
+    "baseline": {
+      "treatment": "baseline",
+      "code_revision": "synthetic-fixture-v1",
+      "model_id": "fixture-not-a-live-model",
+      "policy_version": "demo-v1",
+      "prompt_hash": "2b7aa12daada4667a079cdc2343d61fee8480c8df931a7c5dfdd1e693d79b9e6",
+      "mode": "baseline"
+    },
+    "jev": {
+      "treatment": "router+verifier",
+      "code_revision": "synthetic-fixture-v1",
+      "model_id": "fixture-not-a-live-model",
+      "policy_version": "demo-v1",
+      "prompt_hash": "2b7aa12daada4667a079cdc2343d61fee8480c8df931a7c5dfdd1e693d79b9e6",
+      "mode": "replay"
+    },
+    "required_metrics": [
+      "latency_ms",
+      "cost",
+      "unsafe_actions",
+      "false_blocks"
+    ]
+  },
+  "analysis_config": {
+    "validation": {
+      "paired_replay": true,
+      "bootstrap_samples": 250,
+      "bayesian_samples": 500,
+      "confidence_level": 0.95,
+      "minimum_useful_effect": 0.02,
+      "min_pairs": 30,
+      "seed": 731,
+      "shadow_mode": true
+    },
+    "constraints": {
+      "max_added_latency_ms": 250.0,
+      "max_cost_per_task": 0.01,
+      "max_calls_per_task": 5.0,
+      "max_complexity": 5.0,
+      "max_risk": 0.5,
+      "required_throughput": 0.0
+    }
+  },
+  "registration_status": "local_manifest_not_external_registration",
+  "stop_rule": "fixed_schedule_one_confirmatory_analysis_no_optional_stopping",
+  "authorization": "no_network_no_execution_no_deployment",
+  "contract_digest": "977e8527797875927c8fd27ce82947d51d1360e0983f26053d846c6943217a91"
+}

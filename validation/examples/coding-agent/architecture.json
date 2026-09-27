@@ -1,0 +1,721 @@
+{
+  "nodes": [
+    {
+      "id": "agent.py::dispatch_once",
+      "file": "agent.py",
+      "symbol": "dispatch_once",
+      "lines": [
+        4,
+        9
+      ],
+      "roles": [
+        "model",
+        "tool"
+      ],
+      "calls": [
+        {
+          "name": "llm.choose",
+          "resolved_name": "llm.choose",
+          "line": 5
+        },
+        {
+          "name": "tuple",
+          "resolved_name": "tuple",
+          "line": 5
+        },
+        {
+          "name": "executor.execute_tool",
+          "resolved_name": "executor.execute_tool",
+          "line": 7
+        }
+      ],
+      "branches": [
+        6
+      ],
+      "loops": [],
+      "exceptions": [],
+      "dataflow": [
+        {
+          "target": "proposal",
+          "calls": [
+            "llm.choose",
+            "tuple"
+          ],
+          "reads": [
+            "llm",
+            "objective",
+            "tuple",
+            "registry"
+          ],
+          "line": 5
+        },
+        {
+          "target": "result",
+          "calls": [
+            "executor.execute_tool"
+          ],
+          "reads": [
+            "executor",
+            "proposal"
+          ],
+          "line": 7
+        }
+      ],
+      "fan_out": 0,
+      "reachable_nodes": 0,
+      "dependency_depth_lower_bound": 0,
+      "parser": "python_ast",
+      "is_test": false
+    },
+    {
+      "id": "agent.py::run_steps",
+      "file": "agent.py",
+      "symbol": "run_steps",
+      "lines": [
+        12,
+        23
+      ],
+      "roles": [
+        "deterministic",
+        "model",
+        "observe",
+        "plan",
+        "tool"
+      ],
+      "calls": [
+        {
+          "name": "planner.plan",
+          "resolved_name": "planner.plan",
+          "line": 13
+        },
+        {
+          "name": "range",
+          "resolved_name": "range",
+          "line": 14
+        },
+        {
+          "name": "environment.observe",
+          "resolved_name": "environment.observe",
+          "line": 15
+        },
+        {
+          "name": "llm.choose",
+          "resolved_name": "llm.choose",
+          "line": 17
+        },
+        {
+          "name": "executor.execute_tool",
+          "resolved_name": "executor.execute_tool",
+          "line": 18
+        },
+        {
+          "name": "planner.plan",
+          "resolved_name": "planner.plan",
+          "line": 22
+        }
+      ],
+      "branches": [
+        19
+      ],
+      "loops": [
+        14
+      ],
+      "exceptions": [
+        16,
+        21
+      ],
+      "dataflow": [
+        {
+          "target": "plan",
+          "calls": [
+            "planner.plan"
+          ],
+          "reads": [
+            "planner",
+            "objective"
+          ],
+          "line": 13
+        },
+        {
+          "target": "observation",
+          "calls": [
+            "environment.observe"
+          ],
+          "reads": [
+            "environment"
+          ],
+          "line": 15
+        },
+        {
+          "target": "proposal",
+          "calls": [
+            "llm.choose"
+          ],
+          "reads": [
+            "llm",
+            "plan",
+            "observation"
+          ],
+          "line": 17
+        },
+        {
+          "target": "result",
+          "calls": [
+            "executor.execute_tool"
+          ],
+          "reads": [
+            "executor",
+            "proposal"
+          ],
+          "line": 18
+        },
+        {
+          "target": "plan",
+          "calls": [
+            "planner.plan"
+          ],
+          "reads": [
+            "planner",
+            "objective"
+          ],
+          "line": 22
+        }
+      ],
+      "fan_out": 0,
+      "reachable_nodes": 0,
+      "dependency_depth_lower_bound": 0,
+      "parser": "python_ast",
+      "is_test": false
+    },
+    {
+      "id": "agent.py::retain_history",
+      "file": "agent.py",
+      "symbol": "retain_history",
+      "lines": [
+        26,
+        30
+      ],
+      "roles": [
+        "context",
+        "deterministic",
+        "model"
+      ],
+      "calls": [
+        {
+          "name": "memory.load",
+          "resolved_name": "memory.load",
+          "line": 27
+        },
+        {
+          "name": "len",
+          "resolved_name": "len",
+          "line": 28
+        },
+        {
+          "name": "memory.prune",
+          "resolved_name": "memory.prune",
+          "line": 29
+        },
+        {
+          "name": "llm.choose",
+          "resolved_name": "llm.choose",
+          "line": 29
+        }
+      ],
+      "branches": [
+        28
+      ],
+      "loops": [],
+      "exceptions": [],
+      "dataflow": [
+        {
+          "target": "entries",
+          "calls": [
+            "memory.load"
+          ],
+          "reads": [
+            "memory"
+          ],
+          "line": 27
+        }
+      ],
+      "fan_out": 0,
+      "reachable_nodes": 0,
+      "dependency_depth_lower_bound": 0,
+      "parser": "python_ast",
+      "is_test": false
+    },
+    {
+      "id": "agent.py::distribute",
+      "file": "agent.py",
+      "symbol": "distribute",
+      "lines": [
+        33,
+        37
+      ],
+      "roles": [
+        "agent",
+        "model"
+      ],
+      "calls": [
+        {
+          "name": "llm.choose",
+          "resolved_name": "llm.choose",
+          "line": 34
+        },
+        {
+          "name": "tuple",
+          "resolved_name": "tuple",
+          "line": 34
+        },
+        {
+          "name": "agents[specialist]",
+          "resolved_name": "agents[specialist]",
+          "line": 36
+        }
+      ],
+      "branches": [
+        35
+      ],
+      "loops": [],
+      "exceptions": [],
+      "dataflow": [
+        {
+          "target": "specialist",
+          "calls": [
+            "llm.choose",
+            "tuple"
+          ],
+          "reads": [
+            "llm",
+            "subtask",
+            "tuple",
+            "agents"
+          ],
+          "line": 34
+        }
+      ],
+      "fan_out": 0,
+      "reachable_nodes": 0,
+      "dependency_depth_lower_bound": 0,
+      "parser": "python_ast",
+      "is_test": false
+    },
+    {
+      "id": "agent.py::review_change",
+      "file": "agent.py",
+      "symbol": "review_change",
+      "lines": [
+        40,
+        43
+      ],
+      "roles": [
+        "review"
+      ],
+      "calls": [
+        {
+          "name": "reviewer.get_diff",
+          "resolved_name": "reviewer.get_diff",
+          "line": 41
+        },
+        {
+          "name": "reviewer.run_tests",
+          "resolved_name": "reviewer.run_tests",
+          "line": 42
+        },
+        {
+          "name": "reviewer.review",
+          "resolved_name": "reviewer.review",
+          "line": 43
+        }
+      ],
+      "branches": [],
+      "loops": [],
+      "exceptions": [],
+      "dataflow": [
+        {
+          "target": "diff",
+          "calls": [
+            "reviewer.get_diff"
+          ],
+          "reads": [
+            "reviewer",
+            "patch"
+          ],
+          "line": 41
+        },
+        {
+          "target": "test_results",
+          "calls": [
+            "reviewer.run_tests"
+          ],
+          "reads": [
+            "reviewer",
+            "patch"
+          ],
+          "line": 42
+        }
+      ],
+      "fan_out": 0,
+      "reachable_nodes": 0,
+      "dependency_depth_lower_bound": 0,
+      "parser": "python_ast",
+      "is_test": false
+    },
+    {
+      "id": "agent.py::publish_proposal",
+      "file": "agent.py",
+      "symbol": "publish_proposal",
+      "lines": [
+        46,
+        50
+      ],
+      "roles": [
+        "model",
+        "write"
+      ],
+      "calls": [
+        {
+          "name": "llm.generate",
+          "resolved_name": "llm.generate",
+          "line": 47
+        },
+        {
+          "name": "publisher.publish",
+          "resolved_name": "publisher.publish",
+          "line": 49
+        }
+      ],
+      "branches": [
+        48
+      ],
+      "loops": [],
+      "exceptions": [],
+      "dataflow": [
+        {
+          "target": "draft",
+          "calls": [
+            "llm.generate"
+          ],
+          "reads": [
+            "llm",
+            "request"
+          ],
+          "line": 47
+        }
+      ],
+      "fan_out": 0,
+      "reachable_nodes": 0,
+      "dependency_depth_lower_bound": 0,
+      "parser": "python_ast",
+      "is_test": false
+    },
+    {
+      "id": "agent.py::<module>",
+      "file": "agent.py",
+      "symbol": "<module>",
+      "lines": [
+        1,
+        3
+      ],
+      "roles": [],
+      "calls": [],
+      "branches": [],
+      "loops": [],
+      "exceptions": [],
+      "dataflow": [],
+      "fan_out": 0,
+      "reachable_nodes": 0,
+      "dependency_depth_lower_bound": 0,
+      "parser": "python_ast",
+      "is_test": false
+    },
+    {
+      "id": "test_agent.py::test_unregistered_action_does_not_execute",
+      "file": "test_agent.py",
+      "symbol": "test_unregistered_action_does_not_execute",
+      "lines": [
+        4,
+        9
+      ],
+      "roles": [
+        "agent",
+        "tool"
+      ],
+      "calls": [
+        {
+          "name": "dispatch_once",
+          "resolved_name": "agent.dispatch_once",
+          "line": 9
+        },
+        {
+          "name": "LLM",
+          "resolved_name": "LLM",
+          "line": 9
+        },
+        {
+          "name": "Executor",
+          "resolved_name": "Executor",
+          "line": 9
+        },
+        {
+          "name": "object",
+          "resolved_name": "object",
+          "line": 9
+        }
+      ],
+      "branches": [],
+      "loops": [],
+      "exceptions": [],
+      "dataflow": [],
+      "fan_out": 1,
+      "reachable_nodes": 1,
+      "dependency_depth_lower_bound": 1,
+      "parser": "python_ast",
+      "is_test": true
+    },
+    {
+      "id": "test_agent.py::test_unregistered_action_does_not_execute.LLM.choose",
+      "file": "test_agent.py",
+      "symbol": "test_unregistered_action_does_not_execute.LLM.choose",
+      "lines": [
+        6,
+        6
+      ],
+      "roles": [],
+      "calls": [],
+      "branches": [],
+      "loops": [],
+      "exceptions": [],
+      "dataflow": [],
+      "fan_out": 0,
+      "reachable_nodes": 0,
+      "dependency_depth_lower_bound": 0,
+      "parser": "python_ast",
+      "is_test": true
+    },
+    {
+      "id": "test_agent.py::test_unregistered_action_does_not_execute.Executor.execute_tool",
+      "file": "test_agent.py",
+      "symbol": "test_unregistered_action_does_not_execute.Executor.execute_tool",
+      "lines": [
+        8,
+        8
+      ],
+      "roles": [],
+      "calls": [
+        {
+          "name": "AssertionError",
+          "resolved_name": "AssertionError",
+          "line": 8
+        }
+      ],
+      "branches": [],
+      "loops": [],
+      "exceptions": [
+        8
+      ],
+      "dataflow": [],
+      "fan_out": 0,
+      "reachable_nodes": 0,
+      "dependency_depth_lower_bound": 0,
+      "parser": "python_ast",
+      "is_test": true
+    }
+  ],
+  "edges": [
+    {
+      "source": "test_agent.py::test_unregistered_action_does_not_execute",
+      "target": "agent.py::dispatch_once",
+      "line": 9,
+      "kind": "static_candidate"
+    }
+  ],
+  "unresolved_calls": [
+    {
+      "source": "agent.py::dispatch_once",
+      "call": "llm.choose",
+      "line": 5
+    },
+    {
+      "source": "agent.py::dispatch_once",
+      "call": "tuple",
+      "line": 5
+    },
+    {
+      "source": "agent.py::dispatch_once",
+      "call": "executor.execute_tool",
+      "line": 7
+    },
+    {
+      "source": "agent.py::run_steps",
+      "call": "planner.plan",
+      "line": 13
+    },
+    {
+      "source": "agent.py::run_steps",
+      "call": "range",
+      "line": 14
+    },
+    {
+      "source": "agent.py::run_steps",
+      "call": "environment.observe",
+      "line": 15
+    },
+    {
+      "source": "agent.py::run_steps",
+      "call": "llm.choose",
+      "line": 17
+    },
+    {
+      "source": "agent.py::run_steps",
+      "call": "executor.execute_tool",
+      "line": 18
+    },
+    {
+      "source": "agent.py::run_steps",
+      "call": "planner.plan",
+      "line": 22
+    },
+    {
+      "source": "agent.py::retain_history",
+      "call": "memory.load",
+      "line": 27
+    },
+    {
+      "source": "agent.py::retain_history",
+      "call": "len",
+      "line": 28
+    },
+    {
+      "source": "agent.py::retain_history",
+      "call": "memory.prune",
+      "line": 29
+    },
+    {
+      "source": "agent.py::retain_history",
+      "call": "llm.choose",
+      "line": 29
+    },
+    {
+      "source": "agent.py::distribute",
+      "call": "llm.choose",
+      "line": 34
+    },
+    {
+      "source": "agent.py::distribute",
+      "call": "tuple",
+      "line": 34
+    },
+    {
+      "source": "agent.py::distribute",
+      "call": "agents[specialist]",
+      "line": 36
+    },
+    {
+      "source": "agent.py::review_change",
+      "call": "reviewer.get_diff",
+      "line": 41
+    },
+    {
+      "source": "agent.py::review_change",
+      "call": "reviewer.run_tests",
+      "line": 42
+    },
+    {
+      "source": "agent.py::review_change",
+      "call": "reviewer.review",
+      "line": 43
+    },
+    {
+      "source": "agent.py::publish_proposal",
+      "call": "llm.generate",
+      "line": 47
+    },
+    {
+      "source": "agent.py::publish_proposal",
+      "call": "publisher.publish",
+      "line": 49
+    },
+    {
+      "source": "test_agent.py::test_unregistered_action_does_not_execute",
+      "call": "LLM",
+      "line": 9
+    },
+    {
+      "source": "test_agent.py::test_unregistered_action_does_not_execute",
+      "call": "Executor",
+      "line": 9
+    },
+    {
+      "source": "test_agent.py::test_unregistered_action_does_not_execute",
+      "call": "object",
+      "line": 9
+    },
+    {
+      "source": "test_agent.py::test_unregistered_action_does_not_execute.Executor.execute_tool",
+      "call": "AssertionError",
+      "line": 8
+    }
+  ],
+  "modules": [
+    {
+      "file": "agent.py",
+      "symbols": [
+        "<module>",
+        "dispatch_once",
+        "distribute",
+        "publish_proposal",
+        "retain_history",
+        "review_change",
+        "run_steps"
+      ]
+    },
+    {
+      "file": "test_agent.py",
+      "symbols": [
+        "test_unregistered_action_does_not_execute",
+        "test_unregistered_action_does_not_execute.Executor.execute_tool",
+        "test_unregistered_action_does_not_execute.LLM.choose"
+      ]
+    }
+  ],
+  "side_effect_map": [
+    {
+      "node": "agent.py::publish_proposal",
+      "calls": [
+        {
+          "name": "publisher.publish",
+          "resolved_name": "publisher.publish",
+          "line": 49
+        }
+      ]
+    }
+  ],
+  "flow_maps": {
+    "tool": [
+      "agent.py::dispatch_once",
+      "agent.py::run_steps",
+      "test_agent.py::test_unregistered_action_does_not_execute"
+    ],
+    "model": [
+      "agent.py::dispatch_once",
+      "agent.py::run_steps",
+      "agent.py::retain_history",
+      "agent.py::distribute",
+      "agent.py::publish_proposal"
+    ],
+    "retrieve": [],
+    "observe": [
+      "agent.py::run_steps"
+    ],
+    "graph": [],
+    "context": [
+      "agent.py::retain_history"
+    ],
+    "agent": [
+      "agent.py::distribute",
+      "test_agent.py::test_unregistered_action_does_not_execute"
+    ]
+  }
+}

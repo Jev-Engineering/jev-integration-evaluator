@@ -1,0 +1,122 @@
+{
+  "nodes": [
+    {
+      "id": "entities.py::reconcile",
+      "file": "entities.py",
+      "symbol": "reconcile",
+      "lines": [
+        2,
+        7
+      ],
+      "roles": [
+        "graph",
+        "model",
+        "write"
+      ],
+      "calls": [
+        {
+          "name": "llm.classify",
+          "resolved_name": "llm.classify",
+          "line": 3
+        },
+        {
+          "name": "graph.merge",
+          "resolved_name": "graph.merge",
+          "line": 6
+        }
+      ],
+      "branches": [
+        4,
+        5
+      ],
+      "loops": [],
+      "exceptions": [],
+      "dataflow": [
+        {
+          "target": "hypothesis",
+          "calls": [
+            "llm.classify"
+          ],
+          "reads": [
+            "llm",
+            "left",
+            "right"
+          ],
+          "line": 3
+        }
+      ],
+      "fan_out": 0,
+      "reachable_nodes": 0,
+      "dependency_depth_lower_bound": 0,
+      "parser": "python_ast",
+      "is_test": false
+    },
+    {
+      "id": "entities.py::<module>",
+      "file": "entities.py",
+      "symbol": "<module>",
+      "lines": [
+        1,
+        1
+      ],
+      "roles": [],
+      "calls": [],
+      "branches": [],
+      "loops": [],
+      "exceptions": [],
+      "dataflow": [],
+      "fan_out": 0,
+      "reachable_nodes": 0,
+      "dependency_depth_lower_bound": 0,
+      "parser": "python_ast",
+      "is_test": false
+    }
+  ],
+  "edges": [],
+  "unresolved_calls": [
+    {
+      "source": "entities.py::reconcile",
+      "call": "llm.classify",
+      "line": 3
+    },
+    {
+      "source": "entities.py::reconcile",
+      "call": "graph.merge",
+      "line": 6
+    }
+  ],
+  "modules": [
+    {
+      "file": "entities.py",
+      "symbols": [
+        "<module>",
+        "reconcile"
+      ]
+    }
+  ],
+  "side_effect_map": [
+    {
+      "node": "entities.py::reconcile",
+      "calls": [
+        {
+          "name": "graph.merge",
+          "resolved_name": "graph.merge",
+          "line": 6
+        }
+      ]
+    }
+  ],
+  "flow_maps": {
+    "tool": [],
+    "model": [
+      "entities.py::reconcile"
+    ],
+    "retrieve": [],
+    "observe": [],
+    "graph": [
+      "entities.py::reconcile"
+    ],
+    "context": [],
+    "agent": []
+  }
+}

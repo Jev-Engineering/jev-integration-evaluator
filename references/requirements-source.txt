@@ -1,0 +1,2210 @@
+# Objective
+
+Create a complete reusable agent skill that analyzes arbitrary software codebases to identify, evaluate, prioritize, design, and validate **ideal locations for integrating JEV / TypeSafe AI**.
+
+The skill must go substantially beyond searching for obvious keywords. It should understand code structure, control flow, agent loops, tool routing, retrieval pipelines, retry logic, graph mutation, validation logic, risk boundaries, and other architectural decision points, then determine:
+
+1. **Where JEV should be inserted.**
+2. **Why JEV is appropriate at that location.**
+3. **Where JEV should explicitly NOT be used.**
+4. **What JEV primitive/pattern should be used.**
+5. **What questions/choices JEV should evaluate.**
+6. **What surrounding logic should remain deterministic.**
+7. **When JEV should run.**
+8. **When it should be bypassed.**
+9. **What confidence thresholds and fallback behavior should be used.**
+10. **How the proposed integration should be experimentally validated.**
+11. **Whether the benefit of JEV outweighs its latency, cost, complexity, and failure risk.**
+12. **Which candidate integrations should be implemented first.**
+
+The skill should work across:
+
+- ordinary applications,
+- AI agents,
+- coding agents,
+- autonomous agents,
+- RAG systems,
+- GraphRAG systems,
+- multi-agent systems,
+- workflow engines,
+- API services,
+- CLI applications,
+- data pipelines,
+- games and game-playing agents,
+- robotics/control systems,
+- code-review systems,
+- security systems,
+- orchestration systems,
+- graph/database systems,
+- long-running autonomous systems.
+
+The resulting skill must support both:
+
+- **analysis-only mode**, producing recommendations, and
+- **implementation mode**, where an authorized agent can modify the codebase, add JEV integration, tests, instrumentation, and benchmarks.
+
+Do not build a generic "add JEV everywhere" tool. The central purpose is to discover **high-leverage, semantically appropriate insertion points** while avoiding unnecessary or harmful JEV usage.
+
+---
+
+# Core principle
+
+The skill should operationalize this concept:
+
+> JEV is most useful at semantic decision boundaries where messy or ambiguous information must be reduced to a bounded set of structured choices, particularly when the downstream consequence of making the wrong decision is significant.
+
+Use the following conceptual placement heuristic:
+
+```text
+JEV Placement Value
+    ∝
+Semantic Uncertainty
+× Downstream Consequence
+× Decision Boundedness
+× Decision Frequency
+× Recoverability Value
+```
+
+But this should not remain conceptual.
+
+Implement an explicit scoring model.
+
+---
+
+# 1. Create a JEV Placement Score
+
+For every candidate insertion point, calculate a structured score.
+
+At minimum evaluate:
+
+```text
+semantic_uncertainty
+decision_boundedness
+downstream_consequence
+decision_frequency
+cost_of_wrong_decision
+recoverability_value
+observability
+deterministic_alternative_quality
+current_failure_rate
+current_llm_dependency
+latency_sensitivity
+cost_sensitivity
+implementation_complexity
+testability
+expected_reuse
+confidence_calibration_value
+```
+
+Use normalized values such as:
+
+```text
+0.0 – 1.0
+```
+
+Create an overall score such as:
+
+```text
+placement_score =
+    + semantic_uncertainty
+    + decision_boundedness
+    + downstream_consequence
+    + cost_of_wrong_decision
+    + recoverability_value
+    + current_llm_dependency
+    + testability
+    + expected_reuse
+    - deterministic_alternative_quality
+    - latency_sensitivity
+    - implementation_complexity
+```
+
+Do not blindly use equal weights.
+
+Provide documented default weights and allow configuration.
+
+The skill must output both:
+
+- the composite score,
+- every underlying dimension.
+
+Never hide the reasoning behind only one aggregate score.
+
+---
+
+# 2. Detect semantic decision boundaries
+
+The skill must inspect actual source code and architecture for locations such as:
+
+```text
+tool selection
+function routing
+agent routing
+model routing
+workflow transitions
+continue / stop decisions
+retry decisions
+error recovery
+fallback selection
+approval logic
+risk classification
+intent classification
+relevance filtering
+context retention
+memory selection
+retrieval filtering
+candidate ranking
+plan validation
+result verification
+graph mutation
+entity matching
+merge decisions
+citation verification
+response validation
+security classification
+policy checks
+escalation decisions
+confidence gates
+human-review routing
+```
+
+Look for functions and code resembling:
+
+```text
+choose_tool(...)
+select_action(...)
+route(...)
+dispatch(...)
+classify(...)
+should_retry(...)
+should_continue(...)
+should_stop(...)
+should_merge(...)
+needs_review(...)
+is_relevant(...)
+is_safe(...)
+is_complete(...)
+assess_risk(...)
+verify_result(...)
+select_agent(...)
+select_model(...)
+choose_strategy(...)
+update_state(...)
+validate_plan(...)
+filter_context(...)
+```
+
+But do not rely solely on names.
+
+Analyze:
+
+- AST,
+- call graph,
+- control flow,
+- branches,
+- exception handling,
+- state machines,
+- dependency relationships,
+- model/tool calls,
+- graph/database writes,
+- external side effects,
+- prompts,
+- schemas,
+- tests,
+- retry loops,
+- workflow definitions.
+
+---
+
+# 3. Explicitly recognize the strongest JEV insertion patterns
+
+The skill should contain first-class detectors and playbooks for the following patterns.
+
+## Pattern A — Before tool execution
+
+Example architecture:
+
+```text
+LLM reasoning
+    ↓
+candidate actions
+    ↓
+JEV
+    ↓
+typed action
+    ↓
+deterministic executor
+```
+
+Potential JEV decisions:
+
+```text
+search
+inspect
+edit
+test
+commit
+escalate
+stop
+```
+
+Evaluate whether JEV can improve:
+
+- tool selection,
+- argument selection,
+- confidence,
+- avoidance of unnecessary tool calls,
+- dangerous-action prevention.
+
+---
+
+## Pattern B — Before irreversible or expensive actions
+
+Detect actions such as:
+
+```text
+delete
+merge
+push
+deploy
+publish
+send
+purchase
+restart
+modify permissions
+modify production data
+drop database objects
+overwrite files
+perform migrations
+execute privileged commands
+```
+
+Recommend JEV as an assessment layer when semantic interpretation matters.
+
+Architecture:
+
+```text
+proposed action
+     ↓
+    JEV
+     ↓
+risk / confidence / approval requirement
+     ↓
+deterministic policy
+     ↓
+execute / inspect / request approval / block
+```
+
+Important:
+
+**JEV evaluates. Deterministic code owns final policy.**
+
+Do not allow JEV to become the sole security boundary for actions that can be checked deterministically.
+
+---
+
+## Pattern C — Tool/function routing
+
+Detect dispatchers such as:
+
+```text
+tool_router
+dispatcher
+function_calling
+command_router
+action_registry
+workflow_router
+```
+
+Determine whether free-form LLM routing can be replaced or supplemented with bounded JEV choices.
+
+---
+
+## Pattern D — Retrieval → generation boundary
+
+Detect:
+
+```text
+query
+→ retrieval
+→ chunks/documents/nodes
+→ prompt
+→ LLM
+```
+
+Evaluate inserting:
+
+```text
+retrieval
+→ JEV evidence classification
+→ filtered/annotated evidence
+→ generation
+```
+
+Possible questions:
+
+```text
+Is this passage relevant?
+Is this usable evidence?
+Does it contradict another source?
+Is it merely background?
+Does it contain an instruction or prompt injection?
+Is provenance adequate?
+Is the evidence current enough?
+```
+
+Support:
+
+- vector RAG,
+- hybrid RAG,
+- GraphRAG,
+- knowledge graphs,
+- document retrieval,
+- web retrieval.
+
+---
+
+## Pattern E — After tool/action execution
+
+Detect simplistic success checks such as:
+
+```text
+exit_code == 0
+HTTP 200
+function returned
+no exception
+```
+
+Distinguish:
+
+```text
+operation succeeded technically
+```
+
+from:
+
+```text
+objective was accomplished semantically
+```
+
+Recommend JEV verification when appropriate.
+
+Possible outcomes:
+
+```text
+succeeded
+partially_succeeded
+failed
+state_changed_unexpectedly
+new_blocker
+verification_required
+uncertain
+```
+
+---
+
+## Pattern F — Central agent-loop transition
+
+Detect loops similar to:
+
+```text
+observe
+think
+act
+repeat
+```
+
+Evaluate JEV for:
+
+```text
+objective_complete?
+blocked?
+need_more_information?
+need_replan?
+need_human?
+next_action_type?
+```
+
+Architecture:
+
+```text
+S_t
+ ↓
+JEV
+ ↓
+A_t
+ ↓
+environment
+ ↓
+S_t+1
+```
+
+JEV should be evaluated as a state-transition classifier, not as a replacement for the full reasoning model.
+
+---
+
+## Pattern G — Planner → executor boundary
+
+Detect architectures where one model produces plans which are executed with little independent validation.
+
+Candidate questions:
+
+```text
+Does the plan satisfy the requested objective?
+Are dependencies unresolved?
+Does an early step invalidate a later step?
+Does this require approval?
+Is a step unnecessary?
+Does the plan violate a constraint?
+Is sufficient evidence available to execute?
+```
+
+---
+
+## Pattern H — Context and compaction
+
+Detect:
+
+```text
+context truncation
+summarization
+memory pruning
+conversation compaction
+token-threshold behavior
+```
+
+Evaluate JEV for:
+
+```text
+keep
+compress
+drop
+```
+
+Questions:
+
+```text
+Is this still relevant?
+Does it contain an unresolved constraint?
+Would losing it materially affect future decisions?
+Does it describe a failed approach that should not be repeated?
+Has it been superseded?
+Does it contain durable user preference or system state?
+```
+
+JEV should normally decide **what** to retain, not perform the generative summarization itself.
+
+---
+
+## Pattern I — Retry and recovery logic
+
+Detect:
+
+```text
+try → fail → retry
+```
+
+and especially repeated model calls after failure.
+
+Potential JEV choices:
+
+```text
+retry_same
+retry_with_new_parameters
+inspect_state
+change_tool
+replan
+rollback
+escalate
+abort
+wait
+```
+
+Identify loops where agents repeatedly reproduce the same failure.
+
+---
+
+## Pattern J — Multi-agent routing
+
+Detect:
+
+```text
+task
+→ orchestrator
+→ specialist
+```
+
+Evaluate JEV for selection among:
+
+```text
+coding_agent
+research_agent
+tester
+security_agent
+reviewer
+data_agent
+human
+```
+
+Also evaluate:
+
+```text
+failure → specialist
+review finding → specialist
+subtask → specialist
+```
+
+---
+
+## Pattern K — Code-review gates
+
+Detect locations where:
+
+```text
+diff
+tests
+static analysis
+review results
+```
+
+are converted into decisions.
+
+Prefer decomposed questions:
+
+```text
+Does the diff satisfy the issue?
+Are tests sufficient for the changed behavior?
+Did the change exceed scope?
+Is a failing test related to the patch?
+Does the change introduce a security-sensitive action?
+Does the change require more review?
+```
+
+Avoid vague questions such as:
+
+```text
+Is this code good?
+```
+
+---
+
+## Pattern L — Graph and entity mutation
+
+Detect:
+
+```text
+CREATE
+MERGE
+LINK
+sameAs
+DELETE RELATION
+UPDATE NODE
+entity resolution
+deduplication
+graph synthesis
+```
+
+Evaluate JEV for:
+
+```text
+different
+related
+same
+uncertain
+review
+```
+
+especially immediately before irreversible graph mutations.
+
+---
+
+## Pattern M — Final-answer validation
+
+Detect answer-generation boundaries.
+
+Potential questions:
+
+```text
+Does the response answer the request?
+Does it contradict evidence?
+Is a claim unsupported?
+Was a required section omitted?
+Did it violate an output constraint?
+Are citations actually supporting the claims?
+```
+
+JEV evaluates the generated result; another model or deterministic code can perform revision.
+
+---
+
+# 4. Detect where JEV should NOT be used
+
+This is mandatory.
+
+The skill must actively identify anti-patterns.
+
+Do not recommend JEV where deterministic computation is clearly better.
+
+Examples:
+
+```text
+arithmetic
+sorting
+hash validation
+exact comparisons
+regex
+parsing
+JSON validation
+schema validation
+file existence
+type checking
+permissions
+exact dates
+database joins
+deterministic state checks
+known finite lookup tables
+cryptographic checks
+exit-code inspection
+numerical thresholds
+syntax validation
+```
+
+Create a specific field:
+
+```text
+deterministic_alternative
+```
+
+Values:
+
+```text
+none
+weak
+equivalent
+preferred
+mandatory
+```
+
+If deterministic logic is `preferred` or `mandatory`, strongly penalize or reject the candidate JEV placement.
+
+---
+
+# 5. Do not use JEV as a generative model where unnecessary
+
+Identify attempts to use JEV for:
+
+```text
+writing code
+writing essays
+generating SQL
+generating shell commands
+writing long plans
+summarization
+creative generation
+open-ended reasoning
+```
+
+Where appropriate, recommend:
+
+```text
+generative model
+      ↓
+JEV evaluator / classifier / selector
+      ↓
+deterministic execution
+```
+
+rather than forcing generation through JEV.
+
+---
+
+# 6. Decompose broad judgments into atomic questions
+
+One of the skill's major responsibilities is designing good JEV questions.
+
+Avoid:
+
+```text
+Is this good?
+Is this correct?
+Should we do it?
+Is this safe?
+```
+
+Prefer decomposed questions such as:
+
+```text
+Does this satisfy requirement X?
+Is dependency Y resolved?
+Does evidence Z support this claim?
+Would execution mutate production state?
+Is user approval required?
+Is there an unresolved blocker?
+Is the proposed tool capable of the requested operation?
+Did the previous operation accomplish the intended subgoal?
+```
+
+Each proposed JEV integration must include:
+
+```yaml
+jev_questions:
+  - question:
+    answer_type:
+    allowed_answers:
+    purpose:
+    evidence_inputs:
+    confidence_usage:
+```
+
+---
+
+# 7. Model explicit bounded choices
+
+Where possible, convert free-form decisions into finite choices.
+
+Example:
+
+```yaml
+decision: recovery_strategy
+choices:
+  - retry_same
+  - retry_modified
+  - inspect
+  - alternate_tool
+  - replan
+  - escalate
+  - abort
+```
+
+The skill should recommend bounded `Choice`-style structures where this is appropriate.
+
+---
+
+# 8. Confidence must affect behavior
+
+For every JEV integration, define how confidence is used.
+
+Example:
+
+```text
+high confidence
+    → execute bounded action
+
+medium confidence
+    → gather evidence / run additional check
+
+low confidence
+    → fallback model / deterministic inspection / human review
+```
+
+Support configurable thresholds.
+
+Example:
+
+```yaml
+confidence_policy:
+  execute: ">= 0.90"
+  inspect_more: "0.65-0.90"
+  escalate: "< 0.65"
+```
+
+Do not invent one universal threshold.
+
+The correct threshold should depend on:
+
+```text
+risk
+reversibility
+cost
+latency
+impact
+availability of verification
+```
+
+---
+
+# 9. Separate assessment from policy
+
+The generated integrations should usually follow:
+
+```text
+JEV produces:
+    classification
+    probability/confidence
+    structured observations
+
+Application code decides:
+    execute
+    block
+    retry
+    escalate
+    require approval
+```
+
+For example:
+
+```python
+assessment = evaluate_action(...)
+
+if deterministic_hard_block:
+    block()
+
+elif assessment.risk_probability >= HIGH_RISK_THRESHOLD:
+    require_approval()
+
+elif assessment.confidence < MINIMUM_CONFIDENCE:
+    inspect_more()
+
+else:
+    execute()
+```
+
+Do not embed business/security policy invisibly inside prompts when deterministic application code can express it clearly.
+
+---
+
+# 10. Analyze downstream leverage
+
+A candidate location should score higher when one wrong choice can create many downstream failures.
+
+Model something like:
+
+```text
+decision error
+→ wrong tool
+→ wrong state
+→ additional reasoning
+→ additional tool calls
+→ cascading failure
+```
+
+Estimate:
+
+```text
+fan_out
+dependency_depth
+expected_recovery_cost
+state_corruption_risk
+```
+
+Use these to identify high-causal-leverage insertion points.
+
+---
+
+# 11. Recognize long-horizon reliability
+
+The skill must understand that a small per-step reliability improvement can create a large end-to-end improvement.
+
+For a workflow with:
+
+```text
+n dependent steps
+per-step success probability p
+```
+
+estimate:
+
+```text
+P(successful workflow) ≈ p^n
+```
+
+Use this when assessing JEV in:
+
+- autonomous agents,
+- game-playing agents,
+- coding agents,
+- multi-step workflows,
+- robotic/control systems.
+
+Do not use independence assumptions silently.
+
+Label this estimate as approximate unless independence is supported.
+
+---
+
+# 12. Generate a JEV Opportunity Inventory
+
+The first major output should be a structured inventory.
+
+Example:
+
+```yaml
+candidate_id: JEV-007
+file: src/agent/tool_router.py
+symbol: choose_tool
+lines: 118-171
+
+category: tool_routing
+
+current_behavior:
+  description: >
+    Main LLM generates a free-form tool name and parameters.
+  failure_modes:
+    - nonexistent tool
+    - wrong tool
+    - unnecessary repeated observations
+
+proposed_jev_role:
+  type: bounded_choice
+  timing: before_tool_execution
+
+questions:
+  - Which available tool best advances the current objective?
+  - Is more evidence required before acting?
+
+choices:
+  - inspect
+  - search
+  - edit
+  - test
+  - commit
+  - stop
+
+placement_score: 0.87
+
+score_breakdown:
+  semantic_uncertainty: 0.92
+  decision_boundedness: 0.98
+  downstream_consequence: 0.83
+  deterministic_alternative_quality: 0.20
+  testability: 0.90
+
+expected_benefits:
+  - fewer invalid tool calls
+  - reduced repeated model calls
+  - more deterministic routing
+
+risks:
+  - added latency
+  - incorrect high-confidence classification
+
+fallback:
+  low_confidence: existing LLM router
+
+recommended_experiment:
+  paired_replay: true
+```
+
+---
+
+# 13. Produce a ranked integration plan
+
+After discovering candidates, categorize them as:
+
+```text
+Tier 0 — Do not use JEV
+Tier 1 — Experimental
+Tier 2 — Strong candidate
+Tier 3 — High-leverage candidate
+```
+
+These tiers must derive from explicit evidence and scoring.
+
+For each candidate provide:
+
+```text
+file
+symbol
+location
+architecture
+current behavior
+failure mode
+JEV intervention
+questions
+choices
+confidence strategy
+fallback
+deterministic checks
+expected benefit
+added latency
+added cost
+implementation complexity
+test plan
+experiment design
+```
+
+---
+
+# 14. Detect interaction between multiple JEV placements
+
+Do not evaluate insertion points only independently.
+
+For example:
+
+```text
+JEV tool selection
++
+JEV post-action verification
+```
+
+may work much better together.
+
+Model combinations such as:
+
+```text
+router + verifier
+retrieval filter + citation checker
+planner validator + action gate
+context selector + retry controller
+entity classifier + graph mutation gate
+```
+
+Identify:
+
+```text
+complementary placements
+redundant placements
+conflicting placements
+cascading latency
+duplicated semantic decisions
+```
+
+Avoid stacking JEV unnecessarily.
+
+---
+
+# 15. Build an optimal-placement optimizer
+
+Given many candidate placements, determine a practical integration set.
+
+This should act like a constrained optimization problem.
+
+Maximize:
+
+```text
+expected_quality_gain
++ expected_reliability_gain
++ expected_failure_reduction
++ expected_model_call_reduction
+```
+
+while minimizing:
+
+```text
+latency
+cost
+complexity
+maintenance
+false positives
+false negatives
+```
+
+Subject to constraints such as:
+
+```text
+latency_budget
+cost_budget
+maximum_jev_calls_per_task
+risk tolerance
+required throughput
+```
+
+Output:
+
+```text
+recommended_minimal_set
+recommended_balanced_set
+recommended_maximum_reliability_set
+```
+
+Do not automatically recommend the largest number of JEV calls.
+
+---
+
+# 16. Create an experimental validation framework
+
+Every recommended placement must be empirically testable.
+
+Support:
+
+```text
+baseline
+vs
+JEV-enabled
+```
+
+Prefer paired evaluation using the same tasks or replay data.
+
+For task `i`:
+
+```text
+Baseline_i
+JEV_i
+```
+
+Track:
+
+```text
+quality
+success
+failures
+tokens
+model calls
+latency
+cost
+retries
+tool calls
+human escalations
+unsafe actions prevented
+false blocks
+replans
+long-horizon completion
+```
+
+---
+
+# 17. Measure rescues and regressions
+
+For binary outcomes classify:
+
+```text
+Baseline Pass / JEV Pass
+Baseline Fail / JEV Fail
+Baseline Fail / JEV Pass   ← rescue
+Baseline Pass / JEV Fail   ← regression
+```
+
+Calculate:
+
+```text
+rescue_count
+regression_count
+
+rescue_regression_ratio =
+    rescues / regressions
+```
+
+Use McNemar-style paired analysis where appropriate.
+
+---
+
+# 18. Measure effect sizes and uncertainty
+
+The skill should recommend/report:
+
+```text
+absolute improvement
+relative improvement
+effect size
+confidence intervals
+bootstrap confidence intervals
+```
+
+Example:
+
+```text
+task success:
+baseline = 71.2%
+JEV      = 79.5%
+
+absolute Δ = +8.3 percentage points
+```
+
+Do not treat point estimates as sufficient evidence.
+
+---
+
+# 19. Support Bayesian usefulness analysis
+
+Where useful, estimate:
+
+```text
+P(JEV > baseline | data)
+```
+
+More importantly:
+
+```text
+P(JEV improvement > minimum_useful_effect | data)
+```
+
+Example:
+
+```text
+P(Δ > 0) = 0.98
+P(Δ > 0.02) = 0.81
+```
+
+Distinguish:
+
+```text
+probably better
+```
+
+from:
+
+```text
+probably useful enough to justify integration
+```
+
+---
+
+# 20. Use multi-objective / Pareto analysis
+
+Do not collapse everything into accuracy.
+
+Track vectors such as:
+
+```text
+quality
+cost
+latency
+tokens
+reliability
+safety
+throughput
+model_calls
+```
+
+Identify when JEV:
+
+```text
+Pareto dominates baseline
+```
+
+or when there is a tradeoff.
+
+Examples:
+
+```text
+higher quality + lower cost = strong dominance
+
+higher quality + much higher latency = tradeoff
+```
+
+Generate Pareto comparisons when multiple configurations exist.
+
+---
+
+# 21. Economic break-even analysis
+
+Support calculations such as:
+
+```text
+added JEV inference cost
+vs
+reduction in failure probability
+× cost per failure
+```
+
+Estimate:
+
+```text
+expected_savings
+net_value
+break_even_volume
+```
+
+Example:
+
+```text
+JEV added cost = $0.006/run
+failure reduction = 4%
+average failure cost = $0.40
+
+expected savings:
+0.04 × $0.40 = $0.016
+
+net:
+$0.016 - $0.006 = $0.010/run
+```
+
+---
+
+# 22. Measure inference efficiency
+
+Support metrics such as:
+
+```text
+successful_tasks / model_calls
+successful_tasks / tokens
+successful_tasks / cost
+successful_tasks / latency
+verified_progress / model_calls
+```
+
+For autonomous agents especially measure:
+
+```text
+progress_per_model_call
+progress_per_tool_call
+```
+
+---
+
+# 23. Analyze failure-class transitions
+
+Create configurable failure categories such as:
+
+```text
+planning
+reasoning
+routing
+tool
+format
+constraint
+hallucination
+retrieval
+timeout
+state_tracking
+repetition
+approval
+security
+```
+
+Measure whether JEV:
+
+```text
+eliminates
+reduces
+moves
+or worsens
+```
+
+each class.
+
+Track:
+
+```text
+baseline_failure → JEV_failure
+```
+
+so improvements are not overstated merely because failures changed category.
+
+---
+
+# 24. Repository scanning workflow
+
+Implement a staged workflow.
+
+## Stage 1 — Repository reconnaissance
+
+Identify:
+
+```text
+language(s)
+frameworks
+entry points
+AI SDKs
+agent frameworks
+model providers
+tool systems
+retrievers
+databases
+graph databases
+workflow engines
+queues
+external integrations
+deployment topology
+tests
+observability
+```
+
+---
+
+## Stage 2 — Architectural mapping
+
+Build:
+
+```text
+call graph
+module map
+tool flow
+model flow
+retrieval flow
+state flow
+side-effect map
+decision-point map
+```
+
+---
+
+## Stage 3 — Candidate discovery
+
+Use:
+
+```text
+static analysis
+AST inspection
+call-graph analysis
+semantic source inspection
+configuration analysis
+prompt analysis
+test analysis
+runtime traces when available
+```
+
+---
+
+## Stage 4 — Candidate scoring
+
+Calculate the JEV Placement Score.
+
+---
+
+## Stage 5 — Anti-pattern elimination
+
+Remove candidates where deterministic code is superior.
+
+---
+
+## Stage 6 — Question design
+
+Generate atomic JEV questions and bounded answer spaces.
+
+---
+
+## Stage 7 — Policy design
+
+Specify:
+
+```text
+confidence thresholds
+fallback
+escalation
+deterministic gates
+cache behavior
+timeout
+failure behavior
+```
+
+---
+
+## Stage 8 — Experimental design
+
+Create a baseline/JEV test plan before modifying behavior.
+
+---
+
+## Stage 9 — Implementation
+
+Only after appropriate approval.
+
+---
+
+## Stage 10 — Validation
+
+Run:
+
+```text
+unit tests
+integration tests
+paired replay
+performance tests
+failure injection
+confidence calibration tests
+```
+
+---
+
+## Stage 11 — Recommendation
+
+Classify the integration:
+
+```text
+keep
+modify
+disable
+needs_more_evidence
+```
+
+---
+
+# 25. Search strategy
+
+The skill may initially look for code patterns such as:
+
+```text
+if confidence
+route
+classify
+decision
+retry
+approve
+validate
+select
+rank
+should_
+is_relevant
+execute
+dispatch
+tool
+agent
+model
+retrieve
+context
+compact
+memory
+merge
+commit
+deploy
+delete
+fallback
+```
+
+But it must explicitly state:
+
+> Keyword search is only candidate generation. It is not sufficient evidence for recommending JEV.
+
+Semantic and architectural analysis must follow.
+
+---
+
+# 26. Runtime-trace support
+
+If traces/logs are available, correlate source candidates with actual runtime behavior.
+
+Collect:
+
+```text
+call frequency
+latency
+model calls
+token use
+error rate
+retries
+repeated states
+branch frequencies
+decision confidence
+downstream failures
+```
+
+A rarely used branch may be less important than a decision made thousands of times per run.
+
+A rare branch with catastrophic impact may still rank highly.
+
+---
+
+# 27. Support offline replay
+
+Whenever possible, capture enough information to replay decisions offline.
+
+For example:
+
+```yaml
+decision_event:
+  timestamp:
+  source_location:
+  state:
+  evidence:
+  candidate_actions:
+  baseline_decision:
+  baseline_result:
+```
+
+Then run JEV offline against the same decision state.
+
+This allows:
+
+```text
+baseline vs JEV
+```
+
+without initially changing production behavior.
+
+---
+
+# 28. Shadow mode
+
+Support a safe integration mode:
+
+```text
+production baseline controls behavior
+JEV runs in parallel
+JEV decision is logged
+JEV cannot affect execution
+```
+
+Measure:
+
+```text
+agreement
+disagreement
+confidence
+rescues
+predicted regressions
+latency
+```
+
+Only recommend active control after sufficient evidence.
+
+---
+
+# 29. Canary mode
+
+After shadow validation, optionally support:
+
+```text
+small percentage of decisions
+→ JEV active
+```
+
+Track:
+
+```text
+quality
+failure rate
+latency
+cost
+fallback frequency
+```
+
+Include rollback conditions.
+
+---
+
+# 30. Configuration
+
+Create a configuration format similar to:
+
+```yaml
+jev_analysis:
+  mode: analysis
+
+  repository:
+    root: .
+
+  scoring:
+    semantic_uncertainty: 1.5
+    decision_boundedness: 1.4
+    downstream_consequence: 1.8
+    failure_cost: 1.5
+    deterministic_alternative: -2.0
+    latency_sensitivity: -1.0
+    implementation_complexity: -0.7
+
+  thresholds:
+    strong_candidate: 0.75
+    experimental_candidate: 0.55
+
+  constraints:
+    max_added_latency_ms: 250
+    max_calls_per_task: 5
+
+  validation:
+    paired_replay: true
+    bootstrap_ci: true
+    shadow_mode: true
+```
+
+---
+
+# 31. Output artifacts
+
+The skill should be able to generate:
+
+```text
+JEV_OPPORTUNITIES.md
+JEV_ARCHITECTURE.md
+JEV_INTEGRATION_PLAN.md
+JEV_EXPERIMENT_PLAN.md
+JEV_RISK_ANALYSIS.md
+JEV_RESULTS.md
+jev-opportunities.json
+jev-opportunities.csv
+jev-config.yaml
+```
+
+Optionally:
+
+```text
+Mermaid architecture diagrams
+call-flow diagrams
+before/after architecture
+Pareto charts
+confidence calibration charts
+failure-transition matrices
+```
+
+---
+
+# 32. Required primary report
+
+The main report should contain:
+
+## Executive summary
+
+- total candidate locations,
+- rejected deterministic candidates,
+- high-value candidates,
+- highest expected-value placements,
+- largest risks,
+- recommended first experiment.
+
+## Candidate table
+
+Columns:
+
+```text
+Rank
+File
+Symbol
+Pattern
+Placement Score
+Expected Benefit
+Cost
+Risk
+Complexity
+Recommendation
+```
+
+## Per-candidate details
+
+Include:
+
+```text
+current architecture
+why this is a semantic boundary
+why JEV fits
+why deterministic code is insufficient
+proposed questions
+bounded answers
+confidence handling
+fallback path
+expected impact
+testability
+implementation sketch
+```
+
+---
+
+# 33. Implementation mode requirements
+
+When explicitly authorized to modify code:
+
+1. Create a branch/worktree where appropriate.
+2. Preserve existing behavior until the experiment requires otherwise.
+3. Add JEV integration behind a feature flag.
+4. Add shadow mode if practical.
+5. Instrument decisions.
+6. Add structured logs.
+7. Add tests.
+8. Add configuration.
+9. Add fallback paths.
+10. Run existing test suites.
+11. Add paired evaluation fixtures.
+12. Benchmark latency and cost.
+13. Document the integration.
+14. Produce a diff summary.
+15. Do not silently weaken security or validation logic.
+
+---
+
+# 34. Safety and reversibility
+
+Every implementation should answer:
+
+```text
+What happens if JEV is unavailable?
+What happens if JEV times out?
+What happens if JEV returns low confidence?
+What happens if JEV produces an invalid answer?
+Can deterministic fallback continue operation?
+Can this feature be disabled immediately?
+```
+
+Prefer:
+
+```text
+feature flags
+timeouts
+fallbacks
+circuit breakers
+shadow deployment
+structured logging
+```
+
+---
+
+# 35. Caching
+
+Identify JEV decisions that can safely be cached.
+
+Possible cache keys:
+
+```text
+normalized question
+candidate choices
+relevant state hash
+evidence hash
+model/version
+policy version
+```
+
+Do not cache decisions where rapidly changing runtime state invalidates reuse.
+
+Track:
+
+```text
+cache_hit_rate
+latency_saved
+cost_saved
+stale_decision_rate
+```
+
+---
+
+# 36. Calibration
+
+When JEV returns probabilities/confidence, test calibration.
+
+Support metrics such as:
+
+```text
+Brier score
+Expected Calibration Error
+reliability diagrams
+```
+
+A confidence of 0.90 should correspond approximately to 90% empirical correctness for comparable decisions if it is being interpreted probabilistically.
+
+Do not assume confidence values are calibrated without testing.
+
+---
+
+# 37. Ablation testing
+
+When multiple JEV placements are implemented, run ablations.
+
+Example:
+
+```text
+A = no JEV
+B = tool router only
+C = verifier only
+D = router + verifier
+E = router + verifier + recovery
+```
+
+This identifies which placement creates the actual benefit.
+
+---
+
+# 38. Stop criteria
+
+The skill must support concluding:
+
+```text
+JEV does not provide sufficient value here.
+```
+
+That is a valid outcome.
+
+Recommend removal or non-adoption if:
+
+```text
+deterministic logic performs equally or better
+latency exceeds value
+cost exceeds value
+regressions outweigh rescues
+confidence is poorly calibrated
+failure rate increases
+behavior becomes less predictable
+maintenance burden exceeds benefit
+```
+
+The skill exists to find **optimal use**, not maximize JEV usage.
+
+---
+
+# 39. Skill package structure
+
+Create a professional reusable skill package.
+
+At minimum include:
+
+```text
+SKILL.md
+README.md
+LICENSE
+schemas/
+scripts/
+references/
+templates/
+examples/
+tests/
+```
+
+Suggested contents:
+
+```text
+schemas/
+  opportunity.schema.json
+  experiment.schema.json
+  decision.schema.json
+
+scripts/
+  scan_repo.py
+  build_architecture_map.py
+  find_decision_boundaries.py
+  score_candidates.py
+  generate_report.py
+  compare_runs.py
+  analyze_calibration.py
+  analyze_failures.py
+
+references/
+  placement-patterns.md
+  anti-patterns.md
+  experimental-methodology.md
+  confidence-and-calibration.md
+  integration-playbook.md
+
+templates/
+  jev-config.yaml
+  opportunity-report.md
+  experiment-plan.md
+
+examples/
+  coding-agent/
+  rag-system/
+  graph-system/
+  generic-service/
+```
+
+Adapt languages/tooling as appropriate rather than forcing Python if another implementation is more appropriate.
+
+---
+
+# 40. Skill onboarding
+
+When invoked, the skill should progressively determine:
+
+```text
+repository / repositories
+analysis only vs implementation
+JEV integration already present?
+primary objective
+latency tolerance
+cost tolerance
+risk tolerance
+production vs experimental code
+available benchmarks
+available traces/logs
+ability to modify code
+```
+
+Do not ask unnecessary questions if these can be inferred safely from the repository.
+
+---
+
+# 41. Progressive depth
+
+Support:
+
+```text
+QUICK
+STANDARD
+RESEARCH
+```
+
+## QUICK
+
+Fast architectural scan and top candidate locations.
+
+## STANDARD
+
+Full source analysis, scoring, architecture map, recommendations, and experiment plan.
+
+## RESEARCH
+
+Everything above plus:
+
+```text
+runtime instrumentation
+paired replay
+statistical analysis
+Bayesian analysis
+Pareto analysis
+calibration
+ablation
+failure-transition analysis
+economic break-even
+```
+
+---
+
+# 42. Explainability
+
+Every recommendation must answer:
+
+```text
+Why here?
+Why JEV?
+Why not deterministic code?
+Why now rather than elsewhere?
+What evidence supports the recommendation?
+What could make this recommendation wrong?
+How would we test it?
+```
+
+Do not permit unexplained scores.
+
+---
+
+# 43. Traceability
+
+Maintain a traceability chain:
+
+```text
+source location
+→ observed decision/problem
+→ candidate JEV pattern
+→ scoring evidence
+→ proposed question
+→ implementation
+→ test
+→ experiment
+→ measured outcome
+→ final recommendation
+```
+
+Each opportunity needs a durable unique ID such as:
+
+```text
+JEV-001
+JEV-002
+...
+```
+
+---
+
+# 44. JEV architectural philosophy
+
+The skill should encode these defaults:
+
+```text
+LLMs generate.
+JEV classifies/selects/evaluates.
+Deterministic code enforces.
+Instrumentation measures.
+Experiments decide whether JEV stays.
+```
+
+This is a default architecture, not an absolute rule.
+
+---
+
+# 45. Example target architecture
+
+The skill should recognize and be able to produce architectures similar to:
+
+```text
+USER / ENVIRONMENT
+        │
+        ▼
+   [JEV INTENT]
+        │
+        ▼
+    RETRIEVAL
+        │
+        ▼
+ [JEV EVIDENCE]
+        │
+        ▼
+    PLANNER LLM
+        │
+        ▼
+ [JEV PLAN/ACTION]
+        │
+        ▼
+ [JEV RISK GATE]
+        │
+        ▼
+      EXECUTE
+        │
+        ▼
+ [JEV RESULT CHECK]
+        │
+   ┌────┴─────┐
+   │          │
+continue    complete
+   │          │
+   ▼          ▼
+[JEV CONTEXT] [JEV OUTPUT CHECK]
+```
+
+But the skill must resist implementing every box.
+
+It should determine empirically which subset is worthwhile.
+
+---
+
+# 46. Definition of success
+
+The skill is successful when it can take an unfamiliar repository and answer, with evidence:
+
+> Where are the highest-leverage locations for JEV?
+
+> What exact semantic decisions should JEV make there?
+
+> Which decisions should remain deterministic?
+
+> What questions and choices should be used?
+
+> How should confidence affect execution?
+
+> What fallback should exist?
+
+> How much latency/cost will this add?
+
+> How will we determine whether JEV actually helped?
+
+> Which integrations should be implemented first?
+
+> Which proposed JEV uses should be rejected?
+
+The final result should transform JEV integration from intuition into a repeatable discipline of:
+
+```text
+DISCOVER
+→ SCORE
+→ DESIGN
+→ EXPERIMENT
+→ MEASURE
+→ OPTIMIZE
+→ KEEP / MODIFY / REMOVE
+```
+
+---
+
+# 47. Acceptance criteria
+
+The package is not complete unless it:
+
+- [ ] Works on an unfamiliar repository.
+- [ ] Identifies semantic decision boundaries.
+- [ ] Detects all major JEV placement patterns described above.
+- [ ] Identifies deterministic anti-patterns.
+- [ ] Produces ranked opportunities.
+- [ ] Shows underlying scoring dimensions.
+- [ ] Generates atomic JEV questions.
+- [ ] Generates bounded choices when appropriate.
+- [ ] Defines confidence/fallback behavior.
+- [ ] Separates JEV assessment from deterministic policy.
+- [ ] Maps downstream consequence.
+- [ ] Supports analysis-only mode.
+- [ ] Supports implementation mode.
+- [ ] Supports feature flags.
+- [ ] Supports shadow evaluation.
+- [ ] Supports paired replay where possible.
+- [ ] Measures rescues and regressions.
+- [ ] Calculates effect sizes and uncertainty.
+- [ ] Supports bootstrap confidence intervals.
+- [ ] Supports Bayesian useful-effect analysis.
+- [ ] Supports Pareto analysis.
+- [ ] Supports break-even economics.
+- [ ] Supports calibration analysis.
+- [ ] Supports failure-transition analysis.
+- [ ] Supports ablation testing.
+- [ ] Supports caching analysis.
+- [ ] Produces machine-readable output.
+- [ ] Produces a human-readable report.
+- [ ] Maintains source-to-experiment traceability.
+- [ ] Includes tests.
+- [ ] Includes examples.
+- [ ] Documents when NOT to use JEV.
+- [ ] Can conclude that no JEV integration is justified.
+- [ ] Does not treat more JEV calls as inherently better.
+
+Do not stop after creating documentation or a conceptual framework. Implement the skill, supporting scripts, schemas, templates, examples, tests, and workflow so an agent can actually use it end-to-end.

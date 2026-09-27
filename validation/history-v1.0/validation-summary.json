@@ -1,0 +1,259 @@
+{
+  "package": "jev-placement-skill",
+  "version": "1.0.0",
+  "verified_date": "2026-09-26",
+  "unit_tests": {
+    "tests": 175,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "passed": 175,
+    "duration_seconds": 18.727
+  },
+  "environment": {
+    "python": "3.13.5",
+    "platform": "Linux",
+    "node": "v22.16.0",
+    "typescript": "5.8.3",
+    "pytest": "9.0.2",
+    "PyYAML": "6.0.3",
+    "jsonschema": "4.26.0",
+    "setuptools": "82.0.1"
+  },
+  "package_validation": {
+    "status": "passed",
+    "schema_count": 10,
+    "synthetic_records_validated": 321,
+    "offline_replay_decisions": 1,
+    "manifest_files_verified": 0,
+    "network_requests": 0,
+    "target_code_executed": false
+  },
+  "pattern_coverage": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "K",
+    "L",
+    "M",
+    "NONE"
+  ],
+  "example_scans": {
+    "coding-agent": {
+      "candidate_count": 18,
+      "patterns": [
+        "A",
+        "B",
+        "C",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "K",
+        "M"
+      ],
+      "tier_counts": {
+        "0": 0,
+        "1": 18,
+        "2": 0,
+        "3": 0
+      },
+      "parser_counts": {
+        "python_ast": 2
+      },
+      "warnings": [],
+      "scan_fingerprint": "4e4727f8b153a6061335c01d96d7e68b2aeb8fd2b2262094c13675120a6e073d"
+    },
+    "rag-system": {
+      "candidate_count": 3,
+      "patterns": [
+        "D",
+        "M"
+      ],
+      "tier_counts": {
+        "0": 0,
+        "1": 3,
+        "2": 0,
+        "3": 0
+      },
+      "parser_counts": {
+        "python_ast": 1
+      },
+      "warnings": [],
+      "scan_fingerprint": "1ce211c7289edadaf6fc34c7a4dd34adcd663262065a4d6f6b689b212fdc18a6"
+    },
+    "graph-system": {
+      "candidate_count": 3,
+      "patterns": [
+        "B",
+        "L",
+        "M"
+      ],
+      "tier_counts": {
+        "0": 0,
+        "1": 3,
+        "2": 0,
+        "3": 0
+      },
+      "parser_counts": {
+        "python_ast": 1
+      },
+      "warnings": [],
+      "scan_fingerprint": "0b228eeb5a5ff5744619df8716df7c93ea9eae5bd3aefac579b930fce5530308"
+    },
+    "generic-service": {
+      "candidate_count": 5,
+      "patterns": [
+        "NONE"
+      ],
+      "tier_counts": {
+        "0": 5,
+        "1": 0,
+        "2": 0,
+        "3": 0
+      },
+      "parser_counts": {
+        "python_ast": 1
+      },
+      "warnings": [],
+      "scan_fingerprint": "09be88c20fa04cc388e9f2cf34e6de9298530253ddf5b4dd2b27f915c348ef71"
+    },
+    "polyglot": {
+      "candidate_count": 5,
+      "patterns": [
+        "A",
+        "C",
+        "E",
+        "M",
+        "NONE"
+      ],
+      "tier_counts": {
+        "0": 1,
+        "1": 4,
+        "2": 0,
+        "3": 0
+      },
+      "parser_counts": {
+        "lexical_review_only": 2,
+        "typescript_ast": 1
+      },
+      "warnings": [],
+      "scan_fingerprint": "66d6670b7a3e5420b5844cd1e48d11e1e2d787cee6e5ca68873779d2953f7e11"
+    }
+  },
+  "third_party_source_smokes": [
+    {
+      "package": "click",
+      "installed_version": "8.1.8",
+      "target": "installed third-party source tree, read-only; no target import/test/network",
+      "files_analyzed": 16,
+      "symbols": 527,
+      "parser_counts": {
+        "python_ast": 16
+      },
+      "candidate_count": 93,
+      "tier_counts": {
+        "0": 90,
+        "1": 3,
+        "2": 0,
+        "3": 0
+      },
+      "truncated": false,
+      "warnings": [
+        {
+          "file": "_compat.py",
+          "reason": "Repeated qualified symbols disambiguated by declaration order; ambiguous call targets remain unresolved"
+        },
+        {
+          "file": "_termui_impl.py",
+          "reason": "Repeated qualified symbols disambiguated by declaration order; ambiguous call targets remain unresolved"
+        },
+        {
+          "file": "core.py",
+          "reason": "Repeated qualified symbols disambiguated by declaration order; ambiguous call targets remain unresolved"
+        },
+        {
+          "file": "decorators.py",
+          "reason": "Repeated qualified symbols disambiguated by declaration order; ambiguous call targets remain unresolved"
+        },
+        {
+          "file": "globals.py",
+          "reason": "Repeated qualified symbols disambiguated by declaration order; ambiguous call targets remain unresolved"
+        }
+      ],
+      "scan_fingerprint": "5d9210b5ab859a74c8ff30593b2cacd88a7298de5f66271ddd0ded86e9961872",
+      "elapsed_seconds": 0.289,
+      "semantic_accuracy_validated": false,
+      "all_original_third_party_source_excluded_from_package": true
+    },
+    {
+      "package": "httpx",
+      "installed_version": "0.28.1",
+      "target": "installed third-party source tree, read-only; no target import/test/network",
+      "files_analyzed": 23,
+      "symbols": 469,
+      "parser_counts": {
+        "python_ast": 23
+      },
+      "candidate_count": 63,
+      "tier_counts": {
+        "0": 53,
+        "1": 10,
+        "2": 0,
+        "3": 0
+      },
+      "truncated": false,
+      "warnings": [
+        {
+          "file": "_client.py",
+          "reason": "Repeated qualified symbols disambiguated by declaration order; ambiguous call targets remain unresolved"
+        },
+        {
+          "file": "_exceptions.py",
+          "reason": "Repeated qualified symbols disambiguated by declaration order; ambiguous call targets remain unresolved"
+        },
+        {
+          "file": "_models.py",
+          "reason": "Repeated qualified symbols disambiguated by declaration order; ambiguous call targets remain unresolved"
+        }
+      ],
+      "scan_fingerprint": "6f9bf93630486d67558c63064c82fb04bece7e06351e34922c9f91969e4e3fda",
+      "elapsed_seconds": 0.251,
+      "semantic_accuracy_validated": false,
+      "all_original_third_party_source_excluded_from_package": true
+    }
+  ],
+  "wheel": {
+    "built_offline": true,
+    "installed_into_isolated_directory": true,
+    "module_bytes_match_release": true,
+    "cli_scan_passed": true,
+    "inventory_schema_validation_passed": true,
+    "sha256": "e1cecd7719f747999b77d2889de67d46873b3b9c46f32c903f3ee0a02a0930d6"
+  },
+  "synthetic_demonstrations": {
+    "paired_tasks": 80,
+    "outcome_disposition": "needs_more_evidence",
+    "replay_decisions": 1,
+    "router_verifier_interaction": 0.15,
+    "selected_placements": 2,
+    "note": "Synthetic demonstrations validate execution/analysis logic only; not live JEV performance."
+  },
+  "not_performed": [
+    "Live TypeSafe requests or production model benchmarking",
+    "Live probability/confidence calibration for any real task distribution",
+    "User repository modifications, Git publication, merge or deployment",
+    "Python-version CI matrix execution outside the recorded local interpreter",
+    "Semantic-accuracy audit of the third-party source discovery leads"
+  ],
+  "original_spec_sha256": "fe2c6cfd953e3ac3e1778c9c1937593cdd6288c76cb0fb07a2a4a92218b6013c"
+}

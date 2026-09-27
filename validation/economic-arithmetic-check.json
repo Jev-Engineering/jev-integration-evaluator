@@ -1,0 +1,11 @@
+{
+  "evidence_type": "hypothetical_arithmetic_not_live_savings",
+  "analysis": {
+    "expected_savings_per_task": 0.016,
+    "net_value_per_task": 0.01,
+    "break_even_volume": 10000,
+    "break_even_status": "finite",
+    "total_net_value": 100.0,
+    "assumptions": "Failure reduction and cost estimates must use matching task cohorts; include adverse false-block/regression costs. Do not double-count inference savings already included in added_cost."
+  }
+}

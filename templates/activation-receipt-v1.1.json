@@ -1,0 +1,16 @@
+{
+  "approved": false,
+  "calibration_validated": false,
+  "model": "jev-1.13.0",
+  "policy_version": "UNSET",
+  "questions_hash": "UNSET",
+  "thresholds_hash": "UNSET",
+  "holdout_evidence_ref": "UNSET-not-valid-evidence",
+  "activation_id": "UNSET",
+  "evidence_type": "synthetic",
+  "issued_at": "2000-01-01T00:00:00+00:00",
+  "expires_at": "2000-01-01T00:00:01+00:00",
+  "ordered_questions_hash": "UNSET",
+  "action_thresholds_hash": "UNSET",
+  "revoked": true
+}

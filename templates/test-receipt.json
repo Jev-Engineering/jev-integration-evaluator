@@ -1,0 +1,10 @@
+{
+  "candidate_id": "USE_REAL_OPPORTUNITY_ID",
+  "source_sha256": "USE_MATCHING_SOURCE_HASH",
+  "experiment_id": "USE_MATCHING_EXPERIMENT_ID",
+  "test_id": "boundary-contract-test",
+  "status": "not_run",
+  "command": null,
+  "evidence_type": "unexecuted",
+  "notes": "Fill only after the actual authorized execution; preserve failed/timeout status."
+}

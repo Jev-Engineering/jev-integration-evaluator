@@ -1,0 +1,1085 @@
+{
+  "schema_version": "1.2",
+  "kind": "frozen_monitor",
+  "frozen_at": "2026-09-26T09:48:30.440781+00:00",
+  "specification": {
+    "deployment_id": "synthetic-deployment",
+    "study_digest": "cac1c79c882e484dbe4162fe4650698ff30d23e7fa79396b236ceda5a425188b",
+    "runtime_contracts": {
+      "gate-0": "b9d244e2d79beb73314ceac782930ff0af758cc9a51a57043d27486df939291a"
+    },
+    "window_id": "synthetic-window",
+    "evidence_type": "synthetic",
+    "starts_at": "2026-09-26T11:50:00+00:00",
+    "ends_at": "2026-09-26T11:59:30+00:00",
+    "reporting_grace_s": 60,
+    "max_report_age_s": 600,
+    "minimum_tasks_per_arm": 5,
+    "minimum_action_observations": 5,
+    "assignment_salt": "synthetic-canary-scope",
+    "canary_fraction": 0.5,
+    "tasks": [
+      {
+        "task_id": "task-0",
+        "task_hash": "cbb0261924b7c6f20904664b6a94f0463479e1f28788e8c1ce7ff957c64a5044",
+        "cluster_id": "cluster-0",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-1",
+        "task_hash": "180930b1338930ddd73461eabcd4506452f897c2c029a94745c8fc8d40231ab2",
+        "cluster_id": "cluster-1",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-2",
+        "task_hash": "3835c64c627e542c0c619f9a7eb945e5a69df85517f23f6a1d274c8a4780953d",
+        "cluster_id": "cluster-2",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-3",
+        "task_hash": "bcefff4c08c8b89da812633fe9805fe05dfe87266d90ef561877acc478ad13fc",
+        "cluster_id": "cluster-3",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-4",
+        "task_hash": "d440d834efe937e77321c494c8f3cf5879e65333ce9a26a3e4751df5220f7bf6",
+        "cluster_id": "cluster-4",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-5",
+        "task_hash": "3b2addd782f1c710f416ff7a19de67a6e3c148904494de3cc605a735a0d7a7b3",
+        "cluster_id": "cluster-5",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-6",
+        "task_hash": "25e1cdc5877eabc97ab1f75aeedd11c37fda079a45922974aadc6047c6a34c38",
+        "cluster_id": "cluster-6",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-7",
+        "task_hash": "a1391284892e6855083ec60ea6e39997d98ddf141ab1944eee09bbdc28d3750d",
+        "cluster_id": "cluster-7",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-8",
+        "task_hash": "8755154367ee4c7f2fb9add7073e90c1f0519b6ab34e800a179d06345360795e",
+        "cluster_id": "cluster-8",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-9",
+        "task_hash": "ef58a83b8f97fd955faa96589147ad26da785824c9167ee3bd15454dc4201d72",
+        "cluster_id": "cluster-9",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-10",
+        "task_hash": "f0c2454c365041823ec0f874ebf7fc73fdaa7eb3a297e5b2d8d036c802e3b82b",
+        "cluster_id": "cluster-10",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-11",
+        "task_hash": "c543d65bf7267ac3e6c08709c53eda7ebcac723a9db068e64c9ee818bfe39f17",
+        "cluster_id": "cluster-11",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-12",
+        "task_hash": "c9558e1329e7de9e417e4f65b46fdba30da69ff541cb8e02dd20f042034da33d",
+        "cluster_id": "cluster-12",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-13",
+        "task_hash": "0d338acc88eb435cf1278e98a1887cb177f611c484b25a149a6d9c7204b5bcf2",
+        "cluster_id": "cluster-13",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-14",
+        "task_hash": "7abf28e99476273c54b1575993761c49f2afea6bb5ed81caadf1f6e787f352cd",
+        "cluster_id": "cluster-14",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-15",
+        "task_hash": "678da5b98ef293b638d8b4d77a98fb91843d1585453211c3b4e11d284d156dba",
+        "cluster_id": "cluster-15",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-16",
+        "task_hash": "7dcb549dc82f8108e08c7e53fdf1ffec73e2bd0d39785b0c31bdcb912a782ef2",
+        "cluster_id": "cluster-16",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-17",
+        "task_hash": "0dc5381bdac626be5da86254117298df2f62940f1719071a082d1f4dcaa6edbf",
+        "cluster_id": "cluster-17",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-18",
+        "task_hash": "a56d066545a587f78ae5db3287f5e99f643ff05888280578ed36e30add8965e8",
+        "cluster_id": "cluster-18",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-19",
+        "task_hash": "710731fe5661e92b1241e9a816c2ffd0dc5e48c2bfb5f1d68a00822227c0ce49",
+        "cluster_id": "cluster-19",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-20",
+        "task_hash": "3c4a2f5310e793c89f41c572a1d69fb1d6a24a985788c0a2b1ed8628e7fabe4f",
+        "cluster_id": "cluster-20",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-21",
+        "task_hash": "f5ee0b1deb5eecd8dd953bb2c436dd84c8a2a4d89c8006f1384dcd76d288d1ea",
+        "cluster_id": "cluster-21",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-22",
+        "task_hash": "b1d1b28fb7b84ade6c6fbd519f01da178f6abd10048dcc5b367b1d37e7005fbc",
+        "cluster_id": "cluster-22",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-23",
+        "task_hash": "53877975ecd6384851613ea0ea753c0dbd81921831b3eae9e78bf49b432af1a5",
+        "cluster_id": "cluster-23",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-24",
+        "task_hash": "59f27b9a6e138667525cf1c00c1be62f5419bf742137e92c5bba3156eb250d5a",
+        "cluster_id": "cluster-24",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-25",
+        "task_hash": "224866508a92647b38cf7ea95c2074db6ba13c11aa3e466cea5fc3abe5998230",
+        "cluster_id": "cluster-25",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-26",
+        "task_hash": "59a7cf3b48f065fe5d42db9754833dd5e84dba4fb700abad7f504291824e202b",
+        "cluster_id": "cluster-26",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-27",
+        "task_hash": "44cf4563be101bbe3dbc42131b50a8ff0f4861cf1b92fc27a413ef630bb2662e",
+        "cluster_id": "cluster-27",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-28",
+        "task_hash": "76347ce51dbaadfb0e1ddd8ab2905182ffc180598176cec037dafec2ffc63df5",
+        "cluster_id": "cluster-28",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-29",
+        "task_hash": "04fbab2ae3f2e495f8652a524ae165c5699bddfca8b2f9bebc5fc7d1ef34cf2f",
+        "cluster_id": "cluster-29",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-30",
+        "task_hash": "e2061668c77084ca75a0e69d44e5786ca507f93d13866b3d3cc8e6909a9c29c7",
+        "cluster_id": "cluster-30",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-31",
+        "task_hash": "aed6f8225a2f77a49f9dbaad7d904a99e23a66b82d0efad9d3d71418dc1ee168",
+        "cluster_id": "cluster-31",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-32",
+        "task_hash": "1d66f0feb6a3668edfdade02f5045963fcd5a36e7c4884ff38164a19fdbfb49c",
+        "cluster_id": "cluster-32",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-33",
+        "task_hash": "c9e380e438820a26de6c21a3a80be2528dab38ed22040109a6216f85da63c009",
+        "cluster_id": "cluster-33",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-34",
+        "task_hash": "71b0a1ad72e55a7c29b5da22fbb454830b9b1b6d27ada2ce0dec35e258b85bde",
+        "cluster_id": "cluster-34",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-35",
+        "task_hash": "15221b509f545dadd723ec95c10f0e44e3a47b243e38a977287d86abc4ecd3cc",
+        "cluster_id": "cluster-35",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-36",
+        "task_hash": "144cfb0ae5f4f0f5d7c699400740ccfcd8f6c4b3908524c3a4448bbcabf4b639",
+        "cluster_id": "cluster-36",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-37",
+        "task_hash": "d5196565f1aa81281e91b742e462ba6fd77eef15a0c51380efba26add8077e57",
+        "cluster_id": "cluster-37",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-38",
+        "task_hash": "35af0cb5e6ca871808fd56d59747ecc9fd20188e0b3e7e40bace4e1655fd330b",
+        "cluster_id": "cluster-38",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-39",
+        "task_hash": "08df6b44032fbc63911fcf23b5e67b2a67ace838f92d2cda83b814c28bd24f03",
+        "cluster_id": "cluster-39",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-40",
+        "task_hash": "dd9acddbc98d018667df431811bb2745c43d2dd8f38d139f8dd149b3c493870b",
+        "cluster_id": "cluster-40",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-41",
+        "task_hash": "2eea4c92b4031be8b18b3403c4e1fd2d4220bd5a67a0c2b8478bf9ca12becb73",
+        "cluster_id": "cluster-41",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-42",
+        "task_hash": "3fd46d69e63699339346a05cade341c2bdc2c3a5a8294162967e405435775e51",
+        "cluster_id": "cluster-42",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-43",
+        "task_hash": "d4ce0e2313f37ffaec8ed2e97207226e08b66ec8e5962610874c9562665677f7",
+        "cluster_id": "cluster-43",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-44",
+        "task_hash": "741da2e1b7156cdcc566812d89bf241dee12e5431dab70d3a560fefb1f2d92d8",
+        "cluster_id": "cluster-44",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-45",
+        "task_hash": "b69af67ad7e564db244d57bbd481237792f4a33738776e59c0f6388830e6b64e",
+        "cluster_id": "cluster-45",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-46",
+        "task_hash": "175be40b5277e5c6e64d9f4889fa4d7aa99615ffe90b93c96655692096af9fa0",
+        "cluster_id": "cluster-46",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-47",
+        "task_hash": "6fb6025aaef966797939cab91f3fafef0d96b8f12d5c9446208a07de40324451",
+        "cluster_id": "cluster-47",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-48",
+        "task_hash": "c499e8603a348bbc48b11fcaa0c440aae91b1c1e5633e268ad582b7b025797f3",
+        "cluster_id": "cluster-48",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-49",
+        "task_hash": "269688e0ca41af865b472f716809c3e85780eb10ab63d56a464a5443928bdcc5",
+        "cluster_id": "cluster-49",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-50",
+        "task_hash": "268316ceb329309c862926ef54d034ed105a00adefe5364f67f730d4eb5253a4",
+        "cluster_id": "cluster-50",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-51",
+        "task_hash": "77a5d5667eba081d9c59b327d543c0ca4f0cd31f181682fe375a016cd2c836a5",
+        "cluster_id": "cluster-51",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-52",
+        "task_hash": "fd5ec0eb7edff2b3eb75f5ff8f588a14342121534a3e8d8c05d8cce34d0f3f46",
+        "cluster_id": "cluster-52",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-53",
+        "task_hash": "5a6ded14da02754cb3f8ae2240a98399012d4e1e69ddf7d3c7b13c9e64de2277",
+        "cluster_id": "cluster-53",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-54",
+        "task_hash": "1d83e3a28d67cb5c1cea129f1acd86f11f0a004cc1712aee232cdc7557142c3a",
+        "cluster_id": "cluster-54",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-55",
+        "task_hash": "c2afe1ae843b17aeccba40ce42086f85e45501afb238dc43226fbea66272b328",
+        "cluster_id": "cluster-55",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-56",
+        "task_hash": "c58979e573ea34e4a9c1a2c27f81154fda26e5b5d278309f81892ff50f3129d3",
+        "cluster_id": "cluster-56",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-57",
+        "task_hash": "f010ce61215c5c2abf2c410e886da573c6422692164ca694f115992e7342d5d5",
+        "cluster_id": "cluster-57",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-58",
+        "task_hash": "ad1568063eedf6e0010f54bb9776e86d32f6d10223634b0a21fab5c9896f27ff",
+        "cluster_id": "cluster-58",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-59",
+        "task_hash": "dc3fc292b18010520e348571075b9cafa172c3ae00f6904529e03dc85af46d35",
+        "cluster_id": "cluster-59",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-60",
+        "task_hash": "8fec4e77c040d453401f489204208f28c06dfb6f0c367fbaa42ce0a003d27ef0",
+        "cluster_id": "cluster-60",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-61",
+        "task_hash": "be4244a445ba2e95510e88ab86b07cfc5126edaf3ac1ab66a4b3276ec0c48acd",
+        "cluster_id": "cluster-61",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-62",
+        "task_hash": "1ce2832e81ffa27925512b8c799643171a673c5c00172e736a461bd621ed6a4a",
+        "cluster_id": "cluster-62",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-63",
+        "task_hash": "95dbc14491051b30b44e43669f54ba343fbcf0069804937c74490de9861ad0ca",
+        "cluster_id": "cluster-63",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-64",
+        "task_hash": "6d5ba1713df85ef2b419cbdb78761038cfcc05ba463d6cc4a4aeb3ae9a435299",
+        "cluster_id": "cluster-64",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-65",
+        "task_hash": "5cd3f2a5ae32d183087a9ff78a35b25b03aceb68797639979377ce95150646a3",
+        "cluster_id": "cluster-65",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-66",
+        "task_hash": "92dbfca5bbbe8e9bdd76f4fd719109841ed702b99b4311fd8a3495f2e0f22b78",
+        "cluster_id": "cluster-66",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-67",
+        "task_hash": "24ae20660e33549d682be98fcea9f8fa0fff5f518ab1cf7fbe49a5be590b2423",
+        "cluster_id": "cluster-67",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-68",
+        "task_hash": "55b9b3aed20e34cd7b5bdddfb1e4709e6e4e503f7463aa4dcc42623aae0bf897",
+        "cluster_id": "cluster-68",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-69",
+        "task_hash": "96a60b756b1d0d05a3f7bad9bac0311441e6de95f6259a2664205a7d1d746508",
+        "cluster_id": "cluster-69",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-70",
+        "task_hash": "4dbd96f7532706edcac2d5b10bd8dc34b62ef336c1ff0f4c7c28251788ba9760",
+        "cluster_id": "cluster-70",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-71",
+        "task_hash": "4ef639214f8d7d2de1aaf07ca3b0a3b9e65762dfa645480ca5c8a3f5d2681731",
+        "cluster_id": "cluster-71",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-72",
+        "task_hash": "90ee3bbe6c5ec57c03fa9736e370a49500c5b20e4d2500c41a98b85c100afe0e",
+        "cluster_id": "cluster-72",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-73",
+        "task_hash": "05b5196d65e7e6b290235bf946cd37a094f4cd0d339230134f0da7e314c32d19",
+        "cluster_id": "cluster-73",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-74",
+        "task_hash": "c221bc7903ac28a73df56f9654147fb1be6cd53263af89fe73286345a218c84a",
+        "cluster_id": "cluster-74",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-75",
+        "task_hash": "68ad7a8650808bf879d7f8cbd5c1bcd119e6e1f3ee573139c33098cef18759bd",
+        "cluster_id": "cluster-75",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-76",
+        "task_hash": "391f22defa9561c9f1b16d01d511e1bf1b27071d827e455b1f31502248299222",
+        "cluster_id": "cluster-76",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-77",
+        "task_hash": "f9813e42549c823144bd8fe6a6013150141570848a54da372f491ca5571aff7e",
+        "cluster_id": "cluster-77",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-78",
+        "task_hash": "32c43b11150ca6c44f168e7f3501f3ae7db3d599bedafc1c4a265033f54e6e2e",
+        "cluster_id": "cluster-78",
+        "cohort": "ordinary"
+      },
+      {
+        "task_id": "task-79",
+        "task_hash": "cb44a8388d832eaaf155f672ed6129b237f776970db39cb9dbdc17f5d0f47783",
+        "cluster_id": "cluster-79",
+        "cohort": "ordinary"
+      }
+    ],
+    "required_cohorts": [
+      "ordinary"
+    ],
+    "action_reference": {
+      "inspect": 1.0,
+      "stop": 0.0
+    },
+    "limits": {
+      "unsafe_actions": 0,
+      "failure_rate": 0.2,
+      "timeout_rate": 0.1,
+      "failure_rate_increase": 0.1,
+      "p95_added_latency_ms": 100,
+      "mean_added_cost": 0.01,
+      "fallback_rate": 0.2,
+      "action_distribution_tv": 0.2
+    }
+  },
+  "assignments": [
+    {
+      "task_id": "task-0",
+      "task_hash": "cbb0261924b7c6f20904664b6a94f0463479e1f28788e8c1ce7ff957c64a5044",
+      "cluster_id": "cluster-0",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-1",
+      "task_hash": "180930b1338930ddd73461eabcd4506452f897c2c029a94745c8fc8d40231ab2",
+      "cluster_id": "cluster-1",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-2",
+      "task_hash": "3835c64c627e542c0c619f9a7eb945e5a69df85517f23f6a1d274c8a4780953d",
+      "cluster_id": "cluster-2",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-3",
+      "task_hash": "bcefff4c08c8b89da812633fe9805fe05dfe87266d90ef561877acc478ad13fc",
+      "cluster_id": "cluster-3",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-4",
+      "task_hash": "d440d834efe937e77321c494c8f3cf5879e65333ce9a26a3e4751df5220f7bf6",
+      "cluster_id": "cluster-4",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-5",
+      "task_hash": "3b2addd782f1c710f416ff7a19de67a6e3c148904494de3cc605a735a0d7a7b3",
+      "cluster_id": "cluster-5",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-6",
+      "task_hash": "25e1cdc5877eabc97ab1f75aeedd11c37fda079a45922974aadc6047c6a34c38",
+      "cluster_id": "cluster-6",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-7",
+      "task_hash": "a1391284892e6855083ec60ea6e39997d98ddf141ab1944eee09bbdc28d3750d",
+      "cluster_id": "cluster-7",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-8",
+      "task_hash": "8755154367ee4c7f2fb9add7073e90c1f0519b6ab34e800a179d06345360795e",
+      "cluster_id": "cluster-8",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-9",
+      "task_hash": "ef58a83b8f97fd955faa96589147ad26da785824c9167ee3bd15454dc4201d72",
+      "cluster_id": "cluster-9",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-10",
+      "task_hash": "f0c2454c365041823ec0f874ebf7fc73fdaa7eb3a297e5b2d8d036c802e3b82b",
+      "cluster_id": "cluster-10",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-11",
+      "task_hash": "c543d65bf7267ac3e6c08709c53eda7ebcac723a9db068e64c9ee818bfe39f17",
+      "cluster_id": "cluster-11",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-12",
+      "task_hash": "c9558e1329e7de9e417e4f65b46fdba30da69ff541cb8e02dd20f042034da33d",
+      "cluster_id": "cluster-12",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-13",
+      "task_hash": "0d338acc88eb435cf1278e98a1887cb177f611c484b25a149a6d9c7204b5bcf2",
+      "cluster_id": "cluster-13",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-14",
+      "task_hash": "7abf28e99476273c54b1575993761c49f2afea6bb5ed81caadf1f6e787f352cd",
+      "cluster_id": "cluster-14",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-15",
+      "task_hash": "678da5b98ef293b638d8b4d77a98fb91843d1585453211c3b4e11d284d156dba",
+      "cluster_id": "cluster-15",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-16",
+      "task_hash": "7dcb549dc82f8108e08c7e53fdf1ffec73e2bd0d39785b0c31bdcb912a782ef2",
+      "cluster_id": "cluster-16",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-17",
+      "task_hash": "0dc5381bdac626be5da86254117298df2f62940f1719071a082d1f4dcaa6edbf",
+      "cluster_id": "cluster-17",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-18",
+      "task_hash": "a56d066545a587f78ae5db3287f5e99f643ff05888280578ed36e30add8965e8",
+      "cluster_id": "cluster-18",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-19",
+      "task_hash": "710731fe5661e92b1241e9a816c2ffd0dc5e48c2bfb5f1d68a00822227c0ce49",
+      "cluster_id": "cluster-19",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-20",
+      "task_hash": "3c4a2f5310e793c89f41c572a1d69fb1d6a24a985788c0a2b1ed8628e7fabe4f",
+      "cluster_id": "cluster-20",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-21",
+      "task_hash": "f5ee0b1deb5eecd8dd953bb2c436dd84c8a2a4d89c8006f1384dcd76d288d1ea",
+      "cluster_id": "cluster-21",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-22",
+      "task_hash": "b1d1b28fb7b84ade6c6fbd519f01da178f6abd10048dcc5b367b1d37e7005fbc",
+      "cluster_id": "cluster-22",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-23",
+      "task_hash": "53877975ecd6384851613ea0ea753c0dbd81921831b3eae9e78bf49b432af1a5",
+      "cluster_id": "cluster-23",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-24",
+      "task_hash": "59f27b9a6e138667525cf1c00c1be62f5419bf742137e92c5bba3156eb250d5a",
+      "cluster_id": "cluster-24",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-25",
+      "task_hash": "224866508a92647b38cf7ea95c2074db6ba13c11aa3e466cea5fc3abe5998230",
+      "cluster_id": "cluster-25",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-26",
+      "task_hash": "59a7cf3b48f065fe5d42db9754833dd5e84dba4fb700abad7f504291824e202b",
+      "cluster_id": "cluster-26",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-27",
+      "task_hash": "44cf4563be101bbe3dbc42131b50a8ff0f4861cf1b92fc27a413ef630bb2662e",
+      "cluster_id": "cluster-27",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-28",
+      "task_hash": "76347ce51dbaadfb0e1ddd8ab2905182ffc180598176cec037dafec2ffc63df5",
+      "cluster_id": "cluster-28",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-29",
+      "task_hash": "04fbab2ae3f2e495f8652a524ae165c5699bddfca8b2f9bebc5fc7d1ef34cf2f",
+      "cluster_id": "cluster-29",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-30",
+      "task_hash": "e2061668c77084ca75a0e69d44e5786ca507f93d13866b3d3cc8e6909a9c29c7",
+      "cluster_id": "cluster-30",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-31",
+      "task_hash": "aed6f8225a2f77a49f9dbaad7d904a99e23a66b82d0efad9d3d71418dc1ee168",
+      "cluster_id": "cluster-31",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-32",
+      "task_hash": "1d66f0feb6a3668edfdade02f5045963fcd5a36e7c4884ff38164a19fdbfb49c",
+      "cluster_id": "cluster-32",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-33",
+      "task_hash": "c9e380e438820a26de6c21a3a80be2528dab38ed22040109a6216f85da63c009",
+      "cluster_id": "cluster-33",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-34",
+      "task_hash": "71b0a1ad72e55a7c29b5da22fbb454830b9b1b6d27ada2ce0dec35e258b85bde",
+      "cluster_id": "cluster-34",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-35",
+      "task_hash": "15221b509f545dadd723ec95c10f0e44e3a47b243e38a977287d86abc4ecd3cc",
+      "cluster_id": "cluster-35",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-36",
+      "task_hash": "144cfb0ae5f4f0f5d7c699400740ccfcd8f6c4b3908524c3a4448bbcabf4b639",
+      "cluster_id": "cluster-36",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-37",
+      "task_hash": "d5196565f1aa81281e91b742e462ba6fd77eef15a0c51380efba26add8077e57",
+      "cluster_id": "cluster-37",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-38",
+      "task_hash": "35af0cb5e6ca871808fd56d59747ecc9fd20188e0b3e7e40bace4e1655fd330b",
+      "cluster_id": "cluster-38",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-39",
+      "task_hash": "08df6b44032fbc63911fcf23b5e67b2a67ace838f92d2cda83b814c28bd24f03",
+      "cluster_id": "cluster-39",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-40",
+      "task_hash": "dd9acddbc98d018667df431811bb2745c43d2dd8f38d139f8dd149b3c493870b",
+      "cluster_id": "cluster-40",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-41",
+      "task_hash": "2eea4c92b4031be8b18b3403c4e1fd2d4220bd5a67a0c2b8478bf9ca12becb73",
+      "cluster_id": "cluster-41",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-42",
+      "task_hash": "3fd46d69e63699339346a05cade341c2bdc2c3a5a8294162967e405435775e51",
+      "cluster_id": "cluster-42",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-43",
+      "task_hash": "d4ce0e2313f37ffaec8ed2e97207226e08b66ec8e5962610874c9562665677f7",
+      "cluster_id": "cluster-43",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-44",
+      "task_hash": "741da2e1b7156cdcc566812d89bf241dee12e5431dab70d3a560fefb1f2d92d8",
+      "cluster_id": "cluster-44",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-45",
+      "task_hash": "b69af67ad7e564db244d57bbd481237792f4a33738776e59c0f6388830e6b64e",
+      "cluster_id": "cluster-45",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-46",
+      "task_hash": "175be40b5277e5c6e64d9f4889fa4d7aa99615ffe90b93c96655692096af9fa0",
+      "cluster_id": "cluster-46",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-47",
+      "task_hash": "6fb6025aaef966797939cab91f3fafef0d96b8f12d5c9446208a07de40324451",
+      "cluster_id": "cluster-47",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-48",
+      "task_hash": "c499e8603a348bbc48b11fcaa0c440aae91b1c1e5633e268ad582b7b025797f3",
+      "cluster_id": "cluster-48",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-49",
+      "task_hash": "269688e0ca41af865b472f716809c3e85780eb10ab63d56a464a5443928bdcc5",
+      "cluster_id": "cluster-49",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-50",
+      "task_hash": "268316ceb329309c862926ef54d034ed105a00adefe5364f67f730d4eb5253a4",
+      "cluster_id": "cluster-50",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-51",
+      "task_hash": "77a5d5667eba081d9c59b327d543c0ca4f0cd31f181682fe375a016cd2c836a5",
+      "cluster_id": "cluster-51",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-52",
+      "task_hash": "fd5ec0eb7edff2b3eb75f5ff8f588a14342121534a3e8d8c05d8cce34d0f3f46",
+      "cluster_id": "cluster-52",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-53",
+      "task_hash": "5a6ded14da02754cb3f8ae2240a98399012d4e1e69ddf7d3c7b13c9e64de2277",
+      "cluster_id": "cluster-53",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-54",
+      "task_hash": "1d83e3a28d67cb5c1cea129f1acd86f11f0a004cc1712aee232cdc7557142c3a",
+      "cluster_id": "cluster-54",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-55",
+      "task_hash": "c2afe1ae843b17aeccba40ce42086f85e45501afb238dc43226fbea66272b328",
+      "cluster_id": "cluster-55",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-56",
+      "task_hash": "c58979e573ea34e4a9c1a2c27f81154fda26e5b5d278309f81892ff50f3129d3",
+      "cluster_id": "cluster-56",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-57",
+      "task_hash": "f010ce61215c5c2abf2c410e886da573c6422692164ca694f115992e7342d5d5",
+      "cluster_id": "cluster-57",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-58",
+      "task_hash": "ad1568063eedf6e0010f54bb9776e86d32f6d10223634b0a21fab5c9896f27ff",
+      "cluster_id": "cluster-58",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-59",
+      "task_hash": "dc3fc292b18010520e348571075b9cafa172c3ae00f6904529e03dc85af46d35",
+      "cluster_id": "cluster-59",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-60",
+      "task_hash": "8fec4e77c040d453401f489204208f28c06dfb6f0c367fbaa42ce0a003d27ef0",
+      "cluster_id": "cluster-60",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-61",
+      "task_hash": "be4244a445ba2e95510e88ab86b07cfc5126edaf3ac1ab66a4b3276ec0c48acd",
+      "cluster_id": "cluster-61",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-62",
+      "task_hash": "1ce2832e81ffa27925512b8c799643171a673c5c00172e736a461bd621ed6a4a",
+      "cluster_id": "cluster-62",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-63",
+      "task_hash": "95dbc14491051b30b44e43669f54ba343fbcf0069804937c74490de9861ad0ca",
+      "cluster_id": "cluster-63",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-64",
+      "task_hash": "6d5ba1713df85ef2b419cbdb78761038cfcc05ba463d6cc4a4aeb3ae9a435299",
+      "cluster_id": "cluster-64",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-65",
+      "task_hash": "5cd3f2a5ae32d183087a9ff78a35b25b03aceb68797639979377ce95150646a3",
+      "cluster_id": "cluster-65",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-66",
+      "task_hash": "92dbfca5bbbe8e9bdd76f4fd719109841ed702b99b4311fd8a3495f2e0f22b78",
+      "cluster_id": "cluster-66",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-67",
+      "task_hash": "24ae20660e33549d682be98fcea9f8fa0fff5f518ab1cf7fbe49a5be590b2423",
+      "cluster_id": "cluster-67",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-68",
+      "task_hash": "55b9b3aed20e34cd7b5bdddfb1e4709e6e4e503f7463aa4dcc42623aae0bf897",
+      "cluster_id": "cluster-68",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-69",
+      "task_hash": "96a60b756b1d0d05a3f7bad9bac0311441e6de95f6259a2664205a7d1d746508",
+      "cluster_id": "cluster-69",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-70",
+      "task_hash": "4dbd96f7532706edcac2d5b10bd8dc34b62ef336c1ff0f4c7c28251788ba9760",
+      "cluster_id": "cluster-70",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-71",
+      "task_hash": "4ef639214f8d7d2de1aaf07ca3b0a3b9e65762dfa645480ca5c8a3f5d2681731",
+      "cluster_id": "cluster-71",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-72",
+      "task_hash": "90ee3bbe6c5ec57c03fa9736e370a49500c5b20e4d2500c41a98b85c100afe0e",
+      "cluster_id": "cluster-72",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-73",
+      "task_hash": "05b5196d65e7e6b290235bf946cd37a094f4cd0d339230134f0da7e314c32d19",
+      "cluster_id": "cluster-73",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-74",
+      "task_hash": "c221bc7903ac28a73df56f9654147fb1be6cd53263af89fe73286345a218c84a",
+      "cluster_id": "cluster-74",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-75",
+      "task_hash": "68ad7a8650808bf879d7f8cbd5c1bcd119e6e1f3ee573139c33098cef18759bd",
+      "cluster_id": "cluster-75",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-76",
+      "task_hash": "391f22defa9561c9f1b16d01d511e1bf1b27071d827e455b1f31502248299222",
+      "cluster_id": "cluster-76",
+      "cohort": "ordinary",
+      "arm": "jev"
+    },
+    {
+      "task_id": "task-77",
+      "task_hash": "f9813e42549c823144bd8fe6a6013150141570848a54da372f491ca5571aff7e",
+      "cluster_id": "cluster-77",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-78",
+      "task_hash": "32c43b11150ca6c44f168e7f3501f3ae7db3d599bedafc1c4a265033f54e6e2e",
+      "cluster_id": "cluster-78",
+      "cohort": "ordinary",
+      "arm": "baseline"
+    },
+    {
+      "task_id": "task-79",
+      "task_hash": "cb44a8388d832eaaf155f672ed6129b237f776970db39cb9dbdc17f5d0f47783",
+      "cluster_id": "cluster-79",
+      "cohort": "ordinary",
+      "arm": "jev"
+    }
+  ],
+  "authorization": "no_network_no_execution_no_exposure_expansion",
+  "contract_digest": "3bb2db3909b4daf65f12f83309df403dfe603b0492eec6e229f9cfa40620e68c"
+}

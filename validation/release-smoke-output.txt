@@ -1,0 +1,117 @@
+{
+  "patterns": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "K",
+    "L",
+    "M",
+    "NONE"
+  ],
+  "smoke": [
+    {
+      "package": "click",
+      "installed_version": "8.1.8",
+      "target": "installed third-party source tree, read-only; no target import/test/network",
+      "files_analyzed": 16,
+      "symbols": 527,
+      "parser_counts": {
+        "python_ast": 16
+      },
+      "candidate_count": 93,
+      "tier_counts": {
+        "0": 90,
+        "1": 3,
+        "2": 0,
+        "3": 0
+      },
+      "truncated": false,
+      "warnings": [
+        {
+          "file": "_compat.py",
+          "reason": "Repeated qualified symbols disambiguated by declaration order; ambiguous call targets remain unresolved"
+        },
+        {
+          "file": "_termui_impl.py",
+          "reason": "Repeated qualified symbols disambiguated by declaration order; ambiguous call targets remain unresolved"
+        },
+        {
+          "file": "core.py",
+          "reason": "Repeated qualified symbols disambiguated by declaration order; ambiguous call targets remain unresolved"
+        },
+        {
+          "file": "decorators.py",
+          "reason": "Repeated qualified symbols disambiguated by declaration order; ambiguous call targets remain unresolved"
+        },
+        {
+          "file": "globals.py",
+          "reason": "Repeated qualified symbols disambiguated by declaration order; ambiguous call targets remain unresolved"
+        }
+      ],
+      "scan_fingerprint": "eb901ac63e90d31870603cbe6dd302649f32d8f4af322757670999411b5a7308",
+      "elapsed_seconds": 0.219,
+      "semantic_accuracy_validated": false,
+      "all_original_third_party_source_excluded_from_package": true
+    },
+    {
+      "package": "httpx",
+      "installed_version": "0.28.1",
+      "target": "installed third-party source tree, read-only; no target import/test/network",
+      "files_analyzed": 23,
+      "symbols": 469,
+      "parser_counts": {
+        "python_ast": 23
+      },
+      "candidate_count": 63,
+      "tier_counts": {
+        "0": 53,
+        "1": 10,
+        "2": 0,
+        "3": 0
+      },
+      "truncated": false,
+      "warnings": [
+        {
+          "file": "_client.py",
+          "reason": "Repeated qualified symbols disambiguated by declaration order; ambiguous call targets remain unresolved"
+        },
+        {
+          "file": "_exceptions.py",
+          "reason": "Repeated qualified symbols disambiguated by declaration order; ambiguous call targets remain unresolved"
+        },
+        {
+          "file": "_models.py",
+          "reason": "Repeated qualified symbols disambiguated by declaration order; ambiguous call targets remain unresolved"
+        }
+      ],
+      "scan_fingerprint": "970c5bbef2104e78412b1710fa64588ebc7c6dde44bb67d48639ef05bf00842b",
+      "elapsed_seconds": 0.166,
+      "semantic_accuracy_validated": false,
+      "all_original_third_party_source_excluded_from_package": true
+    }
+  ],
+  "synthetic_optimization": {
+    "candidate_ids": [
+      "JEV-C25AE1A294B1",
+      "JEV-E69F0ED1FC49"
+    ],
+    "utility": 0.508,
+    "quality_gain": 0.3,
+    "reliability_gain": 0.2,
+    "failure_reduction": 0.16,
+    "model_call_reduction": 1.0,
+    "measured_interaction_utility": 0,
+    "added_latency_ms": 80,
+    "added_cost": 0.0016,
+    "calls_per_task": 2,
+    "complexity": 1.0
+  },
+  "synthetic_ablation_interaction": 0.15
+}

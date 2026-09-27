@@ -1,0 +1,834 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:review:1.0",
+  "type": "object",
+  "additionalProperties": {
+    "type": "object",
+    "properties": {
+      "source_sha256": {
+        "type": "string"
+      },
+      "reviewer": {
+        "type": "string"
+      },
+      "reason": {
+        "type": "string"
+      },
+      "approved": {
+        "type": "boolean"
+      },
+      "dimensions": {
+        "type": "object",
+        "properties": {
+          "semantic_uncertainty": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "lower": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "upper": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "status": {
+                "enum": [
+                  "unknown",
+                  "inferred",
+                  "observed",
+                  "measured",
+                  "owner_estimate"
+                ]
+              },
+              "rationale": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidence_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "value",
+              "lower",
+              "upper",
+              "status",
+              "rationale",
+              "evidence_refs"
+            ],
+            "additionalProperties": false
+          },
+          "decision_boundedness": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "lower": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "upper": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "status": {
+                "enum": [
+                  "unknown",
+                  "inferred",
+                  "observed",
+                  "measured",
+                  "owner_estimate"
+                ]
+              },
+              "rationale": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidence_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "value",
+              "lower",
+              "upper",
+              "status",
+              "rationale",
+              "evidence_refs"
+            ],
+            "additionalProperties": false
+          },
+          "downstream_consequence": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "lower": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "upper": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "status": {
+                "enum": [
+                  "unknown",
+                  "inferred",
+                  "observed",
+                  "measured",
+                  "owner_estimate"
+                ]
+              },
+              "rationale": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidence_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "value",
+              "lower",
+              "upper",
+              "status",
+              "rationale",
+              "evidence_refs"
+            ],
+            "additionalProperties": false
+          },
+          "decision_frequency": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "lower": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "upper": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "status": {
+                "enum": [
+                  "unknown",
+                  "inferred",
+                  "observed",
+                  "measured",
+                  "owner_estimate"
+                ]
+              },
+              "rationale": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidence_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "value",
+              "lower",
+              "upper",
+              "status",
+              "rationale",
+              "evidence_refs"
+            ],
+            "additionalProperties": false
+          },
+          "cost_of_wrong_decision": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "lower": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "upper": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "status": {
+                "enum": [
+                  "unknown",
+                  "inferred",
+                  "observed",
+                  "measured",
+                  "owner_estimate"
+                ]
+              },
+              "rationale": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidence_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "value",
+              "lower",
+              "upper",
+              "status",
+              "rationale",
+              "evidence_refs"
+            ],
+            "additionalProperties": false
+          },
+          "recoverability_value": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "lower": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "upper": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "status": {
+                "enum": [
+                  "unknown",
+                  "inferred",
+                  "observed",
+                  "measured",
+                  "owner_estimate"
+                ]
+              },
+              "rationale": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidence_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "value",
+              "lower",
+              "upper",
+              "status",
+              "rationale",
+              "evidence_refs"
+            ],
+            "additionalProperties": false
+          },
+          "observability": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "lower": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "upper": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "status": {
+                "enum": [
+                  "unknown",
+                  "inferred",
+                  "observed",
+                  "measured",
+                  "owner_estimate"
+                ]
+              },
+              "rationale": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidence_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "value",
+              "lower",
+              "upper",
+              "status",
+              "rationale",
+              "evidence_refs"
+            ],
+            "additionalProperties": false
+          },
+          "deterministic_alternative_quality": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "lower": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "upper": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "status": {
+                "enum": [
+                  "unknown",
+                  "inferred",
+                  "observed",
+                  "measured",
+                  "owner_estimate"
+                ]
+              },
+              "rationale": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidence_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "value",
+              "lower",
+              "upper",
+              "status",
+              "rationale",
+              "evidence_refs"
+            ],
+            "additionalProperties": false
+          },
+          "current_failure_rate": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "lower": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "upper": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "status": {
+                "enum": [
+                  "unknown",
+                  "inferred",
+                  "observed",
+                  "measured",
+                  "owner_estimate"
+                ]
+              },
+              "rationale": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidence_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "value",
+              "lower",
+              "upper",
+              "status",
+              "rationale",
+              "evidence_refs"
+            ],
+            "additionalProperties": false
+          },
+          "current_llm_dependency": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "lower": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "upper": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "status": {
+                "enum": [
+                  "unknown",
+                  "inferred",
+                  "observed",
+                  "measured",
+                  "owner_estimate"
+                ]
+              },
+              "rationale": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidence_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "value",
+              "lower",
+              "upper",
+              "status",
+              "rationale",
+              "evidence_refs"
+            ],
+            "additionalProperties": false
+          },
+          "latency_sensitivity": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "lower": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "upper": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "status": {
+                "enum": [
+                  "unknown",
+                  "inferred",
+                  "observed",
+                  "measured",
+                  "owner_estimate"
+                ]
+              },
+              "rationale": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidence_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "value",
+              "lower",
+              "upper",
+              "status",
+              "rationale",
+              "evidence_refs"
+            ],
+            "additionalProperties": false
+          },
+          "cost_sensitivity": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "lower": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "upper": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "status": {
+                "enum": [
+                  "unknown",
+                  "inferred",
+                  "observed",
+                  "measured",
+                  "owner_estimate"
+                ]
+              },
+              "rationale": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidence_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "value",
+              "lower",
+              "upper",
+              "status",
+              "rationale",
+              "evidence_refs"
+            ],
+            "additionalProperties": false
+          },
+          "implementation_complexity": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "lower": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "upper": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "status": {
+                "enum": [
+                  "unknown",
+                  "inferred",
+                  "observed",
+                  "measured",
+                  "owner_estimate"
+                ]
+              },
+              "rationale": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidence_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "value",
+              "lower",
+              "upper",
+              "status",
+              "rationale",
+              "evidence_refs"
+            ],
+            "additionalProperties": false
+          },
+          "testability": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "lower": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "upper": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "status": {
+                "enum": [
+                  "unknown",
+                  "inferred",
+                  "observed",
+                  "measured",
+                  "owner_estimate"
+                ]
+              },
+              "rationale": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidence_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "value",
+              "lower",
+              "upper",
+              "status",
+              "rationale",
+              "evidence_refs"
+            ],
+            "additionalProperties": false
+          },
+          "expected_reuse": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "lower": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "upper": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "status": {
+                "enum": [
+                  "unknown",
+                  "inferred",
+                  "observed",
+                  "measured",
+                  "owner_estimate"
+                ]
+              },
+              "rationale": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidence_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "value",
+              "lower",
+              "upper",
+              "status",
+              "rationale",
+              "evidence_refs"
+            ],
+            "additionalProperties": false
+          },
+          "confidence_calibration_value": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "lower": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "upper": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "status": {
+                "enum": [
+                  "unknown",
+                  "inferred",
+                  "observed",
+                  "measured",
+                  "owner_estimate"
+                ]
+              },
+              "rationale": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidence_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "value",
+              "lower",
+              "upper",
+              "status",
+              "rationale",
+              "evidence_refs"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "estimates": {
+        "type": "object"
+      },
+      "deterministic_alternative": {
+        "enum": [
+          "none",
+          "weak",
+          "equivalent",
+          "preferred",
+          "mandatory"
+        ]
+      },
+      "hard_real_time": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "source_sha256",
+      "reviewer",
+      "reason",
+      "approved"
+    ],
+    "additionalProperties": false
+  }
+}

@@ -1,0 +1,193 @@
+{
+  "nodes": [
+    {
+      "id": "route.rs::<file-review>",
+      "file": "route.rs",
+      "symbol": "<file-review>",
+      "lines": [
+        1,
+        4
+      ],
+      "roles": [],
+      "calls": [
+        {
+          "name": "choose_recovery",
+          "line": 2
+        }
+      ],
+      "branches": [
+        1
+      ],
+      "loops": [],
+      "exceptions": [],
+      "dataflow": [],
+      "fan_out": 0,
+      "reachable_nodes": 0,
+      "dependency_depth_lower_bound": 0,
+      "parser": "lexical_review_only",
+      "is_test": false
+    },
+    {
+      "id": "router.go::<file-review>",
+      "file": "router.go",
+      "symbol": "<file-review>",
+      "lines": [
+        1,
+        6
+      ],
+      "roles": [],
+      "calls": [
+        {
+          "name": "selectPath",
+          "line": 3
+        }
+      ],
+      "branches": [
+        1
+      ],
+      "loops": [],
+      "exceptions": [],
+      "dataflow": [],
+      "fan_out": 0,
+      "reachable_nodes": 0,
+      "dependency_depth_lower_bound": 0,
+      "parser": "lexical_review_only",
+      "is_test": false
+    },
+    {
+      "id": "router.ts::opaqueSeam",
+      "file": "router.ts",
+      "symbol": "opaqueSeam",
+      "lines": [
+        4,
+        8
+      ],
+      "roles": [
+        "model",
+        "tool"
+      ],
+      "calls": [
+        {
+          "name": "llm.choose",
+          "line": 5
+        },
+        {
+          "name": "executor.execute_tool",
+          "line": 6
+        }
+      ],
+      "branches": [],
+      "loops": [],
+      "exceptions": [],
+      "dataflow": [
+        {
+          "target": "proposed",
+          "calls": [
+            "llm.choose"
+          ],
+          "reads": [
+            "llm",
+            "choose",
+            "state"
+          ],
+          "line": 5
+        },
+        {
+          "target": "result",
+          "calls": [
+            "executor.execute_tool"
+          ],
+          "reads": [
+            "executor",
+            "execute_tool",
+            "proposed"
+          ],
+          "line": 6
+        }
+      ],
+      "fan_out": 0,
+      "reachable_nodes": 0,
+      "dependency_depth_lower_bound": 0,
+      "parser": "typescript_ast",
+      "is_test": false
+    },
+    {
+      "id": "router.ts::exactScale",
+      "file": "router.ts",
+      "symbol": "exactScale",
+      "lines": [
+        9,
+        9
+      ],
+      "roles": [],
+      "calls": [],
+      "branches": [],
+      "loops": [],
+      "exceptions": [],
+      "dataflow": [],
+      "fan_out": 0,
+      "reachable_nodes": 0,
+      "dependency_depth_lower_bound": 0,
+      "parser": "typescript_ast",
+      "is_test": false
+    }
+  ],
+  "edges": [],
+  "unresolved_calls": [
+    {
+      "source": "route.rs::<file-review>",
+      "call": "choose_recovery",
+      "line": 2
+    },
+    {
+      "source": "router.go::<file-review>",
+      "call": "selectPath",
+      "line": 3
+    },
+    {
+      "source": "router.ts::opaqueSeam",
+      "call": "llm.choose",
+      "line": 5
+    },
+    {
+      "source": "router.ts::opaqueSeam",
+      "call": "executor.execute_tool",
+      "line": 6
+    }
+  ],
+  "modules": [
+    {
+      "file": "route.rs",
+      "symbols": [
+        "<file-review>"
+      ]
+    },
+    {
+      "file": "router.go",
+      "symbols": [
+        "<file-review>"
+      ]
+    },
+    {
+      "file": "router.ts",
+      "symbols": [
+        "exactScale",
+        "opaqueSeam"
+      ]
+    }
+  ],
+  "side_effect_map": [],
+  "flow_maps": {
+    "tool": [
+      "router.ts::opaqueSeam"
+    ],
+    "model": [
+      "router.ts::opaqueSeam"
+    ],
+    "retrieve": [],
+    "observe": [],
+    "graph": [],
+    "context": [],
+    "agent": []
+  }
+}

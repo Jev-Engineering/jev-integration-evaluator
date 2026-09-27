@@ -1,0 +1,138 @@
+{
+  "output_directory": "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/before",
+  "candidate_count": 18,
+  "tier_counts": {
+    "1": 18
+  },
+  "optimizer_status": "no_justified_integration_set",
+  "files": [
+    "JEV_ARCHITECTURE.md",
+    "JEV_EXPERIMENT_PLAN.md",
+    "JEV_INTEGRATION_PLAN.md",
+    "JEV_OPPORTUNITIES.md",
+    "JEV_RESULTS.md",
+    "JEV_RISK_ANALYSIS.md",
+    "architecture.json",
+    "architecture.mmd",
+    "experiment-plan.json",
+    "jev-config.yaml",
+    "jev-opportunities.csv",
+    "jev-opportunities.json",
+    "jev-placement-sets.json"
+  ]
+}
+{
+  "output_directory": "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/after",
+  "candidate_count": 18,
+  "tier_counts": {
+    "1": 18
+  },
+  "optimizer_status": "no_justified_integration_set",
+  "files": [
+    "JEV_ARCHITECTURE.md",
+    "JEV_EXPERIMENT_PLAN.md",
+    "JEV_INTEGRATION_PLAN.md",
+    "JEV_OPPORTUNITIES.md",
+    "JEV_RESULTS.md",
+    "JEV_RISK_ANALYSIS.md",
+    "architecture.json",
+    "architecture.mmd",
+    "experiment-plan.json",
+    "jev-config.yaml",
+    "jev-opportunities.csv",
+    "jev-opportunities.json",
+    "jev-placement-sets.json"
+  ]
+}
+{
+  "status": "written",
+  "output": "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/snapshot-diff.json"
+}
+{
+  "status": "written",
+  "output": "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/study.json"
+}
+{
+  "status": "valid",
+  "output": "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/study-check.json"
+}
+{
+  "status": "written",
+  "output": "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/study-evaluate.json",
+  "recommendation": "needs_more_evidence",
+  "pair_count": 80,
+  "evidence_type": "synthetic"
+}
+{
+  "status": "frozen_requires_untouched_holdout",
+  "output": "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/threshold-policy.json"
+}
+{
+  "status": "synthetic_only",
+  "output": "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/holdout-report.json"
+}
+{
+  "status": "written",
+  "output": "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/rubric-lint.json"
+}
+{
+  "status": "written",
+  "output": "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/probe-suite.json"
+}
+{
+  "status": "no_inconsistency_observed_in_this_suite",
+  "output": "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/robustness-run.json",
+  "evidence_type": "synthetic"
+}
+{
+  "status": "no_inconsistency_observed_in_this_suite",
+  "output": "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/robustness-report.json",
+  "evidence_type": "synthetic"
+}
+{
+  "status": "written",
+  "output": "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/audit-verification.json"
+}
+{
+  "status": "valid",
+  "kind": "study-spec",
+  "records": 1
+}
+{
+  "status": "valid",
+  "kind": "study",
+  "records": 1
+}
+{
+  "status": "valid",
+  "kind": "threshold-spec",
+  "records": 1
+}
+{
+  "status": "valid",
+  "kind": "threshold-policy",
+  "records": 1
+}
+{
+  "status": "valid",
+  "kind": "holdout-report",
+  "records": 1
+}
+{
+  "status": "valid",
+  "kind": "robustness-suite",
+  "records": 1
+}
+{
+  "version": "1.1.0",
+  "evidence_type": "synthetic",
+  "network_requests": 0,
+  "host_actions_executed": 0,
+  "task_pairs": 80,
+  "calibration_observations": 40,
+  "holdout_observations": 120,
+  "robustness_probes": 5,
+  "threshold_enforcement_exit": 3,
+  "study_recommendation": "needs_more_evidence",
+  "holdout_eligible_for_activation": false
+}

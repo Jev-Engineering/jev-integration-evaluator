@@ -1,0 +1,238 @@
+{
+  "version": "1.1.0",
+  "evidence_type": "synthetic",
+  "network_requests": 0,
+  "host_actions_executed": 0,
+  "task_pairs": 80,
+  "calibration_observations": 40,
+  "holdout_observations": 120,
+  "robustness_probes": 5,
+  "threshold_enforcement_exit": 3,
+  "commands": [
+    {
+      "command": [
+        "scan",
+        "--repo",
+        "/tmp/jev-synthetic-diff-fmvmsqs2/synthetic-agent",
+        "--out",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/before",
+        "--config",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/demo-config.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "scan",
+        "--repo",
+        "/tmp/jev-synthetic-diff-fmvmsqs2/synthetic-agent",
+        "--out",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/after",
+        "--config",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/demo-config.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "diff",
+        "--before",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/before/jev-opportunities.json",
+        "--after",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/after/jev-opportunities.json",
+        "--out",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/snapshot-diff.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "study-freeze",
+        "--spec",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/study-spec.json",
+        "--out",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/study.json",
+        "--config",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/demo-config.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "study-check",
+        "--plan",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/study.json",
+        "--baseline",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/baseline.json",
+        "--jev",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/treatment.json",
+        "--expected-digest",
+        "956d89104bcb2624f52d7b6ebe3c624437313b1f529ee6737e976b09e3a96b17",
+        "--out",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/study-check.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "study-evaluate",
+        "--plan",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/study.json",
+        "--baseline",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/baseline.json",
+        "--jev",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/treatment.json",
+        "--expected-digest",
+        "956d89104bcb2624f52d7b6ebe3c624437313b1f529ee6737e976b09e3a96b17",
+        "--out",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/study-evaluate.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "threshold-freeze",
+        "--input",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/calibration.json",
+        "--spec",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/threshold-spec.json",
+        "--out",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/threshold-policy.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "threshold-check",
+        "--input",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/holdout.json",
+        "--plan",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/threshold-policy.json",
+        "--out",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/holdout-report.json",
+        "--enforce"
+      ],
+      "exit_code": 3
+    },
+    {
+      "command": [
+        "rubric-lint",
+        "--input",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/questions.json",
+        "--out",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/rubric-lint.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "robustness-plan",
+        "--input",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/probe-event.json",
+        "--out",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/probe-suite.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "robustness-run",
+        "--plan",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/probe-suite.json",
+        "--fixtures",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/probe-fixtures.json",
+        "--out",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/robustness-run.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "robustness-report",
+        "--plan",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/probe-suite.json",
+        "--input",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/probe-records.json",
+        "--out",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/robustness-report.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "verify-log",
+        "--input",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/audit.jsonl",
+        "--expected-events",
+        "3",
+        "--expected-final-hash",
+        "08a33e69782939dcb358220c8b7994d1207c9f3dae33a77c740d0a5f16bea24f",
+        "--out",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/audit-verification.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "validate",
+        "--kind",
+        "study-spec",
+        "--input",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/study-spec.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "validate",
+        "--kind",
+        "study",
+        "--input",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/study.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "validate",
+        "--kind",
+        "threshold-spec",
+        "--input",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/threshold-spec.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "validate",
+        "--kind",
+        "threshold-policy",
+        "--input",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/threshold-policy.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "validate",
+        "--kind",
+        "holdout-report",
+        "--input",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/holdout-report.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "validate",
+        "--kind",
+        "robustness-suite",
+        "--input",
+        "/mnt/data/work-v1.1/jev-placement-skill/validation/lifecycle-v11/probe-suite.json"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "study_recommendation": "needs_more_evidence",
+  "holdout_eligible_for_activation": false
+}

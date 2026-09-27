@@ -1,0 +1,21 @@
+{
+  "version": "1.0",
+  "classes": [
+    "planning",
+    "reasoning",
+    "routing",
+    "tool",
+    "format",
+    "constraint",
+    "hallucination",
+    "retrieval",
+    "timeout",
+    "state_tracking",
+    "repetition",
+    "approval",
+    "security",
+    "unclassified"
+  ],
+  "success_label": "pass",
+  "rule": "Assign actual observed failure class; changed failure class is not a rescue. Freeze taxonomy per study."
+}

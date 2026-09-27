@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.1",
+  "kind": "holdout_validation",
+  "policy_digest": "d5c7045becf5183ea39635d7dfffb890e72bd4efbdc67088892016330a19230a",
+  "binding": {
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "labels": [
+      "inspect",
+      "stop"
+    ]
+  },
+  "holdout_digest": "bae8fbba061cd8c060b014f701529b8b9014d0ecb2153d6c3d12ad8d0613b736",
+  "scheduled_observations": 120,
+  "method": "one-sided exact Clopper-Pearson; Bonferroni over pooled and preregistered subgroup checks",
+  "familywise_alpha": 0.025,
+  "maximum_error": 0.05,
+  "minimum_accepted": 30,
+  "acceptance_policy": {
+    "probability_floor": 0.9,
+    "confidence_floor": 0.75,
+    "action_probability_floors": {},
+    "abstention_labels": []
+  },
+  "checks": [
+    {
+      "subgroup": null,
+      "observations": 120,
+      "accepted": 120,
+      "errors": 0,
+      "coverage": 1.0,
+      "empirical_error": 0.0,
+      "error_upper_bound": 0.035858189268043794,
+      "alpha": 0.0125,
+      "passes": true,
+      "status": "evaluated"
+    },
+    {
+      "subgroup": "ordinary",
+      "observations": 120,
+      "accepted": 120,
+      "errors": 0,
+      "coverage": 1.0,
+      "empirical_error": 0.0,
+      "error_upper_bound": 0.035858189268043794,
+      "alpha": 0.0125,
+      "passes": true,
+      "status": "evaluated"
+    }
+  ],
+  "numerical_checks_pass": true,
+  "eligible_for_activation": false,
+  "deployment_authorized": false,
+  "status": "synthetic_only",
+  "externally_pinned_digest": true,
+  "limitations": [
+    "Assumes independent, representative Bernoulli errors among accepted decisions.",
+    "Unique task/cluster IDs cannot prove statistical independence.",
+    "Do not reuse this holdout to choose another threshold, subgroup or rubric.",
+    "This validates the recorded acceptance gate, not the host's different inspection or fallback paths.",
+    "Distribution shift, adversarial security and source correctness are not certified.",
+    "Synthetic responses can exercise the computation but cannot justify activation."
+  ],
+  "contract_digest": "9ab727ea84a04ae2d0bad19a9779ab53baaaa07f747fe5aaacab5fe642c32373"
+}

@@ -1,0 +1,180 @@
+{
+  "version": "1.2.0",
+  "status": "passed",
+  "executed_outside_checkout": true,
+  "module_location_and_version": "/mnt/data/v12-wheel-install/jev_placement/__init__.py\n1.2.0",
+  "module_and_data_files_byte_compared": 53,
+  "compared_files": [
+    "jev_placement/scenarios.py",
+    "jev_placement/study.py",
+    "jev_placement/__init__.py",
+    "jev_placement/budget.py",
+    "jev_placement/replay.py",
+    "jev_placement/io.py",
+    "jev_placement/optimizer.py",
+    "jev_placement/patterns.py",
+    "jev_placement/contracts.py",
+    "jev_placement/scoring.py",
+    "jev_placement/traces.py",
+    "jev_placement/robustness.py",
+    "jev_placement/questions.py",
+    "jev_placement/reports.py",
+    "jev_placement/statistics.py",
+    "jev_placement/lifecycle.py",
+    "jev_placement/gates.py",
+    "jev_placement/holdout.py",
+    "jev_placement/calibration.py",
+    "jev_placement/onboarding.py",
+    "jev_placement/monitoring.py",
+    "jev_placement/__main__.py",
+    "jev_placement/client.py",
+    "jev_placement/scanner.py",
+    "jev_placement/traceability.py",
+    "jev_placement/cohorts.py",
+    "jev_placement/runtime.py",
+    "jev_placement/config.py",
+    "jev_placement/implementation.py",
+    "jev_placement/cli.py",
+    "jev_placement/data/run.schema.json",
+    "jev_placement/data/threshold-spec.schema.json",
+    "jev_placement/data/opportunity.schema.json",
+    "jev_placement/data/inventory.schema.json",
+    "jev_placement/data/gate-bundle.schema.json",
+    "jev_placement/data/scenario-spec.schema.json",
+    "jev_placement/data/config.schema.json",
+    "jev_placement/data/robustness-suite.schema.json",
+    "jev_placement/data/threshold-policy.schema.json",
+    "jev_placement/data/monitor-outcome.schema.json",
+    "jev_placement/data/trace.schema.json",
+    "jev_placement/data/study-spec.schema.json",
+    "jev_placement/data/holdout-report.schema.json",
+    "jev_placement/data/decision.schema.json",
+    "jev_placement/data/monitor-spec.schema.json",
+    "jev_placement/data/patch-plan.schema.json",
+    "jev_placement/data/experiment.schema.json",
+    "jev_placement/data/review.schema.json",
+    "jev_placement/data/study.schema.json",
+    "jev_placement/data/typescript_ast.cjs",
+    "jev_placement/data/monitor.schema.json",
+    "jev_placement/data/activation.schema.json",
+    "jev_placement/data/deployment-gate.schema.json"
+  ],
+  "cli_commands": [
+    {
+      "arguments": [
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "jev-placement-skill 1.2.0\n",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "scan",
+        "--repo",
+        "/mnt/data/v12-work/jev-placement-skill/examples/generic-service",
+        "--out",
+        "/tmp/jev-wheel-smoke-y8h8g9r0/scan"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"output_directory\": \"/tmp/jev-wheel-smoke-y8h8g9r0/scan\",\n  \"candidate_count\": 5,\n  \"tier_counts\": {\n    \"0\": 5\n  },\n  \"optimizer_status\": \"no_justified_integration_set\",\n  \"files\": [\n    \"JEV_ARCHITECTURE.md\",\n    \"JEV_EXPERIMENT_PLAN.md\",\n    \"JEV_INTEGRATION_PLAN.md\",\n    \"JEV_OPPORTUNITIES.md\",\n    \"JEV_RESULTS.md\",\n    \"JEV_RISK_ANALYSIS.md\",\n    \"architecture.json\",\n    \"architecture.mmd\",\n    \"experiment-plan.json\",\n    \"jev-config.yaml\",\n    \"jev-opportunities.csv\",\n    \"jev-opportunities.json\",\n    \"jev-placement-sets.json\"\n  ]\n}\n",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "optimize-robust",
+        "--inventory",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/reviewed-inventory.json",
+        "--spec",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/scenarios.json",
+        "--out",
+        "/tmp/jev-wheel-smoke-y8h8g9r0/robust.json"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"conditional_robust_placement_set\",\n  \"output\": \"/tmp/jev-wheel-smoke-y8h8g9r0/robust.json\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "study-evaluate",
+        "--plan",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/study.json",
+        "--inventory",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/reviewed-inventory.json",
+        "--baseline",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/baseline.json",
+        "--jev",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/treatment.json",
+        "--gate-bundle",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/gate-bundle.json",
+        "--expected-digest",
+        "9f58b58621f3229c0c185ab987b88000f69653118fc3126d5f5dd9e095af04de",
+        "--out",
+        "/tmp/jev-wheel-smoke-y8h8g9r0/study.json",
+        "--enforce"
+      ],
+      "exit_code": 3,
+      "stdout": "{\n  \"status\": \"written\",\n  \"output\": \"/tmp/jev-wheel-smoke-y8h8g9r0/study.json\",\n  \"recommendation\": \"needs_more_evidence\",\n  \"pair_count\": 80,\n  \"evidence_type\": \"synthetic\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "monitor-check",
+        "--plan",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/monitor.json",
+        "--input",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/monitor-outcomes.json",
+        "--expected-digest",
+        "3bb2db3909b4daf65f12f83309df403dfe603b0492eec6e229f9cfa40620e68c",
+        "--as-of",
+        "2026-09-26T12:00:00+00:00",
+        "--out",
+        "/tmp/jev-wheel-smoke-y8h8g9r0/monitor.json",
+        "--enforce"
+      ],
+      "exit_code": 3,
+      "stdout": "{\n  \"status\": \"within_declared_limits\",\n  \"output\": \"/tmp/jev-wheel-smoke-y8h8g9r0/monitor.json\",\n  \"recommendation\": \"maintain_current_exposure\",\n  \"evidence_type\": \"synthetic\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "validate",
+        "--kind",
+        "gate-bundle",
+        "--input",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/gate-bundle.json"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"valid\",\n  \"kind\": \"gate-bundle\",\n  \"records\": 1\n}\n",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "validate",
+        "--kind",
+        "scenario-spec",
+        "--input",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/scenarios.json"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"valid\",\n  \"kind\": \"scenario-spec\",\n  \"records\": 1\n}\n",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "validate",
+        "--kind",
+        "monitor-outcome",
+        "--input",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/monitor-outcomes.json"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"valid\",\n  \"kind\": \"monitor-outcome\",\n  \"records\": 80\n}\n",
+      "stderr": ""
+    }
+  ],
+  "live_model_requests": 0,
+  "target_code_executed": false,
+  "deterministic_example_candidates": 5,
+  "deterministic_example_all_tier_zero": true
+}

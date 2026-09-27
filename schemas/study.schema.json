@@ -1,0 +1,477 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:study:1.1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "enum": [
+        "1.1",
+        "1.2"
+      ]
+    },
+    "kind": {
+      "const": "paired_study"
+    },
+    "frozen_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "specification": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "urn:completetech:jev:study-spec:1.1",
+      "type": "object",
+      "properties": {
+        "experiment_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dataset_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_type": {
+          "enum": [
+            "synthetic",
+            "observed"
+          ]
+        },
+        "primary_metric": {
+          "const": "success"
+        },
+        "schedule": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "task_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "replicate": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "task_hash": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "cluster_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "split": {
+                "enum": [
+                  "development",
+                  "calibration",
+                  "test"
+                ]
+              },
+              "seed": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "task_id",
+              "replicate",
+              "task_hash",
+              "cluster_id",
+              "split"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 100000
+        },
+        "baseline": {
+          "type": "object",
+          "properties": {
+            "treatment": {
+              "type": "string",
+              "minLength": 1
+            },
+            "code_revision": {
+              "type": "string",
+              "minLength": 1
+            },
+            "model_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "policy_version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "prompt_hash": {
+              "type": "string",
+              "minLength": 1
+            },
+            "mode": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "treatment",
+            "code_revision",
+            "model_id",
+            "policy_version",
+            "prompt_hash",
+            "mode"
+          ],
+          "additionalProperties": false
+        },
+        "jev": {
+          "type": "object",
+          "properties": {
+            "treatment": {
+              "type": "string",
+              "minLength": 1
+            },
+            "code_revision": {
+              "type": "string",
+              "minLength": 1
+            },
+            "model_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "policy_version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "prompt_hash": {
+              "type": "string",
+              "minLength": 1
+            },
+            "mode": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "treatment",
+            "code_revision",
+            "model_id",
+            "policy_version",
+            "prompt_hash",
+            "mode"
+          ],
+          "additionalProperties": false
+        },
+        "required_metrics": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "holdout_report_digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "holdout_binding": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "model_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "policy_version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rubric_hash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "policy_digest": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "model_id",
+            "policy_version",
+            "rubric_hash",
+            "policy_digest"
+          ]
+        },
+        "deployment_gates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "gate_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "candidate_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "source": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "symbol": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "file_sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "source_sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "file",
+                  "symbol",
+                  "file_sha256",
+                  "source_sha256"
+                ],
+                "additionalProperties": false
+              },
+              "model_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "policy_version": {
+                "type": "string",
+                "minLength": 1
+              },
+              "questions": {
+                "type": "object",
+                "minProperties": 1,
+                "maxProperties": 255
+              },
+              "primary_question": {
+                "type": "string",
+                "minLength": 1
+              },
+              "acceptance_policy": {
+                "type": "object",
+                "properties": {
+                  "probability_floor": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "confidence_floor": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "action_probability_floors": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  },
+                  "abstention_labels": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "minItems": 0,
+                    "maxItems": 255,
+                    "uniqueItems": true
+                  }
+                },
+                "required": [
+                  "probability_floor",
+                  "confidence_floor",
+                  "action_probability_floors",
+                  "abstention_labels"
+                ],
+                "additionalProperties": false
+              },
+              "threshold_policy_digest": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "holdout_report_digest": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "gate_id",
+              "candidate_id",
+              "source",
+              "model_id",
+              "policy_version",
+              "questions",
+              "primary_question",
+              "acceptance_policy",
+              "threshold_policy_digest",
+              "holdout_report_digest"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 128
+        },
+        "placement_inventory_fingerprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "gate_familywise_alpha": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 0.5
+        }
+      },
+      "required": [
+        "experiment_id",
+        "dataset_id",
+        "evidence_type",
+        "primary_metric",
+        "schedule",
+        "baseline",
+        "jev",
+        "required_metrics"
+      ],
+      "additionalProperties": false,
+      "dependentRequired": {
+        "holdout_report_digest": [
+          "holdout_binding"
+        ],
+        "holdout_binding": [
+          "holdout_report_digest"
+        ],
+        "deployment_gates": [
+          "placement_inventory_fingerprint",
+          "gate_familywise_alpha"
+        ],
+        "placement_inventory_fingerprint": [
+          "deployment_gates",
+          "gate_familywise_alpha"
+        ],
+        "gate_familywise_alpha": [
+          "deployment_gates",
+          "placement_inventory_fingerprint"
+        ]
+      }
+    },
+    "analysis_config": {
+      "type": "object",
+      "properties": {
+        "validation": {
+          "type": "object",
+          "properties": {
+            "paired_replay": {
+              "type": "boolean"
+            },
+            "bootstrap_samples": {
+              "type": "integer"
+            },
+            "bayesian_samples": {
+              "type": "integer"
+            },
+            "confidence_level": {
+              "type": "number"
+            },
+            "minimum_useful_effect": {
+              "type": "number"
+            },
+            "min_pairs": {
+              "type": "integer"
+            },
+            "seed": {
+              "type": "integer"
+            },
+            "shadow_mode": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "paired_replay",
+            "bootstrap_samples",
+            "bayesian_samples",
+            "confidence_level",
+            "minimum_useful_effect",
+            "min_pairs",
+            "seed",
+            "shadow_mode"
+          ],
+          "additionalProperties": false
+        },
+        "constraints": {
+          "type": "object",
+          "properties": {
+            "max_added_latency_ms": {
+              "type": "number"
+            },
+            "max_cost_per_task": {
+              "type": "number"
+            },
+            "max_calls_per_task": {
+              "type": "number"
+            },
+            "max_complexity": {
+              "type": "number"
+            },
+            "max_risk": {
+              "type": "number"
+            },
+            "required_throughput": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "max_added_latency_ms",
+            "max_cost_per_task",
+            "max_calls_per_task",
+            "max_complexity",
+            "max_risk",
+            "required_throughput"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "validation",
+        "constraints"
+      ],
+      "additionalProperties": false
+    },
+    "registration_status": {
+      "const": "local_manifest_not_external_registration"
+    },
+    "stop_rule": {
+      "const": "fixed_schedule_one_confirmatory_analysis_no_optional_stopping"
+    },
+    "authorization": {
+      "const": "no_network_no_execution_no_deployment"
+    },
+    "contract_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "schema_version",
+    "kind",
+    "frozen_at",
+    "specification",
+    "analysis_config",
+    "registration_status",
+    "stop_rule",
+    "authorization",
+    "contract_digest"
+  ],
+  "additionalProperties": false
+}

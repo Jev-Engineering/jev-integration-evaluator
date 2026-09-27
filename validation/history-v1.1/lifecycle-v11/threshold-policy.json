@@ -1,0 +1,1005 @@
+{
+  "schema_version": "1.1",
+  "kind": "frozen_threshold",
+  "frozen_at": "2026-09-26T08:37:29.531855+00:00",
+  "binding": {
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-v11",
+    "rubric_hash": "be290c40753176851cb1285a61561779123401aa7ac1a3ce9c99fbd0a63093a8",
+    "evidence_type": "synthetic",
+    "labels": [
+      "inspect",
+      "stop"
+    ]
+  },
+  "policy": {
+    "probability_floor": 0.9,
+    "confidence_floor": 0.75,
+    "action_probability_floors": {},
+    "abstention_labels": []
+  },
+  "maximum_error": 0.05,
+  "alpha": 0.05,
+  "minimum_accepted": 30,
+  "required_subgroups": [
+    "ordinary"
+  ],
+  "holdout_schedule": [
+    {
+      "observation_id": "test-0",
+      "task_hash": "910cb2064d46bb4f2f027b2d82e3335f822e4f7697107bcbca9207b4fe17c622",
+      "cluster_id": "test-0",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-1",
+      "task_hash": "625b2f00bbe1ec1a3893bcb61d442f65ee83fbf04c69b4e494bdb329532c86be",
+      "cluster_id": "test-1",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-2",
+      "task_hash": "0d8cf733efd32005904a18c99cc8afe1e43d47924a73f1e6308717714d875d5b",
+      "cluster_id": "test-2",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-3",
+      "task_hash": "7e70a2ae7e9d57bebcb449ce30a0d161c24aa284995ab646eb7a88da42804053",
+      "cluster_id": "test-3",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-4",
+      "task_hash": "dd8b11747fc1cb790ab2b43f0944b69e68e0794c3d5c20def6a5a2ffdd9d1328",
+      "cluster_id": "test-4",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-5",
+      "task_hash": "56810dd6c9fe7a2939247b268f6b4db1e55180bb2656da1dd6824d82aa4b48c2",
+      "cluster_id": "test-5",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-6",
+      "task_hash": "09f6c816ddff8544de0c0b0cfe0574cd7b03bbf3fca2b4363e937d4ec2935dbb",
+      "cluster_id": "test-6",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-7",
+      "task_hash": "7fe0d198a0999fb788cb4dca55a3f540ed4169880a5928df95be7783abbd02d5",
+      "cluster_id": "test-7",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-8",
+      "task_hash": "30fff33c353fa6c1e28c2aa5e3bd3e37906b8fb59d828d15f1ebaf05c9e549d1",
+      "cluster_id": "test-8",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-9",
+      "task_hash": "dc231ddd566bbc05a5c51bd471a6aab2ef863577048ccf4d3ec1e71f1b2b4cdb",
+      "cluster_id": "test-9",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-10",
+      "task_hash": "cec0fcc454a1a65b8a997b0b171a0a4495652e6986248397fba9d7c3d7c9dacd",
+      "cluster_id": "test-10",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-11",
+      "task_hash": "4a1ce9fe253c34995b54b23e4ae05fa1ae151e81abb37268c8dcc5f9b9b55afc",
+      "cluster_id": "test-11",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-12",
+      "task_hash": "023ac92d6c3480115818207b22d68bdc101e5135637ad3b1d2fb19f2809bc794",
+      "cluster_id": "test-12",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-13",
+      "task_hash": "c3c21426ae9c2033a6546f56f5afef73e79fa48ba42a753fedc28226954c342b",
+      "cluster_id": "test-13",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-14",
+      "task_hash": "ac0672d17f824e36dee014be0d96ed62c9259e5a99993e0c7a842d8cdc566dca",
+      "cluster_id": "test-14",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-15",
+      "task_hash": "eb3cff02797481988dc3136c6f355478fb8be07c49567f25e532b996fc8da62b",
+      "cluster_id": "test-15",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-16",
+      "task_hash": "891a2bac4269d6633edd0877659e17814399ad62cf6bdb629691c79b1f24cdca",
+      "cluster_id": "test-16",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-17",
+      "task_hash": "6ca3ac80f7d3264affac5f4caaa88acdb88355096268fbcb13b33000bb4d103c",
+      "cluster_id": "test-17",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-18",
+      "task_hash": "080df7f7ca2a991da45bc194db4a93559297b1c4f486f9d6f36b7c9e4ef693f4",
+      "cluster_id": "test-18",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-19",
+      "task_hash": "0daca3f5ec789f898d659336bb221f09e8f62f0873716a0c6c50735c72e5b6c5",
+      "cluster_id": "test-19",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-20",
+      "task_hash": "9e4dba37dee08c7dfe6d04edd7328b533084f73ac7c4af462e5fd4362f4c4a99",
+      "cluster_id": "test-20",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-21",
+      "task_hash": "f60d66d134543d60798d6ea5e80a95505d24102a2383d31fcfdf0ff65c9e1727",
+      "cluster_id": "test-21",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-22",
+      "task_hash": "6b4cceeca621d4cc397b36aaa1ae0e00474c36d20a16b81b79914966531ca060",
+      "cluster_id": "test-22",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-23",
+      "task_hash": "84346ae5c720b41a975c78e834d5d78943ea45444f50b82a5454105a41275eef",
+      "cluster_id": "test-23",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-24",
+      "task_hash": "31d847af70f59bc875c7b45477970985c2fb56a29a4c25e250b099285e491a96",
+      "cluster_id": "test-24",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-25",
+      "task_hash": "b58f211bba0497c9423df0cd0ae38b9c23a84087c53033bd2cacb53a04558d87",
+      "cluster_id": "test-25",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-26",
+      "task_hash": "a0bd31716d15888f01d0f8fc48f6d10642d3f2b4745220d1eda7f07480b0d6ca",
+      "cluster_id": "test-26",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-27",
+      "task_hash": "c9b1e5448d897ca1ec7a5da7a59a8b22f49bf30765364514576160e6d3da6563",
+      "cluster_id": "test-27",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-28",
+      "task_hash": "7ac8ee1ca553b98ad579a6be2fceeff20809a0e48ff6c2985b17347210c14fc2",
+      "cluster_id": "test-28",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-29",
+      "task_hash": "bebb7dab271a5fc802952fd6660c2ff2f2d128833b22d1ddd1a43b70eb104a1d",
+      "cluster_id": "test-29",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-30",
+      "task_hash": "199f3cef0482678f06484a0cfdecea17b2983dd406758170bb7752ba8621995e",
+      "cluster_id": "test-30",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-31",
+      "task_hash": "abb4ee49f72d380ee6a5904284b9037a9db6fd22192ddc1382bd695f1dfb8de9",
+      "cluster_id": "test-31",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-32",
+      "task_hash": "5e2468b70378d77c202a939dde5933ccf390a79882691c74d19d63e0f1288cf8",
+      "cluster_id": "test-32",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-33",
+      "task_hash": "1408a0fa2f653f4b52b3a5675abc38b58e8f995f2e625a3b5140e6fa5fc5efad",
+      "cluster_id": "test-33",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-34",
+      "task_hash": "b9678aac4bd20c783e5fc16e67104990bc267db919c08058e88af144dc702618",
+      "cluster_id": "test-34",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-35",
+      "task_hash": "d0a2009df48c1aaf05fa14bcd37258700bbbdbc12efcfd617a9527543c35764c",
+      "cluster_id": "test-35",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-36",
+      "task_hash": "3388b594bc1e459e06f5e5021a58da27f4a3aabe6396c2459e5b1e47f7aeca0a",
+      "cluster_id": "test-36",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-37",
+      "task_hash": "195594677c47ad11a6d86af7a26b1950951cb4fb97752b3d3a3bd7ce00f0158f",
+      "cluster_id": "test-37",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-38",
+      "task_hash": "95b7fdf26f8d44072a9e1146c7658e93b896735c501307e3634ae69c76191668",
+      "cluster_id": "test-38",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-39",
+      "task_hash": "a4a955a1bd86b4e1609199ab2993fbb8721ed53c500068c2cf4ced84883e27a3",
+      "cluster_id": "test-39",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-40",
+      "task_hash": "1a42cdbc6811822585819cabd8a5bc655ffcc08678d74f08f77080294accd027",
+      "cluster_id": "test-40",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-41",
+      "task_hash": "2397886f816fde47844fedd948ff595bc5108931b22eecd8886adc72faf976ba",
+      "cluster_id": "test-41",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-42",
+      "task_hash": "c8bb94b96de4971c4ad32ba389df3a4b74c058eb48797e1c0da2b8ad78e7a7c0",
+      "cluster_id": "test-42",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-43",
+      "task_hash": "e26008581f9c94f5cb9d3f52de4ca1c56f740af374d466d4f21d3de6d3914232",
+      "cluster_id": "test-43",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-44",
+      "task_hash": "82092f01f477f265bf4d697a1dcea90762498f1ea0b524e9c2c3eb276d058399",
+      "cluster_id": "test-44",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-45",
+      "task_hash": "342edecbfb4683286d3b2042567c776d8780fc9988ab89c28c3ea4b1376a714d",
+      "cluster_id": "test-45",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-46",
+      "task_hash": "3d8a32b4300987ef880be73ea5caa5699653429e56332f663e3a717c49aa90e4",
+      "cluster_id": "test-46",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-47",
+      "task_hash": "a583dcd511f86753eff59f3a623e2ea86f334dbad591e6dc1f3433598d57bef6",
+      "cluster_id": "test-47",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-48",
+      "task_hash": "34ba19e239088211c515d7da61557a3f57e46f0d40383b430d93c4447ff9ebf2",
+      "cluster_id": "test-48",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-49",
+      "task_hash": "f9048ba542aed2c5d144e67705c45b22b95012bf7c7d1e9060b8bd8929287469",
+      "cluster_id": "test-49",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-50",
+      "task_hash": "d5c03c87196ee63838e449e5356098106b546488afc843ebff8d34d955c917eb",
+      "cluster_id": "test-50",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-51",
+      "task_hash": "be128037e512d0146728899f8c4e7a1cf1fd0a0907baf10699c2396c27e0770e",
+      "cluster_id": "test-51",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-52",
+      "task_hash": "799c6d1a56a93bdd7acc416736d24ce2c75acbac44308e890ba9d1f6023f7178",
+      "cluster_id": "test-52",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-53",
+      "task_hash": "a69fd02af8d908ad4406b0867792f5da26c921eeaea9c3222e490eaabb8ef7e2",
+      "cluster_id": "test-53",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-54",
+      "task_hash": "a339db3b3ddf0c92d77a30a1e402b9a16fed44e0df0de8283fa6cdb92ebf3647",
+      "cluster_id": "test-54",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-55",
+      "task_hash": "270b8eedfc0504f788d770e6111cbb1861d27a69b3ba8547862f55eea3b3110e",
+      "cluster_id": "test-55",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-56",
+      "task_hash": "d2e0e6cd7db3d3ef0e5e03d6cd3d85e278f54630541a7dcb2aa72435f051e84c",
+      "cluster_id": "test-56",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-57",
+      "task_hash": "a6d3c7862b4f3b6ff9ffb25ca2953da1eb1c24846b4cd929f58dfac3ea46ef35",
+      "cluster_id": "test-57",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-58",
+      "task_hash": "63b0c5140900c41c1a267ba291c0dc24c68d0b83f7b344a057e4e57bc1fab736",
+      "cluster_id": "test-58",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-59",
+      "task_hash": "44b120389b90502b19b847a9c9fff83ab7a058f1be94e6d81f28ccb9f21758a5",
+      "cluster_id": "test-59",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-60",
+      "task_hash": "b562b99c3ceb5a0e4df4f9c29e3ae15e42d6ef43cb147c999017bce76f8978f5",
+      "cluster_id": "test-60",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-61",
+      "task_hash": "ff1b403aac8153a9c5196eb0539dd197e8c585dbf1364cb797c883c8ce94e22d",
+      "cluster_id": "test-61",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-62",
+      "task_hash": "5bd9691a7cfb735ee376f39b67419eb9d27f2981b6519841039d09f6204f1b7d",
+      "cluster_id": "test-62",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-63",
+      "task_hash": "bb5349ce7e1e1e09943a6b96e88904ff98e74d7356d78238a2bac19683ed39fa",
+      "cluster_id": "test-63",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-64",
+      "task_hash": "753a1d6354bc55657ca44e3d19a38add75ac42711beb539a179045e115879210",
+      "cluster_id": "test-64",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-65",
+      "task_hash": "340b261d974d9e55c9176d7d23f2204d47ad7f1deb688d6b1c4dabfc965963bb",
+      "cluster_id": "test-65",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-66",
+      "task_hash": "cd6cc7120ca7f29e8e01a93bb0800332733881b7fa219161f8a80534cabf3207",
+      "cluster_id": "test-66",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-67",
+      "task_hash": "b48a2db431a44acc0c6f9f6209cc68aabc813030922e5a820fc4fa223bcebd31",
+      "cluster_id": "test-67",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-68",
+      "task_hash": "df4437396836ce8934b047a04c56b0cbf8463f874663eb538aefe663ade3a651",
+      "cluster_id": "test-68",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-69",
+      "task_hash": "8ac0d2b3994a63096ad11468a7b849c3dd72f09cf62843bcce483b7e07a06eb2",
+      "cluster_id": "test-69",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-70",
+      "task_hash": "4e3ed0686e8e0745781f2a544af5777220ce2c9a6e5a780c4d6510ed00509065",
+      "cluster_id": "test-70",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-71",
+      "task_hash": "29ab8a14eeb071d65ab27936bd8d8ab5e1d35dbcd19890453fd347ad1212279b",
+      "cluster_id": "test-71",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-72",
+      "task_hash": "7d03c2345dbf359865701c369cdcee809d88a396d9ffc953aa332903dfb2f303",
+      "cluster_id": "test-72",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-73",
+      "task_hash": "547f304bc6fa28daf61611fb441247fdfa9a12523083613b9df627d86eb19c02",
+      "cluster_id": "test-73",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-74",
+      "task_hash": "14756fe944065b07bedc134428ece5189619235d0f3e6b71dc0dbfd479f9c5c1",
+      "cluster_id": "test-74",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-75",
+      "task_hash": "f04c58b0fc269621f9a896ee5509ea4f0adcbdf0047cc414a1ab601b0d8c0ff8",
+      "cluster_id": "test-75",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-76",
+      "task_hash": "2ae0401a80e86991a11c81a98aaec170f186f0408ed5987638ef63bd52d4b726",
+      "cluster_id": "test-76",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-77",
+      "task_hash": "aeee2cfcc624dd6849126234f056c06de7c2457967bdeba05faa50ffdf2e124a",
+      "cluster_id": "test-77",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-78",
+      "task_hash": "d0848cbd6469f034a2564bd2c71c62babdb4dd5e2a7616076e33873a86cce500",
+      "cluster_id": "test-78",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-79",
+      "task_hash": "208131a34645afaa32c76e0b5b7de337050ec147df8b51e43e99ef0abf751344",
+      "cluster_id": "test-79",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-80",
+      "task_hash": "9f0ad577a076c5b5715cbf6da925d7e56d58608a570d0c14b6619dad45ea0049",
+      "cluster_id": "test-80",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-81",
+      "task_hash": "0943ccc7d0548245dde28afe895c930ecce02a0afa1cea6903e2e2eefca903d7",
+      "cluster_id": "test-81",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-82",
+      "task_hash": "638d5b36b3203e9c2b311673a46e6b5e11af634f8e8b4e21f67df307ab0f8a15",
+      "cluster_id": "test-82",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-83",
+      "task_hash": "3bf8761f47e667ac3ed406346a9d90e225d39f1ade36c88b1469e27dce23ee63",
+      "cluster_id": "test-83",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-84",
+      "task_hash": "2f8b89866755f0e13df443c59ea83789250b8c313985d63a2fa35c74c701f4f7",
+      "cluster_id": "test-84",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-85",
+      "task_hash": "69777d3aa274c500e5184a89e5d3e9ffb21c98606791cb13f2dd5e86dcebd79c",
+      "cluster_id": "test-85",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-86",
+      "task_hash": "15bc45ecf99a7dc17433b1121d6a2727d0d32a78a34d8194dd9e34299c2d5a0b",
+      "cluster_id": "test-86",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-87",
+      "task_hash": "8df9bed3a1e5c76c58794d3274f9ec3cd1fb1af758d09aa412acbfd92ca78ce8",
+      "cluster_id": "test-87",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-88",
+      "task_hash": "0767ecf12766a03af5bc506aeef71f40561320f610ba8e16b110ea5b4ec35cf4",
+      "cluster_id": "test-88",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-89",
+      "task_hash": "b5614bf264f242cf83e0ef0c7dc691934a0ba2cdfb76bb3d962ef60b7617c9f1",
+      "cluster_id": "test-89",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-90",
+      "task_hash": "8fd2dd5a142e2165408d2a57aa3b11eba11a7706097d7f3206fd76c30916dbdc",
+      "cluster_id": "test-90",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-91",
+      "task_hash": "ad5f5b2db62cd0b0d586391f2ba13ee0970bf37ea0275d5d0518765d7384b626",
+      "cluster_id": "test-91",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-92",
+      "task_hash": "58aa97c201ca8d89aa836f74c659f7e85aa9b256ff89acd0fe469ae7f9d66b0d",
+      "cluster_id": "test-92",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-93",
+      "task_hash": "7a8ce1c3cc48f8a68e3b9a460cee18a019f7690a44dbf70a1f11c9674c4c37ff",
+      "cluster_id": "test-93",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-94",
+      "task_hash": "e3e0d5370e223ca4da34fa68c7dcd14ae524bd05b37307a9a7271d00c14e982e",
+      "cluster_id": "test-94",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-95",
+      "task_hash": "e826a0ae4fff56686a1af0261a696915bfbc947138ee9a174d5799f78993c011",
+      "cluster_id": "test-95",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-96",
+      "task_hash": "03b4475d0f5a4d457e73a7c7119dde25e68198e3f9dc003feb537934b99a30d0",
+      "cluster_id": "test-96",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-97",
+      "task_hash": "ae384d2fc013a53c6d0ee439040b1503ddd0355e0cdfa1e53b2b3acd68040248",
+      "cluster_id": "test-97",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-98",
+      "task_hash": "c2c7b950335ab7ec4a17edb325aadf5bf24f53d96d7d04b1ff3c7e2edca6e1fd",
+      "cluster_id": "test-98",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-99",
+      "task_hash": "02ebdb2f2f4b7010f29efc9d5abd2c14485ac86e696541d0ad230cdf848c52b7",
+      "cluster_id": "test-99",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-100",
+      "task_hash": "2838f0120358fc3c56588c522e84c49a0e1c56dbb98382fa0f4357afef0c4d22",
+      "cluster_id": "test-100",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-101",
+      "task_hash": "6ee139d7687324ec680a950a00fc61ee0fced095db761fa09baa493ba7edf899",
+      "cluster_id": "test-101",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-102",
+      "task_hash": "091e5ec58c769355582aa5599eb98be26a00193c925c691c17bdcf66361846c5",
+      "cluster_id": "test-102",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-103",
+      "task_hash": "8e45958bd2c781c7346044853dc0ad4462dc65f95a7ba59eaa15c111c73f035a",
+      "cluster_id": "test-103",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-104",
+      "task_hash": "8a95f9229e739a80bed77bbaa0ea15f3f79e38d1f84207af76b942c29a642b2c",
+      "cluster_id": "test-104",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-105",
+      "task_hash": "4e7b5e8137cfd783dd6515f651d8fd00824e73b1a045ba02daa5bc60842566bd",
+      "cluster_id": "test-105",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-106",
+      "task_hash": "8b2d949d223366ad5ba8f5b6d009c56300d45b1f8891178a6bc93747ae7c5d8a",
+      "cluster_id": "test-106",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-107",
+      "task_hash": "2b8630ccfa01e7727e0f7b438820ea24b43120eccdfeff4431cd63418bd765fd",
+      "cluster_id": "test-107",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-108",
+      "task_hash": "8dee02f08a980054d87d60d1049a3e34c894a6564a749c6060fbec228417dafb",
+      "cluster_id": "test-108",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-109",
+      "task_hash": "59468e09d8e3fbaff5e94adb28d2ec91b23f2848220583b478044354cd7236a5",
+      "cluster_id": "test-109",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-110",
+      "task_hash": "93c4fd3b86146611459066056a27ef77fb3959e2d79725d10a587462c22d6373",
+      "cluster_id": "test-110",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-111",
+      "task_hash": "d7f25ac65b8a07152fdee52fa8e24217bef7cddbfb4c8e17da0088df33ce94af",
+      "cluster_id": "test-111",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-112",
+      "task_hash": "6562df9a4ee6c786629416d269d63739ecb9fddbb4a4905d5acb87780ddeaa08",
+      "cluster_id": "test-112",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-113",
+      "task_hash": "7a3aca78d326aaf6ab5f128f39cb94e56c677693d81c2858bcd7a574883f377d",
+      "cluster_id": "test-113",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-114",
+      "task_hash": "a5084f5366004f15b874936f75935b6f62545a6b847554855125a1872c5a5d8a",
+      "cluster_id": "test-114",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-115",
+      "task_hash": "c4a36db286e0a51bb8b91be0eff9f7d9335a4b7003653087ed4558255f86452b",
+      "cluster_id": "test-115",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-116",
+      "task_hash": "bcd4ee3f0a5f6b678be16888c0456f3a1f31143bb2fd5574939855db9a194118",
+      "cluster_id": "test-116",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-117",
+      "task_hash": "ca2b228244495505ae4872943cda782737b3b98b2db4f668f3f360db54897ac7",
+      "cluster_id": "test-117",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-118",
+      "task_hash": "0c60b4357c3dfb8c40c34853f48c4bdab4d235e4056892d17e9337741fd31278",
+      "cluster_id": "test-118",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "test-119",
+      "task_hash": "b1a895d8f2396a05889d2e87a0f2dac5a3be8aafa5bc48c3b8d438310c95f424",
+      "cluster_id": "test-119",
+      "subgroup": "ordinary"
+    }
+  ],
+  "calibration_identities": [
+    {
+      "observation_id": "calibration-0",
+      "task_hash": "fba0d4ea6a71e2dc84620d6b6298abef4e3ea3d8342d590e5b25f7ae5b5bfdff",
+      "cluster_id": "calibration-0",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-1",
+      "task_hash": "774b4ecc243d3606f637195e5d9fa8d8c347fedbace7a3e90b13f1a0b4632ccd",
+      "cluster_id": "calibration-1",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-2",
+      "task_hash": "8fb31c48f7ce6d92a4db65d6f06d219265d41d9c2c394bdec6719e454db21a94",
+      "cluster_id": "calibration-2",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-3",
+      "task_hash": "3a83df1fe2b00a6c0b5b2a1062dad522cedafc9ea036edf1e4daaee07efd5e48",
+      "cluster_id": "calibration-3",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-4",
+      "task_hash": "358874a4b42b4184789783708c7662bb68f6b39cca815e029ba7a99c582d33cd",
+      "cluster_id": "calibration-4",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-5",
+      "task_hash": "8194b213dd162db580fbb401d08d8ea7a7919319f24adf9e1fdf9665bb2ed0e1",
+      "cluster_id": "calibration-5",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-6",
+      "task_hash": "3ae9765919e46e9f13ffea725e566aee370827b589a4dffbc4f280c260aefd5d",
+      "cluster_id": "calibration-6",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-7",
+      "task_hash": "349fc1ae27cc9fa3321f3edd286f0c3e75f8ee7d0bf83d46072339516070c331",
+      "cluster_id": "calibration-7",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-8",
+      "task_hash": "1cd13cd25bbb040d5f2822a4292ef4b36a6e95875dd090520e05b8916459a7ca",
+      "cluster_id": "calibration-8",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-9",
+      "task_hash": "cfa671b5f8cddf6c8f5ebf5086f0785cd91d39c0fca8694dc7ae707a85570e45",
+      "cluster_id": "calibration-9",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-10",
+      "task_hash": "4e43d642b1a8b215bb7a19190e9a0fc86c5dcfc8ee4b39da5ba9d7db3b584fac",
+      "cluster_id": "calibration-10",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-11",
+      "task_hash": "44857ff9b7bc2b6ccf09b5214c1360a7d0467b212b212a3ebca611bb7a1d18e6",
+      "cluster_id": "calibration-11",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-12",
+      "task_hash": "6cf06bf03bdc94ea21c364bd665bcb01329b02a91245e67d4b89847a5e59f7f5",
+      "cluster_id": "calibration-12",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-13",
+      "task_hash": "561d2071e74f27694d2ac3bf014c2cc46ff56ffbcfcc73bd756bd56fa202be3e",
+      "cluster_id": "calibration-13",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-14",
+      "task_hash": "ff46faafe35c90c70db577064cc7319d7ddd031bd5459c55976396ddbd772065",
+      "cluster_id": "calibration-14",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-15",
+      "task_hash": "eff2676e6fbdcdd45117bc3a53aaa37526fcb18cab29832e9159578cb3888b6f",
+      "cluster_id": "calibration-15",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-16",
+      "task_hash": "1e6683ad802a835f2b013945f319823efbfe0b72708d4b55d0d3cdc70cb98cc2",
+      "cluster_id": "calibration-16",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-17",
+      "task_hash": "15bece58612cdf012b5e753f3bdd104bc7c723cabfaf8a65b507ba2fca7ee06a",
+      "cluster_id": "calibration-17",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-18",
+      "task_hash": "b875e63d152f31231dae5e23d0f4491ee2ee92a12c3276670230f97b629dce3b",
+      "cluster_id": "calibration-18",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-19",
+      "task_hash": "5d41a5eaa2ec01cd82793f9505c55fad8ce2956344c5af3e680d3170025c5a18",
+      "cluster_id": "calibration-19",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-20",
+      "task_hash": "0a97ca8b5218ca0f860e0bd5763a7c994038ceaa584ddca1470e1c5ab55859db",
+      "cluster_id": "calibration-20",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-21",
+      "task_hash": "171c83158035a0aca736e9a6f8ac77bdd965564007f298a67f6ae93af270afa3",
+      "cluster_id": "calibration-21",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-22",
+      "task_hash": "e130f7dced085e21a2010a0a34e7a9aed8a5739957b129d47cf818d8d0f28981",
+      "cluster_id": "calibration-22",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-23",
+      "task_hash": "ae3cc27558bde8a64166f2c98d20075fac2f4a39bbe2edd829e9d439a65c8696",
+      "cluster_id": "calibration-23",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-24",
+      "task_hash": "fc20597e59c05275d86bd810ca9c3d14847afdf14c5b21923d905ef46cc3e0fd",
+      "cluster_id": "calibration-24",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-25",
+      "task_hash": "2526802fa8f224afb7665da0b21d0d8c2f2e51e868f62bdb1b50d9d7a025279b",
+      "cluster_id": "calibration-25",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-26",
+      "task_hash": "8c908c44f25945f2ef2d74806d37848471d345bcc44207c2df15c6d3a8d9dc1b",
+      "cluster_id": "calibration-26",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-27",
+      "task_hash": "c4c355fe114e85fb87978fdced2183cf118bfbd5d039e4ec88a4650edcb36ab3",
+      "cluster_id": "calibration-27",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-28",
+      "task_hash": "10104ea52827531548de52d35b45e8366c8c884914e9c390128db59da23796a0",
+      "cluster_id": "calibration-28",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-29",
+      "task_hash": "469195f5a76f98df54dbc48d38de5542a403ae83c1d581b3697ca9f838129197",
+      "cluster_id": "calibration-29",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-30",
+      "task_hash": "5f338abf96096ad25c72a294a49f22108828fdf1f1c7351c553a7b4ff0ec114c",
+      "cluster_id": "calibration-30",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-31",
+      "task_hash": "2564c1c473802a951b6d8ff19591fd7f6219e28c5875a6d527bdbda9a7c964a5",
+      "cluster_id": "calibration-31",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-32",
+      "task_hash": "56b9848c28da7ae1fa62607fa8aaf001a8f745b8f3b14ba6f3e068f983be75b9",
+      "cluster_id": "calibration-32",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-33",
+      "task_hash": "8fbf0395d70db0dca0df28e7022f81240f36848fcacd2e4aab73248a8a6b5b39",
+      "cluster_id": "calibration-33",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-34",
+      "task_hash": "241a9c30680b57a80d755c0d6c51788d8ab5ba3af5c3ba96488d0765ce694425",
+      "cluster_id": "calibration-34",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-35",
+      "task_hash": "065f2adab9e8183daf26c95a422e5044e3a02e97893906df013a14351834dd31",
+      "cluster_id": "calibration-35",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-36",
+      "task_hash": "e8e914edce4fd06328b75d6046748eceb6c1e396716db7189c0c8ccf83229823",
+      "cluster_id": "calibration-36",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-37",
+      "task_hash": "a2ddef39671141bacdea24ca9c83aa3434ed829d70241661ff31f7b130868789",
+      "cluster_id": "calibration-37",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-38",
+      "task_hash": "45eb2a29b20316995dbbab71aa61f1d05b6c151874041a47723bb9aa850fe33e",
+      "cluster_id": "calibration-38",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "calibration-39",
+      "task_hash": "c92c32d5490eac0e9a9bd6de3255afb24345acea3bdd8147f7da64839f81e2fe",
+      "cluster_id": "calibration-39",
+      "subgroup": "ordinary"
+    }
+  ],
+  "calibration_digest": "005a0af6ee245605c7cd58f9afb5e626ec6e0ac0778fc9a442b271ed56d9502c",
+  "selection_diagnostic": {
+    "observations": 40,
+    "accepted": 40,
+    "errors": 0,
+    "certified": false
+  },
+  "status": "frozen_requires_untouched_holdout",
+  "limitations": [
+    "Freeze the chosen thresholds before evaluating the scheduled holdout.",
+    "This local record cannot prove that the holdout was previously unseen.",
+    "Confidence is a provider statistic used as a gate, not a correctness probability."
+  ],
+  "contract_digest": "dcfb20138d717d89c55bbe7b1e6622831fb8d8009edd4ac4e9a0230b9a88ce7a"
+}

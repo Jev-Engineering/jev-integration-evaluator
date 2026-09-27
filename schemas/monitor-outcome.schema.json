@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:monitor-outcome:1.2",
+  "type": "object",
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "cluster_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cohort": {
+      "type": "string",
+      "minLength": 1
+    },
+    "arm": {
+      "enum": [
+        "baseline",
+        "jev"
+      ]
+    },
+    "deployment_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "window_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "study_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "monitor_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "evidence_type": {
+      "enum": [
+        "observed",
+        "synthetic"
+      ]
+    },
+    "run_status": {
+      "enum": [
+        "completed",
+        "failed",
+        "timeout",
+        "cancelled",
+        "not_run"
+      ]
+    },
+    "started_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "finished_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "success": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "latency_ms": {
+      "anyOf": [
+        {
+          "type": "number",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "cost": {
+      "anyOf": [
+        {
+          "type": "number",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "unsafe_actions": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "fallbacks": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "decisions": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "action_counts": {
+      "anyOf": [
+        {
+          "type": "object",
+          "maxProperties": 1024,
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "task_id",
+    "task_hash",
+    "cluster_id",
+    "cohort",
+    "arm",
+    "deployment_id",
+    "window_id",
+    "study_digest",
+    "monitor_digest",
+    "evidence_type",
+    "run_status",
+    "started_at",
+    "finished_at",
+    "success",
+    "latency_ms",
+    "cost",
+    "unsafe_actions",
+    "fallbacks",
+    "decisions",
+    "action_counts"
+  ],
+  "additionalProperties": false
+}

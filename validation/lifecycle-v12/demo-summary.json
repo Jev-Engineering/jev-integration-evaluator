@@ -1,0 +1,247 @@
+{
+  "version": "1.2.0",
+  "evidence_type": "synthetic",
+  "network_requests": 0,
+  "target_code_executed": false,
+  "host_actions_executed": 0,
+  "task_pairs": 80,
+  "gate_count": 2,
+  "calibration_observations": 80,
+  "holdout_observations": 240,
+  "monitor_tasks": 80,
+  "shared_fixture_calls": 2,
+  "shadow_submissions": 3,
+  "study_recommendation": "needs_more_evidence",
+  "synthetic_adoption_blocked": true,
+  "monitor_incident_suspension_is_recommendation_only": true,
+  "commands": [
+    {
+      "command": [
+        "optimize-robust",
+        "--inventory",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/reviewed-inventory.json",
+        "--spec",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/scenarios.json",
+        "--config",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/config.json",
+        "--out",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/robust-placement-sets.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "threshold-check",
+        "--plan",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/gate-0-threshold-policy.json",
+        "--input",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/gate-0-holdout.json",
+        "--expected-digest",
+        "d5c7045becf5183ea39635d7dfffb890e72bd4efbdc67088892016330a19230a",
+        "--out",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/gate-0-holdout-report.json",
+        "--enforce"
+      ],
+      "exit_code": 3
+    },
+    {
+      "command": [
+        "threshold-check",
+        "--plan",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/gate-1-threshold-policy.json",
+        "--input",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/gate-1-holdout.json",
+        "--expected-digest",
+        "cb0457829ea5569a563c16cc05404813bfa10685ef09c6eefa936ed32658039f",
+        "--out",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/gate-1-holdout-report.json",
+        "--enforce"
+      ],
+      "exit_code": 3
+    },
+    {
+      "command": [
+        "study-freeze",
+        "--spec",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/study-spec.json",
+        "--inventory",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/reviewed-inventory.json",
+        "--config",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/config.json",
+        "--out",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/study.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "study-check",
+        "--plan",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/study.json",
+        "--inventory",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/reviewed-inventory.json",
+        "--baseline",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/baseline.json",
+        "--jev",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/treatment.json",
+        "--expected-digest",
+        "9f58b58621f3229c0c185ab987b88000f69653118fc3126d5f5dd9e095af04de",
+        "--out",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/study-check.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "study-evaluate",
+        "--plan",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/study.json",
+        "--inventory",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/reviewed-inventory.json",
+        "--baseline",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/baseline.json",
+        "--jev",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/treatment.json",
+        "--expected-digest",
+        "9f58b58621f3229c0c185ab987b88000f69653118fc3126d5f5dd9e095af04de",
+        "--out",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/study-evaluate.json",
+        "--gate-bundle",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/gate-bundle.json",
+        "--enforce"
+      ],
+      "exit_code": 3
+    },
+    {
+      "command": [
+        "monitor-freeze",
+        "--spec",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/monitor-spec.json",
+        "--out",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/monitor.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "monitor-check",
+        "--plan",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/monitor.json",
+        "--input",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/monitor-outcomes.json",
+        "--as-of",
+        "2026-09-26T12:00:00+00:00",
+        "--expected-digest",
+        "3bb2db3909b4daf65f12f83309df403dfe603b0492eec6e229f9cfa40620e68c",
+        "--out",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/monitor-healthy.json",
+        "--enforce"
+      ],
+      "exit_code": 3
+    },
+    {
+      "command": [
+        "monitor-check",
+        "--plan",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/monitor.json",
+        "--input",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/monitor-incident-outcomes.json",
+        "--as-of",
+        "2026-09-26T12:00:00+00:00",
+        "--expected-digest",
+        "3bb2db3909b4daf65f12f83309df403dfe603b0492eec6e229f9cfa40620e68c",
+        "--out",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/monitor-incident.json",
+        "--enforce"
+      ],
+      "exit_code": 3
+    },
+    {
+      "command": [
+        "monitor-check",
+        "--plan",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/monitor.json",
+        "--input",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/monitor-incomplete-outcomes.json",
+        "--as-of",
+        "2026-09-26T12:02:00+00:00",
+        "--expected-digest",
+        "3bb2db3909b4daf65f12f83309df403dfe603b0492eec6e229f9cfa40620e68c",
+        "--out",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/monitor-incomplete.json",
+        "--enforce"
+      ],
+      "exit_code": 3
+    },
+    {
+      "command": [
+        "validate",
+        "--kind",
+        "scenario-spec",
+        "--input",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/scenarios.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "validate",
+        "--kind",
+        "gate-bundle",
+        "--input",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/gate-bundle.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "validate",
+        "--kind",
+        "study-spec",
+        "--input",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/study-spec.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "validate",
+        "--kind",
+        "study",
+        "--input",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/study.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "validate",
+        "--kind",
+        "monitor-spec",
+        "--input",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/monitor-spec.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "validate",
+        "--kind",
+        "monitor",
+        "--input",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/monitor.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "validate",
+        "--kind",
+        "monitor-outcome",
+        "--input",
+        "/mnt/data/v12-work/jev-placement-skill/validation/lifecycle-v12/monitor-outcomes.json"
+      ],
+      "exit_code": 0
+    }
+  ]
+}

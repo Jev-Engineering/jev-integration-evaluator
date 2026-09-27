@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:run:1.0",
+  "type": "object",
+  "properties": {
+    "task_id": {
+      "type": "string"
+    },
+    "replicate": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "task_hash": {
+      "type": "string"
+    },
+    "dataset_id": {
+      "type": "string"
+    },
+    "treatment": {
+      "type": "string"
+    },
+    "code_revision": {
+      "type": "string"
+    },
+    "model_id": {
+      "type": "string"
+    },
+    "policy_version": {
+      "type": "string"
+    },
+    "prompt_hash": {
+      "type": "string"
+    },
+    "mode": {
+      "enum": [
+        "baseline",
+        "active",
+        "canary",
+        "replay"
+      ]
+    },
+    "success": {
+      "type": "boolean"
+    },
+    "evidence_type": {
+      "enum": [
+        "synthetic",
+        "observed"
+      ]
+    },
+    "seed": {
+      "type": "integer"
+    },
+    "cluster_id": {
+      "type": "string"
+    },
+    "failure_class": {
+      "type": "string"
+    },
+    "calibration_validated": {
+      "type": "boolean"
+    },
+    "evaluation_scope": {
+      "enum": [
+        "task_success",
+        "decision_accuracy"
+      ]
+    },
+    "quality": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "tokens": {
+      "type": "number",
+      "minimum": 0
+    },
+    "model_calls": {
+      "type": "number",
+      "minimum": 0
+    },
+    "latency_ms": {
+      "type": "number",
+      "minimum": 0
+    },
+    "cost": {
+      "type": "number",
+      "minimum": 0
+    },
+    "retries": {
+      "type": "number",
+      "minimum": 0
+    },
+    "tool_calls": {
+      "type": "number",
+      "minimum": 0
+    },
+    "human_escalations": {
+      "type": "number",
+      "minimum": 0
+    },
+    "unsafe_actions_prevented": {
+      "type": "number",
+      "minimum": 0
+    },
+    "unsafe_actions": {
+      "type": "number",
+      "minimum": 0
+    },
+    "false_blocks": {
+      "type": "number",
+      "minimum": 0
+    },
+    "replans": {
+      "type": "number",
+      "minimum": 0
+    },
+    "verified_progress": {
+      "type": "number",
+      "minimum": 0
+    },
+    "long_horizon_completion": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "study_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "experiment_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "split": {
+      "enum": [
+        "development",
+        "calibration",
+        "test"
+      ]
+    },
+    "run_status": {
+      "enum": [
+        "completed",
+        "failed",
+        "timeout",
+        "cancelled",
+        "not_run"
+      ]
+    },
+    "gate_manifest_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  },
+  "required": [
+    "task_id",
+    "replicate",
+    "task_hash",
+    "dataset_id",
+    "treatment",
+    "code_revision",
+    "model_id",
+    "policy_version",
+    "prompt_hash",
+    "mode",
+    "success",
+    "evidence_type"
+  ],
+  "additionalProperties": false
+}

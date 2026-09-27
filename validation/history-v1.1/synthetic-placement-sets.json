@@ -1,0 +1,217 @@
+{
+  "method": "exact_enumeration",
+  "optimality_proven_for_declared_model": true,
+  "eligible_candidates": 3,
+  "feasible_sets_examined": 6,
+  "excluded": [
+    {
+      "candidate_id": "JEV-3AB7E6831523",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-80B425907A5D",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-F60068063D8D",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-35AB38B3026C",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-BC69C74DF3CA",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-1EDC6846A754",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-950F0C5EFE45",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-B4B5BF2FD219",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-BF71FD853BBC",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-0B40C24F3988",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-1ED0191AB058",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-BD68119011F6",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-E44ED530B27A",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-EC417BD414AB",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-47C500E9A193",
+      "reason": "Semantic review not approved"
+    }
+  ],
+  "recommended_minimal_set": {
+    "candidate_ids": [
+      "JEV-C25AE1A294B1",
+      "JEV-E69F0ED1FC49"
+    ],
+    "utility": 0.508,
+    "quality_gain": 0.3,
+    "reliability_gain": 0.2,
+    "failure_reduction": 0.16,
+    "model_call_reduction": 1.0,
+    "measured_interaction_utility": 0,
+    "added_latency_ms": 80,
+    "added_cost": 0.0016,
+    "calls_per_task": 2,
+    "complexity": 1.0
+  },
+  "recommended_balanced_set": {
+    "candidate_ids": [
+      "JEV-C25AE1A294B1",
+      "JEV-E69F0ED1FC49"
+    ],
+    "utility": 0.508,
+    "quality_gain": 0.3,
+    "reliability_gain": 0.2,
+    "failure_reduction": 0.16,
+    "model_call_reduction": 1.0,
+    "measured_interaction_utility": 0,
+    "added_latency_ms": 80,
+    "added_cost": 0.0016,
+    "calls_per_task": 2,
+    "complexity": 1.0
+  },
+  "recommended_maximum_reliability_set": {
+    "candidate_ids": [
+      "JEV-C25AE1A294B1",
+      "JEV-E69F0ED1FC49"
+    ],
+    "utility": 0.508,
+    "quality_gain": 0.3,
+    "reliability_gain": 0.2,
+    "failure_reduction": 0.16,
+    "model_call_reduction": 1.0,
+    "measured_interaction_utility": 0,
+    "added_latency_ms": 80,
+    "added_cost": 0.0016,
+    "calls_per_task": 2,
+    "complexity": 1.0
+  },
+  "pareto_display_subset": [
+    {
+      "candidate_ids": [
+        "JEV-C25AE1A294B1",
+        "JEV-E69F0ED1FC49"
+      ],
+      "utility": 0.508,
+      "quality_gain": 0.3,
+      "reliability_gain": 0.2,
+      "failure_reduction": 0.16,
+      "model_call_reduction": 1.0,
+      "measured_interaction_utility": 0,
+      "added_latency_ms": 80,
+      "added_cost": 0.0016,
+      "calls_per_task": 2,
+      "complexity": 1.0
+    },
+    {
+      "candidate_ids": [
+        "JEV-D83B745FC7BF",
+        "JEV-E69F0ED1FC49"
+      ],
+      "utility": 0.508,
+      "quality_gain": 0.3,
+      "reliability_gain": 0.2,
+      "failure_reduction": 0.16,
+      "model_call_reduction": 1.0,
+      "measured_interaction_utility": 0,
+      "added_latency_ms": 80,
+      "added_cost": 0.0016,
+      "calls_per_task": 2,
+      "complexity": 1.0
+    },
+    {
+      "candidate_ids": [
+        "JEV-C25AE1A294B1"
+      ],
+      "utility": 0.254,
+      "quality_gain": 0.15,
+      "reliability_gain": 0.1,
+      "failure_reduction": 0.08,
+      "model_call_reduction": 0.5,
+      "measured_interaction_utility": 0,
+      "added_latency_ms": 40,
+      "added_cost": 0.0008,
+      "calls_per_task": 1,
+      "complexity": 0.5
+    },
+    {
+      "candidate_ids": [
+        "JEV-D83B745FC7BF"
+      ],
+      "utility": 0.254,
+      "quality_gain": 0.15,
+      "reliability_gain": 0.1,
+      "failure_reduction": 0.08,
+      "model_call_reduction": 0.5,
+      "measured_interaction_utility": 0,
+      "added_latency_ms": 40,
+      "added_cost": 0.0008,
+      "calls_per_task": 1,
+      "complexity": 0.5
+    },
+    {
+      "candidate_ids": [
+        "JEV-E69F0ED1FC49"
+      ],
+      "utility": 0.254,
+      "quality_gain": 0.15,
+      "reliability_gain": 0.1,
+      "failure_reduction": 0.08,
+      "model_call_reduction": 0.5,
+      "measured_interaction_utility": 0,
+      "added_latency_ms": 40,
+      "added_cost": 0.0008,
+      "calls_per_task": 1,
+      "complexity": 0.5
+    },
+    {
+      "candidate_ids": [],
+      "utility": 0.0,
+      "quality_gain": 0,
+      "reliability_gain": 0,
+      "failure_reduction": 0,
+      "model_call_reduction": 0,
+      "measured_interaction_utility": 0,
+      "added_latency_ms": 0,
+      "added_cost": 0,
+      "calls_per_task": 0,
+      "complexity": 0
+    }
+  ],
+  "status": "conditional_on_declared_estimates",
+  "assumptions": [
+    "Latency uses a conservative serial sum; replace with measured joint critical paths before rollout.",
+    "Quality/reliability/failure deltas are additive hypotheses; avoid double-counting the same outcome.",
+    "No positive credit for unmeasured synergy; duplicate routing decisions conflict by default.",
+    "Throughput and risk are per-component feasibility checks, not an end-to-end safety guarantee.",
+    "The reliability set maximizes the supplied reliability proxy, not proven end-to-end reliability.",
+    "Utility coefficients and the minimal-set 80% retention target are disclosed defaults in optimizer.py."
+  ]
+}

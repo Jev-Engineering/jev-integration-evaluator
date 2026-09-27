@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:activation:1.0",
+  "type": "object",
+  "properties": {
+    "approved": {
+      "type": "boolean"
+    },
+    "calibration_validated": {
+      "type": "boolean"
+    },
+    "model": {
+      "type": "string"
+    },
+    "policy_version": {
+      "type": "string"
+    },
+    "questions_hash": {
+      "type": "string"
+    },
+    "thresholds_hash": {
+      "type": "string"
+    },
+    "holdout_evidence_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "activation_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "issued_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "expires_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "action_thresholds_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "ordered_questions_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "evidence_type": {
+      "enum": [
+        "observed",
+        "synthetic"
+      ]
+    },
+    "revoked": {
+      "type": "boolean"
+    },
+    "runtime_contract_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "deployment_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "study_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  },
+  "required": [
+    "approved",
+    "calibration_validated",
+    "model",
+    "policy_version",
+    "questions_hash",
+    "thresholds_hash",
+    "holdout_evidence_ref"
+  ],
+  "additionalProperties": false
+}

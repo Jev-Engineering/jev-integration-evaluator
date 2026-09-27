@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:deployment-gate:1.2",
+  "type": "object",
+  "properties": {
+    "gate_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "candidate_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "symbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "file_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "source_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "file",
+        "symbol",
+        "file_sha256",
+        "source_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "model_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "policy_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "questions": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 255
+    },
+    "primary_question": {
+      "type": "string",
+      "minLength": 1
+    },
+    "acceptance_policy": {
+      "type": "object",
+      "properties": {
+        "probability_floor": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "confidence_floor": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "action_probability_floors": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "abstention_labels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0,
+          "maxItems": 255,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "probability_floor",
+        "confidence_floor",
+        "action_probability_floors",
+        "abstention_labels"
+      ],
+      "additionalProperties": false
+    },
+    "threshold_policy_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "holdout_report_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  },
+  "required": [
+    "gate_id",
+    "candidate_id",
+    "source",
+    "model_id",
+    "policy_version",
+    "questions",
+    "primary_question",
+    "acceptance_policy",
+    "threshold_policy_digest",
+    "holdout_report_digest"
+  ],
+  "additionalProperties": false
+}

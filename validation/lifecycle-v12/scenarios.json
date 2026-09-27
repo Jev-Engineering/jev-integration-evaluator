@@ -1,0 +1,95 @@
+{
+  "schema_version": "1.2",
+  "requires": {},
+  "minimal_retention": 0.9,
+  "utility_weights": {
+    "quality_gain": 1.0,
+    "reliability_gain": 1.0,
+    "failure_reduction": 0.5,
+    "model_call_reduction": 0.05,
+    "maintenance": 0.1,
+    "false_positive_rate": 1.0,
+    "false_negative_rate": 1.0,
+    "cost_penalty": 0.15,
+    "latency_penalty": 0.1,
+    "complexity_penalty": 0.08
+  },
+  "scenarios": [
+    {
+      "scenario_id": "nominal",
+      "evidence_type": "synthetic",
+      "provenance": "Fabricated demo assumptions, not model measurements.",
+      "estimates": {
+        "JEV-3AB7E6831523": {
+          "quality_gain": 0.3,
+          "reliability_gain": 0,
+          "failure_reduction": 0,
+          "model_call_reduction": 0,
+          "added_latency_ms": 10,
+          "added_cost": 0.001,
+          "calls_per_task": 1,
+          "complexity": 0.1,
+          "maintenance": 0,
+          "false_positive_rate": 0,
+          "false_negative_rate": 0,
+          "risk": 0.01,
+          "throughput": 100
+        },
+        "JEV-80B425907A5D": {
+          "quality_gain": 0.15,
+          "reliability_gain": 0,
+          "failure_reduction": 0,
+          "model_call_reduction": 0,
+          "added_latency_ms": 10,
+          "added_cost": 0.001,
+          "calls_per_task": 1,
+          "complexity": 0.1,
+          "maintenance": 0,
+          "false_positive_rate": 0,
+          "false_negative_rate": 0,
+          "risk": 0.01,
+          "throughput": 100
+        }
+      },
+      "interactions": []
+    },
+    {
+      "scenario_id": "adverse",
+      "evidence_type": "synthetic",
+      "provenance": "Fabricated stress assumptions; not a confidence interval.",
+      "estimates": {
+        "JEV-3AB7E6831523": {
+          "quality_gain": -0.1,
+          "reliability_gain": 0,
+          "failure_reduction": 0,
+          "model_call_reduction": 0,
+          "added_latency_ms": 10,
+          "added_cost": 0.001,
+          "calls_per_task": 1,
+          "complexity": 0.1,
+          "maintenance": 0,
+          "false_positive_rate": 0,
+          "false_negative_rate": 0,
+          "risk": 0.01,
+          "throughput": 100
+        },
+        "JEV-80B425907A5D": {
+          "quality_gain": 0.12,
+          "reliability_gain": 0,
+          "failure_reduction": 0,
+          "model_call_reduction": 0,
+          "added_latency_ms": 10,
+          "added_cost": 0.001,
+          "calls_per_task": 1,
+          "complexity": 0.1,
+          "maintenance": 0,
+          "false_positive_rate": 0,
+          "false_negative_rate": 0,
+          "risk": 0.01,
+          "throughput": 100
+        }
+      },
+      "interactions": []
+    }
+  ]
+}

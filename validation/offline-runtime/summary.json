@@ -1,0 +1,17 @@
+{
+  "evidence_type": "synthetic",
+  "baseline": "stop",
+  "proposal": "inspect",
+  "reason": "bounded_proposal_not_execution_authorization",
+  "actions_executed": 0,
+  "remote_requests": 0,
+  "fixture_calls": 1,
+  "audit": {
+    "events": 1,
+    "final_hash": "00b45e3e0d517614e182f4a86596b23bbfd01d21017fab6f3a57919ace956405",
+    "integrity": "valid",
+    "external_checkpoint_verified": false,
+    "truncation_checked": false,
+    "authenticity": "depends on trust in the retained checkpoint; hashes alone are not signatures"
+  }
+}

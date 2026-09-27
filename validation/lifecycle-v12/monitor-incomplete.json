@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.2",
+  "kind": "monitor_report",
+  "monitor_digest": "3bb2db3909b4daf65f12f83309df403dfe603b0492eec6e229f9cfa40620e68c",
+  "deployment_id": "synthetic-deployment",
+  "study_digest": "cac1c79c882e484dbe4162fe4650698ff30d23e7fa79396b236ceda5a425188b",
+  "window_id": "synthetic-window",
+  "evidence_type": "synthetic",
+  "as_of": "2026-09-26T12:02:00+00:00",
+  "status": "incomplete_overdue_window",
+  "recommendation": "suspend",
+  "operational_checks_pass": false,
+  "eligible_for_continued_canary": false,
+  "scheduled_tasks": 80,
+  "received_tasks": 79,
+  "missing_tasks": 1,
+  "incomplete_tasks": 1,
+  "missing_task_id_hashes": [
+    "c3ebc1748544c1dd63ab146a895f660305567c602521f7533947dbbcbd6494f6"
+  ],
+  "incomplete_task_id_hashes": [
+    "0c16a6512ab32a57109d42538de701d8b1af6613b72df82c22f652c31047ad20"
+  ],
+  "checks": [
+    {
+      "cohort": null,
+      "scheduled_tasks": {
+        "baseline": 39,
+        "jev": 41
+      },
+      "received_tasks": {
+        "baseline": 39,
+        "jev": 40
+      },
+      "complete": false,
+      "metrics": {
+        "unsafe_actions": 0,
+        "failure_rate": null,
+        "timeout_rate": null,
+        "failure_rate_increase": null,
+        "p95_added_latency_ms": null,
+        "mean_added_cost": null,
+        "fallback_rate": null,
+        "action_distribution_tv": null
+      },
+      "breaches": [],
+      "action_distribution_status": "unavailable_in_incomplete_window",
+      "unsafe_count_status": "known_lower_bound"
+    },
+    {
+      "cohort": "ordinary",
+      "scheduled_tasks": {
+        "baseline": 39,
+        "jev": 41
+      },
+      "received_tasks": {
+        "baseline": 39,
+        "jev": 40
+      },
+      "complete": false,
+      "metrics": {
+        "unsafe_actions": 0,
+        "failure_rate": null,
+        "timeout_rate": null,
+        "failure_rate_increase": null,
+        "p95_added_latency_ms": null,
+        "mean_added_cost": null,
+        "fallback_rate": null,
+        "action_distribution_tv": null
+      },
+      "breaches": [],
+      "action_distribution_status": "unavailable_in_incomplete_window",
+      "unsafe_count_status": "known_lower_bound"
+    }
+  ],
+  "externally_pinned_digest": true,
+  "stale": false,
+  "deployment_authorized": false,
+  "exposure_expansion_authorized": false,
+  "limits": [
+    "Metrics are operational point summaries, not statistical significance or causal estimates.",
+    "Empirical p95 uses nearest rank; the latency difference is between arm quantiles, not a paired latency quantile.",
+    "No optional-stopping or repeated-window probability guarantee is claimed.",
+    "Missing outcomes and unknown costs cannot silently pass monitoring.",
+    "Frozen reference action drift is descriptive and does not alone establish model quality degradation.",
+    "Assignment IDs, observed labels and local timestamps need independently trusted provenance.",
+    "A healthy window does not prove overall safety or authorize a larger canary."
+  ],
+  "contract_digest": "9f00f71dfae7e3ccc0cced0df31a2582f52fc269e304627ca3aa32512e4f486d"
+}

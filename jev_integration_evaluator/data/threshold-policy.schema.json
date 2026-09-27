@@ -1,0 +1,249 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:threshold-policy:1.1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.1"
+    },
+    "kind": {
+      "const": "frozen_threshold"
+    },
+    "frozen_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "binding": {
+      "type": "object",
+      "properties": {
+        "model_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "policy_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rubric_hash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_type": {
+          "enum": [
+            "synthetic",
+            "observed"
+          ]
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 2,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "model_id",
+        "policy_version",
+        "rubric_hash",
+        "evidence_type",
+        "labels"
+      ],
+      "additionalProperties": false
+    },
+    "policy": {
+      "type": "object",
+      "properties": {
+        "probability_floor": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "confidence_floor": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "action_probability_floors": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "abstention_labels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "probability_floor",
+        "confidence_floor",
+        "action_probability_floors",
+        "abstention_labels"
+      ],
+      "additionalProperties": false
+    },
+    "maximum_error": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "alpha": {
+      "type": "number",
+      "minimum": 1e-10,
+      "maximum": 0.5
+    },
+    "minimum_accepted": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "required_subgroups": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "holdout_schedule": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "observation_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "task_hash": {
+            "type": "string",
+            "minLength": 1
+          },
+          "cluster_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "subgroup": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "observation_id",
+          "task_hash",
+          "cluster_id",
+          "subgroup"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 100000
+    },
+    "calibration_identities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "observation_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "task_hash": {
+            "type": "string",
+            "minLength": 1
+          },
+          "cluster_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "subgroup": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "observation_id",
+          "task_hash",
+          "cluster_id",
+          "subgroup"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 100000
+    },
+    "calibration_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "selection_diagnostic": {
+      "type": "object",
+      "properties": {
+        "observations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "accepted": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "errors": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "certified": {
+          "const": false
+        }
+      },
+      "required": [
+        "observations",
+        "accepted",
+        "errors",
+        "certified"
+      ],
+      "additionalProperties": false
+    },
+    "status": {
+      "const": "frozen_requires_untouched_holdout"
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0,
+      "maxItems": 100000
+    },
+    "contract_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "schema_version",
+    "kind",
+    "frozen_at",
+    "binding",
+    "policy",
+    "maximum_error",
+    "alpha",
+    "minimum_accepted",
+    "required_subgroups",
+    "holdout_schedule",
+    "calibration_identities",
+    "calibration_digest",
+    "selection_diagnostic",
+    "status",
+    "limitations",
+    "contract_digest"
+  ],
+  "additionalProperties": false
+}

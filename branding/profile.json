@@ -1,0 +1,14 @@
+{
+  "organization": "CompleteTech LLC",
+  "profile_type": "disclosed-provider-starter",
+  "tagline": "Innovation at Every Integration",
+  "palette": {
+    "primary": "#1E3A8A",
+    "ink": "#0F172A",
+    "surface": "#EEF2FF"
+  },
+  "logo": null,
+  "font_assets": [],
+  "customer_override_precedence": true,
+  "unbranded_supported": true
+}

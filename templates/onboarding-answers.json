@@ -1,0 +1,9 @@
+{
+  "objective": "Identify a measurable task-level improvement before changing behavior",
+  "latency_budget_ms": 250,
+  "cost_budget_per_task": 0.01,
+  "risk_tolerance": "Preserve permissions, validation and explicit approval",
+  "environment": "experimental",
+  "benchmark_path": null,
+  "trace_path": null
+}

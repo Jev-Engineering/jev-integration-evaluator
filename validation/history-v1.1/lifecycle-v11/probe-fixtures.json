@@ -1,0 +1,74 @@
+{
+  "b987c38d7ca0b1188c746b3ce2b8acdfdbed9330a3b965dc7478a91ebee2417c": {
+    "model": "jev-1.13.0",
+    "answers": {
+      "action": {
+        "type": "choice",
+        "choice": "inspect",
+        "confidence": 0.95,
+        "probabilities": {
+          "inspect": 0.99,
+          "stop": 0.01
+        }
+      }
+    },
+    "usage": {
+      "input_tokens": 20,
+      "output_tokens": 0
+    }
+  },
+  "1e468e1723e277b6fd9bbe39c819eb99385f9df97435110b0c15bd23e721de2a": {
+    "model": "jev-1.13.0",
+    "answers": {
+      "action": {
+        "type": "choice",
+        "choice": "inspect",
+        "confidence": 0.95,
+        "probabilities": {
+          "inspect": 0.99,
+          "stop": 0.01
+        }
+      }
+    },
+    "usage": {
+      "input_tokens": 20,
+      "output_tokens": 0
+    }
+  },
+  "ac332361ed6a34a566435dbbf8b320109e6f52d016c3cca4b790fa6f5644439d": {
+    "model": "jev-1.13.0",
+    "answers": {
+      "action": {
+        "type": "choice",
+        "choice": "k_4cd22c6e9c",
+        "confidence": 0.95,
+        "probabilities": {
+          "k_4cd22c6e9c": 0.99,
+          "k_aa0756189e": 0.01
+        }
+      }
+    },
+    "usage": {
+      "input_tokens": 20,
+      "output_tokens": 0
+    }
+  },
+  "e24a48470422dfdd339dd2ed454a80a59d44c7a8e1f981a4d5a48f2028a52bb5": {
+    "model": "jev-1.13.0",
+    "answers": {
+      "action": {
+        "type": "choice",
+        "choice": "stop",
+        "confidence": 0.95,
+        "probabilities": {
+          "stop": 0.99,
+          "inspect": 0.01
+        }
+      }
+    },
+    "usage": {
+      "input_tokens": 20,
+      "output_tokens": 0
+    }
+  }
+}

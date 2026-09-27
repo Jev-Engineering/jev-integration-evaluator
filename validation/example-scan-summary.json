@@ -1,0 +1,105 @@
+{
+  "coding-agent": {
+    "candidate_count": 18,
+    "patterns": [
+      "A",
+      "B",
+      "C",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I",
+      "J",
+      "K",
+      "M"
+    ],
+    "tier_counts": {
+      "0": 0,
+      "1": 18,
+      "2": 0,
+      "3": 0
+    },
+    "parser_counts": {
+      "python_ast": 2
+    },
+    "warnings": [],
+    "scan_fingerprint": "8e3b293bce1e3ca26154ec3569e847d5b73c5dcfe4c43b34ee3c168e818e59ff"
+  },
+  "rag-system": {
+    "candidate_count": 3,
+    "patterns": [
+      "D",
+      "M"
+    ],
+    "tier_counts": {
+      "0": 0,
+      "1": 3,
+      "2": 0,
+      "3": 0
+    },
+    "parser_counts": {
+      "python_ast": 1
+    },
+    "warnings": [],
+    "scan_fingerprint": "f270171623258c9c7f95fae5730f8b6cfb490e38006ff7bef62f25cf0e3f88ad"
+  },
+  "graph-system": {
+    "candidate_count": 3,
+    "patterns": [
+      "B",
+      "L",
+      "M"
+    ],
+    "tier_counts": {
+      "0": 0,
+      "1": 3,
+      "2": 0,
+      "3": 0
+    },
+    "parser_counts": {
+      "python_ast": 1
+    },
+    "warnings": [],
+    "scan_fingerprint": "f7f1c4fe5b8e37897f1ba7890922fe2ff88302a47e587b83edafde39ef390c68"
+  },
+  "generic-service": {
+    "candidate_count": 5,
+    "patterns": [
+      "NONE"
+    ],
+    "tier_counts": {
+      "0": 5,
+      "1": 0,
+      "2": 0,
+      "3": 0
+    },
+    "parser_counts": {
+      "python_ast": 1
+    },
+    "warnings": [],
+    "scan_fingerprint": "4f388a934f307861e3376a3c0afd7cc973a2e8f6ec0d25e5109327293bb8daf3"
+  },
+  "polyglot": {
+    "candidate_count": 5,
+    "patterns": [
+      "A",
+      "C",
+      "E",
+      "M",
+      "NONE"
+    ],
+    "tier_counts": {
+      "0": 1,
+      "1": 4,
+      "2": 0,
+      "3": 0
+    },
+    "parser_counts": {
+      "lexical_review_only": 2,
+      "typescript_ast": 1
+    },
+    "warnings": [],
+    "scan_fingerprint": "8608a96602ce9cbaad5c2093456aa69700bf2ce764331e6aa37fb35f0b05b19a"
+  }
+}

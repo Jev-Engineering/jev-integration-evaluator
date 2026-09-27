@@ -1,0 +1,123 @@
+{
+  "schema_version": "1.1",
+  "kind": "rubric_robustness",
+  "model": "jev-1.13.0",
+  "state": {
+    "evidence": "SYNTHETIC: additional inspection is warranted."
+  },
+  "primary_question": "action",
+  "ground_truth": "inspect",
+  "probes": [
+    {
+      "probe_id": "original",
+      "questions": {
+        "action": {
+          "type": "choice",
+          "instructions": "Select the evidence-supported criterion.",
+          "criteria": {
+            "inspect": "Evidence supports additional inspection.",
+            "stop": "Evidence supports stopping."
+          }
+        }
+      },
+      "label_to_original": {
+        "inspect": "inspect",
+        "stop": "stop"
+      },
+      "request_hash": "b987c38d7ca0b1188c746b3ce2b8acdfdbed9330a3b965dc7478a91ebee2417c"
+    },
+    {
+      "probe_id": "test_retest",
+      "questions": {
+        "action": {
+          "type": "choice",
+          "instructions": "Select the evidence-supported criterion.",
+          "criteria": {
+            "inspect": "Evidence supports additional inspection.",
+            "stop": "Evidence supports stopping."
+          }
+        }
+      },
+      "label_to_original": {
+        "inspect": "inspect",
+        "stop": "stop"
+      },
+      "request_hash": "b987c38d7ca0b1188c746b3ce2b8acdfdbed9330a3b965dc7478a91ebee2417c"
+    },
+    {
+      "probe_id": "reverse_order",
+      "questions": {
+        "action": {
+          "type": "choice",
+          "instructions": "Select the evidence-supported criterion.",
+          "criteria": {
+            "stop": "Evidence supports stopping.",
+            "inspect": "Evidence supports additional inspection."
+          }
+        }
+      },
+      "label_to_original": {
+        "inspect": "inspect",
+        "stop": "stop"
+      },
+      "request_hash": "1e468e1723e277b6fd9bbe39c819eb99385f9df97435110b0c15bd23e721de2a"
+    },
+    {
+      "probe_id": "opaque_labels",
+      "questions": {
+        "action": {
+          "type": "choice",
+          "instructions": "Select the evidence-supported criterion.",
+          "criteria": {
+            "k_4cd22c6e9c": "Evidence supports additional inspection.",
+            "k_aa0756189e": "Evidence supports stopping."
+          }
+        }
+      },
+      "label_to_original": {
+        "k_4cd22c6e9c": "inspect",
+        "k_aa0756189e": "stop"
+      },
+      "request_hash": "ac332361ed6a34a566435dbbf8b320109e6f52d016c3cca4b790fa6f5644439d"
+    },
+    {
+      "probe_id": "rotate_label_bindings",
+      "questions": {
+        "action": {
+          "type": "choice",
+          "instructions": "Select the evidence-supported criterion.",
+          "criteria": {
+            "stop": "Evidence supports additional inspection.",
+            "inspect": "Evidence supports stopping."
+          }
+        }
+      },
+      "label_to_original": {
+        "stop": "inspect",
+        "inspect": "stop"
+      },
+      "request_hash": "e24a48470422dfdd339dd2ed454a80a59d44c7a8e1f981a4d5a48f2028a52bb5"
+    }
+  ],
+  "lint": {
+    "questions": 1,
+    "findings": [
+      {
+        "question": "action",
+        "code": "no_explicit_abstention_label",
+        "severity": "warning"
+      }
+    ],
+    "requires_revision": false,
+    "semantics_verified": false,
+    "network_requests": 0,
+    "limitations": [
+      "Deterministic lint flags are leads, not semantic correctness judgments.",
+      "Review answerability, atomicity, evidence availability and redundant questions separately."
+    ]
+  },
+  "remote_calls_required": 5,
+  "invariance_assumption": "Labels are opaque handles; criterion bodies define their meanings. Review textual cross-references before interpreting renamed-label probes.",
+  "authorization": "local_plan_only_no_network_no_host_actions",
+  "contract_digest": "dea2eff1a2135bd7c335b63b2f98b565a8790894518678053e7e0df95d9d1b35"
+}

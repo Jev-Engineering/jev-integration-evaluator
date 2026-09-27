@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jev-integration-evaluator"
+version = "1.2.0"
+description = "Evidence-driven JEV integration assessment, safe decision adapters, and paired evaluation — CompleteTech LLC"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "CompleteTech LLC"}]
+dependencies = ["PyYAML>=6.0,<7", "jsonschema>=4.18,<5"]
+
+[project.optional-dependencies]
+test = ["pytest>=8,<10"]
+
+[project.scripts]
+jev-integration-evaluator = "jev_integration_evaluator.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["jev_integration_evaluator*"]
+
+[tool.setuptools.package-data]
+jev_integration_evaluator = ["data/*.json", "data/*.cjs"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

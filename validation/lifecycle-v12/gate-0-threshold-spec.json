@@ -1,0 +1,734 @@
+{
+  "probability_floor": 0.9,
+  "confidence_floor": 0.75,
+  "action_probability_floors": {},
+  "abstention_labels": [],
+  "maximum_error": 0.05,
+  "alpha": 0.025,
+  "minimum_accepted": 30,
+  "required_subgroups": [
+    "ordinary"
+  ],
+  "holdout_schedule": [
+    {
+      "observation_id": "gate-0-test-0",
+      "task_hash": "2370bf8510f6828790c2802d06e2b8643c317f60362c68a019f67d86781b4e2c",
+      "cluster_id": "gate-0-test-0",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-1",
+      "task_hash": "1cdf94ec861a8b6358737817e0799aa777d2069811483fd7c5bf1d1d47a8f681",
+      "cluster_id": "gate-0-test-1",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-2",
+      "task_hash": "4f426cc618d69acc776e487879e4cc38f19647236e5bc87d656bf6588017ffa2",
+      "cluster_id": "gate-0-test-2",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-3",
+      "task_hash": "65c30ff1d22603f82484fc79df2aa1fc31c5fefd75af6e782f8b3a0509c6d3fc",
+      "cluster_id": "gate-0-test-3",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-4",
+      "task_hash": "07cc064f16382ad254cca1b8d50f515d4c4b5ee16dcf87b74cc2634bf0dfd4f3",
+      "cluster_id": "gate-0-test-4",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-5",
+      "task_hash": "d90c22f5bcf38e0339084e3f472d186b10fbb96830bffcb2dceb3d59cea6557a",
+      "cluster_id": "gate-0-test-5",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-6",
+      "task_hash": "b3e1cde55214dca24775494328fa71710d49310b614196cdc01dea8fcdd46451",
+      "cluster_id": "gate-0-test-6",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-7",
+      "task_hash": "427fb716a16ca22e53f86bc172d0953133fc4d3e92b5c48415e13e5651c04e25",
+      "cluster_id": "gate-0-test-7",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-8",
+      "task_hash": "681b2d6c9abfdf06dd168fbbd5a619f2e85ee10ac984a115044e6649f4137dd5",
+      "cluster_id": "gate-0-test-8",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-9",
+      "task_hash": "5c656f94e4ea2a4d19b3a93e4ff224906d9c08174fd93f5068c8194664cc855c",
+      "cluster_id": "gate-0-test-9",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-10",
+      "task_hash": "d7df8586777117a061581360338c6c763d14829181049af9f42130b59edb93e2",
+      "cluster_id": "gate-0-test-10",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-11",
+      "task_hash": "8773245f8acde58a80954dd2a0af2ad1bf5e193adca74bbe4073381d1e436b36",
+      "cluster_id": "gate-0-test-11",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-12",
+      "task_hash": "9331e0b55574b0f4d8ede8058b5060784b696305032ea41f37cd2485862fc49d",
+      "cluster_id": "gate-0-test-12",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-13",
+      "task_hash": "19dbd80ca420140c50ab39fe9cd1b050264d938069e41812160c17be6a8d283f",
+      "cluster_id": "gate-0-test-13",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-14",
+      "task_hash": "30f7696765178e0101ae0edea82bb9ef38be23cc607c78b2228a7378ed7c28fe",
+      "cluster_id": "gate-0-test-14",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-15",
+      "task_hash": "7639a42667f7fb67cefd9f9adafc44aedf2c9d353a61522ba4c8d56a10007046",
+      "cluster_id": "gate-0-test-15",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-16",
+      "task_hash": "f819a80ff9c49b01ec3c6b36997b99b7b24efe608965313354d04583030c7f31",
+      "cluster_id": "gate-0-test-16",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-17",
+      "task_hash": "1bbced47dfc2418fef8d97ade2955a344909bf1ae7d5cab73c74dddab78ec109",
+      "cluster_id": "gate-0-test-17",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-18",
+      "task_hash": "368124b5b9004f8cce4896b7d928db4ed3afd332a1d29c03e9aa9e5ff111f036",
+      "cluster_id": "gate-0-test-18",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-19",
+      "task_hash": "29d298b04988834b914521c8ba07dfbe19ddc95c2aba44c14b22b129d2d95e15",
+      "cluster_id": "gate-0-test-19",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-20",
+      "task_hash": "8dd71ddf8938246df34e6eff29616f766d9e72d27934d6dc3a0fb369a8f6f1e4",
+      "cluster_id": "gate-0-test-20",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-21",
+      "task_hash": "f520807d868dd45d967ad8769af30e5488275e7b47d00ab4edbb806d91adf454",
+      "cluster_id": "gate-0-test-21",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-22",
+      "task_hash": "d3c60087b70ebb6fe1661e5739d3840b7f96b102e63c57c2dfb28b36127b80ee",
+      "cluster_id": "gate-0-test-22",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-23",
+      "task_hash": "8c42cde4cbdc96c6fe9c643dbe6b9d8d85fc9528f94602f9e87e61a20dd68c6c",
+      "cluster_id": "gate-0-test-23",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-24",
+      "task_hash": "2e6d4ff65888bc2e9bada14f356556f9dad3f3df56e09fa9c58d03d2c9b1d97c",
+      "cluster_id": "gate-0-test-24",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-25",
+      "task_hash": "bf302e4aafd4d6b519c0aafcbf1def48031920f97fbec98f234fbc58fc9952ee",
+      "cluster_id": "gate-0-test-25",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-26",
+      "task_hash": "15320bd79a247b9f62a26e71b4f51c827613acad946d92547d9ab54c104c50be",
+      "cluster_id": "gate-0-test-26",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-27",
+      "task_hash": "b989d0af555cea127a011eb3927a746bb07009f04c2d994fb471e0c77c1a69a4",
+      "cluster_id": "gate-0-test-27",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-28",
+      "task_hash": "641680d17c56e2402d3098ffffe97cba7a8161dd7a389ebadcbffad36db0e7c1",
+      "cluster_id": "gate-0-test-28",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-29",
+      "task_hash": "d71ed8c1ea56b998cc1e84fd8e671e9abdc91a12064aeeba06bdb8e243a437fc",
+      "cluster_id": "gate-0-test-29",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-30",
+      "task_hash": "e49e8b2d982ee555118604f423fea851b2d25e82bfee8cde29228fa45337154a",
+      "cluster_id": "gate-0-test-30",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-31",
+      "task_hash": "2d460ac1888866e017648e08270f62750b7407988466dc36842527e741b36b83",
+      "cluster_id": "gate-0-test-31",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-32",
+      "task_hash": "597623e52b4e03e17f4585e0c998e340cdda2d86fbaa6c063a490cd178022a18",
+      "cluster_id": "gate-0-test-32",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-33",
+      "task_hash": "785e1c5f51b99348a31b1cc1aaa02fb81fb75e21b0b6c18199a8ac28edeb06d9",
+      "cluster_id": "gate-0-test-33",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-34",
+      "task_hash": "805ed8a8d5adb7f2054bfab249d771ac570936f89cf317bde52d02277ef706a7",
+      "cluster_id": "gate-0-test-34",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-35",
+      "task_hash": "a4a2ccdd9d4fbdd9c39d878343f8b45e43c81a5ae5626a3e9f182bc6b7ba5dd4",
+      "cluster_id": "gate-0-test-35",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-36",
+      "task_hash": "cebc54e4cec21c95317ddbbcf56da1eb2b86958c2bdad5cc1d22912ae0720353",
+      "cluster_id": "gate-0-test-36",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-37",
+      "task_hash": "4c12e20292218c2ff53d0c0ddf68bc4889ebfa1a61bc82da1f5f32756a2b618d",
+      "cluster_id": "gate-0-test-37",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-38",
+      "task_hash": "47536f268ecd01d90d663a05dc5154564ac423539ba0a338e64d3517d02ddad1",
+      "cluster_id": "gate-0-test-38",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-39",
+      "task_hash": "218d6fac240381c20f2b0b8821f869791db01b523f61d235a7d92984115c532e",
+      "cluster_id": "gate-0-test-39",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-40",
+      "task_hash": "eef6b19fb4233204a67b480028237b3ec30c0ab8495f978562346f0f7f9ee139",
+      "cluster_id": "gate-0-test-40",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-41",
+      "task_hash": "cbb14d72d3b5d264c408ff74e305941017d971e319443f1a006756c3ac52a318",
+      "cluster_id": "gate-0-test-41",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-42",
+      "task_hash": "868c7636c1b6dd8093bec116c1ea38396b760e79125fdfe0e7d020b7eb699d46",
+      "cluster_id": "gate-0-test-42",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-43",
+      "task_hash": "6dbebefa40f7f01ceaee67e197229c59dd7402e98a15209b1804caef1d8b0f19",
+      "cluster_id": "gate-0-test-43",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-44",
+      "task_hash": "851fc931a1fe6647cb5d8501bd6652ed3e51bfb6729f5942361acd6c305409c8",
+      "cluster_id": "gate-0-test-44",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-45",
+      "task_hash": "2719b52a7f86284968b6ded308730ea23b601659be2f92042626ece8e23f7387",
+      "cluster_id": "gate-0-test-45",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-46",
+      "task_hash": "ff86ef73c32051a833b38dd2a97851b521e83a6d87ded449ecc5be1043d8d1ce",
+      "cluster_id": "gate-0-test-46",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-47",
+      "task_hash": "8be17abc5976ff7806d9d00a9ebd936bf1ba003645eb4abdc39346c72f71228b",
+      "cluster_id": "gate-0-test-47",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-48",
+      "task_hash": "8833840a09d94ef0aa81d7afe3c8b4d790c2a5320e9c6bbc07879efc58b99f30",
+      "cluster_id": "gate-0-test-48",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-49",
+      "task_hash": "ccc6e53e86534251a1060898cf1ca4d50397f220bc0c89db85c3702a517494e8",
+      "cluster_id": "gate-0-test-49",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-50",
+      "task_hash": "54f83ba27fa8a6e132e10268f66a0d856e14ec25b400c1c0d6259d472dbdf478",
+      "cluster_id": "gate-0-test-50",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-51",
+      "task_hash": "3d2bf0e7ab4c4e3b4440d8bf7ccf18291ae553a705bbea788fb09b0b3c8b2e62",
+      "cluster_id": "gate-0-test-51",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-52",
+      "task_hash": "d4cd5b14112b1395f2d5a4c0c7612ea840c57349fcbd26c1aa19be9ab7590640",
+      "cluster_id": "gate-0-test-52",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-53",
+      "task_hash": "b4537edc0fc76d1b677adb8e600fcbc28daeedcd3f540ee3ccde1bcca173bc0d",
+      "cluster_id": "gate-0-test-53",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-54",
+      "task_hash": "fc1887c033c45a41364898d6db9dfa751098cc2fbc6932f49d0e9c90b9a13ab8",
+      "cluster_id": "gate-0-test-54",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-55",
+      "task_hash": "113cdd194ac48f5665721599807ad8875561b37e81eecb9d574a2e28215777b5",
+      "cluster_id": "gate-0-test-55",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-56",
+      "task_hash": "bb1d197d4ce2e2b7eaafb7d2e2221b936d223af5eecfe48708e545426e7ce99f",
+      "cluster_id": "gate-0-test-56",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-57",
+      "task_hash": "e0fc41c26e6111934738662be89e9e42c3cfe29403a2eae591688853372775c9",
+      "cluster_id": "gate-0-test-57",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-58",
+      "task_hash": "059b002b1433060e03a1977544687d3b04efc4f647583ac27ea61195b95d5efd",
+      "cluster_id": "gate-0-test-58",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-59",
+      "task_hash": "836d9e66012f0fdb8914a05380a787d1d970ffef1c32bd7a1fe5468819e136cf",
+      "cluster_id": "gate-0-test-59",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-60",
+      "task_hash": "8211a1393a4c1530a49c982f5280d80e5c8fcb86f4bf3ed8e259de7232b017a3",
+      "cluster_id": "gate-0-test-60",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-61",
+      "task_hash": "91efdf433af4effc26c012c8cb1ad9f19e9f2b807de48a3a52542bf33932ac28",
+      "cluster_id": "gate-0-test-61",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-62",
+      "task_hash": "119c0c2cd3571b3706527f7f15e42163b94c07bc1587532550641d2baf35762d",
+      "cluster_id": "gate-0-test-62",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-63",
+      "task_hash": "328aeb976e407e3a9fed99c2f4321ecedf99fcd5f78114d25d041f1723fd2acd",
+      "cluster_id": "gate-0-test-63",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-64",
+      "task_hash": "eaa1171c785691a95950ff4a2fdb36f2687d5862834a3384c38fa3274b3541e2",
+      "cluster_id": "gate-0-test-64",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-65",
+      "task_hash": "2de6a2643066d1311a574583b194bf12ba9749c9396561d9ac161ff4202c3497",
+      "cluster_id": "gate-0-test-65",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-66",
+      "task_hash": "579b9d5c952a5adea9d4739828f87e2f91dfcec59b3923afec69bd4ea6a6813f",
+      "cluster_id": "gate-0-test-66",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-67",
+      "task_hash": "00621420a582f958b68b26d863c7dcbf7fb66290b8f0d402a78decade4882df8",
+      "cluster_id": "gate-0-test-67",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-68",
+      "task_hash": "b7d888f69275fceff76c5babf7433209ec69d2ed59cb3c2552cf703a10c5b402",
+      "cluster_id": "gate-0-test-68",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-69",
+      "task_hash": "90d7e11846b0c288cc09866e37c2276e7c3c636c18e5a738a11e5fffe0790ecc",
+      "cluster_id": "gate-0-test-69",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-70",
+      "task_hash": "efd9867ddf452f485745423051357d495cf33ff908314f43955157c0eaf5de06",
+      "cluster_id": "gate-0-test-70",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-71",
+      "task_hash": "0bbd5a715a3032fbfcd23d9c9c7eeab93d1cd9cffebd270e95a642c187a25300",
+      "cluster_id": "gate-0-test-71",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-72",
+      "task_hash": "8f4cc1b8c93fdafc1151188fcf320536d1d48ba21d3a19943b4be5eb3d91a287",
+      "cluster_id": "gate-0-test-72",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-73",
+      "task_hash": "f0c675443ba741cc4c5495203a0511de2a4d26899018cbf11c27d849b1234248",
+      "cluster_id": "gate-0-test-73",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-74",
+      "task_hash": "c38d9ef71c419265517429a0511300ac271f4667dbaa732d29b7a63c29745359",
+      "cluster_id": "gate-0-test-74",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-75",
+      "task_hash": "3065726c75d174848afa0baa5ba4e6201aa653ccf636f63e85399c2360bfaf89",
+      "cluster_id": "gate-0-test-75",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-76",
+      "task_hash": "6e8516ec927cbd414ed06e19d8c35fb704aea23faf3b073235c70a0d66db3436",
+      "cluster_id": "gate-0-test-76",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-77",
+      "task_hash": "6f06179733d08fa5c1fe4bbc7f972692ba1fd3c323b14b19faa2f9cfb6c2c47a",
+      "cluster_id": "gate-0-test-77",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-78",
+      "task_hash": "6ec139aee116db4e3fa3766cce93c1f79e36a3c37382b69477ec0a2587f469db",
+      "cluster_id": "gate-0-test-78",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-79",
+      "task_hash": "adf0259633c171a6697bc3f419d7fe0803500f17822284f597b4f0635238cd20",
+      "cluster_id": "gate-0-test-79",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-80",
+      "task_hash": "8d215172b17d2853607d7fcb6bf939866a9e69e60d81a1fd1f8eb9cedf1c3581",
+      "cluster_id": "gate-0-test-80",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-81",
+      "task_hash": "3cba7e41c1550e67ceed20bc6541283121edf7619342845db020f9d35256c39d",
+      "cluster_id": "gate-0-test-81",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-82",
+      "task_hash": "7ad038c8c57bad4711aa7be210254603d0aabc5f94b26ae038b7b0dbec8c7601",
+      "cluster_id": "gate-0-test-82",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-83",
+      "task_hash": "9509164b5804825bd298dc953c0918516dc165ccaacd284871b8d78e89a93886",
+      "cluster_id": "gate-0-test-83",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-84",
+      "task_hash": "7f38473a6d46efa8f08817a0b08009c35521f6b3e602de005b97f97a8240d553",
+      "cluster_id": "gate-0-test-84",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-85",
+      "task_hash": "0ae3c85fc3b557426bef27211ea034739a2938c7dae3eb9f8f587a80af81376d",
+      "cluster_id": "gate-0-test-85",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-86",
+      "task_hash": "f7fc62dd3dfcab2db832ee90ebdf8e2e37e15de60a948d974ab9a31bbe31e92f",
+      "cluster_id": "gate-0-test-86",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-87",
+      "task_hash": "96b0b45972637c3603c2a8dda8b4f0c4acf7d042485f25ef157c79beee94f055",
+      "cluster_id": "gate-0-test-87",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-88",
+      "task_hash": "651961769004161acf631db98635dbb204f89fbaa4ebef9cd0eec05c5fc4ff8e",
+      "cluster_id": "gate-0-test-88",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-89",
+      "task_hash": "d665cc5c9f047c356d2b78df45f54c80a45dbfcf5379c0bd64aa98dfcbe8f7eb",
+      "cluster_id": "gate-0-test-89",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-90",
+      "task_hash": "9794c32638c93bcccbd2d1158a84dd56915a7bd8402574ee84859334e6bbe482",
+      "cluster_id": "gate-0-test-90",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-91",
+      "task_hash": "d2003fe3f5e9887d25a371fcd594428e53711a7077872b6a5e2f6d3a6eedbb56",
+      "cluster_id": "gate-0-test-91",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-92",
+      "task_hash": "51fad392d31ba32be9d38a29fc94422f14251dc5fc283456e105cf50018b321a",
+      "cluster_id": "gate-0-test-92",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-93",
+      "task_hash": "d0754c43d9c4c003a0c24c5c8ad1c73445364cd73f42e8fb20d1f310a59b3be8",
+      "cluster_id": "gate-0-test-93",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-94",
+      "task_hash": "56b3b965a040be1b41741b8fc2b2c5deddcb5454ddc8c5771a03bdfcb6c7e59b",
+      "cluster_id": "gate-0-test-94",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-95",
+      "task_hash": "d08ab80eb243f1f9fd3c76e4bd3978b009685a37a0fab7cac04fd0c262a4fb15",
+      "cluster_id": "gate-0-test-95",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-96",
+      "task_hash": "af974e5c700f2ef2dedb7569a82e291b30d3906c5c9173624724a57bf10e5bef",
+      "cluster_id": "gate-0-test-96",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-97",
+      "task_hash": "45c5386119553dec023f0f29ececef06d028763029be37acb57f83c939ddb203",
+      "cluster_id": "gate-0-test-97",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-98",
+      "task_hash": "411d1e1300305e181373b3cd1eef628634ce6e7e5a714cfc405b98609f24dc43",
+      "cluster_id": "gate-0-test-98",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-99",
+      "task_hash": "e35e0af1789876c242a4cfbf7222cb660b6199912e0bd4ecd758fda8011e1ca2",
+      "cluster_id": "gate-0-test-99",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-100",
+      "task_hash": "a0f44bc75bbfc0ac67b3d40b114bc28f02bba066c706bbc2424aa5ed2a762637",
+      "cluster_id": "gate-0-test-100",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-101",
+      "task_hash": "ae02f951959583a60da26e4c0b33c62d091f4823b53bf2297845449fa0aa5691",
+      "cluster_id": "gate-0-test-101",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-102",
+      "task_hash": "2a6cdb3166436a2e28953ef24dc55769f2b36b9e897ef37dd6eda41ce991cd64",
+      "cluster_id": "gate-0-test-102",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-103",
+      "task_hash": "3c4b3d5ae71e1dc31d50467e5b892bf8b039c17314b436f56b9d1d88fc842920",
+      "cluster_id": "gate-0-test-103",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-104",
+      "task_hash": "fc396d72cb5024e1ee9781fd85b5b8f3f7b52ffb3e6bc405ccdf515f3da5a5c7",
+      "cluster_id": "gate-0-test-104",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-105",
+      "task_hash": "56057b3e544dd4e9b00cbb72615dac221a331743381dc294ce8202ec664d944b",
+      "cluster_id": "gate-0-test-105",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-106",
+      "task_hash": "e8d4b2c551cc862d91ae7bda4907cab0d0c869649a41bdcb13e7a5f2a06ea736",
+      "cluster_id": "gate-0-test-106",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-107",
+      "task_hash": "f3f7af6594512948f403671d8b7a6378ad53675874604b49f8919d3d9076f21a",
+      "cluster_id": "gate-0-test-107",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-108",
+      "task_hash": "7fbdaeffa68d64961dd67da3750d09902dd7cfb66aba0b08175fd1e54d44d94b",
+      "cluster_id": "gate-0-test-108",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-109",
+      "task_hash": "fdce260c875bd985aa460b1bc74ec619f01ba0e6ffe97941abb315452c84c66a",
+      "cluster_id": "gate-0-test-109",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-110",
+      "task_hash": "137a0b4b91c8a974221a109a34bb808b1f9a956851306c9140fe6a298aa41bc5",
+      "cluster_id": "gate-0-test-110",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-111",
+      "task_hash": "ebb224f2e0a425faaf38554f7afb33f2f32b1d12a2a9d0313aff823e0fa04993",
+      "cluster_id": "gate-0-test-111",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-112",
+      "task_hash": "1b82d24fe7fcc0b646ff6de118d3001054b0985e5635c2452f57d8fa9f88097f",
+      "cluster_id": "gate-0-test-112",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-113",
+      "task_hash": "a664234d6b4b077dee681ee8b91e5596b3551fc8a2437eca3c6d90fb5c7d1034",
+      "cluster_id": "gate-0-test-113",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-114",
+      "task_hash": "118eb038aa8578061e22dd0a47d8421d7ed61375f0479a8f68141e627459d937",
+      "cluster_id": "gate-0-test-114",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-115",
+      "task_hash": "96b9b2f796960860b81f50cb4942ed00cbf8add0f339caae134a01cc7cd0cc38",
+      "cluster_id": "gate-0-test-115",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-116",
+      "task_hash": "9a1a866b8ae1dcd433b98f2ea21166d28040e476567fd81f87e071b8cbee1f94",
+      "cluster_id": "gate-0-test-116",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-117",
+      "task_hash": "5b7c7aeca3a5901a77ebb1098a79e4187732dbdd799e35265d5d603fbc3baad4",
+      "cluster_id": "gate-0-test-117",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-118",
+      "task_hash": "c0ffbf56a0a0155cb22fbc0f06d590130bde41fbc8bebd2b0dcdcc8e8b463c40",
+      "cluster_id": "gate-0-test-118",
+      "subgroup": "ordinary"
+    },
+    {
+      "observation_id": "gate-0-test-119",
+      "task_hash": "d175d998d18113ad4eca20a26e23a473783a2eb6578a1f93def52348acd9ab53",
+      "cluster_id": "gate-0-test-119",
+      "subgroup": "ordinary"
+    }
+  ]
+}

@@ -1,0 +1,2069 @@
+{
+  "schema_version": "1.0",
+  "repository_name": "rag-system",
+  "git": {
+    "revision": null,
+    "dirty": null
+  },
+  "depth": "STANDARD",
+  "coverage": {
+    "languages": {
+      "python": 1
+    },
+    "files_analyzed": 1,
+    "files_considered": 2,
+    "symbols": 3,
+    "truncated": false,
+    "parser_counts": {
+      "python_ast": 1
+    },
+    "ignored": [],
+    "warnings": [],
+    "limitations": [
+      "Call edges are conservative static approximations, not a complete dynamic call graph.",
+      "Python and JavaScript/TypeScript use ASTs when available; all other languages require agent-led source review.",
+      "Unknown dynamic dispatch, reflection, macro expansion, framework callbacks, and deployment effects need traces or review.",
+      "Tests and dependency sightings indicate availability, not correctness or installed versions."
+    ]
+  },
+  "files": [
+    {
+      "file": "pipeline.py",
+      "sha256": "c3bd20e69d365dfc269740e9cf25825cc9f3d4fabcd5463050b2bf0485dba4b7",
+      "language": "python",
+      "parser": "python_ast",
+      "symbols": 3,
+      "imports": []
+    }
+  ],
+  "configuration_evidence": [
+    {
+      "file": "README.md",
+      "sha256": "b62af0d6601d95e12a359a149e2429d2441fb2c4bb3000317505bdd898534753",
+      "markers": []
+    }
+  ],
+  "architecture": {
+    "nodes": [
+      {
+        "id": "pipeline.py::answer_request",
+        "file": "pipeline.py",
+        "symbol": "answer_request",
+        "lines": [
+          2,
+          5
+        ],
+        "roles": [
+          "model",
+          "retrieve"
+        ],
+        "calls": [
+          {
+            "name": "retriever.retrieve",
+            "resolved_name": "retriever.retrieve",
+            "line": 3
+          },
+          {
+            "name": "llm.generate",
+            "resolved_name": "llm.generate",
+            "line": 4
+          }
+        ],
+        "branches": [],
+        "loops": [],
+        "exceptions": [],
+        "dataflow": [
+          {
+            "target": "chunks",
+            "calls": [
+              "retriever.retrieve"
+            ],
+            "reads": [
+              "retriever",
+              "query"
+            ],
+            "line": 3
+          },
+          {
+            "target": "answer",
+            "calls": [
+              "llm.generate"
+            ],
+            "reads": [
+              "llm",
+              "query",
+              "chunks"
+            ],
+            "line": 4
+          }
+        ],
+        "fan_out": 0,
+        "reachable_nodes": 0,
+        "dependency_depth_lower_bound": 0,
+        "parser": "python_ast",
+        "is_test": false
+      },
+      {
+        "id": "pipeline.py::claim_check",
+        "file": "pipeline.py",
+        "symbol": "claim_check",
+        "lines": [
+          8,
+          10
+        ],
+        "roles": [
+          "model"
+        ],
+        "calls": [
+          {
+            "name": "llm.classify",
+            "resolved_name": "llm.classify",
+            "line": 9
+          }
+        ],
+        "branches": [],
+        "loops": [],
+        "exceptions": [],
+        "dataflow": [
+          {
+            "target": "answer",
+            "calls": [
+              "llm.classify"
+            ],
+            "reads": [
+              "llm",
+              "request",
+              "claims",
+              "source_context"
+            ],
+            "line": 9
+          }
+        ],
+        "fan_out": 0,
+        "reachable_nodes": 0,
+        "dependency_depth_lower_bound": 0,
+        "parser": "python_ast",
+        "is_test": false
+      },
+      {
+        "id": "pipeline.py::<module>",
+        "file": "pipeline.py",
+        "symbol": "<module>",
+        "lines": [
+          1,
+          1
+        ],
+        "roles": [],
+        "calls": [],
+        "branches": [],
+        "loops": [],
+        "exceptions": [],
+        "dataflow": [],
+        "fan_out": 0,
+        "reachable_nodes": 0,
+        "dependency_depth_lower_bound": 0,
+        "parser": "python_ast",
+        "is_test": false
+      }
+    ],
+    "edges": [],
+    "unresolved_calls": [
+      {
+        "source": "pipeline.py::answer_request",
+        "call": "retriever.retrieve",
+        "line": 3
+      },
+      {
+        "source": "pipeline.py::answer_request",
+        "call": "llm.generate",
+        "line": 4
+      },
+      {
+        "source": "pipeline.py::claim_check",
+        "call": "llm.classify",
+        "line": 9
+      }
+    ],
+    "modules": [
+      {
+        "file": "pipeline.py",
+        "symbols": [
+          "<module>",
+          "answer_request",
+          "claim_check"
+        ]
+      }
+    ],
+    "side_effect_map": [],
+    "flow_maps": {
+      "tool": [],
+      "model": [
+        "pipeline.py::answer_request",
+        "pipeline.py::claim_check"
+      ],
+      "retrieve": [
+        "pipeline.py::answer_request"
+      ],
+      "observe": [],
+      "graph": [],
+      "context": [],
+      "agent": []
+    }
+  },
+  "candidates": [
+    {
+      "candidate_id": "JEV-096197285ED2",
+      "pattern": "M",
+      "category": "answer_validation",
+      "source": {
+        "file": "pipeline.py",
+        "symbol": "claim_check",
+        "start_line": 8,
+        "end_line": 10,
+        "file_sha256": "c3bd20e69d365dfc269740e9cf25825cc9f3d4fabcd5463050b2bf0485dba4b7",
+        "source_sha256": "55437ae69f95feb65bf730d393b974ec261cdd454e22545cef472f8e5c23e159",
+        "parser": "python_ast"
+      },
+      "evidence_status": "structurally_supported",
+      "semantic_review": {
+        "approved": false,
+        "reviewer": null,
+        "reason": null,
+        "source_sha256": "55437ae69f95feb65bf730d393b974ec261cdd454e22545cef472f8e5c23e159"
+      },
+      "current_behavior": {
+        "description": "Observed calls and control structures; purpose requires source review.",
+        "calls": [
+          "llm.classify"
+        ],
+        "branches": 0,
+        "loops": 0,
+        "exceptions": 0,
+        "failure_modes": [
+          {
+            "status": "hypothesis",
+            "description": "Test atomic evidence checks before a separate revision step."
+          }
+        ]
+      },
+      "evidence": [
+        {
+          "id": "JEV-096197285ED2:source",
+          "kind": "python_ast",
+          "source": {
+            "file": "pipeline.py",
+            "symbol": "claim_check",
+            "start_line": 8,
+            "end_line": 10,
+            "file_sha256": "c3bd20e69d365dfc269740e9cf25825cc9f3d4fabcd5463050b2bf0485dba4b7",
+            "source_sha256": "55437ae69f95feb65bf730d393b974ec261cdd454e22545cef472f8e5c23e159",
+            "parser": "python_ast"
+          },
+          "facts": {
+            "roles": [
+              "model"
+            ],
+            "calls": [
+              {
+                "name": "llm.classify",
+                "resolved_name": "llm.classify",
+                "line": 9
+              }
+            ],
+            "dataflow": [
+              {
+                "target": "answer",
+                "calls": [
+                  "llm.classify"
+                ],
+                "reads": [
+                  "llm",
+                  "request",
+                  "claims",
+                  "source_context"
+                ],
+                "line": 9
+              }
+            ]
+          }
+        }
+      ],
+      "deterministic_alternative": "weak",
+      "proposed_jev_role": {
+        "type": "bounded_choice",
+        "timing": "after_generation_before_delivery"
+      },
+      "jev_questions": [
+        {
+          "id": "JEV-096197285ED2-Q1",
+          "question": "Does the cited evidence support this specific generated claim in its original context?",
+          "answer_type": "choice",
+          "allowed_answers": [
+            "supported",
+            "contradicted",
+            "unsupported",
+            "uncertain"
+          ],
+          "criteria": {
+            "supported": "The source supports the precise claim",
+            "contradicted": "The source contradicts the claim",
+            "unsupported": "The source does not establish the claim",
+            "uncertain": "The source context is insufficient"
+          },
+          "purpose": "Test atomic evidence checks before a separate revision step.",
+          "evidence_inputs": [
+            "request",
+            "claim",
+            "citation",
+            "source_context"
+          ],
+          "confidence_usage": "Keep selected-label probability and provider distribution-confidence separate; validate both on held-out data."
+        },
+        {
+          "id": "JEV-096197285ED2-Q2",
+          "question": "Is the supplied evidence substantively adequate to answer this specific question: Does the cited evidence support this specific generated claim in its original context? Required evidence: request, claim, citation, source_context?",
+          "answer_type": "noul",
+          "allowed_answers": [
+            false,
+            true
+          ],
+          "criteria": {
+            "true": "Each listed evidence field is present and substantively adequate for the quoted question",
+            "false": "Required evidence is missing, contradictory, or inadequate"
+          },
+          "purpose": "Route missing semantic evidence to inspection; field presence remains a deterministic check.",
+          "evidence_inputs": [
+            "request",
+            "claim",
+            "citation",
+            "source_context"
+          ],
+          "confidence_usage": "Noul is P(yes), not confidence or P(the primary answer is correct)."
+        }
+      ],
+      "choices": [
+        "supported",
+        "contradicted",
+        "unsupported",
+        "uncertain"
+      ],
+      "deterministic_checks": [
+        "required sections",
+        "output schema",
+        "citation existence",
+        "verbatim spans",
+        "length bounds"
+      ],
+      "expected_benefits": [
+        {
+          "description": "Test atomic evidence checks before a separate revision step.",
+          "status": "unmeasured_hypothesis"
+        }
+      ],
+      "risks": [
+        "Incorrect high-confidence classification",
+        "Added latency/cost",
+        "Evidence loss or stale state",
+        "Correlated evaluator errors"
+      ],
+      "leverage": {
+        "fan_out": 0,
+        "dependency_depth_lower_bound": 0,
+        "reachable_nodes": 0,
+        "state_corruption_risk": "unknown",
+        "expected_recovery_cost": null
+      },
+      "fallback": {
+        "low_confidence": "existing validated baseline or inspect",
+        "unavailable": "existing validated baseline",
+        "unsafe_baseline": "block or request authorized review"
+      },
+      "policy": {
+        "default_mode": "off",
+        "thresholds_status": "unvalidated",
+        "requires_calibration_before_active": true,
+        "decision_owner": "deterministic_host",
+        "hard_blocks_override_model": true,
+        "illustrative_probability_floor": 0.9,
+        "illustrative_confidence_floor": 0.75,
+        "inspect_probability_floor": 0.65,
+        "timeout_ms": 2000,
+        "bypass": [
+          "feature disabled",
+          "deterministic result sufficient",
+          "unchanged valid cached state",
+          "budget or deadline exhausted"
+        ],
+        "cache": "only immutable/pinned state, evidence, candidate set, model, and policy; never cache authorization"
+      },
+      "estimates": {
+        "quality_gain": null,
+        "reliability_gain": null,
+        "failure_reduction": null,
+        "model_call_reduction": null,
+        "added_latency_ms": null,
+        "added_cost": null,
+        "calls_per_task": null,
+        "complexity": null,
+        "maintenance": null,
+        "false_positive_rate": null,
+        "false_negative_rate": null,
+        "risk": null,
+        "throughput": null,
+        "provenance": null
+      },
+      "recommended_experiment": {
+        "id": "JEV-096197285ED2-EXP-01",
+        "paired_replay": true,
+        "shadow_first": true,
+        "primary_metric": "verified task success",
+        "status": "planned",
+        "holdout_required": true
+      },
+      "traceability": {
+        "source": "JEV-096197285ED2:source",
+        "questions": [
+          "JEV-096197285ED2-Q1",
+          "JEV-096197285ED2-Q2"
+        ],
+        "implementation": [],
+        "tests": [],
+        "experiment": "JEV-096197285ED2-EXP-01",
+        "outcome": null
+      },
+      "limitations": [],
+      "dimensions": {
+        "semantic_uncertainty": {
+          "value": 0.85,
+          "lower": 0.6499999999999999,
+          "upper": 1,
+          "status": "inferred",
+          "rationale": "Model/semantic pipeline proxy; not measured task ambiguity",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ]
+        },
+        "decision_boundedness": {
+          "value": 0.95,
+          "lower": 0.75,
+          "upper": 1,
+          "status": "inferred",
+          "rationale": "A candidate bounded rubric exists; validate coverage and label exclusivity",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ]
+        },
+        "downstream_consequence": {
+          "value": 0.55,
+          "lower": 0.35000000000000003,
+          "upper": 0.75,
+          "status": "inferred",
+          "rationale": "Static reachability and side-effect proxy; not a causal estimate",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ]
+        },
+        "decision_frequency": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "Requires source-correlated task traces",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ]
+        },
+        "cost_of_wrong_decision": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "Requires failure costs or impact estimates from the owner",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ]
+        },
+        "recoverability_value": {
+          "value": 0.6,
+          "lower": 0.39999999999999997,
+          "upper": 0.8,
+          "status": "inferred",
+          "rationale": "Pattern-specific opportunity to detect or recover failures",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ]
+        },
+        "observability": {
+          "value": 0.4,
+          "lower": 0.2,
+          "upper": 0.6000000000000001,
+          "status": "inferred",
+          "rationale": "Observation/verification call sightings",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ]
+        },
+        "deterministic_alternative_quality": {
+          "value": 0.2,
+          "lower": 0,
+          "upper": 0.4,
+          "status": "inferred",
+          "rationale": "Explicit anti-pattern gate, or unresolved semantic need",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ]
+        },
+        "current_failure_rate": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "No empirical failure rate inferred from source",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ]
+        },
+        "current_llm_dependency": {
+          "value": 1.0,
+          "lower": 1.0,
+          "upper": 1.0,
+          "status": "observed",
+          "rationale": "Recognized concrete model-call signature",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ]
+        },
+        "latency_sensitivity": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "Owner budget and measured critical path required",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ]
+        },
+        "cost_sensitivity": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "Owner budget and prices required",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ]
+        },
+        "implementation_complexity": {
+          "value": 0.25,
+          "lower": 0.04999999999999999,
+          "upper": 0.45,
+          "status": "inferred",
+          "rationale": "Local branch/exception proxy; integration work may differ",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ]
+        },
+        "testability": {
+          "value": 0.4,
+          "lower": 0.2,
+          "upper": 0.6000000000000001,
+          "status": "inferred",
+          "rationale": "Repository test presence proxy, not candidate test coverage",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ]
+        },
+        "expected_reuse": {
+          "value": 0.4,
+          "lower": 0.2,
+          "upper": 0.6000000000000001,
+          "status": "inferred",
+          "rationale": "Static call fan-out proxy; downstream fan-out is not runtime reuse",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ]
+        },
+        "confidence_calibration_value": {
+          "value": 0.85,
+          "lower": 0.6499999999999999,
+          "upper": 1,
+          "status": "inferred",
+          "rationale": "Potential value of abstention at this boundary",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ]
+        }
+      },
+      "placement_score": 0.519492,
+      "score_interval": [
+        0.132203,
+        0.877966
+      ],
+      "score_breakdown": {
+        "semantic_uncertainty": {
+          "value": 0.85,
+          "lower": 0.6499999999999999,
+          "upper": 1,
+          "status": "inferred",
+          "rationale": "Model/semantic pipeline proxy; not measured task ambiguity",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ],
+          "weight": 1.6,
+          "contribution": 0.1152542372881356
+        },
+        "decision_boundedness": {
+          "value": 0.95,
+          "lower": 0.75,
+          "upper": 1,
+          "status": "inferred",
+          "rationale": "A candidate bounded rubric exists; validate coverage and label exclusivity",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ],
+          "weight": 1.5,
+          "contribution": 0.12076271186440676
+        },
+        "downstream_consequence": {
+          "value": 0.55,
+          "lower": 0.35000000000000003,
+          "upper": 0.75,
+          "status": "inferred",
+          "rationale": "Static reachability and side-effect proxy; not a causal estimate",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ],
+          "weight": 1.6,
+          "contribution": 0.07457627118644068
+        },
+        "decision_frequency": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "Requires source-correlated task traces",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ],
+          "weight": 0.5,
+          "contribution": 0.0211864406779661
+        },
+        "cost_of_wrong_decision": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "Requires failure costs or impact estimates from the owner",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ],
+          "weight": 1.2,
+          "contribution": 0.05084745762711864
+        },
+        "recoverability_value": {
+          "value": 0.6,
+          "lower": 0.39999999999999997,
+          "upper": 0.8,
+          "status": "inferred",
+          "rationale": "Pattern-specific opportunity to detect or recover failures",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ],
+          "weight": 1.0,
+          "contribution": 0.05084745762711864
+        },
+        "observability": {
+          "value": 0.4,
+          "lower": 0.2,
+          "upper": 0.6000000000000001,
+          "status": "inferred",
+          "rationale": "Observation/verification call sightings",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ],
+          "weight": 0.5,
+          "contribution": 0.01694915254237288
+        },
+        "deterministic_alternative_quality": {
+          "value": 0.2,
+          "lower": 0,
+          "upper": 0.4,
+          "status": "inferred",
+          "rationale": "Explicit anti-pattern gate, or unresolved semantic need",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ],
+          "weight": -2.4,
+          "contribution": -0.04067796610169491
+        },
+        "current_failure_rate": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "No empirical failure rate inferred from source",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ],
+          "weight": 0.9,
+          "contribution": 0.03813559322033898
+        },
+        "current_llm_dependency": {
+          "value": 1.0,
+          "lower": 1.0,
+          "upper": 1.0,
+          "status": "observed",
+          "rationale": "Recognized concrete model-call signature",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ],
+          "weight": 0.8,
+          "contribution": 0.06779661016949153
+        },
+        "latency_sensitivity": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "Owner budget and measured critical path required",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ],
+          "weight": -1.2,
+          "contribution": -0.05084745762711864
+        },
+        "cost_sensitivity": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "Owner budget and prices required",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ],
+          "weight": -0.7,
+          "contribution": -0.02966101694915254
+        },
+        "implementation_complexity": {
+          "value": 0.25,
+          "lower": 0.04999999999999999,
+          "upper": 0.45,
+          "status": "inferred",
+          "rationale": "Local branch/exception proxy; integration work may differ",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ],
+          "weight": -0.8,
+          "contribution": -0.01694915254237288
+        },
+        "testability": {
+          "value": 0.4,
+          "lower": 0.2,
+          "upper": 0.6000000000000001,
+          "status": "inferred",
+          "rationale": "Repository test presence proxy, not candidate test coverage",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ],
+          "weight": 1.0,
+          "contribution": 0.03389830508474576
+        },
+        "expected_reuse": {
+          "value": 0.4,
+          "lower": 0.2,
+          "upper": 0.6000000000000001,
+          "status": "inferred",
+          "rationale": "Static call fan-out proxy; downstream fan-out is not runtime reuse",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ],
+          "weight": 0.5,
+          "contribution": 0.01694915254237288
+        },
+        "confidence_calibration_value": {
+          "value": 0.85,
+          "lower": 0.6499999999999999,
+          "upper": 1,
+          "status": "inferred",
+          "rationale": "Potential value of abstention at this boundary",
+          "evidence_refs": [
+            "JEV-096197285ED2:source"
+          ],
+          "weight": 0.7,
+          "contribution": 0.05042372881355932
+        }
+      },
+      "score_formula": "clip(sum(weight*dimension)/sum(positive weights),0,1)",
+      "unknown_dimensions": [
+        "decision_frequency",
+        "cost_of_wrong_decision",
+        "current_failure_rate",
+        "latency_sensitivity",
+        "cost_sensitivity"
+      ],
+      "rejection_reasons": [],
+      "tier": 1,
+      "recommendation": "experimental",
+      "deployment_status": "not_validated"
+    },
+    {
+      "candidate_id": "JEV-2DE05B2D8801",
+      "pattern": "D",
+      "category": "retrieval_filtering",
+      "source": {
+        "file": "pipeline.py",
+        "symbol": "answer_request",
+        "start_line": 2,
+        "end_line": 5,
+        "file_sha256": "c3bd20e69d365dfc269740e9cf25825cc9f3d4fabcd5463050b2bf0485dba4b7",
+        "source_sha256": "ab4c308b8d9926d64584f04421bfae0861f62e20490d397baea1eba6ed6ca840",
+        "parser": "python_ast"
+      },
+      "evidence_status": "structurally_supported",
+      "semantic_review": {
+        "approved": false,
+        "reviewer": null,
+        "reason": null,
+        "source_sha256": "ab4c308b8d9926d64584f04421bfae0861f62e20490d397baea1eba6ed6ca840"
+      },
+      "current_behavior": {
+        "description": "Observed calls and control structures; purpose requires source review.",
+        "calls": [
+          "retriever.retrieve",
+          "llm.generate"
+        ],
+        "branches": 0,
+        "loops": 0,
+        "exceptions": 0,
+        "failure_modes": [
+          {
+            "status": "hypothesis",
+            "description": "Test evidence selection without silently deleting contradictory sources."
+          }
+        ]
+      },
+      "evidence": [
+        {
+          "id": "JEV-2DE05B2D8801:source",
+          "kind": "python_ast",
+          "source": {
+            "file": "pipeline.py",
+            "symbol": "answer_request",
+            "start_line": 2,
+            "end_line": 5,
+            "file_sha256": "c3bd20e69d365dfc269740e9cf25825cc9f3d4fabcd5463050b2bf0485dba4b7",
+            "source_sha256": "ab4c308b8d9926d64584f04421bfae0861f62e20490d397baea1eba6ed6ca840",
+            "parser": "python_ast"
+          },
+          "facts": {
+            "roles": [
+              "model",
+              "retrieve"
+            ],
+            "calls": [
+              {
+                "name": "retriever.retrieve",
+                "resolved_name": "retriever.retrieve",
+                "line": 3
+              },
+              {
+                "name": "llm.generate",
+                "resolved_name": "llm.generate",
+                "line": 4
+              }
+            ],
+            "dataflow": [
+              {
+                "target": "chunks",
+                "calls": [
+                  "retriever.retrieve"
+                ],
+                "reads": [
+                  "retriever",
+                  "query"
+                ],
+                "line": 3
+              },
+              {
+                "target": "answer",
+                "calls": [
+                  "llm.generate"
+                ],
+                "reads": [
+                  "llm",
+                  "query",
+                  "chunks"
+                ],
+                "line": 4
+              }
+            ]
+          }
+        }
+      ],
+      "deterministic_alternative": "weak",
+      "proposed_jev_role": {
+        "type": "bounded_choice",
+        "timing": "after_retrieval_before_prompt_assembly"
+      },
+      "jev_questions": [
+        {
+          "id": "JEV-2DE05B2D8801-Q1",
+          "question": "What is this passage's evidentiary relationship to the specific question?",
+          "answer_type": "choice",
+          "allowed_answers": [
+            "supports",
+            "contradicts",
+            "background",
+            "irrelevant",
+            "uncertain"
+          ],
+          "criteria": {
+            "supports": "Directly supports a relevant answer claim",
+            "contradicts": "Directly contradicts a relevant answer claim",
+            "background": "Related but not supporting evidence",
+            "irrelevant": "Not relevant to the question",
+            "uncertain": "Relationship cannot be established"
+          },
+          "purpose": "Test evidence selection without silently deleting contradictory sources.",
+          "evidence_inputs": [
+            "query",
+            "claim",
+            "passage",
+            "source_metadata"
+          ],
+          "confidence_usage": "Keep selected-label probability and provider distribution-confidence separate; validate both on held-out data."
+        },
+        {
+          "id": "JEV-2DE05B2D8801-Q2",
+          "question": "Is the supplied evidence substantively adequate to answer this specific question: What is this passage's evidentiary relationship to the specific question? Required evidence: query, claim, passage, source_metadata?",
+          "answer_type": "noul",
+          "allowed_answers": [
+            false,
+            true
+          ],
+          "criteria": {
+            "true": "Each listed evidence field is present and substantively adequate for the quoted question",
+            "false": "Required evidence is missing, contradictory, or inadequate"
+          },
+          "purpose": "Route missing semantic evidence to inspection; field presence remains a deterministic check.",
+          "evidence_inputs": [
+            "query",
+            "claim",
+            "passage",
+            "source_metadata"
+          ],
+          "confidence_usage": "Noul is P(yes), not confidence or P(the primary answer is correct)."
+        }
+      ],
+      "choices": [
+        "supports",
+        "contradicts",
+        "background",
+        "irrelevant",
+        "uncertain"
+      ],
+      "deterministic_checks": [
+        "source identity",
+        "access controls",
+        "date comparisons",
+        "citation IDs",
+        "token budget"
+      ],
+      "expected_benefits": [
+        {
+          "description": "Test evidence selection without silently deleting contradictory sources.",
+          "status": "unmeasured_hypothesis"
+        }
+      ],
+      "risks": [
+        "Incorrect high-confidence classification",
+        "Added latency/cost",
+        "Evidence loss or stale state",
+        "Correlated evaluator errors"
+      ],
+      "leverage": {
+        "fan_out": 0,
+        "dependency_depth_lower_bound": 0,
+        "reachable_nodes": 0,
+        "state_corruption_risk": "unknown",
+        "expected_recovery_cost": null
+      },
+      "fallback": {
+        "low_confidence": "existing validated baseline or inspect",
+        "unavailable": "existing validated baseline",
+        "unsafe_baseline": "block or request authorized review"
+      },
+      "policy": {
+        "default_mode": "off",
+        "thresholds_status": "unvalidated",
+        "requires_calibration_before_active": true,
+        "decision_owner": "deterministic_host",
+        "hard_blocks_override_model": true,
+        "illustrative_probability_floor": 0.9,
+        "illustrative_confidence_floor": 0.75,
+        "inspect_probability_floor": 0.65,
+        "timeout_ms": 2000,
+        "bypass": [
+          "feature disabled",
+          "deterministic result sufficient",
+          "unchanged valid cached state",
+          "budget or deadline exhausted"
+        ],
+        "cache": "only immutable/pinned state, evidence, candidate set, model, and policy; never cache authorization"
+      },
+      "estimates": {
+        "quality_gain": null,
+        "reliability_gain": null,
+        "failure_reduction": null,
+        "model_call_reduction": null,
+        "added_latency_ms": null,
+        "added_cost": null,
+        "calls_per_task": null,
+        "complexity": null,
+        "maintenance": null,
+        "false_positive_rate": null,
+        "false_negative_rate": null,
+        "risk": null,
+        "throughput": null,
+        "provenance": null
+      },
+      "recommended_experiment": {
+        "id": "JEV-2DE05B2D8801-EXP-01",
+        "paired_replay": true,
+        "shadow_first": true,
+        "primary_metric": "verified task success",
+        "status": "planned",
+        "holdout_required": true
+      },
+      "traceability": {
+        "source": "JEV-2DE05B2D8801:source",
+        "questions": [
+          "JEV-2DE05B2D8801-Q1",
+          "JEV-2DE05B2D8801-Q2"
+        ],
+        "implementation": [],
+        "tests": [],
+        "experiment": "JEV-2DE05B2D8801-EXP-01",
+        "outcome": null
+      },
+      "limitations": [],
+      "dimensions": {
+        "semantic_uncertainty": {
+          "value": 0.85,
+          "lower": 0.6499999999999999,
+          "upper": 1,
+          "status": "inferred",
+          "rationale": "Model/semantic pipeline proxy; not measured task ambiguity",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ]
+        },
+        "decision_boundedness": {
+          "value": 0.95,
+          "lower": 0.75,
+          "upper": 1,
+          "status": "inferred",
+          "rationale": "A candidate bounded rubric exists; validate coverage and label exclusivity",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ]
+        },
+        "downstream_consequence": {
+          "value": 0.55,
+          "lower": 0.35000000000000003,
+          "upper": 0.75,
+          "status": "inferred",
+          "rationale": "Static reachability and side-effect proxy; not a causal estimate",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ]
+        },
+        "decision_frequency": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "Requires source-correlated task traces",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ]
+        },
+        "cost_of_wrong_decision": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "Requires failure costs or impact estimates from the owner",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ]
+        },
+        "recoverability_value": {
+          "value": 0.6,
+          "lower": 0.39999999999999997,
+          "upper": 0.8,
+          "status": "inferred",
+          "rationale": "Pattern-specific opportunity to detect or recover failures",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ]
+        },
+        "observability": {
+          "value": 0.4,
+          "lower": 0.2,
+          "upper": 0.6000000000000001,
+          "status": "inferred",
+          "rationale": "Observation/verification call sightings",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ]
+        },
+        "deterministic_alternative_quality": {
+          "value": 0.2,
+          "lower": 0,
+          "upper": 0.4,
+          "status": "inferred",
+          "rationale": "Explicit anti-pattern gate, or unresolved semantic need",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ]
+        },
+        "current_failure_rate": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "No empirical failure rate inferred from source",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ]
+        },
+        "current_llm_dependency": {
+          "value": 1.0,
+          "lower": 1.0,
+          "upper": 1.0,
+          "status": "observed",
+          "rationale": "Recognized concrete model-call signature",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ]
+        },
+        "latency_sensitivity": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "Owner budget and measured critical path required",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ]
+        },
+        "cost_sensitivity": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "Owner budget and prices required",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ]
+        },
+        "implementation_complexity": {
+          "value": 0.25,
+          "lower": 0.04999999999999999,
+          "upper": 0.45,
+          "status": "inferred",
+          "rationale": "Local branch/exception proxy; integration work may differ",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ]
+        },
+        "testability": {
+          "value": 0.4,
+          "lower": 0.2,
+          "upper": 0.6000000000000001,
+          "status": "inferred",
+          "rationale": "Repository test presence proxy, not candidate test coverage",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ]
+        },
+        "expected_reuse": {
+          "value": 0.4,
+          "lower": 0.2,
+          "upper": 0.6000000000000001,
+          "status": "inferred",
+          "rationale": "Static call fan-out proxy; downstream fan-out is not runtime reuse",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ]
+        },
+        "confidence_calibration_value": {
+          "value": 0.85,
+          "lower": 0.6499999999999999,
+          "upper": 1,
+          "status": "inferred",
+          "rationale": "Potential value of abstention at this boundary",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ]
+        }
+      },
+      "placement_score": 0.519492,
+      "score_interval": [
+        0.132203,
+        0.877966
+      ],
+      "score_breakdown": {
+        "semantic_uncertainty": {
+          "value": 0.85,
+          "lower": 0.6499999999999999,
+          "upper": 1,
+          "status": "inferred",
+          "rationale": "Model/semantic pipeline proxy; not measured task ambiguity",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ],
+          "weight": 1.6,
+          "contribution": 0.1152542372881356
+        },
+        "decision_boundedness": {
+          "value": 0.95,
+          "lower": 0.75,
+          "upper": 1,
+          "status": "inferred",
+          "rationale": "A candidate bounded rubric exists; validate coverage and label exclusivity",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ],
+          "weight": 1.5,
+          "contribution": 0.12076271186440676
+        },
+        "downstream_consequence": {
+          "value": 0.55,
+          "lower": 0.35000000000000003,
+          "upper": 0.75,
+          "status": "inferred",
+          "rationale": "Static reachability and side-effect proxy; not a causal estimate",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ],
+          "weight": 1.6,
+          "contribution": 0.07457627118644068
+        },
+        "decision_frequency": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "Requires source-correlated task traces",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ],
+          "weight": 0.5,
+          "contribution": 0.0211864406779661
+        },
+        "cost_of_wrong_decision": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "Requires failure costs or impact estimates from the owner",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ],
+          "weight": 1.2,
+          "contribution": 0.05084745762711864
+        },
+        "recoverability_value": {
+          "value": 0.6,
+          "lower": 0.39999999999999997,
+          "upper": 0.8,
+          "status": "inferred",
+          "rationale": "Pattern-specific opportunity to detect or recover failures",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ],
+          "weight": 1.0,
+          "contribution": 0.05084745762711864
+        },
+        "observability": {
+          "value": 0.4,
+          "lower": 0.2,
+          "upper": 0.6000000000000001,
+          "status": "inferred",
+          "rationale": "Observation/verification call sightings",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ],
+          "weight": 0.5,
+          "contribution": 0.01694915254237288
+        },
+        "deterministic_alternative_quality": {
+          "value": 0.2,
+          "lower": 0,
+          "upper": 0.4,
+          "status": "inferred",
+          "rationale": "Explicit anti-pattern gate, or unresolved semantic need",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ],
+          "weight": -2.4,
+          "contribution": -0.04067796610169491
+        },
+        "current_failure_rate": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "No empirical failure rate inferred from source",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ],
+          "weight": 0.9,
+          "contribution": 0.03813559322033898
+        },
+        "current_llm_dependency": {
+          "value": 1.0,
+          "lower": 1.0,
+          "upper": 1.0,
+          "status": "observed",
+          "rationale": "Recognized concrete model-call signature",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ],
+          "weight": 0.8,
+          "contribution": 0.06779661016949153
+        },
+        "latency_sensitivity": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "Owner budget and measured critical path required",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ],
+          "weight": -1.2,
+          "contribution": -0.05084745762711864
+        },
+        "cost_sensitivity": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "Owner budget and prices required",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ],
+          "weight": -0.7,
+          "contribution": -0.02966101694915254
+        },
+        "implementation_complexity": {
+          "value": 0.25,
+          "lower": 0.04999999999999999,
+          "upper": 0.45,
+          "status": "inferred",
+          "rationale": "Local branch/exception proxy; integration work may differ",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ],
+          "weight": -0.8,
+          "contribution": -0.01694915254237288
+        },
+        "testability": {
+          "value": 0.4,
+          "lower": 0.2,
+          "upper": 0.6000000000000001,
+          "status": "inferred",
+          "rationale": "Repository test presence proxy, not candidate test coverage",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ],
+          "weight": 1.0,
+          "contribution": 0.03389830508474576
+        },
+        "expected_reuse": {
+          "value": 0.4,
+          "lower": 0.2,
+          "upper": 0.6000000000000001,
+          "status": "inferred",
+          "rationale": "Static call fan-out proxy; downstream fan-out is not runtime reuse",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ],
+          "weight": 0.5,
+          "contribution": 0.01694915254237288
+        },
+        "confidence_calibration_value": {
+          "value": 0.85,
+          "lower": 0.6499999999999999,
+          "upper": 1,
+          "status": "inferred",
+          "rationale": "Potential value of abstention at this boundary",
+          "evidence_refs": [
+            "JEV-2DE05B2D8801:source"
+          ],
+          "weight": 0.7,
+          "contribution": 0.05042372881355932
+        }
+      },
+      "score_formula": "clip(sum(weight*dimension)/sum(positive weights),0,1)",
+      "unknown_dimensions": [
+        "decision_frequency",
+        "cost_of_wrong_decision",
+        "current_failure_rate",
+        "latency_sensitivity",
+        "cost_sensitivity"
+      ],
+      "rejection_reasons": [],
+      "tier": 1,
+      "recommendation": "experimental",
+      "deployment_status": "not_validated"
+    },
+    {
+      "candidate_id": "JEV-90EF61A9EC09",
+      "pattern": "M",
+      "category": "answer_validation",
+      "source": {
+        "file": "pipeline.py",
+        "symbol": "answer_request",
+        "start_line": 2,
+        "end_line": 5,
+        "file_sha256": "c3bd20e69d365dfc269740e9cf25825cc9f3d4fabcd5463050b2bf0485dba4b7",
+        "source_sha256": "ab4c308b8d9926d64584f04421bfae0861f62e20490d397baea1eba6ed6ca840",
+        "parser": "python_ast"
+      },
+      "evidence_status": "structurally_supported",
+      "semantic_review": {
+        "approved": false,
+        "reviewer": null,
+        "reason": null,
+        "source_sha256": "ab4c308b8d9926d64584f04421bfae0861f62e20490d397baea1eba6ed6ca840"
+      },
+      "current_behavior": {
+        "description": "Observed calls and control structures; purpose requires source review.",
+        "calls": [
+          "retriever.retrieve",
+          "llm.generate"
+        ],
+        "branches": 0,
+        "loops": 0,
+        "exceptions": 0,
+        "failure_modes": [
+          {
+            "status": "hypothesis",
+            "description": "Test atomic evidence checks before a separate revision step."
+          }
+        ]
+      },
+      "evidence": [
+        {
+          "id": "JEV-90EF61A9EC09:source",
+          "kind": "python_ast",
+          "source": {
+            "file": "pipeline.py",
+            "symbol": "answer_request",
+            "start_line": 2,
+            "end_line": 5,
+            "file_sha256": "c3bd20e69d365dfc269740e9cf25825cc9f3d4fabcd5463050b2bf0485dba4b7",
+            "source_sha256": "ab4c308b8d9926d64584f04421bfae0861f62e20490d397baea1eba6ed6ca840",
+            "parser": "python_ast"
+          },
+          "facts": {
+            "roles": [
+              "model",
+              "retrieve"
+            ],
+            "calls": [
+              {
+                "name": "retriever.retrieve",
+                "resolved_name": "retriever.retrieve",
+                "line": 3
+              },
+              {
+                "name": "llm.generate",
+                "resolved_name": "llm.generate",
+                "line": 4
+              }
+            ],
+            "dataflow": [
+              {
+                "target": "chunks",
+                "calls": [
+                  "retriever.retrieve"
+                ],
+                "reads": [
+                  "retriever",
+                  "query"
+                ],
+                "line": 3
+              },
+              {
+                "target": "answer",
+                "calls": [
+                  "llm.generate"
+                ],
+                "reads": [
+                  "llm",
+                  "query",
+                  "chunks"
+                ],
+                "line": 4
+              }
+            ]
+          }
+        }
+      ],
+      "deterministic_alternative": "weak",
+      "proposed_jev_role": {
+        "type": "bounded_choice",
+        "timing": "after_generation_before_delivery"
+      },
+      "jev_questions": [
+        {
+          "id": "JEV-90EF61A9EC09-Q1",
+          "question": "Does the cited evidence support this specific generated claim in its original context?",
+          "answer_type": "choice",
+          "allowed_answers": [
+            "supported",
+            "contradicted",
+            "unsupported",
+            "uncertain"
+          ],
+          "criteria": {
+            "supported": "The source supports the precise claim",
+            "contradicted": "The source contradicts the claim",
+            "unsupported": "The source does not establish the claim",
+            "uncertain": "The source context is insufficient"
+          },
+          "purpose": "Test atomic evidence checks before a separate revision step.",
+          "evidence_inputs": [
+            "request",
+            "claim",
+            "citation",
+            "source_context"
+          ],
+          "confidence_usage": "Keep selected-label probability and provider distribution-confidence separate; validate both on held-out data."
+        },
+        {
+          "id": "JEV-90EF61A9EC09-Q2",
+          "question": "Is the supplied evidence substantively adequate to answer this specific question: Does the cited evidence support this specific generated claim in its original context? Required evidence: request, claim, citation, source_context?",
+          "answer_type": "noul",
+          "allowed_answers": [
+            false,
+            true
+          ],
+          "criteria": {
+            "true": "Each listed evidence field is present and substantively adequate for the quoted question",
+            "false": "Required evidence is missing, contradictory, or inadequate"
+          },
+          "purpose": "Route missing semantic evidence to inspection; field presence remains a deterministic check.",
+          "evidence_inputs": [
+            "request",
+            "claim",
+            "citation",
+            "source_context"
+          ],
+          "confidence_usage": "Noul is P(yes), not confidence or P(the primary answer is correct)."
+        }
+      ],
+      "choices": [
+        "supported",
+        "contradicted",
+        "unsupported",
+        "uncertain"
+      ],
+      "deterministic_checks": [
+        "required sections",
+        "output schema",
+        "citation existence",
+        "verbatim spans",
+        "length bounds"
+      ],
+      "expected_benefits": [
+        {
+          "description": "Test atomic evidence checks before a separate revision step.",
+          "status": "unmeasured_hypothesis"
+        }
+      ],
+      "risks": [
+        "Incorrect high-confidence classification",
+        "Added latency/cost",
+        "Evidence loss or stale state",
+        "Correlated evaluator errors"
+      ],
+      "leverage": {
+        "fan_out": 0,
+        "dependency_depth_lower_bound": 0,
+        "reachable_nodes": 0,
+        "state_corruption_risk": "unknown",
+        "expected_recovery_cost": null
+      },
+      "fallback": {
+        "low_confidence": "existing validated baseline or inspect",
+        "unavailable": "existing validated baseline",
+        "unsafe_baseline": "block or request authorized review"
+      },
+      "policy": {
+        "default_mode": "off",
+        "thresholds_status": "unvalidated",
+        "requires_calibration_before_active": true,
+        "decision_owner": "deterministic_host",
+        "hard_blocks_override_model": true,
+        "illustrative_probability_floor": 0.9,
+        "illustrative_confidence_floor": 0.75,
+        "inspect_probability_floor": 0.65,
+        "timeout_ms": 2000,
+        "bypass": [
+          "feature disabled",
+          "deterministic result sufficient",
+          "unchanged valid cached state",
+          "budget or deadline exhausted"
+        ],
+        "cache": "only immutable/pinned state, evidence, candidate set, model, and policy; never cache authorization"
+      },
+      "estimates": {
+        "quality_gain": null,
+        "reliability_gain": null,
+        "failure_reduction": null,
+        "model_call_reduction": null,
+        "added_latency_ms": null,
+        "added_cost": null,
+        "calls_per_task": null,
+        "complexity": null,
+        "maintenance": null,
+        "false_positive_rate": null,
+        "false_negative_rate": null,
+        "risk": null,
+        "throughput": null,
+        "provenance": null
+      },
+      "recommended_experiment": {
+        "id": "JEV-90EF61A9EC09-EXP-01",
+        "paired_replay": true,
+        "shadow_first": true,
+        "primary_metric": "verified task success",
+        "status": "planned",
+        "holdout_required": true
+      },
+      "traceability": {
+        "source": "JEV-90EF61A9EC09:source",
+        "questions": [
+          "JEV-90EF61A9EC09-Q1",
+          "JEV-90EF61A9EC09-Q2"
+        ],
+        "implementation": [],
+        "tests": [],
+        "experiment": "JEV-90EF61A9EC09-EXP-01",
+        "outcome": null
+      },
+      "limitations": [],
+      "dimensions": {
+        "semantic_uncertainty": {
+          "value": 0.85,
+          "lower": 0.6499999999999999,
+          "upper": 1,
+          "status": "inferred",
+          "rationale": "Model/semantic pipeline proxy; not measured task ambiguity",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ]
+        },
+        "decision_boundedness": {
+          "value": 0.95,
+          "lower": 0.75,
+          "upper": 1,
+          "status": "inferred",
+          "rationale": "A candidate bounded rubric exists; validate coverage and label exclusivity",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ]
+        },
+        "downstream_consequence": {
+          "value": 0.55,
+          "lower": 0.35000000000000003,
+          "upper": 0.75,
+          "status": "inferred",
+          "rationale": "Static reachability and side-effect proxy; not a causal estimate",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ]
+        },
+        "decision_frequency": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "Requires source-correlated task traces",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ]
+        },
+        "cost_of_wrong_decision": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "Requires failure costs or impact estimates from the owner",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ]
+        },
+        "recoverability_value": {
+          "value": 0.6,
+          "lower": 0.39999999999999997,
+          "upper": 0.8,
+          "status": "inferred",
+          "rationale": "Pattern-specific opportunity to detect or recover failures",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ]
+        },
+        "observability": {
+          "value": 0.4,
+          "lower": 0.2,
+          "upper": 0.6000000000000001,
+          "status": "inferred",
+          "rationale": "Observation/verification call sightings",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ]
+        },
+        "deterministic_alternative_quality": {
+          "value": 0.2,
+          "lower": 0,
+          "upper": 0.4,
+          "status": "inferred",
+          "rationale": "Explicit anti-pattern gate, or unresolved semantic need",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ]
+        },
+        "current_failure_rate": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "No empirical failure rate inferred from source",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ]
+        },
+        "current_llm_dependency": {
+          "value": 1.0,
+          "lower": 1.0,
+          "upper": 1.0,
+          "status": "observed",
+          "rationale": "Recognized concrete model-call signature",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ]
+        },
+        "latency_sensitivity": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "Owner budget and measured critical path required",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ]
+        },
+        "cost_sensitivity": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "Owner budget and prices required",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ]
+        },
+        "implementation_complexity": {
+          "value": 0.25,
+          "lower": 0.04999999999999999,
+          "upper": 0.45,
+          "status": "inferred",
+          "rationale": "Local branch/exception proxy; integration work may differ",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ]
+        },
+        "testability": {
+          "value": 0.4,
+          "lower": 0.2,
+          "upper": 0.6000000000000001,
+          "status": "inferred",
+          "rationale": "Repository test presence proxy, not candidate test coverage",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ]
+        },
+        "expected_reuse": {
+          "value": 0.4,
+          "lower": 0.2,
+          "upper": 0.6000000000000001,
+          "status": "inferred",
+          "rationale": "Static call fan-out proxy; downstream fan-out is not runtime reuse",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ]
+        },
+        "confidence_calibration_value": {
+          "value": 0.85,
+          "lower": 0.6499999999999999,
+          "upper": 1,
+          "status": "inferred",
+          "rationale": "Potential value of abstention at this boundary",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ]
+        }
+      },
+      "placement_score": 0.519492,
+      "score_interval": [
+        0.132203,
+        0.877966
+      ],
+      "score_breakdown": {
+        "semantic_uncertainty": {
+          "value": 0.85,
+          "lower": 0.6499999999999999,
+          "upper": 1,
+          "status": "inferred",
+          "rationale": "Model/semantic pipeline proxy; not measured task ambiguity",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ],
+          "weight": 1.6,
+          "contribution": 0.1152542372881356
+        },
+        "decision_boundedness": {
+          "value": 0.95,
+          "lower": 0.75,
+          "upper": 1,
+          "status": "inferred",
+          "rationale": "A candidate bounded rubric exists; validate coverage and label exclusivity",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ],
+          "weight": 1.5,
+          "contribution": 0.12076271186440676
+        },
+        "downstream_consequence": {
+          "value": 0.55,
+          "lower": 0.35000000000000003,
+          "upper": 0.75,
+          "status": "inferred",
+          "rationale": "Static reachability and side-effect proxy; not a causal estimate",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ],
+          "weight": 1.6,
+          "contribution": 0.07457627118644068
+        },
+        "decision_frequency": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "Requires source-correlated task traces",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ],
+          "weight": 0.5,
+          "contribution": 0.0211864406779661
+        },
+        "cost_of_wrong_decision": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "Requires failure costs or impact estimates from the owner",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ],
+          "weight": 1.2,
+          "contribution": 0.05084745762711864
+        },
+        "recoverability_value": {
+          "value": 0.6,
+          "lower": 0.39999999999999997,
+          "upper": 0.8,
+          "status": "inferred",
+          "rationale": "Pattern-specific opportunity to detect or recover failures",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ],
+          "weight": 1.0,
+          "contribution": 0.05084745762711864
+        },
+        "observability": {
+          "value": 0.4,
+          "lower": 0.2,
+          "upper": 0.6000000000000001,
+          "status": "inferred",
+          "rationale": "Observation/verification call sightings",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ],
+          "weight": 0.5,
+          "contribution": 0.01694915254237288
+        },
+        "deterministic_alternative_quality": {
+          "value": 0.2,
+          "lower": 0,
+          "upper": 0.4,
+          "status": "inferred",
+          "rationale": "Explicit anti-pattern gate, or unresolved semantic need",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ],
+          "weight": -2.4,
+          "contribution": -0.04067796610169491
+        },
+        "current_failure_rate": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "No empirical failure rate inferred from source",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ],
+          "weight": 0.9,
+          "contribution": 0.03813559322033898
+        },
+        "current_llm_dependency": {
+          "value": 1.0,
+          "lower": 1.0,
+          "upper": 1.0,
+          "status": "observed",
+          "rationale": "Recognized concrete model-call signature",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ],
+          "weight": 0.8,
+          "contribution": 0.06779661016949153
+        },
+        "latency_sensitivity": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "Owner budget and measured critical path required",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ],
+          "weight": -1.2,
+          "contribution": -0.05084745762711864
+        },
+        "cost_sensitivity": {
+          "value": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "status": "unknown",
+          "rationale": "Owner budget and prices required",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ],
+          "weight": -0.7,
+          "contribution": -0.02966101694915254
+        },
+        "implementation_complexity": {
+          "value": 0.25,
+          "lower": 0.04999999999999999,
+          "upper": 0.45,
+          "status": "inferred",
+          "rationale": "Local branch/exception proxy; integration work may differ",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ],
+          "weight": -0.8,
+          "contribution": -0.01694915254237288
+        },
+        "testability": {
+          "value": 0.4,
+          "lower": 0.2,
+          "upper": 0.6000000000000001,
+          "status": "inferred",
+          "rationale": "Repository test presence proxy, not candidate test coverage",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ],
+          "weight": 1.0,
+          "contribution": 0.03389830508474576
+        },
+        "expected_reuse": {
+          "value": 0.4,
+          "lower": 0.2,
+          "upper": 0.6000000000000001,
+          "status": "inferred",
+          "rationale": "Static call fan-out proxy; downstream fan-out is not runtime reuse",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ],
+          "weight": 0.5,
+          "contribution": 0.01694915254237288
+        },
+        "confidence_calibration_value": {
+          "value": 0.85,
+          "lower": 0.6499999999999999,
+          "upper": 1,
+          "status": "inferred",
+          "rationale": "Potential value of abstention at this boundary",
+          "evidence_refs": [
+            "JEV-90EF61A9EC09:source"
+          ],
+          "weight": 0.7,
+          "contribution": 0.05042372881355932
+        }
+      },
+      "score_formula": "clip(sum(weight*dimension)/sum(positive weights),0,1)",
+      "unknown_dimensions": [
+        "decision_frequency",
+        "cost_of_wrong_decision",
+        "current_failure_rate",
+        "latency_sensitivity",
+        "cost_sensitivity"
+      ],
+      "rejection_reasons": [],
+      "tier": 1,
+      "recommendation": "experimental",
+      "deployment_status": "not_validated"
+    }
+  ],
+  "interactions": [
+    {
+      "a": "JEV-096197285ED2",
+      "b": "JEV-2DE05B2D8801",
+      "kind": "complementary",
+      "status": "hypothesis",
+      "utility_delta": 0.0,
+      "conflict": false,
+      "reason": "Same-file architectural hypothesis; verify call path",
+      "validation": "factorial ablation; measure combined critical-path latency, do not assume additive quality"
+    },
+    {
+      "a": "JEV-2DE05B2D8801",
+      "b": "JEV-90EF61A9EC09",
+      "kind": "complementary",
+      "status": "hypothesis",
+      "utility_delta": 0.0,
+      "conflict": false,
+      "reason": "Same source boundary",
+      "validation": "factorial ablation; measure combined critical-path latency, do not assume additive quality"
+    }
+  ],
+  "scan_fingerprint": "f270171623258c9c7f95fae5730f8b6cfb490e38006ff7bef62f25cf0e3f88ad",
+  "analysis_identity": {
+    "identity_version": "1.1",
+    "analyzer_version": "1.2.0",
+    "source_digest": "1ce211c7289edadaf6fc34c7a4dd34adcd663262065a4d6f6b689b212fdc18a6",
+    "configuration_digest": "5b85e06e3c0f454be2d8001c78a1e959ad300f43e88fc51d7207524f5460b784",
+    "settings_digest": "0c1882c4ca633c4cd9fc977ea40bded09e1e96bfa62f42fa2c450e21c7d1285b",
+    "coverage_digest": "7f99a37c93aac4924a1f29f15d0e21c3995493e4b2354439f571928838bd86d5",
+    "parser_digest": "e088d926c1ff37522a85e1b0025a2f7c359b309f3f64337551cd9ac8c34298f0"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "evidence_type": "synthetic",
+  "ledger": {
+    "kind": "shared_budget_snapshot",
+    "scope": "process_local_lifetime",
+    "limits": {
+      "max_calls_per_task": 2,
+      "max_cost_per_task": 0.01,
+      "max_total_calls": 2,
+      "max_total_cost": 0.01,
+      "max_in_flight": 8,
+      "max_tasks": 2048
+    },
+    "calls": 2,
+    "reserved_cost": 0.002,
+    "in_flight": 0,
+    "tasks": 1,
+    "closed_tasks": 0,
+    "suspended": false,
+    "cost_bound_overruns": 0,
+    "denials": {
+      "shared_total_call_budget": 1
+    },
+    "refunds": 0,
+    "cost_semantics": "reserved upper bounds plus known overruns, not an invoice"
+  },
+  "model_fixture_calls": 2,
+  "returned_decisions": [
+    {
+      "action": "stop",
+      "source": "baseline"
+    },
+    {
+      "action": "stop",
+      "source": "baseline"
+    },
+    {
+      "action": "stop",
+      "source": "baseline"
+    }
+  ],
+  "host_actions_executed": 0
+}

@@ -1,0 +1,25 @@
+{
+  "candidate_id": "JEV-D83B745FC7BF",
+  "source": {
+    "file": "agent.py",
+    "symbol": "dispatch_once",
+    "start_line": 4,
+    "end_line": 9,
+    "file_sha256": "f67b798a32772c85fec187c6a2cd22eaeaef6dd6a374c79d698870e97c6d5f79",
+    "source_sha256": "3f27ed7bc19ecfb5751f4c766f799fb6d4dc4d7c2a993357e7220e1d777d44ae",
+    "parser": "python_ast"
+  },
+  "questions_hash": "c95218a2ec816a604aa5efdbaa4c9a48e28a274bd19289ec194eed3eddb0b44b",
+  "feature_flag_default": "off",
+  "wiring_status": "adapter_generated_not_yet_connected_to_host_callsite",
+  "factory_requires_expiring_activation": true,
+  "factory_requires_runtime_binding": true,
+  "generated_files": [
+    "adapter.py",
+    "test_adapter.py",
+    "integration-manifest.json",
+    "WIRING.md"
+  ],
+  "experiment_id": "JEV-D83B745FC7BF-EXP-01",
+  "baseline_preserved": true
+}

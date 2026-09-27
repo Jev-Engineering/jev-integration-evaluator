@@ -1,0 +1,762 @@
+[
+  {
+    "observation_id": "gate-0-calibration-0",
+    "task_hash": "ac0801ef06c9d8d74e065a0b27d25cba66d3e5616b2cc5ce3b86cca9e6aca480",
+    "cluster_id": "gate-0-calibration-0",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-1",
+    "task_hash": "95340d8d42d33f44a59caaa0ff0be9de840957bbe0d98532cd14987e56f54f25",
+    "cluster_id": "gate-0-calibration-1",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-2",
+    "task_hash": "8dfc7980a466bb067f0858e3a07fd4f6302f30d1519dd79d70f20721085f3876",
+    "cluster_id": "gate-0-calibration-2",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-3",
+    "task_hash": "d0ee1e273dfaff6a1cb61b95ab3b199b2094e6b246f31e0ba8313b1cce2799b5",
+    "cluster_id": "gate-0-calibration-3",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-4",
+    "task_hash": "ebc52418b7040bf8efc2da9c7e156b6a1eea778235143ecef57f56d51b6179ea",
+    "cluster_id": "gate-0-calibration-4",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-5",
+    "task_hash": "76038490f69c497a9d7b7b4b030b8f8b20fa54fe78cab741b4a51fa91ee75083",
+    "cluster_id": "gate-0-calibration-5",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-6",
+    "task_hash": "de84edb7b676e13b7a4e6d3af5bfaad957faea84fe75e16cd567e6df728f9f4d",
+    "cluster_id": "gate-0-calibration-6",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-7",
+    "task_hash": "77adea8b7533467fa692f77486b54d224f4c7876d5ea86a4308d636c63c7a432",
+    "cluster_id": "gate-0-calibration-7",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-8",
+    "task_hash": "53be4455bc7ed7229231876d3d6249972ebf8e07039425ae6d6ade4310c7e1de",
+    "cluster_id": "gate-0-calibration-8",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-9",
+    "task_hash": "12f43eb07646b247e1e30f7ff86cb57b9874c2d7c48da7984dd3fbd2cc3858d8",
+    "cluster_id": "gate-0-calibration-9",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-10",
+    "task_hash": "6d5a32d8b04ade734b492497545be79f10b9902285d28251c0de8afa42c9b488",
+    "cluster_id": "gate-0-calibration-10",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-11",
+    "task_hash": "fd8128c776cdfa541933561b782789545b0d33c203df5d13af28de9604d4b7c8",
+    "cluster_id": "gate-0-calibration-11",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-12",
+    "task_hash": "6b6d1ced2e5fd247ed29d52a105097b10873b8d0781bdb6711d3a43fc372d012",
+    "cluster_id": "gate-0-calibration-12",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-13",
+    "task_hash": "64c9767e6a4734f035851fd7b908f9576c3fd5414de865759cbbc6a50221060a",
+    "cluster_id": "gate-0-calibration-13",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-14",
+    "task_hash": "8170309116a550174473bded8695b1d6a52b30aa8af6d4e67d04cf711f8a3bd7",
+    "cluster_id": "gate-0-calibration-14",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-15",
+    "task_hash": "3a13d2c2199bcae2e2bf86bed7522e658837f9a74e36b2cbb5ec546747d5f024",
+    "cluster_id": "gate-0-calibration-15",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-16",
+    "task_hash": "9702746c1420b2d5f096743f2513a38f16a6874ad6b31423a8570d94c41a1c42",
+    "cluster_id": "gate-0-calibration-16",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-17",
+    "task_hash": "4e068d8bcb68fdd7abd1498a0c470afee38e48f72fc0c676bd9ddba924ab473e",
+    "cluster_id": "gate-0-calibration-17",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-18",
+    "task_hash": "deed634b04b390564a21c04fdd1003d637786598a2ed2caae6dbccb1ee9a3fac",
+    "cluster_id": "gate-0-calibration-18",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-19",
+    "task_hash": "99c683faa294d0901bc481e13c84007de97ac396026f26227bc072afc7f7b017",
+    "cluster_id": "gate-0-calibration-19",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-20",
+    "task_hash": "dd3670945384964f32e1dbad25cbe661ee7fc317cdd10ba774035129307b63a4",
+    "cluster_id": "gate-0-calibration-20",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-21",
+    "task_hash": "63c5d44465a1e12df71eb270019ee27ace5ab1cc1eeb8d2357d4f3d879784ded",
+    "cluster_id": "gate-0-calibration-21",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-22",
+    "task_hash": "967923a5f77ce00dd449a4a9dbd04bce21db36f699706e7c2a2a209979b1fc6f",
+    "cluster_id": "gate-0-calibration-22",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-23",
+    "task_hash": "01a691fc9c67fa77ea9a57cfd5d4f173039539f5e726fdae554f3607e95edc1a",
+    "cluster_id": "gate-0-calibration-23",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-24",
+    "task_hash": "6f7885d14132811a19ae292a628350fe51e64e4bce34e3def63550a549f9deac",
+    "cluster_id": "gate-0-calibration-24",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-25",
+    "task_hash": "caae21bd1818661cd8f9dfb2d773509ea9581964786281ab0395f2a4fab6ad96",
+    "cluster_id": "gate-0-calibration-25",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-26",
+    "task_hash": "0b1496463c141c551f3804fc971a6cb95e1921b42ab0ab429a03b25da1c22189",
+    "cluster_id": "gate-0-calibration-26",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-27",
+    "task_hash": "06b05ff62c349bfd20ab3021b4d6de069ae17ec76f3fdde1706555afdd3bdbe4",
+    "cluster_id": "gate-0-calibration-27",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-28",
+    "task_hash": "a9b3832d505ab0d4ba039747df5fc62bda2cc058dc109bad2b2c743687161459",
+    "cluster_id": "gate-0-calibration-28",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-29",
+    "task_hash": "d689db69af57948e5e0181a6e215f2b0b12cbdb77ef28934aa6fe7c99b1c4c75",
+    "cluster_id": "gate-0-calibration-29",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-30",
+    "task_hash": "965a7e1919cd1e1ea863b8f8ad54e28c86afaa9f49e21275d912061a769e2754",
+    "cluster_id": "gate-0-calibration-30",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-31",
+    "task_hash": "2fcd033e6deacd30878a9166a088bf9636cbfa67a863b12487a1087cbf497b5d",
+    "cluster_id": "gate-0-calibration-31",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-32",
+    "task_hash": "3ccee1fa74b5149f5e97c9c967f490a86cca730e28dc7d4bc50328a537154441",
+    "cluster_id": "gate-0-calibration-32",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-33",
+    "task_hash": "0627110497faefb378bd84588574e26fa8f0dfe0d0f9a538c117ade571f3681c",
+    "cluster_id": "gate-0-calibration-33",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-34",
+    "task_hash": "d4db7f242303612c6b582add87cb21864b2bb116e02a28df1a75a43ba547ad03",
+    "cluster_id": "gate-0-calibration-34",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-35",
+    "task_hash": "d8e1f4b051989cbb526b7e2621310484d0a3aa0923382620bc7ad1bc2603fccc",
+    "cluster_id": "gate-0-calibration-35",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-36",
+    "task_hash": "6e3fe5a96fc086e0edc1159ec16cb0c7663f45e903a0632f7088883b2cf1ee19",
+    "cluster_id": "gate-0-calibration-36",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-37",
+    "task_hash": "72c24f088634859856d651563fdb138f92e523509a53ea1c26527d96b9deb51a",
+    "cluster_id": "gate-0-calibration-37",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-38",
+    "task_hash": "8d0878571b89fe8dc07bf636289adbdebd2e0774e5d795c142e4138701a48897",
+    "cluster_id": "gate-0-calibration-38",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-0-calibration-39",
+    "task_hash": "bdeba5e17449b8a8981338e91981a68514e865571a6b6f1fc08c11f56e82f271",
+    "cluster_id": "gate-0-calibration-39",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "calibration",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-0",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  }
+]

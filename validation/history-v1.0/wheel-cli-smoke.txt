@@ -1,0 +1,28 @@
+{
+  "output_directory": "/mnt/data/jev-wheel-smoke",
+  "candidate_count": 5,
+  "tier_counts": {
+    "0": 5
+  },
+  "optimizer_status": "no_justified_integration_set",
+  "files": [
+    "JEV_ARCHITECTURE.md",
+    "JEV_EXPERIMENT_PLAN.md",
+    "JEV_INTEGRATION_PLAN.md",
+    "JEV_OPPORTUNITIES.md",
+    "JEV_RESULTS.md",
+    "JEV_RISK_ANALYSIS.md",
+    "architecture.json",
+    "architecture.mmd",
+    "experiment-plan.json",
+    "jev-config.yaml",
+    "jev-opportunities.csv",
+    "jev-opportunities.json",
+    "jev-placement-sets.json"
+  ]
+}
+{
+  "status": "valid",
+  "kind": "inventory",
+  "records": 1
+}

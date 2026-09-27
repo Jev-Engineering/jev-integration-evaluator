@@ -1,0 +1,10 @@
+{
+  "action": {
+    "type": "choice",
+    "instructions": "Select the evidence-supported criterion.",
+    "criteria": {
+      "inspect": "Evidence supports additional inspection.",
+      "stop": "Evidence supports stopping."
+    }
+  }
+}

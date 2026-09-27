@@ -1,0 +1,245 @@
+{
+  "schema_version": "1.2",
+  "kind": "scenario_optimization",
+  "inventory_fingerprint": "78f8b6451e11253ebfbd0b996d311124fe6923594e4eba5e1f3e61d96771c110",
+  "scenario_spec_digest": "6aa3527f412a563eeb7d590ef2ec829fc542af109a29f87e577a2d007aff3a69",
+  "method": "exact_enumeration",
+  "optimality_proven_for_declared_model": true,
+  "eligible_candidates": 2,
+  "sets_evaluated": 4,
+  "common_feasible_sets_examined": 4,
+  "excluded": [
+    {
+      "candidate_id": "JEV-0B40C24F3988",
+      "reason": "semantic_review_not_approved"
+    },
+    {
+      "candidate_id": "JEV-1ED0191AB058",
+      "reason": "semantic_review_not_approved"
+    },
+    {
+      "candidate_id": "JEV-1EDC6846A754",
+      "reason": "semantic_review_not_approved"
+    },
+    {
+      "candidate_id": "JEV-35AB38B3026C",
+      "reason": "semantic_review_not_approved"
+    },
+    {
+      "candidate_id": "JEV-47C500E9A193",
+      "reason": "semantic_review_not_approved"
+    },
+    {
+      "candidate_id": "JEV-950F0C5EFE45",
+      "reason": "semantic_review_not_approved"
+    },
+    {
+      "candidate_id": "JEV-B4B5BF2FD219",
+      "reason": "semantic_review_not_approved"
+    },
+    {
+      "candidate_id": "JEV-BC69C74DF3CA",
+      "reason": "semantic_review_not_approved"
+    },
+    {
+      "candidate_id": "JEV-BD68119011F6",
+      "reason": "semantic_review_not_approved"
+    },
+    {
+      "candidate_id": "JEV-BF71FD853BBC",
+      "reason": "semantic_review_not_approved"
+    },
+    {
+      "candidate_id": "JEV-C25AE1A294B1",
+      "reason": "semantic_review_not_approved"
+    },
+    {
+      "candidate_id": "JEV-D83B745FC7BF",
+      "reason": "semantic_review_not_approved"
+    },
+    {
+      "candidate_id": "JEV-E44ED530B27A",
+      "reason": "semantic_review_not_approved"
+    },
+    {
+      "candidate_id": "JEV-E69F0ED1FC49",
+      "reason": "semantic_review_not_approved"
+    },
+    {
+      "candidate_id": "JEV-EC417BD414AB",
+      "reason": "semantic_review_not_approved"
+    },
+    {
+      "candidate_id": "JEV-F60068063D8D",
+      "reason": "semantic_review_not_approved"
+    }
+  ],
+  "rejections": {},
+  "ignored_unmeasured_positive_interactions": 0,
+  "recommended_minimal_set": {
+    "candidate_ids": [
+      "JEV-80B425907A5D"
+    ],
+    "worst_case_utility": 0.09939999999999999,
+    "worst_case_calls": 1.0,
+    "worst_case_cost": 0.001,
+    "by_scenario": {
+      "nominal": {
+        "utility": 0.12940000000000002,
+        "interaction_utility": 0,
+        "quality_gain": 0.15,
+        "reliability_gain": 0.0,
+        "failure_reduction": 0.0,
+        "model_call_reduction": 0.0,
+        "added_latency_ms": 10.0,
+        "added_cost": 0.001,
+        "calls_per_task": 1.0,
+        "complexity": 0.1
+      },
+      "adverse": {
+        "utility": 0.09939999999999999,
+        "interaction_utility": 0,
+        "quality_gain": 0.12,
+        "reliability_gain": 0.0,
+        "failure_reduction": 0.0,
+        "model_call_reduction": 0.0,
+        "added_latency_ms": 10.0,
+        "added_cost": 0.001,
+        "calls_per_task": 1.0,
+        "complexity": 0.1
+      }
+    },
+    "maximum_regret": 0.2794
+  },
+  "recommended_balanced_set": {
+    "candidate_ids": [
+      "JEV-80B425907A5D"
+    ],
+    "worst_case_utility": 0.09939999999999999,
+    "worst_case_calls": 1.0,
+    "worst_case_cost": 0.001,
+    "by_scenario": {
+      "nominal": {
+        "utility": 0.12940000000000002,
+        "interaction_utility": 0,
+        "quality_gain": 0.15,
+        "reliability_gain": 0.0,
+        "failure_reduction": 0.0,
+        "model_call_reduction": 0.0,
+        "added_latency_ms": 10.0,
+        "added_cost": 0.001,
+        "calls_per_task": 1.0,
+        "complexity": 0.1
+      },
+      "adverse": {
+        "utility": 0.09939999999999999,
+        "interaction_utility": 0,
+        "quality_gain": 0.12,
+        "reliability_gain": 0.0,
+        "failure_reduction": 0.0,
+        "model_call_reduction": 0.0,
+        "added_latency_ms": 10.0,
+        "added_cost": 0.001,
+        "calls_per_task": 1.0,
+        "complexity": 0.1
+      }
+    },
+    "maximum_regret": 0.2794
+  },
+  "minimax_regret_set": {
+    "candidate_ids": [
+      "JEV-3AB7E6831523",
+      "JEV-80B425907A5D"
+    ],
+    "worst_case_utility": -0.021200000000000007,
+    "worst_case_calls": 2.0,
+    "worst_case_cost": 0.002,
+    "by_scenario": {
+      "nominal": {
+        "utility": 0.4088,
+        "interaction_utility": 0,
+        "quality_gain": 0.44999999999999996,
+        "reliability_gain": 0.0,
+        "failure_reduction": 0.0,
+        "model_call_reduction": 0.0,
+        "added_latency_ms": 20.0,
+        "added_cost": 0.002,
+        "calls_per_task": 2.0,
+        "complexity": 0.2
+      },
+      "adverse": {
+        "utility": -0.021200000000000007,
+        "interaction_utility": 0,
+        "quality_gain": 0.01999999999999999,
+        "reliability_gain": 0.0,
+        "failure_reduction": 0.0,
+        "model_call_reduction": 0.0,
+        "added_latency_ms": 20.0,
+        "added_cost": 0.002,
+        "calls_per_task": 2.0,
+        "complexity": 0.2
+      }
+    },
+    "maximum_regret": 0.1206
+  },
+  "scenario_optima_on_common_feasible_set": {
+    "nominal": {
+      "candidate_ids": [
+        "JEV-3AB7E6831523",
+        "JEV-80B425907A5D"
+      ],
+      "utility": 0.4088
+    },
+    "adverse": {
+      "candidate_ids": [
+        "JEV-80B425907A5D"
+      ],
+      "utility": 0.09939999999999999
+    }
+  },
+  "scenarios": [
+    {
+      "scenario_id": "nominal",
+      "evidence_type": "synthetic",
+      "provenance": "Fabricated demo assumptions, not model measurements."
+    },
+    {
+      "scenario_id": "adverse",
+      "evidence_type": "synthetic",
+      "provenance": "Fabricated stress assumptions; not a confidence interval."
+    }
+  ],
+  "utility_weights": {
+    "quality_gain": 1.0,
+    "reliability_gain": 1.0,
+    "failure_reduction": 0.5,
+    "model_call_reduction": 0.05,
+    "maintenance": 0.1,
+    "false_positive_rate": 1.0,
+    "false_negative_rate": 1.0,
+    "cost_penalty": 0.15,
+    "latency_penalty": 0.1,
+    "complexity_penalty": 0.08
+  },
+  "constraints": {
+    "max_added_latency_ms": 250.0,
+    "max_cost_per_task": 0.01,
+    "max_calls_per_task": 5.0,
+    "max_complexity": 5.0,
+    "max_risk": 0.5,
+    "required_throughput": 0.0
+  },
+  "minimal_retention": 0.9,
+  "status": "conditional_robust_placement_set",
+  "deployment_authorized": false,
+  "assumptions": [
+    "Scenarios are user-declared sensitivity cases, not assigned probabilities or confidence intervals.",
+    "Feasibility must hold in every supplied scenario; omitted scenarios are not covered.",
+    "Utility deltas remain additive hypotheses; joint resource/interaction measurements are preferable.",
+    "Latency is a serial sum; risk/throughput limits are per placement, not end-to-end guarantees.",
+    "Minimax regret compares only sets feasible across all scenarios, not each scenario's unrestricted oracle.",
+    "Positive interaction credit requires an explicit measured status and provenance; negative assumed penalties are allowed.",
+    "Beam results and their regret comparator cover only retained states and are not optimality proofs."
+  ],
+  "contract_digest": "86d711fd3c75746c26365a019e5be967a8f46d323c38aea851a661ec368d2382"
+}

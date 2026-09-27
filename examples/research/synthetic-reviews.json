@@ -1,0 +1,68 @@
+{
+  "JEV-E69F0ED1FC49": {
+    "source_sha256": "3f27ed7bc19ecfb5751f4c766f799fb6d4dc4d7c2a993357e7220e1d777d44ae",
+    "reviewer": "synthetic-scenario-demonstration",
+    "reason": "Read the injectable fixture: model output reaches a registered executor and only an exit code is checked. Resource/benefit figures below are SYNTHETIC assumptions to demonstrate constrained selection, not model measurements.",
+    "approved": true,
+    "estimates": {
+      "quality_gain": 0.15,
+      "reliability_gain": 0.1,
+      "failure_reduction": 0.08,
+      "model_call_reduction": 0.5,
+      "added_latency_ms": 40,
+      "added_cost": 0.0008,
+      "calls_per_task": 1,
+      "complexity": 0.5,
+      "maintenance": 0.02,
+      "false_positive_rate": 0.003,
+      "false_negative_rate": 0.02,
+      "risk": 0.05,
+      "throughput": 50,
+      "provenance": "SYNTHETIC per-task scenario: USD; milliseconds; hypothetical gains, not a live JEV experiment."
+    }
+  },
+  "JEV-C25AE1A294B1": {
+    "source_sha256": "3f27ed7bc19ecfb5751f4c766f799fb6d4dc4d7c2a993357e7220e1d777d44ae",
+    "reviewer": "synthetic-scenario-demonstration",
+    "reason": "Read the injectable fixture: model output reaches a registered executor and only an exit code is checked. Resource/benefit figures below are SYNTHETIC assumptions to demonstrate constrained selection, not model measurements.",
+    "approved": true,
+    "estimates": {
+      "quality_gain": 0.15,
+      "reliability_gain": 0.1,
+      "failure_reduction": 0.08,
+      "model_call_reduction": 0.5,
+      "added_latency_ms": 40,
+      "added_cost": 0.0008,
+      "calls_per_task": 1,
+      "complexity": 0.5,
+      "maintenance": 0.02,
+      "false_positive_rate": 0.003,
+      "false_negative_rate": 0.02,
+      "risk": 0.05,
+      "throughput": 50,
+      "provenance": "SYNTHETIC per-task scenario: USD; milliseconds; hypothetical gains, not a live JEV experiment."
+    }
+  },
+  "JEV-D83B745FC7BF": {
+    "source_sha256": "3f27ed7bc19ecfb5751f4c766f799fb6d4dc4d7c2a993357e7220e1d777d44ae",
+    "reviewer": "synthetic-scenario-demonstration",
+    "reason": "Read the injectable fixture: model output reaches a registered executor and only an exit code is checked. Resource/benefit figures below are SYNTHETIC assumptions to demonstrate constrained selection, not model measurements.",
+    "approved": true,
+    "estimates": {
+      "quality_gain": 0.15,
+      "reliability_gain": 0.1,
+      "failure_reduction": 0.08,
+      "model_call_reduction": 0.5,
+      "added_latency_ms": 40,
+      "added_cost": 0.0008,
+      "calls_per_task": 1,
+      "complexity": 0.5,
+      "maintenance": 0.02,
+      "false_positive_rate": 0.003,
+      "false_negative_rate": 0.02,
+      "risk": 0.05,
+      "throughput": 50,
+      "provenance": "SYNTHETIC per-task scenario: USD; milliseconds; hypothetical gains, not a live JEV experiment."
+    }
+  }
+}

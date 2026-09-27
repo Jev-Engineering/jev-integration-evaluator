@@ -1,0 +1,242 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:scenario-spec:1.2",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.2"
+    },
+    "scenarios": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "scenario_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence_type": {
+            "enum": [
+              "observed",
+              "assumed",
+              "synthetic"
+            ]
+          },
+          "provenance": {
+            "type": "string",
+            "minLength": 1
+          },
+          "estimates": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "quality_gain": {
+                  "type": "number"
+                },
+                "reliability_gain": {
+                  "type": "number"
+                },
+                "failure_reduction": {
+                  "type": "number"
+                },
+                "model_call_reduction": {
+                  "type": "number"
+                },
+                "added_latency_ms": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "added_cost": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "calls_per_task": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "complexity": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "maintenance": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "false_positive_rate": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "false_negative_rate": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "risk": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "throughput": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "quality_gain",
+                "reliability_gain",
+                "failure_reduction",
+                "model_call_reduction",
+                "added_latency_ms",
+                "added_cost",
+                "calls_per_task",
+                "complexity",
+                "maintenance",
+                "false_positive_rate",
+                "false_negative_rate",
+                "risk",
+                "throughput"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "interactions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "a": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "b": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "utility_delta": {
+                  "type": "number"
+                },
+                "status": {
+                  "enum": [
+                    "measured",
+                    "assumed",
+                    "synthetic"
+                  ]
+                },
+                "provenance": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "a",
+                "b",
+                "utility_delta",
+                "status",
+                "provenance"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 0,
+            "maxItems": 10000
+          }
+        },
+        "required": [
+          "scenario_id",
+          "evidence_type",
+          "provenance",
+          "estimates",
+          "interactions"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 32
+    },
+    "requires": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minLength": 1
+        },
+        "minItems": 0,
+        "maxItems": 1000,
+        "uniqueItems": true
+      }
+    },
+    "utility_weights": {
+      "type": "object",
+      "properties": {
+        "quality_gain": {
+          "type": "number",
+          "minimum": 0
+        },
+        "reliability_gain": {
+          "type": "number",
+          "minimum": 0
+        },
+        "failure_reduction": {
+          "type": "number",
+          "minimum": 0
+        },
+        "model_call_reduction": {
+          "type": "number",
+          "minimum": 0
+        },
+        "maintenance": {
+          "type": "number",
+          "minimum": 0
+        },
+        "false_positive_rate": {
+          "type": "number",
+          "minimum": 0
+        },
+        "false_negative_rate": {
+          "type": "number",
+          "minimum": 0
+        },
+        "cost_penalty": {
+          "type": "number",
+          "minimum": 0
+        },
+        "latency_penalty": {
+          "type": "number",
+          "minimum": 0
+        },
+        "complexity_penalty": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "quality_gain",
+        "reliability_gain",
+        "failure_reduction",
+        "model_call_reduction",
+        "maintenance",
+        "false_positive_rate",
+        "false_negative_rate",
+        "cost_penalty",
+        "latency_penalty",
+        "complexity_penalty"
+      ],
+      "additionalProperties": false
+    },
+    "minimal_retention": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 1
+    }
+  },
+  "required": [
+    "schema_version",
+    "scenarios",
+    "requires",
+    "utility_weights",
+    "minimal_retention"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,8 @@
+{
+  "events": 3,
+  "final_hash": "08a33e69782939dcb358220c8b7994d1207c9f3dae33a77c740d0a5f16bea24f",
+  "integrity": "valid",
+  "external_checkpoint_verified": true,
+  "truncation_checked": true,
+  "authenticity": "depends on trust in the retained checkpoint; hashes alone are not signatures"
+}

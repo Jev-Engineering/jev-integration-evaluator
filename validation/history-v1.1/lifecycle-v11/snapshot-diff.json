@@ -1,0 +1,281 @@
+{
+  "schema_version": "1.1",
+  "before_fingerprint": "a2fa6399ed417750de0da09b249f3e546dc67f81149ff9da18eab71cb2ffe1e3",
+  "after_fingerprint": "8381fff2aef2ae4bf4ffc5f722796a8bcc648fc670ada7ee0f2649cbba8b3655",
+  "repository_names_match": true,
+  "legacy_identity": false,
+  "coverage_comparable_for_absence": true,
+  "configuration_changed": true,
+  "settings_changed": false,
+  "files": {
+    "modified": [],
+    "added": [],
+    "no_longer_observed": []
+  },
+  "counts": {
+    "unchanged": 18
+  },
+  "candidates": [
+    {
+      "candidate_id": "JEV-0B40C24F3988",
+      "change": "unchanged",
+      "file": "agent.py",
+      "symbol": "retain_history",
+      "prior_source_sha256": "2aac23b01d8d96c472455628733c37409f6008243e9b720796cb7f342fbf5ec6",
+      "current_source_sha256": "2aac23b01d8d96c472455628733c37409f6008243e9b720796cb7f342fbf5ec6",
+      "requires_review": true,
+      "reasons": [
+        "repository_configuration_changed"
+      ],
+      "prior_evidence_reusable_automatically": false,
+      "score_delta": 0.0
+    },
+    {
+      "candidate_id": "JEV-1ED0191AB058",
+      "change": "unchanged",
+      "file": "agent.py",
+      "symbol": "dispatch_once",
+      "prior_source_sha256": "3f27ed7bc19ecfb5751f4c766f799fb6d4dc4d7c2a993357e7220e1d777d44ae",
+      "current_source_sha256": "3f27ed7bc19ecfb5751f4c766f799fb6d4dc4d7c2a993357e7220e1d777d44ae",
+      "requires_review": true,
+      "reasons": [
+        "repository_configuration_changed"
+      ],
+      "prior_evidence_reusable_automatically": false,
+      "score_delta": 0.0
+    },
+    {
+      "candidate_id": "JEV-1EDC6846A754",
+      "change": "unchanged",
+      "file": "agent.py",
+      "symbol": "run_steps",
+      "prior_source_sha256": "6013cb2b676b49539ef0cfb76cdceda0775455d5bfb7a8f28d04fca754ba5c0a",
+      "current_source_sha256": "6013cb2b676b49539ef0cfb76cdceda0775455d5bfb7a8f28d04fca754ba5c0a",
+      "requires_review": true,
+      "reasons": [
+        "repository_configuration_changed"
+      ],
+      "prior_evidence_reusable_automatically": false,
+      "score_delta": 0.0
+    },
+    {
+      "candidate_id": "JEV-35AB38B3026C",
+      "change": "unchanged",
+      "file": "agent.py",
+      "symbol": "publish_proposal",
+      "prior_source_sha256": "ef45f379dbe79bbd3a2ea5b442c785f920d43d8aa280e803ae83e4dd8fc49546",
+      "current_source_sha256": "ef45f379dbe79bbd3a2ea5b442c785f920d43d8aa280e803ae83e4dd8fc49546",
+      "requires_review": true,
+      "reasons": [
+        "repository_configuration_changed"
+      ],
+      "prior_evidence_reusable_automatically": false,
+      "score_delta": 0.0
+    },
+    {
+      "candidate_id": "JEV-3AB7E6831523",
+      "change": "unchanged",
+      "file": "agent.py",
+      "symbol": "run_steps",
+      "prior_source_sha256": "6013cb2b676b49539ef0cfb76cdceda0775455d5bfb7a8f28d04fca754ba5c0a",
+      "current_source_sha256": "6013cb2b676b49539ef0cfb76cdceda0775455d5bfb7a8f28d04fca754ba5c0a",
+      "requires_review": true,
+      "reasons": [
+        "repository_configuration_changed"
+      ],
+      "prior_evidence_reusable_automatically": false,
+      "score_delta": 0.0
+    },
+    {
+      "candidate_id": "JEV-47C500E9A193",
+      "change": "unchanged",
+      "file": "agent.py",
+      "symbol": "review_change",
+      "prior_source_sha256": "ecfddba2ae7e78f9315ff7275dd7064dbd06e8e1e64d51697aedea11be90f121",
+      "current_source_sha256": "ecfddba2ae7e78f9315ff7275dd7064dbd06e8e1e64d51697aedea11be90f121",
+      "requires_review": true,
+      "reasons": [
+        "repository_configuration_changed"
+      ],
+      "prior_evidence_reusable_automatically": false,
+      "score_delta": 0.0
+    },
+    {
+      "candidate_id": "JEV-80B425907A5D",
+      "change": "unchanged",
+      "file": "agent.py",
+      "symbol": "run_steps",
+      "prior_source_sha256": "6013cb2b676b49539ef0cfb76cdceda0775455d5bfb7a8f28d04fca754ba5c0a",
+      "current_source_sha256": "6013cb2b676b49539ef0cfb76cdceda0775455d5bfb7a8f28d04fca754ba5c0a",
+      "requires_review": true,
+      "reasons": [
+        "repository_configuration_changed"
+      ],
+      "prior_evidence_reusable_automatically": false,
+      "score_delta": 0.0
+    },
+    {
+      "candidate_id": "JEV-950F0C5EFE45",
+      "change": "unchanged",
+      "file": "agent.py",
+      "symbol": "run_steps",
+      "prior_source_sha256": "6013cb2b676b49539ef0cfb76cdceda0775455d5bfb7a8f28d04fca754ba5c0a",
+      "current_source_sha256": "6013cb2b676b49539ef0cfb76cdceda0775455d5bfb7a8f28d04fca754ba5c0a",
+      "requires_review": true,
+      "reasons": [
+        "repository_configuration_changed"
+      ],
+      "prior_evidence_reusable_automatically": false,
+      "score_delta": 0.0
+    },
+    {
+      "candidate_id": "JEV-B4B5BF2FD219",
+      "change": "unchanged",
+      "file": "agent.py",
+      "symbol": "run_steps",
+      "prior_source_sha256": "6013cb2b676b49539ef0cfb76cdceda0775455d5bfb7a8f28d04fca754ba5c0a",
+      "current_source_sha256": "6013cb2b676b49539ef0cfb76cdceda0775455d5bfb7a8f28d04fca754ba5c0a",
+      "requires_review": true,
+      "reasons": [
+        "repository_configuration_changed"
+      ],
+      "prior_evidence_reusable_automatically": false,
+      "score_delta": 0.0
+    },
+    {
+      "candidate_id": "JEV-BC69C74DF3CA",
+      "change": "unchanged",
+      "file": "agent.py",
+      "symbol": "publish_proposal",
+      "prior_source_sha256": "ef45f379dbe79bbd3a2ea5b442c785f920d43d8aa280e803ae83e4dd8fc49546",
+      "current_source_sha256": "ef45f379dbe79bbd3a2ea5b442c785f920d43d8aa280e803ae83e4dd8fc49546",
+      "requires_review": true,
+      "reasons": [
+        "repository_configuration_changed"
+      ],
+      "prior_evidence_reusable_automatically": false,
+      "score_delta": 0.0
+    },
+    {
+      "candidate_id": "JEV-BD68119011F6",
+      "change": "unchanged",
+      "file": "agent.py",
+      "symbol": "distribute",
+      "prior_source_sha256": "2a6ddd576685fb599ee69e65bb1b4530063d1cb79856a5d2043b081d17b1dc5a",
+      "current_source_sha256": "2a6ddd576685fb599ee69e65bb1b4530063d1cb79856a5d2043b081d17b1dc5a",
+      "requires_review": true,
+      "reasons": [
+        "repository_configuration_changed"
+      ],
+      "prior_evidence_reusable_automatically": false,
+      "score_delta": 0.0
+    },
+    {
+      "candidate_id": "JEV-BF71FD853BBC",
+      "change": "unchanged",
+      "file": "agent.py",
+      "symbol": "run_steps",
+      "prior_source_sha256": "6013cb2b676b49539ef0cfb76cdceda0775455d5bfb7a8f28d04fca754ba5c0a",
+      "current_source_sha256": "6013cb2b676b49539ef0cfb76cdceda0775455d5bfb7a8f28d04fca754ba5c0a",
+      "requires_review": true,
+      "reasons": [
+        "repository_configuration_changed"
+      ],
+      "prior_evidence_reusable_automatically": false,
+      "score_delta": 0.0
+    },
+    {
+      "candidate_id": "JEV-C25AE1A294B1",
+      "change": "unchanged",
+      "file": "agent.py",
+      "symbol": "dispatch_once",
+      "prior_source_sha256": "3f27ed7bc19ecfb5751f4c766f799fb6d4dc4d7c2a993357e7220e1d777d44ae",
+      "current_source_sha256": "3f27ed7bc19ecfb5751f4c766f799fb6d4dc4d7c2a993357e7220e1d777d44ae",
+      "requires_review": true,
+      "reasons": [
+        "repository_configuration_changed"
+      ],
+      "prior_evidence_reusable_automatically": false,
+      "score_delta": 0.0
+    },
+    {
+      "candidate_id": "JEV-D83B745FC7BF",
+      "change": "unchanged",
+      "file": "agent.py",
+      "symbol": "dispatch_once",
+      "prior_source_sha256": "3f27ed7bc19ecfb5751f4c766f799fb6d4dc4d7c2a993357e7220e1d777d44ae",
+      "current_source_sha256": "3f27ed7bc19ecfb5751f4c766f799fb6d4dc4d7c2a993357e7220e1d777d44ae",
+      "requires_review": true,
+      "reasons": [
+        "repository_configuration_changed"
+      ],
+      "prior_evidence_reusable_automatically": false,
+      "score_delta": 0.0
+    },
+    {
+      "candidate_id": "JEV-E44ED530B27A",
+      "change": "unchanged",
+      "file": "agent.py",
+      "symbol": "retain_history",
+      "prior_source_sha256": "2aac23b01d8d96c472455628733c37409f6008243e9b720796cb7f342fbf5ec6",
+      "current_source_sha256": "2aac23b01d8d96c472455628733c37409f6008243e9b720796cb7f342fbf5ec6",
+      "requires_review": true,
+      "reasons": [
+        "repository_configuration_changed"
+      ],
+      "prior_evidence_reusable_automatically": false,
+      "score_delta": 0.0
+    },
+    {
+      "candidate_id": "JEV-E69F0ED1FC49",
+      "change": "unchanged",
+      "file": "agent.py",
+      "symbol": "dispatch_once",
+      "prior_source_sha256": "3f27ed7bc19ecfb5751f4c766f799fb6d4dc4d7c2a993357e7220e1d777d44ae",
+      "current_source_sha256": "3f27ed7bc19ecfb5751f4c766f799fb6d4dc4d7c2a993357e7220e1d777d44ae",
+      "requires_review": true,
+      "reasons": [
+        "repository_configuration_changed"
+      ],
+      "prior_evidence_reusable_automatically": false,
+      "score_delta": 0.0
+    },
+    {
+      "candidate_id": "JEV-EC417BD414AB",
+      "change": "unchanged",
+      "file": "agent.py",
+      "symbol": "distribute",
+      "prior_source_sha256": "2a6ddd576685fb599ee69e65bb1b4530063d1cb79856a5d2043b081d17b1dc5a",
+      "current_source_sha256": "2a6ddd576685fb599ee69e65bb1b4530063d1cb79856a5d2043b081d17b1dc5a",
+      "requires_review": true,
+      "reasons": [
+        "repository_configuration_changed"
+      ],
+      "prior_evidence_reusable_automatically": false,
+      "score_delta": 0.0
+    },
+    {
+      "candidate_id": "JEV-F60068063D8D",
+      "change": "unchanged",
+      "file": "agent.py",
+      "symbol": "run_steps",
+      "prior_source_sha256": "6013cb2b676b49539ef0cfb76cdceda0775455d5bfb7a8f28d04fca754ba5c0a",
+      "current_source_sha256": "6013cb2b676b49539ef0cfb76cdceda0775455d5bfb7a8f28d04fca754ba5c0a",
+      "requires_review": true,
+      "reasons": [
+        "repository_configuration_changed"
+      ],
+      "prior_evidence_reusable_automatically": false,
+      "score_delta": 0.0
+    }
+  ],
+  "possible_moves": [],
+  "automatically_carried_approvals": 0,
+  "limitations": [
+    "Every new scan starts with fresh source evidence; no stale review is copied.",
+    "Static impact is conservative and cannot resolve all dynamic callers.",
+    "A matching repository name is not an authenticated repository identity.",
+    "No parser cache or target-code execution is used."
+  ],
+  "report_digest": "86b286aade8d7c28e9fc1ec8a8fcbf20ea5ec7af5dfad125a2b0d7bb2cb7a82b"
+}

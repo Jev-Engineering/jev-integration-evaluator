@@ -1,0 +1,222 @@
+{
+  "nodes": [
+    {
+      "id": "service.py::total_with_tax",
+      "file": "service.py",
+      "symbol": "total_with_tax",
+      "lines": [
+        7,
+        8
+      ],
+      "roles": [
+        "deterministic"
+      ],
+      "calls": [
+        {
+          "name": "round",
+          "resolved_name": "round",
+          "line": 8
+        }
+      ],
+      "branches": [],
+      "loops": [],
+      "exceptions": [],
+      "dataflow": [],
+      "fan_out": 0,
+      "reachable_nodes": 0,
+      "dependency_depth_lower_bound": 0,
+      "parser": "python_ast",
+      "is_test": false
+    },
+    {
+      "id": "service.py::order_numbers",
+      "file": "service.py",
+      "symbol": "order_numbers",
+      "lines": [
+        11,
+        12
+      ],
+      "roles": [
+        "deterministic"
+      ],
+      "calls": [
+        {
+          "name": "sorted",
+          "resolved_name": "sorted",
+          "line": 12
+        }
+      ],
+      "branches": [],
+      "loops": [],
+      "exceptions": [],
+      "dataflow": [],
+      "fan_out": 0,
+      "reachable_nodes": 0,
+      "dependency_depth_lower_bound": 0,
+      "parser": "python_ast",
+      "is_test": false
+    },
+    {
+      "id": "service.py::payload_matches",
+      "file": "service.py",
+      "symbol": "payload_matches",
+      "lines": [
+        15,
+        16
+      ],
+      "roles": [
+        "deterministic"
+      ],
+      "calls": [
+        {
+          "name": "hmac.compare_digest",
+          "resolved_name": "hmac.compare_digest",
+          "line": 16
+        },
+        {
+          "name": "hashlib.sha256().hexdigest",
+          "resolved_name": "hashlib.sha256().hexdigest",
+          "line": 16
+        },
+        {
+          "name": "hashlib.sha256",
+          "resolved_name": "hashlib.sha256",
+          "line": 16
+        }
+      ],
+      "branches": [],
+      "loops": [],
+      "exceptions": [],
+      "dataflow": [],
+      "fan_out": 0,
+      "reachable_nodes": 0,
+      "dependency_depth_lower_bound": 0,
+      "parser": "python_ast",
+      "is_test": false
+    },
+    {
+      "id": "service.py::decode_payload",
+      "file": "service.py",
+      "symbol": "decode_payload",
+      "lines": [
+        19,
+        20
+      ],
+      "roles": [
+        "deterministic"
+      ],
+      "calls": [
+        {
+          "name": "json.loads",
+          "resolved_name": "json.loads",
+          "line": 20
+        }
+      ],
+      "branches": [],
+      "loops": [],
+      "exceptions": [],
+      "dataflow": [],
+      "fan_out": 0,
+      "reachable_nodes": 0,
+      "dependency_depth_lower_bound": 0,
+      "parser": "python_ast",
+      "is_test": false
+    },
+    {
+      "id": "service.py::exact_permission",
+      "file": "service.py",
+      "symbol": "exact_permission",
+      "lines": [
+        23,
+        24
+      ],
+      "roles": [],
+      "calls": [],
+      "branches": [],
+      "loops": [],
+      "exceptions": [],
+      "dataflow": [],
+      "fan_out": 0,
+      "reachable_nodes": 0,
+      "dependency_depth_lower_bound": 0,
+      "parser": "python_ast",
+      "is_test": false
+    },
+    {
+      "id": "service.py::<module>",
+      "file": "service.py",
+      "symbol": "<module>",
+      "lines": [
+        1,
+        1
+      ],
+      "roles": [],
+      "calls": [],
+      "branches": [],
+      "loops": [],
+      "exceptions": [],
+      "dataflow": [],
+      "fan_out": 0,
+      "reachable_nodes": 0,
+      "dependency_depth_lower_bound": 0,
+      "parser": "python_ast",
+      "is_test": false
+    }
+  ],
+  "edges": [],
+  "unresolved_calls": [
+    {
+      "source": "service.py::total_with_tax",
+      "call": "round",
+      "line": 8
+    },
+    {
+      "source": "service.py::order_numbers",
+      "call": "sorted",
+      "line": 12
+    },
+    {
+      "source": "service.py::payload_matches",
+      "call": "hmac.compare_digest",
+      "line": 16
+    },
+    {
+      "source": "service.py::payload_matches",
+      "call": "hashlib.sha256().hexdigest",
+      "line": 16
+    },
+    {
+      "source": "service.py::payload_matches",
+      "call": "hashlib.sha256",
+      "line": 16
+    },
+    {
+      "source": "service.py::decode_payload",
+      "call": "json.loads",
+      "line": 20
+    }
+  ],
+  "modules": [
+    {
+      "file": "service.py",
+      "symbols": [
+        "<module>",
+        "decode_payload",
+        "exact_permission",
+        "order_numbers",
+        "payload_matches",
+        "total_with_tax"
+      ]
+    }
+  ],
+  "side_effect_map": [],
+  "flow_maps": {
+    "tool": [],
+    "model": [],
+    "retrieve": [],
+    "observe": [],
+    "graph": [],
+    "context": [],
+    "agent": []
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "schema_version": "1.1",
+  "suite_digest": "dea2eff1a2135bd7c335b63b2f98b565a8790894518678053e7e0df95d9d1b35",
+  "evidence_type": "synthetic",
+  "scheduled_probes": 5,
+  "valid_responses": 5,
+  "evaluation_failures": 0,
+  "disagreements_with_original": 0,
+  "probes": [
+    {
+      "probe_id": "original",
+      "valid": true,
+      "canonical_choice": "inspect",
+      "probabilities": {
+        "inspect": 0.99,
+        "stop": 0.01
+      },
+      "request_hash": "b987c38d7ca0b1188c746b3ce2b8acdfdbed9330a3b965dc7478a91ebee2417c",
+      "response_digest": "55348a073a282c2c82d598e5e7c80602860ab3dcb6b2af64131c8e3a4594e103",
+      "provider_confidence": 0.95,
+      "usage": {
+        "input_tokens": 20,
+        "output_tokens": 0
+      },
+      "correct": true,
+      "agrees_with_original": true,
+      "total_variation_from_original": 0.0
+    },
+    {
+      "probe_id": "test_retest",
+      "valid": true,
+      "canonical_choice": "inspect",
+      "probabilities": {
+        "inspect": 0.99,
+        "stop": 0.01
+      },
+      "request_hash": "b987c38d7ca0b1188c746b3ce2b8acdfdbed9330a3b965dc7478a91ebee2417c",
+      "response_digest": "55348a073a282c2c82d598e5e7c80602860ab3dcb6b2af64131c8e3a4594e103",
+      "provider_confidence": 0.95,
+      "usage": {
+        "input_tokens": 20,
+        "output_tokens": 0
+      },
+      "correct": true,
+      "agrees_with_original": true,
+      "total_variation_from_original": 0.0
+    },
+    {
+      "probe_id": "reverse_order",
+      "valid": true,
+      "canonical_choice": "inspect",
+      "probabilities": {
+        "inspect": 0.99,
+        "stop": 0.01
+      },
+      "request_hash": "1e468e1723e277b6fd9bbe39c819eb99385f9df97435110b0c15bd23e721de2a",
+      "response_digest": "55348a073a282c2c82d598e5e7c80602860ab3dcb6b2af64131c8e3a4594e103",
+      "provider_confidence": 0.95,
+      "usage": {
+        "input_tokens": 20,
+        "output_tokens": 0
+      },
+      "correct": true,
+      "agrees_with_original": true,
+      "total_variation_from_original": 0.0
+    },
+    {
+      "probe_id": "opaque_labels",
+      "valid": true,
+      "canonical_choice": "inspect",
+      "probabilities": {
+        "inspect": 0.99,
+        "stop": 0.01
+      },
+      "request_hash": "ac332361ed6a34a566435dbbf8b320109e6f52d016c3cca4b790fa6f5644439d",
+      "response_digest": "81983a7cf562dde99dccf54caa4f44a203400726e48d69350f6cb9a87c1c93b7",
+      "provider_confidence": 0.95,
+      "usage": {
+        "input_tokens": 20,
+        "output_tokens": 0
+      },
+      "correct": true,
+      "agrees_with_original": true,
+      "total_variation_from_original": 0.0
+    },
+    {
+      "probe_id": "rotate_label_bindings",
+      "valid": true,
+      "canonical_choice": "inspect",
+      "probabilities": {
+        "inspect": 0.99,
+        "stop": 0.01
+      },
+      "request_hash": "e24a48470422dfdd339dd2ed454a80a59d44c7a8e1f981a4d5a48f2028a52bb5",
+      "response_digest": "9317469c193a0074af699ed491f61afdf60529dd177059c7e3ddcda3dd970386",
+      "provider_confidence": 0.95,
+      "usage": {
+        "input_tokens": 20,
+        "output_tokens": 0
+      },
+      "correct": true,
+      "agrees_with_original": true,
+      "total_variation_from_original": 0.0
+    }
+  ],
+  "status": "no_inconsistency_observed_in_this_suite",
+  "deployment_authorized": false,
+  "limitations": [
+    "Five probes on one state do not estimate population accuracy or model robustness.",
+    "Agreement can mean consistently wrong; truth is required for decision correctness.",
+    "Test-retest controls stochastic variation. Ties can change the selected label without distribution movement.",
+    "No perturbation result is an observed counterfactual downstream task outcome.",
+    "Offline fixtures are synthetic and cannot establish live model behavior."
+  ],
+  "execution": {
+    "attempted_calls": 5,
+    "max_calls": 5,
+    "remote": false,
+    "actual_cost": null,
+    "cost_status": "unknown_not_inferred_from_responses",
+    "reserved_cost_upper_bound": 0.0,
+    "network_authorized_by_client_construction": false
+  },
+  "contract_digest": "d9d99687d00b92eca8f504fe5955b8e7a1ab00f7abf1af740a5ed151f99c8d4f"
+}

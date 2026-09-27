@@ -1,0 +1,10 @@
+{
+  "candidate_id": "USE_REAL_OPPORTUNITY_ID",
+  "source_sha256": "USE_MATCHING_SOURCE_HASH",
+  "experiment_id": "USE_MATCHING_EXPERIMENT_ID",
+  "result": {
+    "recommendation": "needs_more_evidence",
+    "evidence_type": "unexecuted",
+    "reason": "Replace with the complete verified compare output after the experiment."
+  }
+}

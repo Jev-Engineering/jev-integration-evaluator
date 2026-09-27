@@ -1,0 +1,10 @@
+{
+  "candidate_id": "JEV-D83B745FC7BF",
+  "source_sha256": "3f27ed7bc19ecfb5751f4c766f799fb6d4dc4d7c2a993357e7220e1d777d44ae",
+  "experiment_id": "JEV-D83B745FC7BF-EXP-01",
+  "test_id": "generated-adapter-default-off",
+  "status": "passed",
+  "command": "python -m pytest -q test_adapter.py",
+  "evidence_type": "synthetic",
+  "summary": "One generated default-off contract test passed; no host callsite wiring or live JEV assessment."
+}

@@ -1,0 +1,15 @@
+# Security, privacy and reversibility
+
+Source scanners never need inference keys. Live clients read `TYPESAFE_API_KEY` only from the process environment after explicit egress consent. Do not put a key in a config, example, command argument, notebook, report, ZIP or log. API endpoints must be HTTPS without embedded credentials/query/fragment. Custom endpoints require exact approval; redirects are refused so credentials do not follow another origin. Remote requests are single-attempt and bounded; failures never trigger an unapproved spending retry.
+
+State and retrieved text are untrusted data. Minimize them before a remote request; retain required contradictory evidence and provenances, but remove unrelated secrets/personal data. Local parser inspection does not mean source is approved for transmission. Best-effort regex redaction is not a DLP guarantee. The default audit log stores hashes, classifications and resource metadata, not raw state; intentionally captured replay states require a separate data-retention and access-control decision.
+
+Caches require immutable snapshots, scope, pinned model, rubric, policy and legal choices. TTL expiry, changed state/evidence, tenant boundary, policy or permission changes invalidate reuse. Cache only assessments, never approval. Cache hit rate and estimated saved latency/cost are operational measures; stale-decision rate remains unknown until cached decisions are independently revalidated. A cached result does not acquire authority from its age or high confidence.
+
+Logs use fsynced single-process/thread-safe hash chains and private file creation mode where supported. Use one file per worker. Retain an external final digest or trusted signing/storage service for stronger provenance. Someone who can rewrite the full log and its digest can forge an internally consistent chain. Do not claim hashes provide identity or authenticity.
+
+Keep every change behind reversible feature flags, known permitted fallbacks, deadlines, bounded task spend and circuit breaking. A shadow queue is bounded; production baseline never waits for the shadow result. A remote thread/urllib transport is not a hard-real-time scheduler. Failed logging falls back instead of accepting an unaudited active proposal.
+
+Run target tests in an approved isolated environment; the provided shell-free runner only removes common secret environment variables and bounds time/output. It does not isolate filesystem/network/system calls or subprocess trees. Git worktree and patch application require separate explicit scopes and never imply merge/deploy authority. Protected-path and stale-file checks reduce accidental damage but are not a full filesystem transaction under hostile concurrent writers.
+
+For security systems, JEV can add contextual assessment but cannot replace deterministic allowlists, permissions, cryptographic checks, schemas, transaction boundaries, sandboxing or human approval for high-impact actions. Measure false blocks as well as prevented unsafe actions, and preserve an immediate host-controlled off switch.

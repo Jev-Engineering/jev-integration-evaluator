@@ -1,0 +1,143 @@
+{
+  "method": "exact_enumeration",
+  "optimality_proven_for_declared_model": true,
+  "eligible_candidates": 0,
+  "feasible_sets_examined": 1,
+  "excluded": [
+    {
+      "candidate_id": "JEV-3AB7E6831523",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-80B425907A5D",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-F60068063D8D",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-E69F0ED1FC49",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-35AB38B3026C",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-BC69C74DF3CA",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-1EDC6846A754",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-950F0C5EFE45",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-B4B5BF2FD219",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-BF71FD853BBC",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-0B40C24F3988",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-1ED0191AB058",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-BD68119011F6",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-C25AE1A294B1",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-D83B745FC7BF",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-E44ED530B27A",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-EC417BD414AB",
+      "reason": "Semantic review not approved"
+    },
+    {
+      "candidate_id": "JEV-47C500E9A193",
+      "reason": "Semantic review not approved"
+    }
+  ],
+  "recommended_minimal_set": {
+    "candidate_ids": [],
+    "utility": 0.0,
+    "quality_gain": 0,
+    "reliability_gain": 0,
+    "failure_reduction": 0,
+    "model_call_reduction": 0,
+    "measured_interaction_utility": 0,
+    "added_latency_ms": 0,
+    "added_cost": 0,
+    "calls_per_task": 0,
+    "complexity": 0
+  },
+  "recommended_balanced_set": {
+    "candidate_ids": [],
+    "utility": 0.0,
+    "quality_gain": 0,
+    "reliability_gain": 0,
+    "failure_reduction": 0,
+    "model_call_reduction": 0,
+    "measured_interaction_utility": 0,
+    "added_latency_ms": 0,
+    "added_cost": 0,
+    "calls_per_task": 0,
+    "complexity": 0
+  },
+  "recommended_maximum_reliability_set": {
+    "candidate_ids": [],
+    "utility": 0.0,
+    "quality_gain": 0,
+    "reliability_gain": 0,
+    "failure_reduction": 0,
+    "model_call_reduction": 0,
+    "measured_interaction_utility": 0,
+    "added_latency_ms": 0,
+    "added_cost": 0,
+    "calls_per_task": 0,
+    "complexity": 0
+  },
+  "pareto_display_subset": [
+    {
+      "candidate_ids": [],
+      "utility": 0.0,
+      "quality_gain": 0,
+      "reliability_gain": 0,
+      "failure_reduction": 0,
+      "model_call_reduction": 0,
+      "measured_interaction_utility": 0,
+      "added_latency_ms": 0,
+      "added_cost": 0,
+      "calls_per_task": 0,
+      "complexity": 0
+    }
+  ],
+  "status": "no_justified_integration_set",
+  "assumptions": [
+    "Latency uses a conservative serial sum; replace with measured joint critical paths before rollout.",
+    "Quality/reliability/failure deltas are additive hypotheses; avoid double-counting the same outcome.",
+    "No positive credit for unmeasured synergy; duplicate routing decisions conflict by default.",
+    "Throughput and risk are per-component feasibility checks, not an end-to-end safety guarantee.",
+    "The reliability set maximizes the supplied reliability proxy, not proven end-to-end reliability.",
+    "Utility coefficients and the minimal-set 80% retention target are disclosed defaults in optimizer.py."
+  ]
+}

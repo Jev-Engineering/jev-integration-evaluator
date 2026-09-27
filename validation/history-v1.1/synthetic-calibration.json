@@ -1,0 +1,221 @@
+{
+  "count": 100,
+  "binary_or_top_label_brier": 0.205,
+  "multiclass_brier_sum_convention": 0.41,
+  "ece": 0.04999999999999999,
+  "bins": [
+    {
+      "bin": 0,
+      "lower": 0.0,
+      "upper": 0.1,
+      "count": 0,
+      "mean_probability": null,
+      "empirical_rate": null
+    },
+    {
+      "bin": 1,
+      "lower": 0.1,
+      "upper": 0.2,
+      "count": 0,
+      "mean_probability": null,
+      "empirical_rate": null
+    },
+    {
+      "bin": 2,
+      "lower": 0.2,
+      "upper": 0.3,
+      "count": 0,
+      "mean_probability": null,
+      "empirical_rate": null
+    },
+    {
+      "bin": 3,
+      "lower": 0.3,
+      "upper": 0.4,
+      "count": 0,
+      "mean_probability": null,
+      "empirical_rate": null
+    },
+    {
+      "bin": 4,
+      "lower": 0.4,
+      "upper": 0.5,
+      "count": 0,
+      "mean_probability": null,
+      "empirical_rate": null
+    },
+    {
+      "bin": 5,
+      "lower": 0.5,
+      "upper": 0.6,
+      "count": 0,
+      "mean_probability": null,
+      "empirical_rate": null
+    },
+    {
+      "bin": 6,
+      "lower": 0.6,
+      "upper": 0.7,
+      "count": 25,
+      "mean_probability": 0.6,
+      "empirical_rate": 0.6
+    },
+    {
+      "bin": 7,
+      "lower": 0.7,
+      "upper": 0.8,
+      "count": 25,
+      "mean_probability": 0.7,
+      "empirical_rate": 0.6
+    },
+    {
+      "bin": 8,
+      "lower": 0.8,
+      "upper": 0.9,
+      "count": 25,
+      "mean_probability": 0.8,
+      "empirical_rate": 0.8
+    },
+    {
+      "bin": 9,
+      "lower": 0.9,
+      "upper": 1.0,
+      "count": 25,
+      "mean_probability": 0.9,
+      "empirical_rate": 0.8
+    }
+  ],
+  "coverage_risk": [
+    {
+      "threshold": 0.5,
+      "coverage": 1.0,
+      "selective_error": 0.3,
+      "accepted": 100
+    },
+    {
+      "threshold": 0.6,
+      "coverage": 1.0,
+      "selective_error": 0.3,
+      "accepted": 100
+    },
+    {
+      "threshold": 0.7,
+      "coverage": 0.75,
+      "selective_error": 0.26666666666666666,
+      "accepted": 75
+    },
+    {
+      "threshold": 0.8,
+      "coverage": 0.5,
+      "selective_error": 0.2,
+      "accepted": 50
+    },
+    {
+      "threshold": 0.9,
+      "coverage": 0.25,
+      "selective_error": 0.2,
+      "accepted": 25
+    },
+    {
+      "threshold": 0.95,
+      "coverage": 0.0,
+      "selective_error": null,
+      "accepted": 0
+    },
+    {
+      "threshold": 0.99,
+      "coverage": 0.0,
+      "selective_error": null,
+      "accepted": 0
+    }
+  ],
+  "provider_confidence_diagnostic_bins": [
+    {
+      "bin": 0,
+      "lower": 0.0,
+      "upper": 0.1,
+      "count": 0,
+      "mean_probability": null,
+      "empirical_rate": null
+    },
+    {
+      "bin": 1,
+      "lower": 0.1,
+      "upper": 0.2,
+      "count": 0,
+      "mean_probability": null,
+      "empirical_rate": null
+    },
+    {
+      "bin": 2,
+      "lower": 0.2,
+      "upper": 0.3,
+      "count": 0,
+      "mean_probability": null,
+      "empirical_rate": null
+    },
+    {
+      "bin": 3,
+      "lower": 0.3,
+      "upper": 0.4,
+      "count": 0,
+      "mean_probability": null,
+      "empirical_rate": null
+    },
+    {
+      "bin": 4,
+      "lower": 0.4,
+      "upper": 0.5,
+      "count": 0,
+      "mean_probability": null,
+      "empirical_rate": null
+    },
+    {
+      "bin": 5,
+      "lower": 0.5,
+      "upper": 0.6,
+      "count": 0,
+      "mean_probability": null,
+      "empirical_rate": null
+    },
+    {
+      "bin": 6,
+      "lower": 0.6,
+      "upper": 0.7,
+      "count": 0,
+      "mean_probability": null,
+      "empirical_rate": null
+    },
+    {
+      "bin": 7,
+      "lower": 0.7,
+      "upper": 0.8,
+      "count": 100,
+      "mean_probability": 0.77,
+      "empirical_rate": 0.7
+    },
+    {
+      "bin": 8,
+      "lower": 0.8,
+      "upper": 0.9,
+      "count": 0,
+      "mean_probability": null,
+      "empirical_rate": null
+    },
+    {
+      "bin": 9,
+      "lower": 0.9,
+      "upper": 1.0,
+      "count": 0,
+      "mean_probability": null,
+      "empirical_rate": null
+    }
+  ],
+  "provider_confidence_is_probability": false,
+  "limitations": [
+    "Brier/ECE use probabilities; provider confidence is a distribution statistic and is reported diagnostically only.",
+    "ECE is bin-dependent and sample-dependent; examine subgroup reliability and bin counts.",
+    "Thresholds must be selected on calibration data and frozen before held-out test evaluation.",
+    "No finite calibration sample proves a security boundary safe."
+  ]
+}

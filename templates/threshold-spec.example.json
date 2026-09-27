@@ -1,0 +1,20 @@
+{
+  "probability_floor": 0.9,
+  "confidence_floor": 0.75,
+  "action_probability_floors": {},
+  "abstention_labels": [
+    "uncertain"
+  ],
+  "maximum_error": 0.05,
+  "alpha": 0.05,
+  "minimum_accepted": 30,
+  "required_subgroups": [],
+  "holdout_schedule": [
+    {
+      "observation_id": "synthetic-test-0",
+      "task_hash": "dc43df9bc41138e9b5ce3d97ee85a146f14771614edcb5a239fd922b8e5f7bf0",
+      "cluster_id": "synthetic-test-0",
+      "subgroup": "ordinary"
+    }
+  ]
+}

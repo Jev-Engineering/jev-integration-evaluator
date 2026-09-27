@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "scan_fingerprint": "f270171623258c9c7f95fae5730f8b6cfb490e38006ff7bef62f25cf0e3f88ad",
+  "candidate_ids": [
+    "JEV-096197285ED2",
+    "JEV-2DE05B2D8801",
+    "JEV-90EF61A9EC09"
+  ],
+  "primary_metric": "verified task success",
+  "minimum_useful_effect": 0.02,
+  "assignment_unit": "task or independent episode",
+  "pairing_keys": [
+    "task_id",
+    "replicate",
+    "task_hash",
+    "dataset_id",
+    "seed"
+  ],
+  "arms": [
+    "baseline",
+    "router",
+    "verifier",
+    "router_verifier"
+  ],
+  "split_policy": "calibration separate from frozen test",
+  "status": "planned_not_run",
+  "validation": {
+    "paired_replay": true,
+    "bootstrap_samples": 2000,
+    "bayesian_samples": 5000,
+    "confidence_level": 0.95,
+    "minimum_useful_effect": 0.02,
+    "min_pairs": 30,
+    "seed": 731,
+    "shadow_mode": true
+  }
+}

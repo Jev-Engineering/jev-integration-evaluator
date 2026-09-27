@@ -1,0 +1,23 @@
+{
+  "status": "valid",
+  "study_digest": "956d89104bcb2624f52d7b6ebe3c624437313b1f529ee6737e976b09e3a96b17",
+  "scheduled_test_pairs": 80,
+  "observed_pairs": 80,
+  "scheduled_split_counts": {
+    "test": 80
+  },
+  "baseline_status_counts": {
+    "completed": 80
+  },
+  "jev_status_counts": {
+    "completed": 80
+  },
+  "missing_from_both_arms": 0,
+  "split_leakage": false,
+  "externally_pinned_digest": true,
+  "limitations": [
+    "Local hashes do not authenticate labels, timestamps or task execution.",
+    "Disjoint identifiers/hashes do not detect all semantically duplicated tasks.",
+    "Retain the manifest digest in a trusted system before running the study."
+  ]
+}

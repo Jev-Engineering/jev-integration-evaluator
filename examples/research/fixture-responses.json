@@ -1,0 +1,25 @@
+{
+  "42471f1f3faa5df959350b089ed89a0d7593f64e11c0fb768528edc0bb4b1f0a": {
+    "model": "jev-1.13.0",
+    "answers": {
+      "action": {
+        "type": "choice",
+        "choice": "inspect",
+        "probabilities": {
+          "inspect": 0.95,
+          "stop": 0.02,
+          "uncertain": 0.03
+        },
+        "confidence": 0.8
+      },
+      "sufficient": {
+        "type": "noul",
+        "noul": 0.96
+      }
+    },
+    "usage": {
+      "input_tokens": 200,
+      "output_tokens": 0
+    }
+  }
+}

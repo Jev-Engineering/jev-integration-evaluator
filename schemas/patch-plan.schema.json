@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:patch-plan:1.0",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "repository_identity": {
+      "type": "string"
+    },
+    "candidate_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string"
+          },
+          "operation": {
+            "enum": [
+              "create",
+              "update"
+            ]
+          },
+          "old_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "new_sha256": {
+            "type": "string"
+          },
+          "new_content": {
+            "type": "string"
+          },
+          "diff": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "file",
+          "operation",
+          "old_sha256",
+          "new_sha256",
+          "new_content",
+          "diff"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "authorization_scope": {
+      "type": "string"
+    },
+    "plan_digest": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "repository_identity",
+    "candidate_ids",
+    "changes",
+    "authorization_scope",
+    "plan_digest"
+  ],
+  "additionalProperties": false
+}

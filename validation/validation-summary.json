@@ -1,0 +1,32 @@
+{
+  "version": "1.2.0",
+  "date": "2026-09-26",
+  "automated_tests": {
+    "tests": 459,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "added_since_v1_1": 163,
+    "local_wall_seconds": 24.2
+  },
+  "schema_count": 22,
+  "legacy_synthetic_records_validated": 321,
+  "v11_demo_cli_operations": 19,
+  "v12_demo_cli_operations": 17,
+  "v12_synthetic_gate_count": 2,
+  "v12_synthetic_calibration_rows": 80,
+  "v12_synthetic_holdout_rows": 240,
+  "v12_synthetic_task_pairs": 80,
+  "v12_monitor_task_schedule": 80,
+  "shadow_fixture_calls_admitted": 2,
+  "shadow_submissions": 3,
+  "outside_checkout_wheel_smoke_passed": true,
+  "installed_module_data_files_byte_compared": 53,
+  "independent_small_optimizer_oracle_cases": 12,
+  "original_test_files_unchanged": 14,
+  "live_jev_calls": 0,
+  "real_effectiveness_studies": 0,
+  "production_calibrations": 0,
+  "user_target_code_executed": false,
+  "git_publication_or_deployment": false
+}

@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "version": "1.1.0",
+  "imported_from": "/mnt/data/jev-v11-installed/jev_placement",
+  "working_directory": "/mnt/data/jev-v11-wheel-smoke",
+  "schemas": 16,
+  "module_bytes_match_source": true,
+  "deterministic_candidates": 5,
+  "all_deterministic_candidates_rejected": true,
+  "threshold_enforcement_exit": 3,
+  "network_requests": 0,
+  "new_cli_commands_exercised": [
+    "study-freeze",
+    "validate",
+    "threshold-check",
+    "robustness-run"
+  ],
+  "package": "/mnt/data/jev-v11-wheels/jev_placement_skill-1.1.0-py3-none-any.whl"
+}

@@ -1,0 +1,38 @@
+{
+  "experiment_id": "SYNTHETIC-TEMPLATE",
+  "dataset_id": "SYNTHETIC-DATASET",
+  "evidence_type": "synthetic",
+  "primary_metric": "success",
+  "schedule": [
+    {
+      "task_id": "synthetic-test-0",
+      "replicate": 0,
+      "task_hash": "dc43df9bc41138e9b5ce3d97ee85a146f14771614edcb5a239fd922b8e5f7bf0",
+      "cluster_id": "synthetic-test-0",
+      "split": "test",
+      "seed": 0
+    }
+  ],
+  "baseline": {
+    "treatment": "baseline",
+    "code_revision": "SYNTHETIC-REVISION",
+    "model_id": "synthetic-generator",
+    "policy_version": "synthetic-policy",
+    "prompt_hash": "bf944689dedac4ec8c5414c65e72085f71f029d8e8c4b484770457d178df620a",
+    "mode": "baseline"
+  },
+  "jev": {
+    "treatment": "jev-candidate",
+    "code_revision": "SYNTHETIC-REVISION",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy",
+    "prompt_hash": "bf944689dedac4ec8c5414c65e72085f71f029d8e8c4b484770457d178df620a",
+    "mode": "replay"
+  },
+  "required_metrics": [
+    "latency_ms",
+    "cost",
+    "unsafe_actions",
+    "false_blocks"
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "iid_approximation": 0.3660323412732292,
+  "union_bound_lower": 0,
+  "marginal_upper": 0.99,
+  "assumptions": "p^n requires identical independent step success or equal conditional success at each required step; correlations and changing state can invalidate it. Bounds assume each step has marginal success at least p for the lower bound, exactly p for the upper bound."
+}

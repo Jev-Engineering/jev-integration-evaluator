@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:trace:1.0",
+  "type": "object",
+  "properties": {
+    "source_location": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "string"
+        },
+        "symbol": {
+          "type": "string"
+        },
+        "source_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "file",
+        "symbol",
+        "source_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "latency_ms": {
+      "type": "number",
+      "minimum": 0
+    },
+    "success": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "state_hash": {
+      "type": "string"
+    },
+    "model_calls": {
+      "type": "number",
+      "minimum": 0
+    },
+    "tokens": {
+      "type": "number",
+      "minimum": 0
+    },
+    "retries": {
+      "type": "number",
+      "minimum": 0
+    },
+    "branch": {
+      "type": "string"
+    },
+    "decision_confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "downstream_failure": {
+      "type": "boolean"
+    },
+    "timestamp": {
+      "type": "string"
+    },
+    "evidence_type": {
+      "enum": [
+        "observed",
+        "synthetic"
+      ]
+    }
+  },
+  "required": [
+    "source_location"
+  ],
+  "additionalProperties": false
+}

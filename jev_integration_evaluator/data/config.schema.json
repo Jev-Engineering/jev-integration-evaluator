@@ -1,0 +1,318 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:config:1.0",
+  "type": "object",
+  "properties": {
+    "jev_analysis": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "enum": [
+            "analysis",
+            "implementation"
+          ]
+        },
+        "depth": {
+          "enum": [
+            "QUICK",
+            "STANDARD",
+            "RESEARCH"
+          ]
+        },
+        "repository": {
+          "type": "object",
+          "properties": {
+            "root": {
+              "type": "string"
+            },
+            "exclude": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "max_files": {
+              "type": "integer"
+            },
+            "max_file_bytes": {
+              "type": "integer"
+            },
+            "typescript_ast": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "root",
+            "exclude",
+            "max_files",
+            "max_file_bytes",
+            "typescript_ast"
+          ],
+          "additionalProperties": false
+        },
+        "scoring": {
+          "type": "object",
+          "properties": {
+            "semantic_uncertainty": {
+              "type": "number"
+            },
+            "decision_boundedness": {
+              "type": "number"
+            },
+            "downstream_consequence": {
+              "type": "number"
+            },
+            "decision_frequency": {
+              "type": "number"
+            },
+            "cost_of_wrong_decision": {
+              "type": "number"
+            },
+            "recoverability_value": {
+              "type": "number"
+            },
+            "observability": {
+              "type": "number"
+            },
+            "deterministic_alternative_quality": {
+              "type": "number"
+            },
+            "current_failure_rate": {
+              "type": "number"
+            },
+            "current_llm_dependency": {
+              "type": "number"
+            },
+            "latency_sensitivity": {
+              "type": "number"
+            },
+            "cost_sensitivity": {
+              "type": "number"
+            },
+            "implementation_complexity": {
+              "type": "number"
+            },
+            "testability": {
+              "type": "number"
+            },
+            "expected_reuse": {
+              "type": "number"
+            },
+            "confidence_calibration_value": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "semantic_uncertainty",
+            "decision_boundedness",
+            "downstream_consequence",
+            "decision_frequency",
+            "cost_of_wrong_decision",
+            "recoverability_value",
+            "observability",
+            "deterministic_alternative_quality",
+            "current_failure_rate",
+            "current_llm_dependency",
+            "latency_sensitivity",
+            "cost_sensitivity",
+            "implementation_complexity",
+            "testability",
+            "expected_reuse",
+            "confidence_calibration_value"
+          ],
+          "additionalProperties": false
+        },
+        "thresholds": {
+          "type": "object",
+          "properties": {
+            "strong_candidate": {
+              "type": "number"
+            },
+            "high_leverage": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "strong_candidate",
+            "high_leverage"
+          ],
+          "additionalProperties": false
+        },
+        "constraints": {
+          "type": "object",
+          "properties": {
+            "max_added_latency_ms": {
+              "type": "number"
+            },
+            "max_cost_per_task": {
+              "type": "number"
+            },
+            "max_calls_per_task": {
+              "type": "number"
+            },
+            "max_complexity": {
+              "type": "number"
+            },
+            "max_risk": {
+              "type": "number"
+            },
+            "required_throughput": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "max_added_latency_ms",
+            "max_cost_per_task",
+            "max_calls_per_task",
+            "max_complexity",
+            "max_risk",
+            "required_throughput"
+          ],
+          "additionalProperties": false
+        },
+        "validation": {
+          "type": "object",
+          "properties": {
+            "paired_replay": {
+              "type": "boolean"
+            },
+            "bootstrap_samples": {
+              "type": "integer"
+            },
+            "bayesian_samples": {
+              "type": "integer"
+            },
+            "confidence_level": {
+              "type": "number"
+            },
+            "minimum_useful_effect": {
+              "type": "number"
+            },
+            "min_pairs": {
+              "type": "integer"
+            },
+            "seed": {
+              "type": "integer"
+            },
+            "shadow_mode": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "paired_replay",
+            "bootstrap_samples",
+            "bayesian_samples",
+            "confidence_level",
+            "minimum_useful_effect",
+            "min_pairs",
+            "seed",
+            "shadow_mode"
+          ],
+          "additionalProperties": false
+        },
+        "runtime": {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "type": "string"
+            },
+            "model": {
+              "type": "string"
+            },
+            "timeout_ms": {
+              "type": "integer"
+            },
+            "canary_fraction": {
+              "type": "number"
+            },
+            "max_calls_per_task": {
+              "type": "integer"
+            },
+            "max_cost_per_task": {
+              "type": "number"
+            },
+            "circuit_failures": {
+              "type": "integer"
+            },
+            "circuit_cooldown_s": {
+              "type": "integer"
+            },
+            "cache_ttl_s": {
+              "type": "integer"
+            },
+            "max_cache_entries": {
+              "type": "integer"
+            },
+            "input_usd_per_million": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "output_usd_per_million": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "mode",
+            "model",
+            "timeout_ms",
+            "canary_fraction",
+            "max_calls_per_task",
+            "max_cost_per_task",
+            "circuit_failures",
+            "circuit_cooldown_s",
+            "cache_ttl_s",
+            "max_cache_entries",
+            "input_usd_per_million",
+            "output_usd_per_million"
+          ],
+          "additionalProperties": false
+        },
+        "branding": {
+          "type": "object",
+          "properties": {
+            "profile": {
+              "type": "string"
+            },
+            "unbranded": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "profile",
+            "unbranded"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "mode",
+        "depth",
+        "repository",
+        "scoring",
+        "thresholds",
+        "constraints",
+        "validation",
+        "runtime",
+        "branding"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "jev_analysis"
+  ],
+  "additionalProperties": false
+}

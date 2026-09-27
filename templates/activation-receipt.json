@@ -1,0 +1,9 @@
+{
+  "approved": false,
+  "calibration_validated": false,
+  "model": "jev-1.13.0",
+  "policy_version": "UNSET",
+  "questions_hash": "UNSET",
+  "thresholds_hash": "UNSET",
+  "holdout_evidence_ref": "UNSET-not-valid-evidence"
+}

@@ -1,0 +1,31 @@
+{
+  "name": "jev-integration-evaluator",
+  "version": "1.2.0",
+  "author": "CompleteTech LLC",
+  "license": "MIT",
+  "entrypoint": "SKILL.md",
+  "python_package": "jev_integration_evaluator",
+  "cli": "jev-integration-evaluator",
+  "default_mode": "analysis",
+  "default_runtime_mode": "off",
+  "network_required_for_analysis": false,
+  "depths": [
+    "QUICK",
+    "STANDARD",
+    "RESEARCH"
+  ],
+  "implementation": "authorized source-specific agent wiring with exact reviewed patch plans",
+  "primary_languages": [
+    "python",
+    "javascript",
+    "typescript"
+  ],
+  "other_languages": "review-only fallback",
+  "branding_profile": "branding/profile.json",
+  "validation": "validation/VALIDATION.md",
+  "release_notes": "CHANGELOG.md",
+  "evidence_lifecycle": "references/lifecycle-and-evidence.md",
+  "offline_lifecycle_demo": "scripts/run_v11_demo.py",
+  "operational_evidence": "references/operational-evidence-v1.2.md",
+  "offline_operational_demo": "scripts/run_v12_demo.py"
+}

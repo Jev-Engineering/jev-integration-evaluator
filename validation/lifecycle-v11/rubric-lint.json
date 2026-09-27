@@ -1,0 +1,17 @@
+{
+  "questions": 1,
+  "findings": [
+    {
+      "question": "action",
+      "code": "no_explicit_abstention_label",
+      "severity": "warning"
+    }
+  ],
+  "requires_revision": false,
+  "semantics_verified": false,
+  "network_requests": 0,
+  "limitations": [
+    "Deterministic lint flags are leads, not semantic correctness judgments.",
+    "Review answerability, atomicity, evidence availability and redundant questions separately."
+  ]
+}

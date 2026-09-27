@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:decision:1.0",
+  "type": "object",
+  "properties": {
+    "decision_id": {
+      "type": "string"
+    },
+    "source_location": {
+      "type": "object"
+    },
+    "state": {},
+    "questions": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 255,
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "choice"
+              },
+              "instructions": {},
+              "criteria": {
+                "type": "object",
+                "minProperties": 2,
+                "maxProperties": 255
+              }
+            },
+            "required": [
+              "type",
+              "instructions",
+              "criteria"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "noul"
+              },
+              "instructions": {},
+              "criteria": {
+                "type": "object",
+                "properties": {
+                  "true": {},
+                  "false": {}
+                },
+                "required": [
+                  "true",
+                  "false"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "type",
+              "instructions"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "score"
+              },
+              "instructions": {},
+              "criteria": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 10,
+                "items": {}
+              }
+            },
+            "required": [
+              "type",
+              "instructions",
+              "criteria"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    "primary_question": {
+      "type": "string"
+    },
+    "baseline_decision": {
+      "type": "string"
+    },
+    "ground_truth": {
+      "type": "string"
+    },
+    "evidence_type": {
+      "enum": [
+        "synthetic",
+        "observed",
+        "unlabeled"
+      ]
+    },
+    "candidate_actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "timestamp": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "decision_id",
+    "source_location",
+    "state",
+    "questions",
+    "primary_question",
+    "baseline_decision"
+  ],
+  "additionalProperties": false
+}

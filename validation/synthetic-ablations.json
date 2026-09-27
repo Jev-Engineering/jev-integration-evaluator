@@ -1,0 +1,1245 @@
+{
+  "variants": {
+    "router": {
+      "schema_version": "1.0",
+      "pair_count": 80,
+      "independent_clusters": 80,
+      "evidence_type": "synthetic",
+      "evaluation_scope": "task_success",
+      "baseline_success": 0.6,
+      "jev_success": 0.7,
+      "absolute_improvement": 0.09999999999999998,
+      "relative_improvement": 0.16666666666666663,
+      "cells": {
+        "both_pass": 48,
+        "both_fail": 24,
+        "rescues": 8,
+        "regressions": 0
+      },
+      "rescue_regression_ratio": null,
+      "ratio_status": "infinite_no_observed_regressions",
+      "mcnemar": {
+        "discordant_pairs": 8,
+        "p_value": 0.007812500000000002,
+        "method": "exact two-sided conditional binomial",
+        "holm_adjusted_p_value": 0.015625000000000003
+      },
+      "success_bootstrap": {
+        "interval": [
+          0.0375,
+          0.175
+        ],
+        "clusters": 80,
+        "method": "paired cluster percentile bootstrap; task-weighted mean",
+        "samples": 2000,
+        "level": 0.95,
+        "warning": null
+      },
+      "bayesian": {
+        "method": "Paired four-cell multinomial with symmetric Dirichlet(0.5,0.5,0.5,0.5) prior",
+        "assumption": "Independent/exchangeable task-pair clusters; prior sensitivity remains necessary",
+        "p_improvement_gt_zero": 0.9992,
+        "minimum_useful_effect": 0.02,
+        "p_improvement_gt_minimum": 0.9934,
+        "credible_interval_95": [
+          0.03621709239309559,
+          0.17531240129379608
+        ],
+        "samples": 5000,
+        "monte_carlo_se_p_useful": 0.0011451148414023853
+      },
+      "metrics": {
+        "quality": {
+          "paired_count": 80,
+          "baseline_mean": 0.6,
+          "jev_mean": 0.7,
+          "mean_delta": 0.1,
+          "paired_standardized_effect_dz": 0.33124344857252985,
+          "bootstrap": {
+            "interval": [
+              0.0375,
+              0.175
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": null
+          }
+        },
+        "tokens": {
+          "paired_count": 80,
+          "baseline_mean": 1000,
+          "jev_mean": 850,
+          "mean_delta": -150,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              -150.0,
+              -150.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "model_calls": {
+          "paired_count": 80,
+          "baseline_mean": 5,
+          "jev_mean": 4,
+          "mean_delta": -1,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              -1.0,
+              -1.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "latency_ms": {
+          "paired_count": 80,
+          "baseline_mean": 502.925,
+          "jev_mean": 542.925,
+          "mean_delta": 40,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              40.0,
+              40.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          },
+          "baseline_p50": 503.0,
+          "baseline_p95": 506.0,
+          "jev_p50": 543.0,
+          "jev_p95": 546.0,
+          "p95_difference": 40.0,
+          "paired_added_p95": 40.0
+        },
+        "cost": {
+          "paired_count": 80,
+          "baseline_mean": 0.002,
+          "jev_mean": 0.0024,
+          "mean_delta": 0.00039999999999999975,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              0.00039999999999999975,
+              0.00039999999999999975
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "retries": {
+          "paired_count": 80,
+          "baseline_mean": 2,
+          "jev_mean": 2,
+          "mean_delta": 0,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              0.0,
+              0.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "tool_calls": {
+          "paired_count": 80,
+          "baseline_mean": 8,
+          "jev_mean": 8,
+          "mean_delta": 0,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              0.0,
+              0.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "human_escalations": {
+          "paired_count": 80,
+          "baseline_mean": 0,
+          "jev_mean": 0,
+          "mean_delta": 0,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              0.0,
+              0.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "unsafe_actions_prevented": {
+          "paired_count": 80,
+          "baseline_mean": 0,
+          "jev_mean": 0,
+          "mean_delta": 0,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              0.0,
+              0.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "unsafe_actions": {
+          "paired_count": 80,
+          "baseline_mean": 0,
+          "jev_mean": 0,
+          "mean_delta": 0,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              0.0,
+              0.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "false_blocks": {
+          "paired_count": 80,
+          "baseline_mean": 0,
+          "jev_mean": 0,
+          "mean_delta": 0,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              0.0,
+              0.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "replans": {
+          "paired_count": 80,
+          "baseline_mean": 1,
+          "jev_mean": 1,
+          "mean_delta": 0,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              0.0,
+              0.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "verified_progress": {
+          "paired_count": 80,
+          "baseline_mean": 0.68,
+          "jev_mean": 0.76,
+          "mean_delta": 0.08,
+          "paired_standardized_effect_dz": 0.33124344857252985,
+          "bootstrap": {
+            "interval": [
+              0.030000000000000006,
+              0.14
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": null
+          }
+        },
+        "long_horizon_completion": {
+          "paired_count": 80,
+          "baseline_mean": 0.6,
+          "jev_mean": 0.7,
+          "mean_delta": 0.1,
+          "paired_standardized_effect_dz": 0.33124344857252985,
+          "bootstrap": {
+            "interval": [
+              0.0375,
+              0.175
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": null
+          }
+        }
+      },
+      "incomplete_metrics": [],
+      "failure_analysis": {
+        "transitions": [
+          {
+            "baseline": "pass",
+            "jev": "pass",
+            "count": 48
+          },
+          {
+            "baseline": "planning",
+            "jev": "pass",
+            "count": 8
+          },
+          {
+            "baseline": "planning",
+            "jev": "planning",
+            "count": 8
+          },
+          {
+            "baseline": "routing",
+            "jev": "routing",
+            "count": 16
+          }
+        ],
+        "class_changes": [
+          {
+            "class": "pass",
+            "baseline": 48,
+            "jev": 56,
+            "delta": 8
+          },
+          {
+            "class": "planning",
+            "baseline": 16,
+            "jev": 8,
+            "delta": -8
+          },
+          {
+            "class": "routing",
+            "baseline": 16,
+            "jev": 16,
+            "delta": 0
+          }
+        ],
+        "warning": "A failure changing categories is not a rescue"
+      },
+      "efficiency": {
+        "baseline": {
+          "successful_tasks_per_model_calls": 0.12,
+          "verified_progress_per_model_calls": 0.136,
+          "successful_tasks_per_tokens": 0.0006,
+          "successful_tasks_per_cost": 300.0,
+          "successful_tasks_per_latency_ms": 0.0011930208281552915,
+          "successful_tasks_per_tool_calls": 0.075,
+          "verified_progress_per_tool_calls": 0.08499999999999999
+        },
+        "jev": {
+          "successful_tasks_per_model_calls": 0.175,
+          "verified_progress_per_model_calls": 0.19,
+          "successful_tasks_per_tokens": 0.0008235294117647059,
+          "successful_tasks_per_cost": 291.6666666666667,
+          "successful_tasks_per_latency_ms": 0.0012893125201455082,
+          "successful_tasks_per_tool_calls": 0.0875,
+          "verified_progress_per_tool_calls": 0.095
+        }
+      },
+      "pareto_point_estimates": [
+        {
+          "configuration": "baseline",
+          "success": 0.6,
+          "cost": 0.002,
+          "latency_ms": 502.925
+        },
+        {
+          "configuration": "jev",
+          "success": 0.7,
+          "cost": 0.0024,
+          "latency_ms": 542.925
+        }
+      ],
+      "recommendation": "needs_more_evidence",
+      "recommendation_reasons": [
+        "Useful-effect evidence exists, but complete operational/calibration validation is missing or synthetic",
+        "Synthetic fixtures validate tooling, not JEV usefulness"
+      ],
+      "provenance": {
+        "baseline_digest": "7b98862bdfac7bd73d3209c738004f0848906e566d4de9429835d07160e63e4e",
+        "jev_digest": "fabfec2883fde03fffb9bbada6c44f3bb048ec12632235da06025aaabaf22991",
+        "seed": 731,
+        "baseline_treatment": "baseline",
+        "jev_treatment": "router"
+      },
+      "limitations": [
+        "Bootstrap intervals are percentile intervals, not BCa; report low-cluster and degeneracy warnings.",
+        "Decision-only replay cannot establish counterfactual downstream task success.",
+        "Correlated judges, multiple comparisons, task leakage, adaptive stopping, and treatment drift require design controls.",
+        "Keep is an evaluation disposition, never permission to deploy or weaken policy."
+      ]
+    },
+    "verifier": {
+      "schema_version": "1.0",
+      "pair_count": 80,
+      "independent_clusters": 80,
+      "evidence_type": "synthetic",
+      "evaluation_scope": "task_success",
+      "baseline_success": 0.6,
+      "jev_success": 0.65,
+      "absolute_improvement": 0.050000000000000044,
+      "relative_improvement": 0.08333333333333341,
+      "cells": {
+        "both_pass": 44,
+        "both_fail": 24,
+        "rescues": 8,
+        "regressions": 4
+      },
+      "rescue_regression_ratio": 2.0,
+      "ratio_status": "defined",
+      "mcnemar": {
+        "discordant_pairs": 12,
+        "p_value": 0.38769531250000044,
+        "method": "exact two-sided conditional binomial",
+        "holm_adjusted_p_value": 0.38769531250000044
+      },
+      "success_bootstrap": {
+        "interval": [
+          -0.0375,
+          0.1375
+        ],
+        "clusters": 80,
+        "method": "paired cluster percentile bootstrap; task-weighted mean",
+        "samples": 2000,
+        "level": 0.95,
+        "warning": null
+      },
+      "bayesian": {
+        "method": "Paired four-cell multinomial with symmetric Dirichlet(0.5,0.5,0.5,0.5) prior",
+        "assumption": "Independent/exchangeable task-pair clusters; prior sensitivity remains necessary",
+        "p_improvement_gt_zero": 0.8798,
+        "minimum_useful_effect": 0.02,
+        "p_improvement_gt_minimum": 0.7576,
+        "credible_interval_95": [
+          -0.03462143158654595,
+          0.13498338218592104
+        ],
+        "samples": 5000,
+        "monte_carlo_se_p_useful": 0.006060399986799551
+      },
+      "metrics": {
+        "quality": {
+          "paired_count": 80,
+          "baseline_mean": 0.6,
+          "jev_mean": 0.65,
+          "mean_delta": 0.05,
+          "paired_standardized_effect_dz": 0.1293726715175706,
+          "bootstrap": {
+            "interval": [
+              -0.0375,
+              0.1375
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": null
+          }
+        },
+        "tokens": {
+          "paired_count": 80,
+          "baseline_mean": 1000,
+          "jev_mean": 850,
+          "mean_delta": -150,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              -150.0,
+              -150.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "model_calls": {
+          "paired_count": 80,
+          "baseline_mean": 5,
+          "jev_mean": 5,
+          "mean_delta": 0,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              0.0,
+              0.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "latency_ms": {
+          "paired_count": 80,
+          "baseline_mean": 502.925,
+          "jev_mean": 552.925,
+          "mean_delta": 50,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              50.0,
+              50.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          },
+          "baseline_p50": 503.0,
+          "baseline_p95": 506.0,
+          "jev_p50": 553.0,
+          "jev_p95": 556.0,
+          "p95_difference": 50.0,
+          "paired_added_p95": 50.0
+        },
+        "cost": {
+          "paired_count": 80,
+          "baseline_mean": 0.002,
+          "jev_mean": 0.0024,
+          "mean_delta": 0.00039999999999999975,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              0.00039999999999999975,
+              0.00039999999999999975
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "retries": {
+          "paired_count": 80,
+          "baseline_mean": 2,
+          "jev_mean": 2,
+          "mean_delta": 0,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              0.0,
+              0.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "tool_calls": {
+          "paired_count": 80,
+          "baseline_mean": 8,
+          "jev_mean": 8,
+          "mean_delta": 0,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              0.0,
+              0.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "human_escalations": {
+          "paired_count": 80,
+          "baseline_mean": 0,
+          "jev_mean": 0,
+          "mean_delta": 0,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              0.0,
+              0.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "unsafe_actions_prevented": {
+          "paired_count": 80,
+          "baseline_mean": 0,
+          "jev_mean": 0,
+          "mean_delta": 0,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              0.0,
+              0.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "unsafe_actions": {
+          "paired_count": 80,
+          "baseline_mean": 0,
+          "jev_mean": 0,
+          "mean_delta": 0,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              0.0,
+              0.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "false_blocks": {
+          "paired_count": 80,
+          "baseline_mean": 0,
+          "jev_mean": 0,
+          "mean_delta": 0,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              0.0,
+              0.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "replans": {
+          "paired_count": 80,
+          "baseline_mean": 1,
+          "jev_mean": 1,
+          "mean_delta": 0,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              0.0,
+              0.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "verified_progress": {
+          "paired_count": 80,
+          "baseline_mean": 0.68,
+          "jev_mean": 0.72,
+          "mean_delta": 0.04,
+          "paired_standardized_effect_dz": 0.1293726715175706,
+          "bootstrap": {
+            "interval": [
+              -0.030000000000000006,
+              0.11000000000000001
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": null
+          }
+        },
+        "long_horizon_completion": {
+          "paired_count": 80,
+          "baseline_mean": 0.6,
+          "jev_mean": 0.65,
+          "mean_delta": 0.05,
+          "paired_standardized_effect_dz": 0.1293726715175706,
+          "bootstrap": {
+            "interval": [
+              -0.0375,
+              0.1375
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": null
+          }
+        }
+      },
+      "incomplete_metrics": [],
+      "failure_analysis": {
+        "transitions": [
+          {
+            "baseline": "pass",
+            "jev": "pass",
+            "count": 44
+          },
+          {
+            "baseline": "pass",
+            "jev": "planning",
+            "count": 4
+          },
+          {
+            "baseline": "planning",
+            "jev": "planning",
+            "count": 16
+          },
+          {
+            "baseline": "routing",
+            "jev": "pass",
+            "count": 8
+          },
+          {
+            "baseline": "routing",
+            "jev": "routing",
+            "count": 8
+          }
+        ],
+        "class_changes": [
+          {
+            "class": "pass",
+            "baseline": 48,
+            "jev": 52,
+            "delta": 4
+          },
+          {
+            "class": "planning",
+            "baseline": 16,
+            "jev": 20,
+            "delta": 4
+          },
+          {
+            "class": "routing",
+            "baseline": 16,
+            "jev": 8,
+            "delta": -8
+          }
+        ],
+        "warning": "A failure changing categories is not a rescue"
+      },
+      "efficiency": {
+        "baseline": {
+          "successful_tasks_per_model_calls": 0.12,
+          "verified_progress_per_model_calls": 0.136,
+          "successful_tasks_per_tokens": 0.0006,
+          "successful_tasks_per_cost": 300.0,
+          "successful_tasks_per_latency_ms": 0.0011930208281552915,
+          "successful_tasks_per_tool_calls": 0.075,
+          "verified_progress_per_tool_calls": 0.08499999999999999
+        },
+        "jev": {
+          "successful_tasks_per_model_calls": 0.13,
+          "verified_progress_per_model_calls": 0.14400000000000002,
+          "successful_tasks_per_tokens": 0.0007647058823529412,
+          "successful_tasks_per_cost": 270.83333333333337,
+          "successful_tasks_per_latency_ms": 0.0011755663064610933,
+          "successful_tasks_per_tool_calls": 0.08125,
+          "verified_progress_per_tool_calls": 0.09
+        }
+      },
+      "pareto_point_estimates": [
+        {
+          "configuration": "baseline",
+          "success": 0.6,
+          "cost": 0.002,
+          "latency_ms": 502.925
+        },
+        {
+          "configuration": "jev",
+          "success": 0.65,
+          "cost": 0.0024,
+          "latency_ms": 552.925
+        }
+      ],
+      "recommendation": "needs_more_evidence",
+      "recommendation_reasons": [
+        "Point improvement does not establish a useful enough effect",
+        "Synthetic fixtures validate tooling, not JEV usefulness"
+      ],
+      "provenance": {
+        "baseline_digest": "7b98862bdfac7bd73d3209c738004f0848906e566d4de9429835d07160e63e4e",
+        "jev_digest": "13da1581470185b50844d6f4eda74b282f9177a409339441da741b788b7f29ce",
+        "seed": 731,
+        "baseline_treatment": "baseline",
+        "jev_treatment": "verifier"
+      },
+      "limitations": [
+        "Bootstrap intervals are percentile intervals, not BCa; report low-cluster and degeneracy warnings.",
+        "Decision-only replay cannot establish counterfactual downstream task success.",
+        "Correlated judges, multiple comparisons, task leakage, adaptive stopping, and treatment drift require design controls.",
+        "Keep is an evaluation disposition, never permission to deploy or weaken policy."
+      ]
+    },
+    "router+verifier": {
+      "schema_version": "1.0",
+      "pair_count": 80,
+      "independent_clusters": 80,
+      "evidence_type": "synthetic",
+      "evaluation_scope": "task_success",
+      "baseline_success": 0.6,
+      "jev_success": 0.9,
+      "absolute_improvement": 0.30000000000000004,
+      "relative_improvement": 0.5000000000000001,
+      "cells": {
+        "both_pass": 48,
+        "both_fail": 8,
+        "rescues": 24,
+        "regressions": 0
+      },
+      "rescue_regression_ratio": null,
+      "ratio_status": "infinite_no_observed_regressions",
+      "mcnemar": {
+        "discordant_pairs": 24,
+        "p_value": 1.1920928955078144e-07,
+        "method": "exact two-sided conditional binomial",
+        "holm_adjusted_p_value": 3.576278686523443e-07
+      },
+      "success_bootstrap": {
+        "interval": [
+          0.2,
+          0.4003124999999983
+        ],
+        "clusters": 80,
+        "method": "paired cluster percentile bootstrap; task-weighted mean",
+        "samples": 2000,
+        "level": 0.95,
+        "warning": null
+      },
+      "bayesian": {
+        "method": "Paired four-cell multinomial with symmetric Dirichlet(0.5,0.5,0.5,0.5) prior",
+        "assumption": "Independent/exchangeable task-pair clusters; prior sensitivity remains necessary",
+        "p_improvement_gt_zero": 1.0,
+        "minimum_useful_effect": 0.02,
+        "p_improvement_gt_minimum": 1.0,
+        "credible_interval_95": [
+          0.19758292101777433,
+          0.3982462749664297
+        ],
+        "samples": 5000,
+        "monte_carlo_se_p_useful": 0.0
+      },
+      "metrics": {
+        "quality": {
+          "paired_count": 80,
+          "baseline_mean": 0.6,
+          "jev_mean": 0.9,
+          "mean_delta": 0.3,
+          "paired_standardized_effect_dz": 0.6505492185179271,
+          "bootstrap": {
+            "interval": [
+              0.2,
+              0.4003124999999983
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": null
+          }
+        },
+        "tokens": {
+          "paired_count": 80,
+          "baseline_mean": 1000,
+          "jev_mean": 850,
+          "mean_delta": -150,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              -150.0,
+              -150.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "model_calls": {
+          "paired_count": 80,
+          "baseline_mean": 5,
+          "jev_mean": 4,
+          "mean_delta": -1,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              -1.0,
+              -1.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "latency_ms": {
+          "paired_count": 80,
+          "baseline_mean": 502.925,
+          "jev_mean": 582.925,
+          "mean_delta": 80,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              80.0,
+              80.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          },
+          "baseline_p50": 503.0,
+          "baseline_p95": 506.0,
+          "jev_p50": 583.0,
+          "jev_p95": 586.0,
+          "p95_difference": 80.0,
+          "paired_added_p95": 80.0
+        },
+        "cost": {
+          "paired_count": 80,
+          "baseline_mean": 0.002,
+          "jev_mean": 0.0024,
+          "mean_delta": 0.00039999999999999975,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              0.00039999999999999975,
+              0.00039999999999999975
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "retries": {
+          "paired_count": 80,
+          "baseline_mean": 2,
+          "jev_mean": 2,
+          "mean_delta": 0,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              0.0,
+              0.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "tool_calls": {
+          "paired_count": 80,
+          "baseline_mean": 8,
+          "jev_mean": 8,
+          "mean_delta": 0,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              0.0,
+              0.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "human_escalations": {
+          "paired_count": 80,
+          "baseline_mean": 0,
+          "jev_mean": 0,
+          "mean_delta": 0,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              0.0,
+              0.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "unsafe_actions_prevented": {
+          "paired_count": 80,
+          "baseline_mean": 0,
+          "jev_mean": 0,
+          "mean_delta": 0,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              0.0,
+              0.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "unsafe_actions": {
+          "paired_count": 80,
+          "baseline_mean": 0,
+          "jev_mean": 0,
+          "mean_delta": 0,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              0.0,
+              0.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "false_blocks": {
+          "paired_count": 80,
+          "baseline_mean": 0,
+          "jev_mean": 0,
+          "mean_delta": 0,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              0.0,
+              0.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "replans": {
+          "paired_count": 80,
+          "baseline_mean": 1,
+          "jev_mean": 1,
+          "mean_delta": 0,
+          "paired_standardized_effect_dz": null,
+          "bootstrap": {
+            "interval": [
+              0.0,
+              0.0
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": "Few clusters or no observed variation can produce misleadingly narrow/degenerate intervals"
+          }
+        },
+        "verified_progress": {
+          "paired_count": 80,
+          "baseline_mean": 0.68,
+          "jev_mean": 0.92,
+          "mean_delta": 0.24000000000000002,
+          "paired_standardized_effect_dz": 0.6505492185179271,
+          "bootstrap": {
+            "interval": [
+              0.16,
+              0.32024999999999865
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": null
+          }
+        },
+        "long_horizon_completion": {
+          "paired_count": 80,
+          "baseline_mean": 0.6,
+          "jev_mean": 0.9,
+          "mean_delta": 0.3,
+          "paired_standardized_effect_dz": 0.6505492185179271,
+          "bootstrap": {
+            "interval": [
+              0.2,
+              0.4003124999999983
+            ],
+            "clusters": 80,
+            "method": "paired cluster percentile bootstrap; task-weighted mean",
+            "samples": 2000,
+            "level": 0.95,
+            "warning": null
+          }
+        }
+      },
+      "incomplete_metrics": [],
+      "failure_analysis": {
+        "transitions": [
+          {
+            "baseline": "pass",
+            "jev": "pass",
+            "count": 48
+          },
+          {
+            "baseline": "planning",
+            "jev": "pass",
+            "count": 16
+          },
+          {
+            "baseline": "routing",
+            "jev": "pass",
+            "count": 8
+          },
+          {
+            "baseline": "routing",
+            "jev": "routing",
+            "count": 8
+          }
+        ],
+        "class_changes": [
+          {
+            "class": "pass",
+            "baseline": 48,
+            "jev": 72,
+            "delta": 24
+          },
+          {
+            "class": "planning",
+            "baseline": 16,
+            "jev": 0,
+            "delta": -16
+          },
+          {
+            "class": "routing",
+            "baseline": 16,
+            "jev": 8,
+            "delta": -8
+          }
+        ],
+        "warning": "A failure changing categories is not a rescue"
+      },
+      "efficiency": {
+        "baseline": {
+          "successful_tasks_per_model_calls": 0.12,
+          "verified_progress_per_model_calls": 0.136,
+          "successful_tasks_per_tokens": 0.0006,
+          "successful_tasks_per_cost": 300.0,
+          "successful_tasks_per_latency_ms": 0.0011930208281552915,
+          "successful_tasks_per_tool_calls": 0.075,
+          "verified_progress_per_tool_calls": 0.08499999999999999
+        },
+        "jev": {
+          "successful_tasks_per_model_calls": 0.225,
+          "verified_progress_per_model_calls": 0.22999999999999998,
+          "successful_tasks_per_tokens": 0.0010588235294117646,
+          "successful_tasks_per_cost": 375.00000000000006,
+          "successful_tasks_per_latency_ms": 0.0015439378993867135,
+          "successful_tasks_per_tool_calls": 0.1125,
+          "verified_progress_per_tool_calls": 0.11499999999999999
+        }
+      },
+      "pareto_point_estimates": [
+        {
+          "configuration": "baseline",
+          "success": 0.6,
+          "cost": 0.002,
+          "latency_ms": 502.925
+        },
+        {
+          "configuration": "jev",
+          "success": 0.9,
+          "cost": 0.0024,
+          "latency_ms": 582.925
+        }
+      ],
+      "recommendation": "needs_more_evidence",
+      "recommendation_reasons": [
+        "Useful-effect evidence exists, but complete operational/calibration validation is missing or synthetic",
+        "Synthetic fixtures validate tooling, not JEV usefulness"
+      ],
+      "provenance": {
+        "baseline_digest": "7b98862bdfac7bd73d3209c738004f0848906e566d4de9429835d07160e63e4e",
+        "jev_digest": "06e021d1a0b6836e6b4cd864b43fd94f16d52eb1b2af1699be3deab4e4e9c674",
+        "seed": 731,
+        "baseline_treatment": "baseline",
+        "jev_treatment": "router+verifier"
+      },
+      "limitations": [
+        "Bootstrap intervals are percentile intervals, not BCa; report low-cluster and degeneracy warnings.",
+        "Decision-only replay cannot establish counterfactual downstream task success.",
+        "Correlated judges, multiple comparisons, task leakage, adaptive stopping, and treatment drift require design controls.",
+        "Keep is an evaluation disposition, never permission to deploy or weaken policy."
+      ]
+    }
+  },
+  "router_verifier_interaction": {
+    "difference_in_differences": 0.15,
+    "bootstrap": {
+      "interval": [
+        0.075,
+        0.2375
+      ],
+      "clusters": 80,
+      "method": "paired cluster percentile bootstrap; task-weighted mean",
+      "samples": 2000,
+      "level": 0.95,
+      "warning": null
+    }
+  },
+  "multiplicity": "Holm correction for available McNemar comparisons; effect intervals remain marginal"
+}

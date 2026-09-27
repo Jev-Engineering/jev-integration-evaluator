@@ -1,0 +1,37 @@
+{
+  "version": "1.1.0",
+  "verified_on": "2026-09-26",
+  "tests": {
+    "tests": 296,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "test_seconds": 21.819,
+  "new_tests_relative_to_v1_0": 121,
+  "schemas": 16,
+  "original_synthetic_run_decision_records": 321,
+  "new_cli_demo_operations": 19,
+  "demo_task_pairs": 80,
+  "demo_calibration_observations": 40,
+  "demo_holdout_observations": 120,
+  "demo_robustness_probes": 5,
+  "binomial_numerical_crosschecks": 80,
+  "maximum_absolute_numerical_error": 4.936745456873837e-13,
+  "wheel_smoke": "passed",
+  "live_model_calls": 0,
+  "user_target_code_executed": false,
+  "network_evaluation_requests": 0,
+  "production_effectiveness_validated": false,
+  "environment": {
+    "python": "3.13.5",
+    "platform": "Linux-6.18.44-x86_64-with-glibc2.41",
+    "pytest": "9.0.2",
+    "PyYAML": "6.0.3",
+    "jsonschema": "4.26.0",
+    "setuptools": "82.0.1",
+    "scipy": "1.17.0",
+    "node": "v22.16.0",
+    "typescript": "5.8.3"
+  }
+}

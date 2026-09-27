@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:robustness-suite:1.1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.1"
+    },
+    "kind": {
+      "const": "rubric_robustness"
+    },
+    "model": {
+      "type": "string",
+      "minLength": 1
+    },
+    "state": {},
+    "primary_question": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ground_truth": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "probes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "probe_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "questions": {
+            "type": "object",
+            "minProperties": 1
+          },
+          "label_to_original": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "request_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "required": [
+          "probe_id",
+          "questions",
+          "label_to_original",
+          "request_hash"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 5,
+      "maxItems": 5
+    },
+    "lint": {
+      "type": "object"
+    },
+    "remote_calls_required": {
+      "const": 5
+    },
+    "invariance_assumption": {
+      "type": "string",
+      "minLength": 1
+    },
+    "authorization": {
+      "const": "local_plan_only_no_network_no_host_actions"
+    },
+    "contract_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "schema_version",
+    "kind",
+    "model",
+    "state",
+    "primary_question",
+    "ground_truth",
+    "probes",
+    "lint",
+    "remote_calls_required",
+    "invariance_assumption",
+    "authorization",
+    "contract_digest"
+  ],
+  "additionalProperties": false
+}

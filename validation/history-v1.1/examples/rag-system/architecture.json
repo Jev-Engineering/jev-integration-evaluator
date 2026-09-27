@@ -1,0 +1,167 @@
+{
+  "nodes": [
+    {
+      "id": "pipeline.py::answer_request",
+      "file": "pipeline.py",
+      "symbol": "answer_request",
+      "lines": [
+        2,
+        5
+      ],
+      "roles": [
+        "model",
+        "retrieve"
+      ],
+      "calls": [
+        {
+          "name": "retriever.retrieve",
+          "resolved_name": "retriever.retrieve",
+          "line": 3
+        },
+        {
+          "name": "llm.generate",
+          "resolved_name": "llm.generate",
+          "line": 4
+        }
+      ],
+      "branches": [],
+      "loops": [],
+      "exceptions": [],
+      "dataflow": [
+        {
+          "target": "chunks",
+          "calls": [
+            "retriever.retrieve"
+          ],
+          "reads": [
+            "retriever",
+            "query"
+          ],
+          "line": 3
+        },
+        {
+          "target": "answer",
+          "calls": [
+            "llm.generate"
+          ],
+          "reads": [
+            "llm",
+            "query",
+            "chunks"
+          ],
+          "line": 4
+        }
+      ],
+      "fan_out": 0,
+      "reachable_nodes": 0,
+      "dependency_depth_lower_bound": 0,
+      "parser": "python_ast",
+      "is_test": false
+    },
+    {
+      "id": "pipeline.py::claim_check",
+      "file": "pipeline.py",
+      "symbol": "claim_check",
+      "lines": [
+        8,
+        10
+      ],
+      "roles": [
+        "model"
+      ],
+      "calls": [
+        {
+          "name": "llm.classify",
+          "resolved_name": "llm.classify",
+          "line": 9
+        }
+      ],
+      "branches": [],
+      "loops": [],
+      "exceptions": [],
+      "dataflow": [
+        {
+          "target": "answer",
+          "calls": [
+            "llm.classify"
+          ],
+          "reads": [
+            "llm",
+            "request",
+            "claims",
+            "source_context"
+          ],
+          "line": 9
+        }
+      ],
+      "fan_out": 0,
+      "reachable_nodes": 0,
+      "dependency_depth_lower_bound": 0,
+      "parser": "python_ast",
+      "is_test": false
+    },
+    {
+      "id": "pipeline.py::<module>",
+      "file": "pipeline.py",
+      "symbol": "<module>",
+      "lines": [
+        1,
+        1
+      ],
+      "roles": [],
+      "calls": [],
+      "branches": [],
+      "loops": [],
+      "exceptions": [],
+      "dataflow": [],
+      "fan_out": 0,
+      "reachable_nodes": 0,
+      "dependency_depth_lower_bound": 0,
+      "parser": "python_ast",
+      "is_test": false
+    }
+  ],
+  "edges": [],
+  "unresolved_calls": [
+    {
+      "source": "pipeline.py::answer_request",
+      "call": "retriever.retrieve",
+      "line": 3
+    },
+    {
+      "source": "pipeline.py::answer_request",
+      "call": "llm.generate",
+      "line": 4
+    },
+    {
+      "source": "pipeline.py::claim_check",
+      "call": "llm.classify",
+      "line": 9
+    }
+  ],
+  "modules": [
+    {
+      "file": "pipeline.py",
+      "symbols": [
+        "<module>",
+        "answer_request",
+        "claim_check"
+      ]
+    }
+  ],
+  "side_effect_map": [],
+  "flow_maps": {
+    "tool": [],
+    "model": [
+      "pipeline.py::answer_request",
+      "pipeline.py::claim_check"
+    ],
+    "retrieve": [
+      "pipeline.py::answer_request"
+    ],
+    "observe": [],
+    "graph": [],
+    "context": [],
+    "agent": []
+  }
+}

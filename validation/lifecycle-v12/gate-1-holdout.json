@@ -1,0 +1,2282 @@
+[
+  {
+    "observation_id": "gate-1-test-0",
+    "task_hash": "7c6c3087619b96e921b9d922293bffa8fcb77eb3b30ae4db32460933822a16a1",
+    "cluster_id": "gate-1-test-0",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-1",
+    "task_hash": "cb6696f47f8123c85e8bd95048ab6abdf5ff79850eddb0e4e6157fe27018a1a1",
+    "cluster_id": "gate-1-test-1",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-2",
+    "task_hash": "80f54f90d4eff790d2be3a45af4b2d110660a0f11be8db1d83d3f9534f60f1ee",
+    "cluster_id": "gate-1-test-2",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-3",
+    "task_hash": "685d6cc2526ee8c08ceb4a029a04167a8f351002a6be62d23a990625d7c9b5c0",
+    "cluster_id": "gate-1-test-3",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-4",
+    "task_hash": "b0d16f7d89dd34d8bd091d6dd9dab5ed17caaa835f6c9bae10141da4885c964a",
+    "cluster_id": "gate-1-test-4",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-5",
+    "task_hash": "bc6ee4f048f266c17c5c36b66c6b0e12f9ed4a64bcc977e0af640cfd0bfe65f7",
+    "cluster_id": "gate-1-test-5",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-6",
+    "task_hash": "1600b2942864ee04f314b92131dcb4d65740bd002c847fe996432bac2aaef2a7",
+    "cluster_id": "gate-1-test-6",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-7",
+    "task_hash": "4f6db31a6f49147de81644b0373cf2be2000244014f2c017011a4c03a7be6adc",
+    "cluster_id": "gate-1-test-7",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-8",
+    "task_hash": "efefe49f5e01644ac7779f4c4a1ac7ab63a103cbe61afc749c3bcaeb6e6e0993",
+    "cluster_id": "gate-1-test-8",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-9",
+    "task_hash": "9ef33d7950b231c7aa140866c381f962b0bb25ffa1035e0344a4b1d89f13313b",
+    "cluster_id": "gate-1-test-9",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-10",
+    "task_hash": "b2da0c586c68924c1cbeddbf98d195c19aa237b7faa3a63ec6bd58d462bf2ff0",
+    "cluster_id": "gate-1-test-10",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-11",
+    "task_hash": "1154b2f79e7819357642ff41a7539387d538989837b3ebb5c1f3d57da7afdfb1",
+    "cluster_id": "gate-1-test-11",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-12",
+    "task_hash": "8eba97a61df2fbdb7de741611ed1728f1c5c95f27631a169a783a4f640e5a7de",
+    "cluster_id": "gate-1-test-12",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-13",
+    "task_hash": "9463b54a3aa12b0456350d43a8fb10a346e0f086bbc1b92572d4105fad7de1a9",
+    "cluster_id": "gate-1-test-13",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-14",
+    "task_hash": "313c9930667aba0d1f1d77d1640ed2fd529c54c8bd189f0bedc3bae2474b2ff0",
+    "cluster_id": "gate-1-test-14",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-15",
+    "task_hash": "9537bb91a6f1750b98243023d2b9b45ab9977106e27c319509638ffdc68258a4",
+    "cluster_id": "gate-1-test-15",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-16",
+    "task_hash": "3172e00e9b21e555e6ac3b50511f172337ec95af4cf03c0ccc5225819997c395",
+    "cluster_id": "gate-1-test-16",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-17",
+    "task_hash": "b83fbe143bc1e3ef1a7fc1b1105c7ef13aad5ecf99ab8641a0899f9b2005bee3",
+    "cluster_id": "gate-1-test-17",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-18",
+    "task_hash": "8ef82ae91277b0f05383d56ac628fbfca90f5751b767e935031e2e801256ae3c",
+    "cluster_id": "gate-1-test-18",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-19",
+    "task_hash": "780baae317b6852deccf55f6b6737b0b4ee701c678e2aa3361f2c8b15bfed34f",
+    "cluster_id": "gate-1-test-19",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-20",
+    "task_hash": "69430cfe1ea5e780511b629bbd6396e4dd271b9e8034b8dd4f0f2299817955bc",
+    "cluster_id": "gate-1-test-20",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-21",
+    "task_hash": "9623814ff30f6b29472a4dd5de7f5ab964073122a21417aee93defc54d613b04",
+    "cluster_id": "gate-1-test-21",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-22",
+    "task_hash": "00e9bb0da8fb25551ed9fcfad7963ccbc5a75cf57d6553910c3eb384fa01fd3a",
+    "cluster_id": "gate-1-test-22",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-23",
+    "task_hash": "56c08d2241b85381e24776eccb6ad20a1ca346e2e007293832e534c20ca8c5cb",
+    "cluster_id": "gate-1-test-23",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-24",
+    "task_hash": "eda5ae999e05a350c488093c1a5c8abe8f718c30f47f07ee38249028576a19eb",
+    "cluster_id": "gate-1-test-24",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-25",
+    "task_hash": "5d3252fca8238bef6a4c18914b26ae1b3b16fed8b784da34ca9e8927af4ad344",
+    "cluster_id": "gate-1-test-25",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-26",
+    "task_hash": "9f12c62a22b602092eac064dc62acd6ccf098cc64add467eb4aabd2cea3f4310",
+    "cluster_id": "gate-1-test-26",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-27",
+    "task_hash": "8bd15a11f6a4cefd0fdd0dbe55ef8efb86a5a176c9caffdadefc8827fc9a7e0e",
+    "cluster_id": "gate-1-test-27",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-28",
+    "task_hash": "7540031b50865a7310054e804e270cbfca31cde5a8c92daa9b6043ba185e4628",
+    "cluster_id": "gate-1-test-28",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-29",
+    "task_hash": "c12fb5d34b69ddb68f24224e4b3626ff8683e9f97f50fb44a1356c5510d9d6c9",
+    "cluster_id": "gate-1-test-29",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-30",
+    "task_hash": "aeff4e7d1293d9758b0d8541456a071f1de5362ca344f1d6b6160ba10d8582f2",
+    "cluster_id": "gate-1-test-30",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-31",
+    "task_hash": "8a4f3b54dcb3a8aa649010d0046d3345d92576ea11c708c24de599b1ab9ebd6c",
+    "cluster_id": "gate-1-test-31",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-32",
+    "task_hash": "aacb981a85df572a4acfa4034795d9e8886a02d3776b0539d6ee20e769dc2b6e",
+    "cluster_id": "gate-1-test-32",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-33",
+    "task_hash": "c67dec6cd6da52c35c9c8163ddf82405ab8ddfb6367ec707b98f6307202dbb99",
+    "cluster_id": "gate-1-test-33",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-34",
+    "task_hash": "fbd712d170d751c15aec49383522269a9702ddc5c9662b9b3d1f2fa22feeab9f",
+    "cluster_id": "gate-1-test-34",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-35",
+    "task_hash": "c53be64de7170d900e311af21f890b65156f03b552a06d455f8d7ce1018de4e9",
+    "cluster_id": "gate-1-test-35",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-36",
+    "task_hash": "443c5746a9e07998926b99504e702f8f3cb16db8e1fc5ec41e1b662488692af4",
+    "cluster_id": "gate-1-test-36",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-37",
+    "task_hash": "efc15e7ba7e3f640ac26c27631e8a2d4a4dd259c582fa4105aa98a0a8de770ec",
+    "cluster_id": "gate-1-test-37",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-38",
+    "task_hash": "78b9ad0191676de9fc14bf0da0a3ebe344c57e26ff9fef4afa5143231fa6479a",
+    "cluster_id": "gate-1-test-38",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-39",
+    "task_hash": "a0393ed59aecf585d93d6cf3f1a0403f8832c36eb8a62cb390bbf7b00b980a31",
+    "cluster_id": "gate-1-test-39",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-40",
+    "task_hash": "484c6d67026d14576fd1b683d7149f2d7242401e8e1ee5ad5565538b85413fc7",
+    "cluster_id": "gate-1-test-40",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-41",
+    "task_hash": "876db343cb62b0a47119c5b88456af927dfaa2f352e1f756b1e57b888c11be50",
+    "cluster_id": "gate-1-test-41",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-42",
+    "task_hash": "e4a6419f64472b0457e9d18b90421db50365f1b406ebcc1a50bf7e9a2d1ef7e1",
+    "cluster_id": "gate-1-test-42",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-43",
+    "task_hash": "e9beedab50d5a8589f972367cc500562eaae00f399a329d760167174d2bd09b2",
+    "cluster_id": "gate-1-test-43",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-44",
+    "task_hash": "f4e0d6fe54482d62bf7b3b5391cf133a38e6f77a099d9fe1b54643ddbbf320ba",
+    "cluster_id": "gate-1-test-44",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-45",
+    "task_hash": "84f2da3cbd934ca9e02f9a6613e3b1cad6d2eda0f5b89b3a0122f981302f8db7",
+    "cluster_id": "gate-1-test-45",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-46",
+    "task_hash": "7f99e5b72fbf536448c6525c11211787b8bf2e047a86dd40d6b5a317c5fab22c",
+    "cluster_id": "gate-1-test-46",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-47",
+    "task_hash": "ee2f37930e9fac710a4f128f90b835ecfeda32784fadb1bba9112c0db9cd2f09",
+    "cluster_id": "gate-1-test-47",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-48",
+    "task_hash": "73550c1f55dec9e51778bb908cdb04b569d005f2aa71f5ceecb32b3eaae062ca",
+    "cluster_id": "gate-1-test-48",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-49",
+    "task_hash": "0637fdc4cc8339a5b6eee5cb15b089e4cd7a6d70665133b12abd3d83871fc654",
+    "cluster_id": "gate-1-test-49",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-50",
+    "task_hash": "1df726ad7aecb21ef0e668a678efc01e716ebc866de38ce024cf1bd82c17c02a",
+    "cluster_id": "gate-1-test-50",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-51",
+    "task_hash": "778225dc77a70eb49be9a22e132c27d3bbf151324b974c5e0d8e135a8a982e59",
+    "cluster_id": "gate-1-test-51",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-52",
+    "task_hash": "1893e8de1e603363d240a807edb20fa0748eec6920a4c2cdee330215066fcdf3",
+    "cluster_id": "gate-1-test-52",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-53",
+    "task_hash": "74f6fd8a4c37f1559e5d260f91b44deda40b3d05436a8a2802f1a8131dd900ed",
+    "cluster_id": "gate-1-test-53",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-54",
+    "task_hash": "7c082873253f56549634051bea9b063eafecf6a766f39d71282b8add94d3bc87",
+    "cluster_id": "gate-1-test-54",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-55",
+    "task_hash": "e979a69c9392274846422d6ee09c63f0c9ae8b04590c0642fc40aee4ac7439d2",
+    "cluster_id": "gate-1-test-55",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-56",
+    "task_hash": "c1e904dbf0bb4bdba4923c1ae2ba6be1e9145c16968940809387ca23fdca711c",
+    "cluster_id": "gate-1-test-56",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-57",
+    "task_hash": "5608c32ccb3407110f91022dfdf68ba1a8bfd6323de75c57edce51caa8b4f4bd",
+    "cluster_id": "gate-1-test-57",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-58",
+    "task_hash": "e0ec1fbdf872a7095f016b80c8d41d7d7ec4d493476ec7152a8ccdbbced001ce",
+    "cluster_id": "gate-1-test-58",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-59",
+    "task_hash": "e019b459d567271973b2316d02bcec41d43a60031eaa46488343e0cdb624caf1",
+    "cluster_id": "gate-1-test-59",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-60",
+    "task_hash": "c04a950181edc6f2d7b43c4eb0c0aa6484bd1d08a7f8ce992d23dfc6324e7271",
+    "cluster_id": "gate-1-test-60",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-61",
+    "task_hash": "598983796c6f363ffdd1dcecbbb6e901e09eab7cdf34bebdb2abe5290612937c",
+    "cluster_id": "gate-1-test-61",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-62",
+    "task_hash": "a1f0c15fbb101596344370262ed91f8d0d64f9c4185d47037a1c02734581c32f",
+    "cluster_id": "gate-1-test-62",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-63",
+    "task_hash": "1bfc4fb5e4be69898e552d8d6d688662d18c2c7aab0c75aa669fbb8be0abc956",
+    "cluster_id": "gate-1-test-63",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-64",
+    "task_hash": "a727caa74568c57783b740278be8353fd8172f257ba5fe0af18cb76b779b5467",
+    "cluster_id": "gate-1-test-64",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-65",
+    "task_hash": "980a92a5217df9e437bebd342378dd0a82f6ed2790c8aa8c5cf4cb7a80db8feb",
+    "cluster_id": "gate-1-test-65",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-66",
+    "task_hash": "69ea72ba7df36ec2f1755fea14fcbb18a3211e61241da1901a2f81314308de4a",
+    "cluster_id": "gate-1-test-66",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-67",
+    "task_hash": "65cfac0a7e4f0814c30d8bb55af9735ed9376c223ead9a973fb71bca65308574",
+    "cluster_id": "gate-1-test-67",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-68",
+    "task_hash": "08d3780377aadcaa4b620085f2bfd6d8a1cd5b61b87b8904eee6e06ffc8ef27f",
+    "cluster_id": "gate-1-test-68",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-69",
+    "task_hash": "28e4e7574c0c6167559b1fd7468814e9f52a1d5740f7ed6593e1958909cba8d0",
+    "cluster_id": "gate-1-test-69",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-70",
+    "task_hash": "7a7569df7a5c6884bb0cbc7619879e9fd8d458dc37574504efa0f46533ee4715",
+    "cluster_id": "gate-1-test-70",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-71",
+    "task_hash": "37aa09fb3fbdd80243bbdf6a255b44e139e858d3abf92210f4252d3067389427",
+    "cluster_id": "gate-1-test-71",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-72",
+    "task_hash": "8c76328daa603c95f8cb81491cb9e8077d1d413afe16a4a394f0e3d83c12f23f",
+    "cluster_id": "gate-1-test-72",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-73",
+    "task_hash": "438103fcb25c5b9042a1ef63e10db9786a8dbbe06b35846f8301e9cb73966896",
+    "cluster_id": "gate-1-test-73",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-74",
+    "task_hash": "50834598bf65fd150234644ebe22b3466f75eca3e7ec26af5cbb7e2b82d44333",
+    "cluster_id": "gate-1-test-74",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-75",
+    "task_hash": "cb9af6c05ce8e5369232592410aecdeb97966b314ed39e4b971bc43af9463d4a",
+    "cluster_id": "gate-1-test-75",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-76",
+    "task_hash": "9f5d70bf5482e98879484bb793c8afc55bc95924327d8c1c6126c12555cff933",
+    "cluster_id": "gate-1-test-76",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-77",
+    "task_hash": "371e9d672f8caac15c0f07ad300f555a0658033f4bd3cae4e6a664e6c9f3df92",
+    "cluster_id": "gate-1-test-77",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-78",
+    "task_hash": "ae683f26c0e6c8a2a9699649dc4ba06e5308efe1d5233ff698171c8448d726b1",
+    "cluster_id": "gate-1-test-78",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-79",
+    "task_hash": "089de60be3c3d3cc8b94bdb748dd8b32a62f655304db71f2ff8d59acb01a9c8a",
+    "cluster_id": "gate-1-test-79",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-80",
+    "task_hash": "aa7db95dcbc3da0c4f8b723e4c832fa175371f63264e8d48df37065c7e2ece2c",
+    "cluster_id": "gate-1-test-80",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-81",
+    "task_hash": "04be38b71cd74f20eed9777de5d8dbab82897c546c634b3f515aaadaa9e9a3d8",
+    "cluster_id": "gate-1-test-81",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-82",
+    "task_hash": "7a139b5144cd1dc9fcf7f65e5e83eba2567690b9c8fcbd143dc5f6119bea5b56",
+    "cluster_id": "gate-1-test-82",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-83",
+    "task_hash": "d5b62e5be97172a0cbf48af7bc84bb8448d281271af9e3d16a9f4aee419801a7",
+    "cluster_id": "gate-1-test-83",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-84",
+    "task_hash": "a4a455fb1977f143566c5b6316a1d155126cc4ac5839121e1173cea7866b03e2",
+    "cluster_id": "gate-1-test-84",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-85",
+    "task_hash": "b801213f65a03ef0ddabd44dc94c04e0babbbe50ea944c6b2d9872e831edf78e",
+    "cluster_id": "gate-1-test-85",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-86",
+    "task_hash": "cc46a646821840abcb7bdba20f1d5319469f136b94b9f727a145c1b26a5bfbe8",
+    "cluster_id": "gate-1-test-86",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-87",
+    "task_hash": "64e13f61b8ef6bf4946d99b1f4eb2c6334cc7d35e7ce9eaa708aed1dc318ee9c",
+    "cluster_id": "gate-1-test-87",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-88",
+    "task_hash": "2012829f814ebb08ef529cfd7d4c242fe1ee46bed0d3fb9d345b25f800f38b7c",
+    "cluster_id": "gate-1-test-88",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-89",
+    "task_hash": "391c3b8d6ef3bcdf549e01a83cc94fb5ba836bb11ac815b85dcc7f9f1c859f02",
+    "cluster_id": "gate-1-test-89",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-90",
+    "task_hash": "5c6ed49e510fce856a92f054aae67b9ddf2ecf73bdaddafddc924e545ef9b60a",
+    "cluster_id": "gate-1-test-90",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-91",
+    "task_hash": "bf20ed9064c0259c8ab7c694bc1bed6da61fbc268cfa276bd5745f5bc47c92a2",
+    "cluster_id": "gate-1-test-91",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-92",
+    "task_hash": "8ce7e81367407df6728241b29889dcc4fd6b566e465ec5c68aaad341d3879820",
+    "cluster_id": "gate-1-test-92",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-93",
+    "task_hash": "fb294fd49ff6dae83656f23e97a9fd2a2734350d2647de7c6cf66de6181bc98e",
+    "cluster_id": "gate-1-test-93",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-94",
+    "task_hash": "ab1273cc5828f30d5097f4a90f1c46d05043f9cf55e05129fcbd596d8216bcb0",
+    "cluster_id": "gate-1-test-94",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-95",
+    "task_hash": "b3aa0c6fce36a9dd6563f62c06c53f7939d41cea955d0d55491594e600296cd5",
+    "cluster_id": "gate-1-test-95",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-96",
+    "task_hash": "29c34daca0b6d4bf5c3eff0da5db801eb84a7c54a8c221ba3230c3e028ffb70a",
+    "cluster_id": "gate-1-test-96",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-97",
+    "task_hash": "052def1f0833f8d48c411d3e1c64b2f1ac44cf378e9b7750ab62d2a1ba38a8b7",
+    "cluster_id": "gate-1-test-97",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-98",
+    "task_hash": "a95bbaa2dbb105488f7ec400679f68974ecf276ec4cc93bc374ca193a16800bc",
+    "cluster_id": "gate-1-test-98",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-99",
+    "task_hash": "f45cccd674a2ae9f8d6a762a685c618d2eb2d99c7d9ea88c6d100b2d2ed37f7a",
+    "cluster_id": "gate-1-test-99",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-100",
+    "task_hash": "8f02abb62bfbf86a898c30f262031d76e15b528f74cb32c1db6ae58b11376d57",
+    "cluster_id": "gate-1-test-100",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-101",
+    "task_hash": "5c9ec2a9cbe1048a798731a27057e331dde25180e1902cce8a358cbd8aec250e",
+    "cluster_id": "gate-1-test-101",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-102",
+    "task_hash": "45198f04977b6e6eee982cc774c1b66c7c4c7e7e036f36a92fa442dd97731e51",
+    "cluster_id": "gate-1-test-102",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-103",
+    "task_hash": "093975bf377c132dbae216da2b944c684d970086a3159a7dfdf970adfae2f566",
+    "cluster_id": "gate-1-test-103",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-104",
+    "task_hash": "9b6283b27bb149f2e9a9752ee4a4517efb6b673170faa3bac739fd3ab7a32a28",
+    "cluster_id": "gate-1-test-104",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-105",
+    "task_hash": "8a0898af2e54d3289171f6304735374df462c90f69c6533b6daccf87f9caeb22",
+    "cluster_id": "gate-1-test-105",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-106",
+    "task_hash": "f83ba456b53e47c736371bfcffe729f5651b69ab7b4a4ece56c31cd4f22a08ce",
+    "cluster_id": "gate-1-test-106",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-107",
+    "task_hash": "e05dc3631ca19111b765a8fba24d071123f7005866b0c2d34b17b5827ad61440",
+    "cluster_id": "gate-1-test-107",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-108",
+    "task_hash": "a0d56295eadc953367a4e38bbc3b07325040e0ac46a0c947a8fe24c571f2edf0",
+    "cluster_id": "gate-1-test-108",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-109",
+    "task_hash": "60f9142a95530b30ba3e9d74814895afbdb52b76788a0c5c7f35dfec523001a6",
+    "cluster_id": "gate-1-test-109",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-110",
+    "task_hash": "6d8deeea330ab10da6d629dc49dff5e1b31d3aa325d1db1355acc0453e53e479",
+    "cluster_id": "gate-1-test-110",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-111",
+    "task_hash": "14674f8677374b9bdf8bdad58b0b9bf2b660fa2755310aa3cc1b8d2638a870ed",
+    "cluster_id": "gate-1-test-111",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-112",
+    "task_hash": "33a8c39b2b10d64f02c54e7d7814b2a599610e927544f8377e4bae2b60ebc119",
+    "cluster_id": "gate-1-test-112",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-113",
+    "task_hash": "81d0054fc3001adca089b05be392b0c97934df28696e00483abc6fd3b204e0e3",
+    "cluster_id": "gate-1-test-113",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-114",
+    "task_hash": "8329e8e7ab9df3e76acef02663158063d050410623ff8edec3eefdf316bf699b",
+    "cluster_id": "gate-1-test-114",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-115",
+    "task_hash": "2b31e424708623fff0adb5dc9334147b0cee75c3d2dc0e8d800b7c2eec0a8a1c",
+    "cluster_id": "gate-1-test-115",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-116",
+    "task_hash": "511257dc856bca0a5fe83362051c0b778616ae2e2c647b6853c0963ab4d431e8",
+    "cluster_id": "gate-1-test-116",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-117",
+    "task_hash": "099456688adce41ae1a11e338ba862bb896780fc70b2dcf2c196f9bd329c389b",
+    "cluster_id": "gate-1-test-117",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-118",
+    "task_hash": "6e863e3e402274b67f67ab1d277e23d372aa871de24e8d9b7e8b3b62e9c85f01",
+    "cluster_id": "gate-1-test-118",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  },
+  {
+    "observation_id": "gate-1-test-119",
+    "task_hash": "6c1111f174964f346a86994e84a3208650c3bfcfd03cee82af54448de08b7258",
+    "cluster_id": "gate-1-test-119",
+    "subgroup": "ordinary",
+    "kind": "choice",
+    "split": "test",
+    "model_id": "jev-1.13.0",
+    "policy_version": "synthetic-policy-1",
+    "rubric_hash": "3826dc2b410a0f9c15c69e9c1184c33d4c4673e1494ce0fef95278783cb0023f",
+    "evidence_type": "synthetic",
+    "probabilities": {
+      "inspect": 0.99,
+      "stop": 0.01
+    },
+    "choice": "inspect",
+    "confidence": 0.95,
+    "label": "inspect"
+  }
+]

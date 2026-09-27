@@ -1,0 +1,13 @@
+# Contributing
+
+Use a scoped branch or worktree. Add a regression test for each bug, keep package/root schemas identical, update data-contract examples when changing a schema, and preserve source-hash version guards. Do not add network calls to ordinary tests.
+
+```bash
+python -m pip install -e ".[test]"
+python -m pytest -q
+python scripts/validate_package.py
+```
+
+Test Python-only mode and TypeScript-enabled mode. A missing optional parser must remain an explicitly disclosed fallback, not a crash or silently verified result. Synthetic data must retain its evidence label and cannot be promoted to an observed outcome.
+
+Keep configuration strict, stable CLI errors actionable, archives free of credentials/build caches, and citations to primary upstream API documentation dated. Changes to confidence semantics, threshold activation, budgets, authorization, cache keys, paired matching and statistical assumptions require focused tests and a version note. Re-generate release checksums only after tests and documentation are final.

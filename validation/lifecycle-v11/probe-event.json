@@ -1,0 +1,18 @@
+{
+  "state": {
+    "evidence": "SYNTHETIC: additional inspection is warranted."
+  },
+  "questions": {
+    "action": {
+      "type": "choice",
+      "instructions": "Select the evidence-supported criterion.",
+      "criteria": {
+        "inspect": "Evidence supports additional inspection.",
+        "stop": "Evidence supports stopping."
+      }
+    }
+  },
+  "primary_question": "action",
+  "model": "jev-1.13.0",
+  "ground_truth": "inspect"
+}

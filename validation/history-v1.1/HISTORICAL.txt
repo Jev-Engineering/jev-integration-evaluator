@@ -1,0 +1,1 @@
+Copied unchanged from the v1.1.0 package before v1.2 validation. Paths/counts in these records describe that earlier release. The original v1.1.0 ZIP is the authoritative historical artifact.
