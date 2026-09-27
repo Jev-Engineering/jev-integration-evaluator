@@ -14,10 +14,11 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--out',required=True);args=parser.parse_args()
     output=Path(args.out).resolve()
     if output.is_relative_to(ROOT):raise SystemExit('Use an output ZIP outside the source package')
-    files=sorted(p for p in ROOT.rglob('*') if include(p) and p.name!='SHA256SUMS')
+    files=sorted((p for p in ROOT.rglob('*') if include(p) and p.name!='SHA256SUMS'),
+                 key=lambda p:p.relative_to(ROOT).as_posix())
     manifest=''.join(sha(p)+'  '+p.relative_to(ROOT).as_posix()+'\n' for p in files)
     (ROOT/'SHA256SUMS').write_text(manifest)
-    files.append(ROOT/'SHA256SUMS');files.sort()
+    files.append(ROOT/'SHA256SUMS');files.sort(key=lambda p:p.relative_to(ROOT).as_posix())
     output.parent.mkdir(parents=True,exist_ok=True)
     with zipfile.ZipFile(output,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=9) as archive:
         for path in files:

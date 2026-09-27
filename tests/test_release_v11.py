@@ -1,9 +1,31 @@
 import importlib.util
 import json
 import shutil
+import sys
+import zipfile
 from pathlib import Path
 import pytest
 from jev_integration_evaluator.io import InputError, file_hash
+
+
+def test_release_builder_uses_portable_manifest_order(root, tmp_path, monkeypatch):
+    package = tmp_path / 'package'
+    nested = package / 'validation' / 'generated-adapter'
+    nested.mkdir(parents=True)
+    (nested / 'WIRING.md').write_text('nested\n')
+    (package / 'validation' / 'generated-adapter-test.txt').write_text('sibling\n')
+    spec = importlib.util.spec_from_file_location('build_release_test', root / 'scripts/build_release.py')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    module.ROOT = package
+    archive = tmp_path / 'release.zip'
+    monkeypatch.setattr(sys, 'argv', ['build_release.py', '--out', str(archive)])
+    module.main()
+    manifest = (package / 'SHA256SUMS').read_text()
+    paths = [line.split('  ', 1)[1] for line in manifest.splitlines()]
+    assert paths == sorted(paths)
+    with zipfile.ZipFile(archive) as bundle:
+        assert bundle.read('package/SHA256SUMS').decode() == manifest
 
 
 @pytest.fixture
