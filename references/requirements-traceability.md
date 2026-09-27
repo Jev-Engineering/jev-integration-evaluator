@@ -110,4 +110,17 @@ Repository publication, signed commits, external review/CI and merge are deliver
 | Exact reviewed execution and post-check identity | Plan-hash probe copies; generated-byte/mode/absence recheck; complete failure denominator | `test_executable_verification_identity.py` |
 | Strict receipts and truthful status | Mirrored optional historical-compatible identity field; false-success rejection | Receipt compatibility/forgery tests, existing CLI/status/rollback tests |
 
-Fresh validation belongs to `validation/SAFETY-VALIDATION-1.3.0.dev2.md`. Neither this table nor a local receipt certifies publication, CI, live activation or measured application benefit.
+Historical dev2 validation remains in `validation/SAFETY-VALIDATION-1.3.0.dev2.md`. Neither this table nor a local receipt certifies publication, CI, live activation or measured application benefit.
+
+## dev3 verification failure and source-fidelity regressions
+
+| Requirement | Executable correction | Evidence |
+|---|---|---|
+| Complete independent observation before a pass | Strict bounded observation structure plus recipe-bound trace roles/arity | `integrations/observations.py`, mirrored `implementation-observation` schema, CLI tests |
+| Retain all failed, timed-out and not-run work | Invalid or over-budget observations become failed scheduled rows; missing command becomes `not_run` | `test_executable_failure_receipts.py` |
+| Reviewed receipt schedule and provenance | Ordered case/mode rows, counts and command hashes checked against the spec | Rehashed receipt schedule and command-forgery cases |
+| Consistent command execution evidence | Passing exit code zero; timeout/not-run null code; legitimate failed-zero retained | `test_executable_command_receipts.py`, both receipt schema copies |
+| Durable process-interruption recovery | Baseline and modified start events exclude stale passes; mutation disposition retained | KeyboardInterrupt and actual subprocess `os._exit` tests; fresh verification/rollback |
+| Preserve source layout and encoding | Imports outside unrelated single-line/multiline decorators; explicit UTF-8 cookie check | `test_executable_source_fidelity.py`, actual modified-host lifecycle and exact rollback |
+
+The current release record is `validation/SAFETY-VALIDATION-1.3.0.dev3.md`. Local evidence is not hosted CI, independent PR approval, live provider validation, production activation or measured benefit.

@@ -49,3 +49,9 @@ Collect shadow resources/disagreements and independent labels; obtain actual pai
 Review the supported source names in their scopes, not just their spelling. Parameter shadowing and exception/match capture rebinding must fail before mutation. Preserve the original host exception object through executor/finisher and guard cleanup; do not translate an attempted operation's exception into a new baseline execution. Keep the reviewed router and shared coordinator alive for the workflow; ownership tombstones prevent garbage collection from becoming a budget reset.
 
 A command exit of zero is insufficient when it changed an integration-owned file. Inspect the new `file_identity_valid` receipt field together with exact phase hashes and behavioral assertions. Copied source must already match the plan before executing the isolated probe. A failed identity/copy check cannot be replaced by a success-shaped manifest, and unavailable cases remain in the denominator. Recovery still reconciles existing bytes and never overwrites unrelated edits.
+
+## dev3 verification and recovery
+
+Use a fresh source-bound bundle for the current engine. A required runner that cannot start must be reported as `not_run`; never replace that check with a passing probe or manually edit its receipt. Invalid probe observations must become failed scheduled rows, with the invalid data excluded from ordinary reports. The strict observation schema is available in both the checkout and installed wheel.
+
+After an interrupted modified verification, keep the previous receipt for history and the durable journal for recovery. `blocked_recovery` is not verified status, even with the previous receipt digest. Fresh authorized verification or a reviewed owned-byte rollback is required. Preserve the target and unrelated edits while recovering. Check source encoding before planning, and preserve unrelated decorated definitions without treating decorated selected seams as supported.

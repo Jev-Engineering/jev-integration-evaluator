@@ -34,7 +34,10 @@ def validate(check_manifest=False):
               'schemas/implementation-manifest.schema.json','schemas/implementation-tests.schema.json',
               'tests/test_executable_recipes.py','tests/test_executable_runtime.py','tests/test_executable_safety.py','tests/test_executable_cli.py','tests/test_executable_wheel.py',
               'tests/test_executable_host_boundaries.py','tests/test_executable_source_scope.py','tests/test_executable_verification_identity.py',
-              'validation/SAFETY-VALIDATION-1.3.0.dev2.md']
+              'validation/SAFETY-VALIDATION-1.3.0.dev3.md',
+              'jev_integration_evaluator/integrations/observations.py','schemas/implementation-observation.schema.json',
+              'tests/test_executable_failure_receipts.py','tests/test_executable_source_fidelity.py','tests/test_executable_command_receipts.py',
+              'examples/implementation/observation.example.json']
     for item in required:
         if not (ROOT/item).is_file():raise InputError('Required package file missing: '+item)
     front=(ROOT/'SKILL.md').read_text().split('---',2)
@@ -61,6 +64,7 @@ def validate(check_manifest=False):
         validate_inventory(example/'target',read_json(example/'reviewed-inventory.example.json'),spec)
         transform(example/'target',spec)
         implementation_examples+=1
+    jsonschema.validate(read_json(ROOT/'examples/implementation/observation.example.json'),schemas['implementation-observation'])
     cfg=load_config(ROOT/'templates/jev-config.yaml')
     jsonschema.validate({'jev_analysis':cfg},schemas['config'])
     fixture_records=0
@@ -105,6 +109,7 @@ def validate(check_manifest=False):
             raise InputError('Release manifest file set differs from package; added or missing files detected')
     return {'status':'passed','schema_count':len(schemas),'synthetic_records_validated':fixture_records,
             'implementation_examples_validated_without_execution':implementation_examples,
+            'synthetic_observation_examples_validated':1,
             'offline_replay_decisions':result['evaluated'],'manifest_files_verified':checked,
             'network_requests':0,'target_code_executed':False}
 

@@ -1,0 +1,289 @@
+{
+  "status": "passed",
+  "classification": "synthetic",
+  "engine_identity": "c93ded9292a77316861b4f940abb57d3aaaffc2293f4ba69910828e927e20484",
+  "python": "3.13.5",
+  "platform": "Linux-6.18.44-x86_64-with-glibc2.41",
+  "duration_s": 286.289,
+  "recipes": [
+    {
+      "recipe": "python.A",
+      "shape": "module-tail-call-v1",
+      "baseline_cases": 2,
+      "modified_cases": 6,
+      "passed_modified_cases": 6,
+      "contract_assertions": [
+        "pattern_specific_handler_observed",
+        "assessment_changes_finite_host_behavior",
+        "complete_offline_observation",
+        "blocked_zero_executor_calls"
+      ],
+      "bundle_digest": "df7b25ddb4e10835b9abbcc68abc47a1d89ea8278adbe1d2875e23f7e8127a6d",
+      "baseline_receipt_sha256": "37c4d271de0ec3fe1f2007c56c0ffdc505a70726e9f227c3f9a46939d27e6556",
+      "verification_receipt_sha256": "f99d985ec672cd99b0c526e4bc75fd6849e5b20269b890ac5045e247d0136a81",
+      "unanchored_status": "applied_unverified",
+      "anchored_status": "verified",
+      "final_target_status": "rolled_back",
+      "target_bytes_restored": true,
+      "classification": "synthetic"
+    },
+    {
+      "recipe": "python.B",
+      "shape": "module-tail-call-v1",
+      "baseline_cases": 2,
+      "modified_cases": 6,
+      "passed_modified_cases": 6,
+      "contract_assertions": [
+        "pattern_specific_handler_observed",
+        "assessment_changes_finite_host_behavior",
+        "complete_offline_observation",
+        "scope_budget_and_irreversible_approval"
+      ],
+      "bundle_digest": "fd0517a8d826da754ec3af9823828b3b6006092ae4a23d27ca741bc4c6f27f41",
+      "baseline_receipt_sha256": "a4698b7bf2b73970a6091bdf83b2c2c618da86c3f82e4fb29460048b32c50201",
+      "verification_receipt_sha256": "4c7b038f97319ba7a22118a5e76ca5549979d64c29eb0b5385c8bc6365f36568",
+      "unanchored_status": "applied_unverified",
+      "anchored_status": "verified",
+      "final_target_status": "rolled_back",
+      "target_bytes_restored": true,
+      "classification": "synthetic"
+    },
+    {
+      "recipe": "python.C",
+      "shape": "module-tail-call-v1",
+      "baseline_cases": 1,
+      "modified_cases": 3,
+      "passed_modified_cases": 3,
+      "contract_assertions": [
+        "pattern_specific_handler_observed",
+        "assessment_changes_finite_host_behavior",
+        "complete_offline_observation",
+        "final_tool_at_most_once"
+      ],
+      "bundle_digest": "22c008099986295206523b2fe4033d532540873748e30707445f8761ac4fd36a",
+      "baseline_receipt_sha256": "0744d83ce8ce0ce0d3c8ff749767ed559aa2bbb2fed347666f2b42bbd2b2e860",
+      "verification_receipt_sha256": "2bf23cc3f72ffa97babd7feee5f59cf26c2b347d6e386c5fcb7a96b658caf803",
+      "unanchored_status": "applied_unverified",
+      "anchored_status": "verified",
+      "final_target_status": "rolled_back",
+      "target_bytes_restored": true,
+      "classification": "synthetic"
+    },
+    {
+      "recipe": "python.D",
+      "shape": "module-tail-call-v1",
+      "baseline_cases": 1,
+      "modified_cases": 3,
+      "passed_modified_cases": 3,
+      "contract_assertions": [
+        "pattern_specific_handler_observed",
+        "assessment_changes_finite_host_behavior",
+        "complete_offline_observation",
+        "provenance_and_contradictions_preserved"
+      ],
+      "bundle_digest": "fb95f0e0983a70106d09cbf6f495cc0e87fb154f85333a7ac5ee30fbe6e502d3",
+      "baseline_receipt_sha256": "1d7041fb7a2b9a358297b6cc5fe569208b8e677a4fef44ac932bf7c6d298e917",
+      "verification_receipt_sha256": "ac5e0233bcb6c8c5567fd45540d96ac62dfe785d8207aefa3705c5135e185a4f",
+      "unanchored_status": "applied_unverified",
+      "anchored_status": "verified",
+      "final_target_status": "rolled_back",
+      "target_bytes_restored": true,
+      "classification": "synthetic"
+    },
+    {
+      "recipe": "python.E",
+      "shape": "module-tail-call-v1",
+      "baseline_cases": 2,
+      "modified_cases": 6,
+      "passed_modified_cases": 6,
+      "contract_assertions": [
+        "pattern_specific_handler_observed",
+        "assessment_changes_finite_host_behavior",
+        "complete_offline_observation",
+        "independent_postcondition_and_no_reexecution"
+      ],
+      "bundle_digest": "dd8f674d8853393d1456d73492f2654751589c580a8ef2872bef8426de337547",
+      "baseline_receipt_sha256": "98670457f28e9723c3cbad5e90239e5430b1b25e3cc46b2818bd9659a85fe531",
+      "verification_receipt_sha256": "df135b711cca1ab37ee599874483fcb131c25029cf254343bcfe005354b2e451",
+      "unanchored_status": "applied_unverified",
+      "anchored_status": "verified",
+      "final_target_status": "rolled_back",
+      "target_bytes_restored": true,
+      "classification": "synthetic"
+    },
+    {
+      "recipe": "python.F",
+      "shape": "module-tail-call-v1",
+      "baseline_cases": 2,
+      "modified_cases": 6,
+      "passed_modified_cases": 6,
+      "contract_assertions": [
+        "pattern_specific_handler_observed",
+        "assessment_changes_finite_host_behavior",
+        "complete_offline_observation",
+        "bounded_registered_transition"
+      ],
+      "bundle_digest": "677d1cf67b2f045f3428d3d4535987886f5b3f19fd42a722e4b219b98d4c7c2c",
+      "baseline_receipt_sha256": "a53ee8064b6aff6cabc4c9bdece00d0e1371961d44edf6ca661e9b8f4f241dba",
+      "verification_receipt_sha256": "b162eab6c3053ecc2ba2b0bb9d5bc351158ec9bd2b2305633ba2265baf5a0e75",
+      "unanchored_status": "applied_unverified",
+      "anchored_status": "verified",
+      "final_target_status": "rolled_back",
+      "target_bytes_restored": true,
+      "classification": "synthetic"
+    },
+    {
+      "recipe": "python.G",
+      "shape": "module-tail-call-v1",
+      "baseline_cases": 1,
+      "modified_cases": 3,
+      "passed_modified_cases": 3,
+      "contract_assertions": [
+        "pattern_specific_handler_observed",
+        "assessment_changes_finite_host_behavior",
+        "complete_offline_observation",
+        "bounded_existing_plan_and_per_step_gate"
+      ],
+      "bundle_digest": "8f203c8a275359da9b3b0ed49cc5ebf994290b5f8974f1fa32e3bb8fa55ae1e8",
+      "baseline_receipt_sha256": "751a226d682aaf658e1f6e7a3f5f4df6a59c74e03c8353f8b409b08c1c77c567",
+      "verification_receipt_sha256": "2c8e689c505c1a9bff017dfa51bfbde7e1a36abba8fac6be330ad8e7296c047e",
+      "unanchored_status": "applied_unverified",
+      "anchored_status": "verified",
+      "final_target_status": "rolled_back",
+      "target_bytes_restored": true,
+      "classification": "synthetic"
+    },
+    {
+      "recipe": "python.H",
+      "shape": "module-tail-call-v1",
+      "baseline_cases": 1,
+      "modified_cases": 3,
+      "passed_modified_cases": 3,
+      "contract_assertions": [
+        "pattern_specific_handler_observed",
+        "assessment_changes_finite_host_behavior",
+        "complete_offline_observation",
+        "pinned_retention_without_compaction"
+      ],
+      "bundle_digest": "404f69f3c6fc3814c01ed7f84b23824cfd8177e72260f33ad24eac4ac3ab2d27",
+      "baseline_receipt_sha256": "c50983203afc4647f3f1c93e8770393c8eb2acf1147b2cf06b15dbbc64acf7e9",
+      "verification_receipt_sha256": "751ee3cc852783313b58f57fce6f94a388a591a06f03f5bed6227ca074766664",
+      "unanchored_status": "applied_unverified",
+      "anchored_status": "verified",
+      "final_target_status": "rolled_back",
+      "target_bytes_restored": true,
+      "classification": "synthetic"
+    },
+    {
+      "recipe": "python.I",
+      "shape": "module-tail-call-v1",
+      "baseline_cases": 2,
+      "modified_cases": 6,
+      "passed_modified_cases": 6,
+      "contract_assertions": [
+        "pattern_specific_handler_observed",
+        "assessment_changes_finite_host_behavior",
+        "complete_offline_observation",
+        "bounded_retry_without_completed_effect_replay"
+      ],
+      "bundle_digest": "65f8d6767bd126c1b3097e674f7ae802a1610a7cde913b698a684bc11b3ae5b2",
+      "baseline_receipt_sha256": "66f2c3f89b53032e32318e0980f6410d9021cf3f6f8f09f035adc08bcae91155",
+      "verification_receipt_sha256": "3102584dec15a05f1867a79c22eb6147a3f2c8e6b0d28b85a5e7d0277338a24a",
+      "unanchored_status": "applied_unverified",
+      "anchored_status": "verified",
+      "final_target_status": "rolled_back",
+      "target_bytes_restored": true,
+      "classification": "synthetic"
+    },
+    {
+      "recipe": "python.J",
+      "shape": "module-tail-call-v1",
+      "baseline_cases": 1,
+      "modified_cases": 3,
+      "passed_modified_cases": 3,
+      "contract_assertions": [
+        "pattern_specific_handler_observed",
+        "assessment_changes_finite_host_behavior",
+        "complete_offline_observation",
+        "shared_concurrency_and_child_identity"
+      ],
+      "bundle_digest": "24d4baaeda8d78e1c93c7fab5686e6facb45f9ea1ec80ef769acd0851ddc8194",
+      "baseline_receipt_sha256": "e37c32ae770ce09073d6c2ee1f142c621091446120ee317068fe179c4bdb5900",
+      "verification_receipt_sha256": "be53718cb61f7ffbca47aa3fbe856f7d4f37ab6f69024ea96480ff81c723d0c7",
+      "unanchored_status": "applied_unverified",
+      "anchored_status": "verified",
+      "final_target_status": "rolled_back",
+      "target_bytes_restored": true,
+      "classification": "synthetic"
+    },
+    {
+      "recipe": "python.K",
+      "shape": "module-tail-call-v1",
+      "baseline_cases": 2,
+      "modified_cases": 6,
+      "passed_modified_cases": 6,
+      "contract_assertions": [
+        "pattern_specific_handler_observed",
+        "assessment_changes_finite_host_behavior",
+        "complete_offline_observation",
+        "deterministic_checks_without_publication"
+      ],
+      "bundle_digest": "386859645f563ea21a8b9115bb71f6ef811057d872bd92747888291253dfd41f",
+      "baseline_receipt_sha256": "d0ff0d09c22976b22209a0d7e74e8221a822e4126d372ff8e388bf8eedd317f6",
+      "verification_receipt_sha256": "974ea753ea7019c924964706843e1f08cea97f1231632f661460e28d4a284557",
+      "unanchored_status": "applied_unverified",
+      "anchored_status": "verified",
+      "final_target_status": "rolled_back",
+      "target_bytes_restored": true,
+      "classification": "synthetic"
+    },
+    {
+      "recipe": "python.L",
+      "shape": "module-tail-call-v1",
+      "baseline_cases": 2,
+      "modified_cases": 6,
+      "passed_modified_cases": 6,
+      "contract_assertions": [
+        "pattern_specific_handler_observed",
+        "assessment_changes_finite_host_behavior",
+        "complete_offline_observation",
+        "revision_and_approval_before_mutation"
+      ],
+      "bundle_digest": "d7b151371fae759e5a46c154f3486c7bf7b2866ab32f967d36d2af7baea7b75a",
+      "baseline_receipt_sha256": "701ee00fe772f1dab1fd0e9027591e5bbd0770dc8e4944d19fcf9ecf48b3e2f4",
+      "verification_receipt_sha256": "ae092f0a4c91b9f1e505169d379de2cb19762c36bfff8282eeac00eff1829047",
+      "unanchored_status": "applied_unverified",
+      "anchored_status": "verified",
+      "final_target_status": "rolled_back",
+      "target_bytes_restored": true,
+      "classification": "synthetic"
+    },
+    {
+      "recipe": "python.M",
+      "shape": "module-tail-call-v1",
+      "baseline_cases": 2,
+      "modified_cases": 6,
+      "passed_modified_cases": 6,
+      "contract_assertions": [
+        "pattern_specific_handler_observed",
+        "assessment_changes_finite_host_behavior",
+        "complete_offline_observation",
+        "registered_disposition_without_generation"
+      ],
+      "bundle_digest": "b0712e0e4b4dd26d0df77943ebd71e2b0e819519836cc2a66e4dff03b669d3ff",
+      "baseline_receipt_sha256": "c5fe37db016546a8ec78c0a30a12178fd47173f6cf50e522f7abaa933513ab5a",
+      "verification_receipt_sha256": "2cc53f1498163619aad80cd183c9ccbb5d084e17eca00e59dd874694d1233a7a",
+      "unanchored_status": "applied_unverified",
+      "anchored_status": "verified",
+      "final_target_status": "rolled_back",
+      "target_bytes_restored": true,
+      "classification": "synthetic"
+    }
+  ],
+  "network_requests": 0,
+  "runtime_activation_authorized": false,
+  "benefit_demonstrated": false,
+  "targets_applied_unverified": 0,
+  "raw_target_source_or_preimages_published": false,
+  "evidence_scope": "Local observed CLI/subprocess execution of explicitly synthetic fixtures; no live deployment evidence"
+}

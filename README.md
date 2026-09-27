@@ -1,4 +1,4 @@
-# JEV Integration Evaluator 1.3.0.dev2
+# JEV Integration Evaluator 1.3.0.dev3
 
 **CompleteTech LLC · Evidence-driven integration analysis and evaluation**
 
@@ -10,7 +10,7 @@ The [original executable implementation specification](references/executable-imp
 
 The default is deliberately conservative: **read-only analysis; no network; runtime off; no target code execution; no automatic adoption**. An unfamiliar repository can produce “no justified integration set.” That is a successful result, not an error.
 
-## Executable integrations in 1.3.0.dev2
+## Executable integrations in 1.3.0.dev3
 
 This development build implements **A–M Python host transformations** for the explicitly bounded `module-tail-call-v1` source shape. A strict source-matched binding spec drives generated host edits, default-off runtime wiring, exact reviewed apply, actual host-entry verification, externally anchored status and owned-byte rollback. It does not ask the caller to write the replacement function. The thirteen synthetic examples and the complete CLI demo exercise the edited hosts, not just adapter methods.
 
@@ -23,11 +23,19 @@ Read [the executable support matrix and lifecycle](references/executable-integra
 
 The verifier demonstrates **synthetic host wiring**, not application benefit or production activation. Its test runtime is deliberately injected; it does not certify a real provider/bootstrap. Unsupported Python shapes are rejected before mutation; JavaScript/TypeScript remain analysis-only. No Node runtime is needed for Python rewriting. Earlier v1.1/v1.2 validation remains historical evidence, not a claim about this development build.
 
-## Safety follow-up in 1.3.0.dev2
+## Failure-accounting and source fidelity in 1.3.0.dev3
+
+Probe observations now have a strict, mirrored contract. Null, incomplete, malformed or out-of-bound observations cannot pass a baseline, establish host wiring or erase scheduled failures. Missing authorized runners are recorded as `not_run`; a successful probe cannot substitute for a required command that did not execute. Receipt loading checks the complete ordered case/mode schedule, counts, observations and command identities against the reviewed specification.
+
+Baseline and modified verification write durable start markers before execution. If the process is interrupted, status reports `blocked_recovery`; an older passing baseline cannot authorize apply after that interrupted attempt. Fresh authorized verification or an exact owned-byte rollback can recover. Command status must agree with its exit code, and receipt output stays within the reader's size limit while retaining every scheduled case. UTF-8 source cookies are validated before transformation, and generated imports stay outside unrelated decorated definitions, including multiline decorators. Decorated **selected seams** and non-UTF-8 source remain unsupported.
+
+Current local qualification is in [the dev3 validation record](validation/SAFETY-VALIDATION-1.3.0.dev3.md). Dev1/dev2 and v1.1/v1.2 validation files are retained as historical evidence. This release adds no live activation path, new runtime dependency or broader rewriting claim.
+
+## Retained safety follow-up from 1.3.0.dev2
 
 Host-owned exceptions are never model routing instructions: after an executor, finisher or completed-result callback starts, fallback cannot replay it. Runtime/coordinator ownership tombstones survive garbage collection, so constructing replacements cannot reset a workflow's charged work. Parameter shadowing and Python exception/match captures are rejected before mutation when they make bindings ambiguous.
 
-Every verification copy must match the reviewed phase bytes and modes. A final check includes the generated adapter, including after an authorized command exits successfully. New receipts expose `file_identity_valid`; this field is evidence metadata, never execution or activation authority. The support matrix and CLI remain bounded and unchanged. Fresh local results are in `validation/SAFETY-VALIDATION-1.3.0.dev2.md`; earlier records are historical.
+Every verification copy must match the reviewed phase bytes and modes. A final check includes the generated adapter, including after an authorized command exits successfully. New receipts expose `file_identity_valid`; this field is evidence metadata, never execution or activation authority. The support matrix and CLI remain bounded and unchanged. The historical dev2 results remain in `validation/SAFETY-VALIDATION-1.3.0.dev2.md`; current qualification is recorded separately.
 
 ## New in 1.2
 
@@ -164,7 +172,7 @@ Static analysis cannot recover every reflective/dynamic call, macro, callback, g
 
 A socket timeout and bounded thread pool are not hard real-time guarantees. The test runner is not a security sandbox; use an isolated runner for untrusted projects. Externally retained hash/length checkpoints detect mismatching audit prefixes, but hash chains do not authenticate an adversarial writer. Frozen local manifests cannot prove an untouched holdout or independent trials; their statistical assumptions remain explicit. API fixtures and receipts can be forged by an untrusted editor; authorization and independent experiment review remain host responsibilities.
 
-Development validation is in [the dev2 safety report](validation/SAFETY-VALIDATION-1.3.0.dev2.md), with subsequent integration qualification recorded separately there. The other `validation/` records retain historical v1.1, v1.2 and dev1 evidence, including their earlier names, and are not measurements for this build. Live JEV accuracy, cost, latency and calibration were not measured during package construction. The tested model interface uses mocked HTTP and exact local fixtures.
+Development validation is in [the dev3 safety report](validation/SAFETY-VALIDATION-1.3.0.dev3.md), with supplied-archive and subsequent integration qualification recorded separately there. Earlier v1.1, v1.2, dev1 and dev2 validation records are retained byte-for-byte as historical evidence, including their earlier names; they are not measurements for this build. Live JEV accuracy, cost, latency and calibration were not measured during package construction. The tested model interface uses mocked HTTP and exact local fixtures.
 
 ## License
 

@@ -4,7 +4,7 @@ description: Discover, score, design, optimize, and experimentally validate high
 license: MIT
 metadata:
   author: CompleteTech LLC
-  version: 1.3.0.dev2
+  version: 1.3.0.dev3
 ---
 
 # JEV Integration Evaluator
@@ -22,6 +22,8 @@ Capture the separately authorized baseline, retain its digest in a trusted chann
 All thirteen Python recipes currently support only the documented top-level, synchronous, single-tail-call shape and explicit static registries. Existing functions supply runtime ownership, legal actions, permission/state checks, locking, baseline behavior and independent observations. The generated feature flag is off. The synthetic probe injects a test runtime; it is not a live provider integration or approval to activate. Preserve shared coordinator/task identity, strict runtime receipts and semantic label mappings. `/prune` and `/compact` remain separate explicit choices. JavaScript/TypeScript are analysis-only; disclose unsupported source/platform paths.
 
 Run `scripts/run_implementation_demo.py --out NEW_PRIVATE_DIRECTORY`, the existing v1.1/v1.2 demos, full regressions, installed-wheel host checks and package validation for implementation changes. Publish only minimal synthetic validation metadata, never private target source, preimages, raw test output or activation fixtures. Prior validation reports remain historical.
+
+For dev3 verification, validate each observation against `implementation-observation` before assertions. Never promote missing observations or required commands that did not run. Validate receipt schedules, command identities and command exit-code consistency against the reviewed spec; oversized receipt observations remain failed scheduled cases. A durable baseline or modified verification start event without completion means `blocked_recovery`: an earlier passing receipt is history, not the result of the interrupted run. Require fresh execution authority to reverify; retain exact owned-byte rollback. Source encoding cookies must denote UTF-8; unrelated decorators do not authorize rewriting decorated selected seams.
 
 ## Activation and scope
 

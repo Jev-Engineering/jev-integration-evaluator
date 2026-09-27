@@ -46,6 +46,9 @@ def validate_spec(spec: dict) -> dict:
         raise InputError('Effectful recipes require independent executor/call observations')
     if pattern == 'E' and not any(r['operation']=='increased_by' and r['path'].startswith('after.') for r in spec['policy']['postconditions']):
         raise InputError('Post-action verification requires an independent state-change assertion')
+    for phase in ('baseline', 'modified'):
+        if any('\x00' in arg for arg in spec['verification'][phase+'_command']):
+            raise InputError('Invalid verification command argument')
     identifiers = [c['id'] for c in spec['verification']['cases']]
     if len(identifiers) != len(set(identifiers)):
         raise InputError('Duplicate scheduled verification case')

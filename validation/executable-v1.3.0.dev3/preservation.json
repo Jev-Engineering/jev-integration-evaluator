@@ -1,0 +1,11 @@
+{
+  "all_preexisting_test_files_preserved": true,
+  "preexisting_test_file_count": 28,
+  "new_test_files": [
+    "test_executable_failure_receipts.py",
+    "test_executable_source_fidelity.py"
+  ],
+  "historical_validation_file_count": 358,
+  "historical_validation_files_preserved": true,
+  "unchanged_dev2_source_archive_sha256": "52a40df0393de646a0711673f3aca6caeb16d90887919e2bf617e909b6273eff"
+}
