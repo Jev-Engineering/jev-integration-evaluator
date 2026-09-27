@@ -1,0 +1,1213 @@
+{
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "candidate_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "experiment_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "inventory_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "inventory_fingerprint": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "symbol": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        },
+        "anchor_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "file_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "source_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "file",
+        "symbol",
+        "anchor_sha256",
+        "file_sha256",
+        "source_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "recipe": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "enum": [
+            "python.A",
+            "python.B",
+            "python.C",
+            "python.D",
+            "python.E",
+            "python.F",
+            "python.G",
+            "python.H",
+            "python.I",
+            "python.J",
+            "python.K",
+            "python.L",
+            "python.M"
+          ]
+        },
+        "version": {
+          "const": "1.0"
+        },
+        "shape": {
+          "const": "module-tail-call-v1"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "shape"
+      ],
+      "additionalProperties": false
+    },
+    "bindings": {
+      "type": "object",
+      "properties": {
+        "runtime": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        },
+        "baseline_action": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        },
+        "registry": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        },
+        "gate": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        },
+        "validate": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        },
+        "blocked": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        },
+        "risk": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        },
+        "items": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        },
+        "generate": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        },
+        "observe": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        },
+        "postcondition": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        },
+        "finish": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        },
+        "step_registry": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        },
+        "retain": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        },
+        "attempt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        },
+        "reserve_retry": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        },
+        "effect_state": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        },
+        "completed": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        },
+        "ownership": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        },
+        "verify_child": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        },
+        "checks": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        },
+        "verify_claims": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        },
+        "guard": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "questions": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 255
+    },
+    "primary_question": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "evidence_question": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "label_actions": {
+      "type": "object",
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "minProperties": 1,
+      "maxProperties": 255
+    },
+    "policy": {
+      "type": "object"
+    },
+    "runtime": {
+      "type": "object",
+      "properties": {
+        "configuration": {
+          "type": "object"
+        },
+        "policy_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "canary_scope": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "task_field": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        },
+        "max_evidence_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 96000
+        },
+        "cost_upper_bound": {
+          "type": "number",
+          "minimum": 0
+        },
+        "ownership": {
+          "const": "stable_host"
+        },
+        "coordinator": {
+          "const": "shared_process_local"
+        },
+        "task_completion": {
+          "const": "host_owned"
+        },
+        "audit": {
+          "const": "required"
+        },
+        "immutable_cache": {
+          "const": false
+        }
+      },
+      "required": [
+        "configuration",
+        "policy_version",
+        "canary_scope",
+        "task_field",
+        "max_evidence_bytes",
+        "cost_upper_bound",
+        "ownership",
+        "coordinator",
+        "task_completion",
+        "audit",
+        "immutable_cache"
+      ],
+      "additionalProperties": false
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "module": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        },
+        "permitted_edits": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "feature_flag_default": {
+          "const": false
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "minItems": 1,
+          "maxItems": 16
+        }
+      },
+      "required": [
+        "module",
+        "permitted_edits",
+        "feature_flag_default",
+        "dependencies"
+      ],
+      "additionalProperties": false
+    },
+    "verification": {
+      "type": "object",
+      "properties": {
+        "classification": {
+          "const": "synthetic"
+        },
+        "cases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "request": {
+                "type": "object"
+              },
+              "initial_globals": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256,
+                  "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+                },
+                "additionalProperties": {}
+              },
+              "baseline": {
+                "type": "object",
+                "properties": {
+                  "result": {},
+                  "exception": {
+                    "anyOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      }
+                    ]
+                  },
+                  "calls": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256,
+                      "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+                    },
+                    "additionalProperties": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1024
+                    }
+                  },
+                  "globals": {
+                    "type": "object",
+                    "additionalProperties": {}
+                  }
+                },
+                "required": [
+                  "result",
+                  "exception",
+                  "calls",
+                  "globals"
+                ],
+                "additionalProperties": false
+              },
+              "active": {
+                "type": "object",
+                "properties": {
+                  "result": {},
+                  "exception": {
+                    "anyOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      }
+                    ]
+                  },
+                  "calls": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256,
+                      "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+                    },
+                    "additionalProperties": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1024
+                    }
+                  },
+                  "globals": {
+                    "type": "object",
+                    "additionalProperties": {}
+                  }
+                },
+                "required": [
+                  "result",
+                  "exception",
+                  "calls",
+                  "globals"
+                ],
+                "additionalProperties": false
+              },
+              "assessment_label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            },
+            "required": [
+              "id",
+              "request",
+              "initial_globals",
+              "baseline",
+              "active",
+              "assessment_label"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 64
+        },
+        "timeout_s": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300
+        },
+        "baseline_command": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "minItems": 0,
+          "maxItems": 64
+        },
+        "modified_command": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "minItems": 0,
+          "maxItems": 64
+        },
+        "entry_point": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+        },
+        "effect_symbols": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+          },
+          "uniqueItems": true,
+          "maxItems": 64
+        }
+      },
+      "required": [
+        "classification",
+        "cases",
+        "timeout_s",
+        "baseline_command",
+        "modified_command",
+        "entry_point",
+        "effect_symbols"
+      ],
+      "additionalProperties": false
+    },
+    "authorization_context": {
+      "type": "object",
+      "properties": {
+        "reference": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "minItems": 0,
+          "maxItems": 32
+        },
+        "not_authority": {
+          "const": true
+        }
+      },
+      "required": [
+        "reference",
+        "scopes",
+        "not_authority"
+      ],
+      "additionalProperties": false
+    },
+    "binding_review": {
+      "type": "object",
+      "properties": {
+        "approved": {
+          "const": true
+        },
+        "source_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "pattern": {
+          "enum": [
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F",
+            "G",
+            "H",
+            "I",
+            "J",
+            "K",
+            "L",
+            "M"
+          ]
+        },
+        "reviewer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "approved",
+        "source_sha256",
+        "pattern",
+        "reviewer",
+        "reason"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schema_version",
+    "candidate_id",
+    "experiment_id",
+    "inventory_sha256",
+    "inventory_fingerprint",
+    "source",
+    "recipe",
+    "bindings",
+    "questions",
+    "primary_question",
+    "evidence_question",
+    "label_actions",
+    "policy",
+    "runtime",
+    "output",
+    "verification",
+    "authorization_context",
+    "binding_review"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:implementation-spec:1.0",
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "recipe": {
+            "properties": {
+              "id": {
+                "const": "python.A"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "policy": {
+            "type": "object",
+            "properties": {
+              "fallback": {
+                "enum": [
+                  "baseline",
+                  "block"
+                ]
+              }
+            },
+            "required": [
+              "fallback"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "recipe": {
+            "properties": {
+              "id": {
+                "const": "python.B"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "policy": {
+            "type": "object",
+            "properties": {
+              "fallback": {
+                "const": "block"
+              }
+            },
+            "required": [
+              "fallback"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "recipe": {
+            "properties": {
+              "id": {
+                "const": "python.C"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "policy": {
+            "type": "object",
+            "properties": {
+              "fallback": {
+                "enum": [
+                  "baseline",
+                  "block"
+                ]
+              }
+            },
+            "required": [
+              "fallback"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "recipe": {
+            "properties": {
+              "id": {
+                "const": "python.D"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "policy": {
+            "type": "object",
+            "properties": {
+              "fallback": {
+                "enum": [
+                  "baseline",
+                  "block"
+                ]
+              },
+              "max_items": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1024
+              },
+              "preserve_contradictions": {
+                "const": true
+              },
+              "preserve_uncertain": {
+                "const": true
+              }
+            },
+            "required": [
+              "fallback",
+              "max_items",
+              "preserve_contradictions",
+              "preserve_uncertain"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "recipe": {
+            "properties": {
+              "id": {
+                "const": "python.E"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "policy": {
+            "type": "object",
+            "properties": {
+              "fallback": {
+                "const": "block"
+              },
+              "success_action": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "failure_action": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "postconditions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256,
+                      "pattern": "^(before|after|outcome)(\\.[A-Za-z_][A-Za-z_0-9]*)+$"
+                    },
+                    "operation": {
+                      "enum": [
+                        "equals",
+                        "increased_by"
+                      ]
+                    },
+                    "value": {}
+                  },
+                  "required": [
+                    "path",
+                    "operation",
+                    "value"
+                  ],
+                  "additionalProperties": false
+                },
+                "minItems": 1,
+                "maxItems": 32
+              }
+            },
+            "required": [
+              "fallback",
+              "success_action",
+              "failure_action",
+              "postconditions"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "recipe": {
+            "properties": {
+              "id": {
+                "const": "python.F"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "policy": {
+            "type": "object",
+            "properties": {
+              "fallback": {
+                "enum": [
+                  "baseline",
+                  "block"
+                ]
+              },
+              "max_steps": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1024
+              }
+            },
+            "required": [
+              "fallback",
+              "max_steps"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "recipe": {
+            "properties": {
+              "id": {
+                "const": "python.G"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "policy": {
+            "type": "object",
+            "properties": {
+              "fallback": {
+                "enum": [
+                  "baseline",
+                  "block"
+                ]
+              },
+              "max_steps": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1024
+              }
+            },
+            "required": [
+              "fallback",
+              "max_steps"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "recipe": {
+            "properties": {
+              "id": {
+                "const": "python.H"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "policy": {
+            "type": "object",
+            "properties": {
+              "fallback": {
+                "enum": [
+                  "baseline",
+                  "block"
+                ]
+              },
+              "max_items": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1024
+              },
+              "choice_field": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+              }
+            },
+            "required": [
+              "fallback",
+              "max_items",
+              "choice_field"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "recipe": {
+            "properties": {
+              "id": {
+                "const": "python.I"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "policy": {
+            "type": "object",
+            "properties": {
+              "fallback": {
+                "const": "block"
+              },
+              "max_retries": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1024
+              }
+            },
+            "required": [
+              "fallback",
+              "max_retries"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "recipe": {
+            "properties": {
+              "id": {
+                "const": "python.J"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "policy": {
+            "type": "object",
+            "properties": {
+              "fallback": {
+                "const": "block"
+              },
+              "max_concurrent": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 64
+              }
+            },
+            "required": [
+              "fallback",
+              "max_concurrent"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "recipe": {
+            "properties": {
+              "id": {
+                "const": "python.K"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "policy": {
+            "type": "object",
+            "properties": {
+              "fallback": {
+                "enum": [
+                  "baseline",
+                  "block"
+                ]
+              },
+              "failed_checks_action": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            },
+            "required": [
+              "fallback",
+              "failed_checks_action"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "recipe": {
+            "properties": {
+              "id": {
+                "const": "python.L"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "policy": {
+            "type": "object",
+            "properties": {
+              "fallback": {
+                "const": "block"
+              },
+              "mutating_actions": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                },
+                "minItems": 1,
+                "maxItems": 32
+              },
+              "nonmutating_actions": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                },
+                "minItems": 1,
+                "maxItems": 32
+              }
+            },
+            "required": [
+              "fallback",
+              "mutating_actions",
+              "nonmutating_actions"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "recipe": {
+            "properties": {
+              "id": {
+                "const": "python.M"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "policy": {
+            "type": "object",
+            "properties": {
+              "fallback": {
+                "enum": [
+                  "baseline",
+                  "block"
+                ]
+              },
+              "failed_claims_action": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            },
+            "required": [
+              "fallback",
+              "failed_claims_action"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    }
+  ]
+}

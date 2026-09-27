@@ -119,11 +119,59 @@ def parser():
     s.add_argument("--plan",required=True); s.add_argument("--input",required=True); s.add_argument("--out",required=True)
     s.add_argument("--expected-digest"); s.add_argument("--as-of",help="Explicit UTC evaluation time for reproducible offline replay")
     s.add_argument("--enforce",action="store_true",help="Exit 3 unless observed, pinned, complete and fresh monitoring passes")
+    s=common("implementation-recipes", "List executable bounded Python recipes and unsupported shapes")
+    s.add_argument("--json",action="store_true",help="Machine-readable catalog (also the default)")
+    s=common("implement-plan", "Derive a reviewed, default-off host patch without executing or changing the target")
+    s.add_argument("--repo",required=True); s.add_argument("--inventory",required=True)
+    s.add_argument("--candidate",required=True); s.add_argument("--spec",required=True); s.add_argument("--out",required=True)
+    s=common("implement-verify", "Execute separately authorized synthetic host checks and record observed evidence")
+    s.add_argument("--phase",choices=["baseline","modified"],required=True)
+    s.add_argument("--repo",required=True); s.add_argument("--bundle",required=True)
+    s.add_argument("--approve-execution",action="store_true")
+    s.add_argument("--baseline-sha256",help="Externally retained baseline receipt SHA256; required for modified checks")
+    s.add_argument("--out",help="Optional receipt copy outside the target; the private bundle always retains its receipt")
+    s=common("implement-apply", "Apply the exact reviewed bundle after independently retained baseline evidence")
+    s.add_argument("--repo",required=True); s.add_argument("--bundle",required=True)
+    s.add_argument("--approve",required=True,help="Reviewed implementation bundle digest, not an authorization inferred from a file")
+    s.add_argument("--baseline-sha256",required=True)
+    s=common("implement-status", "Recompute file/integrity state without executing target code")
+    s.add_argument("--repo",required=True); s.add_argument("--bundle",required=True)
+    s.add_argument("--trusted-receipt-sha256",help="Receipt digest from an external trusted verifier, never from an untrusted bundle")
+    s=common("implement-rollback", "Restore only matching integration-owned bytes, including interrupted applications")
+    s.add_argument("--repo",required=True); s.add_argument("--bundle",required=True)
+    s.add_argument("--approve",required=True,help="Separately reviewed rollback digest returned by status")
     return p
 
 
 def execute(args):
     cfg=load_config(getattr(args,"config",None)); cmd=args.command
+    if cmd=="implementation-recipes":
+        from .integrations.recipes import recipe_catalog
+        return recipe_catalog()
+    if cmd=="implement-plan":
+        from .integrations.lifecycle import plan_implementation
+        return plan_implementation(args.repo,read_json(args.inventory),args.candidate,read_json(args.spec),args.out)
+    if cmd=="implement-verify":
+        from .integrations.verification import verify_implementation
+        if args.out:
+            output=Path(args.out).absolute()
+            if any(p.is_symlink() for p in (output,*output.parents)) or output.resolve().is_relative_to(Path(args.repo).resolve()):
+                raise InputError("Receipt copies must remain outside the target and cannot traverse symlinks")
+            if output.resolve().is_relative_to(Path(args.bundle).resolve()):
+                raise InputError("Use the bundle's automatic receipt instead of overwriting an internal artifact")
+        result=verify_implementation(args.repo,args.bundle,args.phase,approve_execution=args.approve_execution,
+                                     baseline_sha256=args.baseline_sha256)
+        if args.out: write_json(args.out,read_json(result["receipt_path"]))
+        return result
+    if cmd=="implement-apply":
+        from .integrations.lifecycle import apply_implementation
+        return apply_implementation(args.repo,args.bundle,args.approve,baseline_sha256=args.baseline_sha256)
+    if cmd=="implement-status":
+        from .integrations.lifecycle import implementation_status
+        return implementation_status(args.repo,args.bundle,trusted_receipt_sha256=args.trusted_receipt_sha256)
+    if cmd=="implement-rollback":
+        from .integrations.lifecycle import rollback_implementation
+        return rollback_implementation(args.repo,args.bundle,args.approve)
     if cmd in ("scan","architecture"):
         from .scanner import scan_repo
         from .reports import write_reports
@@ -230,7 +278,14 @@ def execute(args):
         if args.kind=="config": data={"jev_analysis":load_config(args.input)}
         else: data=_records(args.input)
         rows=data if isinstance(data,list) and args.kind in ("run","decision","trace","opportunity","monitor-outcome","deployment-gate") else [data]
-        for row in rows: jsonschema.Draft202012Validator(schema).validate(row)
+        for row in rows:
+            jsonschema.Draft202012Validator(schema).validate(row)
+            if args.kind=="implementation-spec":
+                from .integrations.contracts import validate_spec
+                validate_spec(row)
+            if args.kind in ('implementation-plan','implementation-receipt'):
+                from .contracts import verify
+                verify(row)
         return {"status":"valid","kind":args.kind,"records":len(rows)}
     if cmd=="diff":
         from .lifecycle import compare_snapshots, render_change_report
@@ -295,13 +350,17 @@ def main(argv=None):
     try:
         result=execute(args)
         # Artifacts contain details; concise stdout remains useful in scripts.
-        if getattr(args,"out",None) and args.command not in ("scan","architecture","report","scaffold"):
+        if getattr(args,"out",None) and args.command not in ("scan","architecture","report","scaffold","implement-plan","implement-verify"):
             display={"status":"written","output":args.out}
             if isinstance(result,dict):
                 for k in ("recommendation","pair_count","evidence_type","status"): 
                     if k in result: display[k]=result[k]
         else: display=result
         print(json.dumps(display,indent=2,allow_nan=False))
+        if args.command=="implement-verify" and result.get("status")=="verification_failed":
+            return 3
+        if args.command=="implement-status" and result.get("status") in ("blocked_recovery","verification_failed"):
+            return 3
         if getattr(args,"enforce",False):
             passed=(result.get("recommendation")=="keep" if args.command=="study-evaluate" else
                     result.get("eligible_for_continued_canary") is True if args.command=="monitor-check" else
@@ -310,7 +369,10 @@ def main(argv=None):
         return 0
     except (InputError,ValueError,KeyError,TypeError,OSError) as exc:
         # Input errors include only invariant names and paths, never request bodies or credentials.
-        print(json.dumps({"error":type(exc).__name__,"message":str(exc)}),file=sys.stderr)
+        error={"error":type(exc).__name__,"message":str(exc)}
+        if args.command.startswith("implement-"):
+            error["status"]=getattr(exc,"implementation_status","blocked")
+        print(json.dumps(error),file=sys.stderr)
         return 2
     except Exception as exc:
         # jsonschema validation errors may embed sensitive instance content; do not print it.

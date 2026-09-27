@@ -27,7 +27,7 @@ def make_patch_plan(root: str | Path, changes: list[dict], candidate_ids: list[s
         new=change.get("new_content")
         if not isinstance(new,str) or len(new.encode())>2_000_000: raise InputError("New content must be bounded text")
         if p.exists() and not p.is_file(): raise InputError("Patch target is not a regular file")
-        old=p.read_text(encoding="utf-8") if p.exists() else ""
+        old=p.read_bytes().decode("utf-8") if p.exists() else ""
         entries.append({"file":rel,"operation":"update" if p.exists() else "create",
                         "old_sha256":file_hash(p) if p.exists() else None,
                         "new_sha256":hashlib.sha256(new.encode()).hexdigest(),"new_content":new,
@@ -38,7 +38,7 @@ def make_patch_plan(root: str | Path, changes: list[dict], candidate_ids: list[s
     return body
 
 
-def apply_patch_plan(root: str | Path, plan: dict, approval: str) -> dict:
+def apply_patch_plan(root: str | Path, plan: dict, approval: str, *, progress=None) -> dict:
     root=Path(root).resolve()
     body={k:v for k,v in plan.items() if k!="plan_digest"}
     if digest(body)!=plan.get("plan_digest") or approval!=plan.get("plan_digest"):
@@ -59,7 +59,9 @@ def apply_patch_plan(root: str | Path, plan: dict, approval: str) -> dict:
             p=safe_child(root,c["file"])
             # Recheck just before writing. For concurrent writers use a dedicated worktree.
             if (file_hash(p) if p.exists() else None)!=c["old_sha256"]: raise InputError("Concurrent source change")
+            if progress is not None: progress("write_started", c)
             atomic_text(p,c["new_content"]); written.append(c)
+            if progress is not None: progress("write_completed", c)
     except Exception:
         for c in reversed(written):
             p=safe_child(root,c["file"])
@@ -68,7 +70,7 @@ def apply_patch_plan(root: str | Path, plan: dict, approval: str) -> dict:
                 if original is None: p.unlink()
                 else:
                     # Original text was UTF-8 checked during planning; preserve bytes/newlines exactly.
-                    p.write_bytes(original)
+                    atomic_text(p,original.decode("utf-8"))
         raise
     return {"status":"applied","plan_digest":plan["plan_digest"],"files":[c["file"] for c in written],
             "tests_executed":False,"push_merge_deploy":False,
@@ -87,15 +89,48 @@ def prepare_worktree(root: str | Path, destination: str | Path, branch: str, app
 
 
 def run_authorized_tests(root, command: list[str], *, approve_execution: bool=False, timeout_s: int=120):
+    """Authorized argv execution with bounded capture, not a security sandbox."""
+    import signal
+    import threading
     if approve_execution is not True: raise InputError("Tests execute repository code and require explicit execution authorization")
     if not command or any(not isinstance(x,str) or not x for x in command): raise InputError("Expected a command argument vector, not a shell string")
+    if type(timeout_s) not in (int,float) or not 0 < timeout_s <= 3600: raise InputError("Test timeout must be in (0,3600] seconds")
     env={k:v for k,v in os.environ.items() if not re.search(r"(?i)api.?key|secret|password|token",k)}
-    try:
-        p=subprocess.run(command,cwd=Path(root).resolve(),env=env,capture_output=True,text=True,timeout=timeout_s,shell=False)
-        return {"command":command,"returncode":p.returncode,"stdout":redact(p.stdout[-20000:]),"stderr":redact(p.stderr[-20000:]),"status":"passed" if p.returncode==0 else "failed",
-                "sandboxed":False,"warning":"Environment filtering is not a sandbox; use an isolated runner for untrusted code"}
-    except subprocess.TimeoutExpired:
-        return {"command":command,"status":"timeout","returncode":None,"sandboxed":False}
+    process=subprocess.Popen(command,cwd=Path(root).resolve(),env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE,
+                             shell=False,start_new_session=os.name=="posix")
+    streams=[bytearray(),bytearray()]; counters=[0,0]; output_limit=threading.Event()
+    def terminate():
+        try:
+            if os.name=="posix": os.killpg(process.pid,signal.SIGKILL)
+            else: process.kill()
+        except ProcessLookupError: pass
+    def drain(index,pipe):
+        try:
+            while True:
+                chunk=pipe.read(4096)
+                if not chunk: break
+                counters[index]+=len(chunk)
+                streams[index].extend(chunk)
+                if len(streams[index])>20000: del streams[index][:-20000]
+                if counters[index]>1_000_000:
+                    output_limit.set();terminate();break
+        finally: pipe.close()
+    workers=[threading.Thread(target=drain,args=(i,pipe),daemon=True) for i,pipe in enumerate((process.stdout,process.stderr))]
+    for worker in workers:worker.start()
+    timeout=False
+    try:process.wait(timeout=timeout_s)
+    except subprocess.TimeoutExpired:timeout=True;terminate();process.wait()
+    for worker in workers:worker.join(timeout=2)
+    descendants_terminated=any(worker.is_alive() for worker in workers)
+    if descendants_terminated:
+        terminate()
+        for worker in workers:worker.join(timeout=2)
+    return {"command":command,"returncode":None if timeout else process.returncode,
+            "stdout":redact(bytes(streams[0]).decode("utf-8",errors="replace")),
+            "stderr":redact(bytes(streams[1]).decode("utf-8",errors="replace")),
+            "status":"timeout" if timeout else "passed" if process.returncode==0 and not output_limit.is_set() and not descendants_terminated else "failed",
+            "output_limit_exceeded":output_limit.is_set(),"descendants_terminated":descendants_terminated,"sandboxed":False,
+            "warning":"Environment filtering and bounded capture are not a sandbox; use an isolated runner for untrusted code"}
 
 
 def scaffold_integration(scan: dict, candidate_id: str, output: str | Path) -> dict:

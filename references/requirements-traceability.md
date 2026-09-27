@@ -82,3 +82,20 @@ This extends, rather than replaces, the original section-by-section map. No scor
 | 23, 26, 29, 34, 38 | Complete cohort-aware fixed windows; unknown metrics, safety incidents, drift, expiry and suspend-only host hook | `monitoring.py`, `cohorts.py`, monitor commands | `test_monitoring_v12.py` |
 | 22, 26, 35 | Cached tokens do not count as new inference; unaudited responses not cached | `traces.py`, `runtime.py` | `test_cli_v12.py`, `test_budget_runtime_v12.py` |
 | 31, 33, 39–41, 47 | Six new schemas, new input templates, strict factory, executable offline end-to-end example and migration | `scripts/run_v12_demo.py`, `references/operational-evidence-v1.2.md`, `SKILL.md` | `test_cli_v12.py`, package validator |
+
+
+## Executable-integration implementation requirements (development)
+
+| Requirement | Executable components | Evidence/limits |
+|---|---|---|
+| Strict source-matched binding, review, candidate/experiment and AST anchor | `integrations/contracts.py`, `integrations/recipes.py`; implementation spec/schema copies | `test_executable_safety.py`; no imports during scan/plan; unsupported shapes rejected |
+| A–M pattern-specific host transformations | `integrations/recipes.py`, `integrations/host.py` | `test_executable_recipes.py`; all thirteen execute actual modified host entry points |
+| Explicit semantic labels, unchanged legacy receipts and shared runtime budgets | `runtime.py` optional label translation; strict generated factories | Existing runtime tests plus `test_executable_runtime.py`; no new activation bypass |
+| Exact bundle/apply/status and durable recovery | `integrations/lifecycle.py`; existing protected patch engine | `test_executable_safety.py`; exceptions, actual process termination, drift, owned-byte rollback and tampering |
+| Independent synthetic host verification and receipt trust | `integrations/probe.py`, `integrations/verification.py` | Always-true postcondition negative; observed call/effect traces; external receipt digest required for later certified status |
+| Actual commands, scripts and offline demo | `cli.py`, `scripts/implement_*.py`, `scripts/implementation_recipes.py`, `scripts/run_implementation_demo.py` | `test_executable_cli.py`; nonzero failure/blocked exits, complete CLI lifecycle |
+| Installation, strict data discovery and release parity | Packaged implementation schemas and factory imports | `test_executable_wheel.py`, `validate_package.py`; installed-wheel host lifecycle |
+| Synthetic source-matched specifications | `examples/implementation/a` through `m` and `implementation_fixtures.py` | Real scans/reviews; no final replacement function supplied by caller |
+| Support/activation boundaries | `references/executable-integrations.md` | Flat Python modules and explicit registries only; synthetic tests, not live/provider/bootstrap/benefit certification; JS/TS rewriting unsupported |
+
+Repository publication, signed commits, external review/CI and merge are delivery actions, not capabilities inferred from a local plan or test receipt. Consult the current delivery report for actions actually performed.

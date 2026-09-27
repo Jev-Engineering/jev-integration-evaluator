@@ -1,4 +1,4 @@
-# JEV Integration Evaluator 1.2.0
+# JEV Integration Evaluator 1.3.0.dev1
 
 **CompleteTech LLC · Evidence-driven integration analysis and evaluation**
 
@@ -6,9 +6,22 @@ A reusable agent skill and Python command-line toolkit for deciding **where JEV 
 
 The skill, Python distribution, and console command are named `jev-integration-evaluator`. The Python module is `jev_integration_evaluator`.
 
-The [executable implementation engineering prompt](references/executable-implementation-prompt.md) reviews the current adapter and patch tooling and specifies the source transformations, host wiring, and verification needed for automated implementations. It is a development specification; its proposed commands are not yet implemented.
+The [original executable implementation specification](references/executable-implementation-prompt.md) is retained as requirements provenance. The supported commands and deliberately bounded implementation coverage in this development build are documented in [the current support contract](references/executable-integrations.md).
 
 The default is deliberately conservative: **read-only analysis; no network; runtime off; no target code execution; no automatic adoption**. An unfamiliar repository can produce “no justified integration set.” That is a successful result, not an error.
+
+## Executable integrations in 1.3.0.dev1
+
+This development build implements **A–M Python host transformations** for the explicitly bounded `module-tail-call-v1` source shape. A strict source-matched binding spec drives generated host edits, default-off runtime wiring, exact reviewed apply, actual host-entry verification, externally anchored status and owned-byte rollback. It does not ask the caller to write the replacement function. The thirteen synthetic examples and the complete CLI demo exercise the edited hosts, not just adapter methods.
+
+```bash
+python -m jev_integration_evaluator implementation-recipes --json
+python scripts/run_implementation_demo.py --out ../jev-implementation-demo
+```
+
+Read [the executable support matrix and lifecycle](references/executable-integrations.md) before using a recipe. It documents mandatory existing host bindings, the strict source/registry shapes, the exact CLI flags, local receipt trust boundaries, interrupted recovery and limits. `examples/implementation/` contains real source-matched binding examples. Analysis and plan/status commands do not execute target code. Mutation and host verification require their distinct scopes.
+
+The verifier demonstrates **synthetic host wiring**, not application benefit or production activation. Its test runtime is deliberately injected; it does not certify a real provider/bootstrap. Unsupported Python shapes are rejected before mutation; JavaScript/TypeScript remain analysis-only. No Node runtime is needed for Python rewriting. Earlier v1.1/v1.2 validation remains historical evidence, not a claim about this development build.
 
 ## New in 1.2
 
@@ -137,7 +150,7 @@ python -m jev_integration_evaluator replay --input approved-decisions.jsonl --al
   --out approved-replay-results.json
 ```
 
-Newly generated adapters require an expiring receipt bound to the exact model, rubric, question roles, full runtime configuration, thresholds, canary scope and shared-budget limits, with independently validated held-out evidence. Existing direct constructors retain legacy defaults for compatibility. New scaffold factories also require issue/expiry timestamps and order-sensitive rubric identity; legacy direct constructors retain optional migration. The scaffold does **not** guess a correct host rewrite: an authorized agent must inspect the actual call site, map typed labels to existing behavior, add tests and apply the reviewed diff. See `references/integration-playbook.md`.
+Newly generated adapters require an expiring receipt bound to the exact model, rubric, question roles, full runtime configuration, thresholds, canary scope and shared-budget limits, with independently validated held-out evidence. Existing direct constructors retain legacy defaults for compatibility. New scaffold factories also require issue/expiry timestamps and order-sensitive rubric identity; legacy direct constructors retain optional migration. The legacy `scaffold` command remains a proposal-adapter generator. For a supported, reviewed source shape, use `implement-plan` to derive the actual call-site edit and run the connected lifecycle. Unsupported shapes require separate implementation, not an automatic broad textual replacement. See `references/executable-integrations.md` and `references/integration-playbook.md`.
 
 ## Support boundaries
 
@@ -145,7 +158,7 @@ Static analysis cannot recover every reflective/dynamic call, macro, callback, g
 
 A socket timeout and bounded thread pool are not hard real-time guarantees. The test runner is not a security sandbox; use an isolated runner for untrusted projects. Externally retained hash/length checkpoints detect mismatching audit prefixes, but hash chains do not authenticate an adversarial writer. Frozen local manifests cannot prove an untouched holdout or independent trials; their statistical assumptions remain explicit. API fixtures and receipts can be forged by an untrusted editor; authorization and independent experiment review remain host responsibilities.
 
-Validation results for this package are in `validation/VALIDATION.md`. Live JEV accuracy, cost, latency and calibration were not measured during package construction. The tested model interface uses mocked HTTP and exact local fixtures.
+Current development validation is in `validation/executable-v1.3.0.dev1/REPORT.md`. The other `validation/` records are retained verbatim from the supplied historical v1.2.0 archive, including its pre-rename names, and are not measurements for this build. Live JEV accuracy, cost, latency and calibration were not measured during package construction. The tested model interface uses mocked HTTP and exact local fixtures.
 
 ## License
 

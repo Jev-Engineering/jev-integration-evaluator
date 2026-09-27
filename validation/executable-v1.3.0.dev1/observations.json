@@ -1,0 +1,67 @@
+{
+  "version": "1.3.0.dev1",
+  "observed_at_utc": "2026-09-27T05:14:44.114555+00:00",
+  "delivery_status": "tested_local_development_implementation_not_published",
+  "evidence_classification": "synthetic_host_behavior_and_local_tool_observed_qualification",
+  "source_base_commit": "075f8f39eb06283ded15f71c08aa243cea04acd4",
+  "engine_identity": "336290228d4fdc3ca413b36cb76b0101e513e1ad4ced8874ddddc6b2021ff994",
+  "environment": {
+    "python": "3.13.5",
+    "platform": "Linux-6.18.44-x86_64-with-glibc2.41",
+    "node": "22.16.0",
+    "typescript": "5.8.3"
+  },
+  "regressions": {
+    "passed": 556,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 125.94,
+    "log": "pytest-observed.log",
+    "final_package_rerun": true
+  },
+  "trusted_typescript_parser": {
+    "passed": 31,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 3.94,
+    "rewrite_support": false
+  },
+  "implementation_demo": {
+    "status": "passed",
+    "recipe_count": 13,
+    "baseline_cases": 21,
+    "modified_cases": 63,
+    "passed_modified_cases": 63,
+    "recipe_contract_assertions": 52,
+    "all_targets_rolled_back": true,
+    "remaining_applied_unverified_demo_targets": 0
+  },
+  "package_validation": {
+    "schemas": 27,
+    "synthetic_records": 321,
+    "source_matched_binding_examples": 13
+  },
+  "installed_wheel_host_lifecycle": "passed_as_part_of_regression_suite",
+  "historical_validation": {
+    "archive": "jev-placement-skill-1.2.0.zip",
+    "verbatim_files_preserved": 348
+  },
+  "not_qualified": [
+    "live_provider_bootstrap",
+    "production_activation",
+    "application_benefit",
+    "Windows",
+    "Python 3.10",
+    "Python 3.12",
+    "remote_CI_for_this_change",
+    "signed_commit_PR_merge"
+  ],
+  "trust_boundary": "Summary is observed local metadata, not an authenticated execution receipt. Later status certification requires an independently trusted receipt hash/provenance; no hostile-code attestation.",
+  "delivered_wheel_smoke": {
+    "status": "passed",
+    "installed_import": true,
+    "engine_identity_matches_demo": true,
+    "schemas": 27,
+    "recipes": 13
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "source_base_commit": "075f8f39eb06283ded15f71c08aa243cea04acd4",
+  "verified_upstream_baseline_trees": {
+    "jev_integration_evaluator": "04b3e877e3a03bd10f35abcd16d3c6eb1ef78b6e",
+    "schemas": "04c9eef2e9f69be1f2f1d1e8e5998d3a1e9b6c5a",
+    "scripts": "8a70ea35295f0830221df42813b11ed5d72b1865",
+    "tests": "3794b3c89c04cd0118f727ce70927d297f26bd72",
+    ".github": "0e5905d35798bf9eaa766452d8fa6e1f63dffb36",
+    "examples": "408a5dd9c0c0a22b91ecf0546fa354c72e8a871f",
+    "references": "445b37ad42df61fe17d542aa35da74c04a088fec"
+  },
+  "historical_archive": "jev-placement-skill-1.2.0.zip",
+  "verbatim_historical_files": 348,
+  "engine_identity": "336290228d4fdc3ca413b36cb76b0101e513e1ad4ced8874ddddc6b2021ff994"
+}

@@ -1,0 +1,190 @@
+{
+  "type": "object",
+  "properties": {
+    "classification": {
+      "const": "synthetic"
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "request": {
+            "type": "object"
+          },
+          "initial_globals": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+            },
+            "additionalProperties": {}
+          },
+          "baseline": {
+            "type": "object",
+            "properties": {
+              "result": {},
+              "exception": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  }
+                ]
+              },
+              "calls": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256,
+                  "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+                },
+                "additionalProperties": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1024
+                }
+              },
+              "globals": {
+                "type": "object",
+                "additionalProperties": {}
+              }
+            },
+            "required": [
+              "result",
+              "exception",
+              "calls",
+              "globals"
+            ],
+            "additionalProperties": false
+          },
+          "active": {
+            "type": "object",
+            "properties": {
+              "result": {},
+              "exception": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  }
+                ]
+              },
+              "calls": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256,
+                  "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+                },
+                "additionalProperties": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1024
+                }
+              },
+              "globals": {
+                "type": "object",
+                "additionalProperties": {}
+              }
+            },
+            "required": [
+              "result",
+              "exception",
+              "calls",
+              "globals"
+            ],
+            "additionalProperties": false
+          },
+          "assessment_label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        },
+        "required": [
+          "id",
+          "request",
+          "initial_globals",
+          "baseline",
+          "active",
+          "assessment_label"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 64
+    },
+    "timeout_s": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 300
+    },
+    "baseline_command": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "minItems": 0,
+      "maxItems": 64
+    },
+    "modified_command": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "minItems": 0,
+      "maxItems": 64
+    },
+    "entry_point": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+    },
+    "effect_symbols": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256,
+        "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+      },
+      "uniqueItems": true,
+      "maxItems": 64
+    }
+  },
+  "required": [
+    "classification",
+    "cases",
+    "timeout_s",
+    "baseline_command",
+    "modified_command",
+    "entry_point",
+    "effect_symbols"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:implementation-tests:1.0"
+}
