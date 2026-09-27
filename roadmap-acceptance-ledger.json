@@ -416,7 +416,9 @@
         "https://github.com/Jev-Engineering/jev-integration-evaluator/pull/27"
       ],
       "commit": [],
-      "review": [],
+      "review": [
+        "https://github.com/Jev-Engineering/jev-integration-evaluator/pull/27#issuecomment-5860945528"
+      ],
       "merge_sha": null,
       "post_merge_checks": [],
       "native_blocked_by": [
@@ -426,7 +428,7 @@
         "jev_integration_evaluator/integrations/verification.py",
         ".github/workflows/ci.yml"
       ],
-      "current_finding": "Draft c16c71e; generic CI green but privileged cases unqualified, no independent review, no session/receipt integration."
+      "current_finding": "Draft c16c71e; separate Codex source review posted with blocking findings. Generic CI green but privileged cases unqualified, no final independent security qualification or session/receipt integration."
     },
     {
       "number": 9,
