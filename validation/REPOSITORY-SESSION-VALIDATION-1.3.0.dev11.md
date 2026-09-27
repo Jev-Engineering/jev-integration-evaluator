@@ -21,7 +21,7 @@ or demonstrate benefit. Unsupported source shapes remain unsupported.
 
 ## Integrated checks
 
-On the current checkout under Linux/CPython 3.13, the full suite passed:
+On the current checkout under WSL Linux/CPython 3.12.3, the full suite passed:
 **1,438 passed, four skipped**. Three skips exercise native non-POSIX rejection;
 the fourth requires trusted Node/TypeScript tooling absent locally. The 68
 supplied session and installed-wheel tests passed separately on the current tree.
