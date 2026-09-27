@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:repository-run-context-v1:1.0",
+  "type": "object",
+  "properties": {
+    "objective": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "saved_answers": {
+      "type": "object"
+    },
+    "policy": {
+      "type": "object"
+    },
+    "bounds": {
+      "type": "object",
+      "properties": {
+        "max_attempts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3
+        },
+        "max_events": {
+          "type": "integer",
+          "minimum": 16,
+          "maximum": 128
+        },
+        "max_cases": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64
+        },
+        "max_timeout_s": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 120
+        }
+      },
+      "required": [
+        "max_attempts",
+        "max_events",
+        "max_cases",
+        "max_timeout_s"
+      ],
+      "additionalProperties": false
+    },
+    "adapter": {
+      "const": "recorded-reviewed-input-v1"
+    }
+  },
+  "required": [
+    "objective",
+    "saved_answers",
+    "policy",
+    "bounds",
+    "adapter"
+  ],
+  "additionalProperties": false
+}

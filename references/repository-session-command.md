@@ -1,0 +1,199 @@
+# Repository session command — partial issue #4
+
+Contract versions: `repository-session-v1`, `repository-run-context-v1`, and
+`repository-run-scope-v1`, all schema version `1.0`. This is a local contribution
+for issue #4, not completion of issue #4 or epic #3. The historical supplied
+checkpoint was tested on an assembled source tree; this release has its own
+qualification in `validation/REPOSITORY-SESSION-VALIDATION-1.3.0.dev11.md`.
+
+## Commands and trust boundary
+
+Path-only preparation is read-only:
+
+```sh
+python -m jev_integration_evaluator.repository_run /absolute/target
+python scripts/run_repository.py /absolute/target
+jev-integration-evaluator repository-run /absolute/target
+```
+
+It uses the existing bounded static discovery implementation. It imports no target
+module, runs no target commands, creates no session or bundle, and grants no scope.
+It reports the discovery classification rather than interpreting an empty scan as
+proof of no useful placement. A fully source-reviewed negative conclusion is not
+wired into this contribution.
+
+The same command accepts a caller-selected private session directory outside the
+target, an optional context, recorded reviewed inputs, and a separate scope:
+
+```sh
+python -m jev_integration_evaluator.repository_run /absolute/target \
+  --session /caller/private/run \
+  --context /caller/context.json \
+  --prepared /caller/prepared-response.json \
+  --scope /caller/prepare-scope.json \
+  --stop-after plan
+```
+
+The context contains an optional objective, saved answers, explicit resource
+bounds, discovery policy, and the fixed `recorded-reviewed-input-v1` adapter.
+The JSON examples deliberately grant nothing. Zero hashes and the example
+reference are not authorization. Keep secrets out of inputs: use credential
+references, not credentials. The caller-controlled session parent must not be
+writable by an untrusted target or another untrusted principal.
+
+Recorded responses have exactly `schema_version`, `adapter`, `inventory`, and
+`spec` fields. The existing deterministic implementation-spec, inventory, recipe,
+source, finite-label, runtime-off, and observation validators retain authority.
+The adapter does not evaluate Python, commands, module identifiers or expressions
+from a response. It does not implement autonomous review or draft policy and
+callbacks; issue #6 remains open. Saved answers are retained verbatim, not treated
+as implicit grants or automatically inferred bindings.
+
+Planning generates a private bundle and returns its digest for review. It does
+not approve its own generated diff. Supply a separately reviewed scope with that
+exact digest and the externally retained returned session head:
+
+```sh
+python -m jev_integration_evaluator.repository_run /absolute/target \
+  --session /caller/private/run \
+  --scope /caller/reviewed-execution-and-mutation-scope.json
+```
+
+With baseline, apply and modified-verification grants, this invocation calls the
+existing actual host lifecycle. Alternatively, supply an already reviewed bundle
+with `--bundle` to a fresh session and authorize its exact digest; a single
+invocation can then perform baseline, apply and verification. The new session
+still does not gain authority from a success-shaped file inside that bundle.
+
+`--stop-after baseline`, `apply` and `modified` expose explicit checkpoints. All
+continuations use the same command and preserve the context when it is omitted.
+A changed supplied objective, answer, bound, adapter or scan policy is rejected,
+not silently substituted. To change the review context or accepted source, use a
+new reviewed run; automated semantic replanning is not implemented here.
+
+## Authorization and receipts
+
+Scope is external to the target and independent of the agent response. The strict
+scope contract identifies repository, context, bundle, caller reference, execution
+classification, and individual grants. Every effectful resume checks an exact
+session head retained through a caller-trusted channel. A hash read back from the
+same potentially hostile journal does not authenticate that journal.
+
+Stored authorization references record provenance but cannot authorize a later
+invocation. Stored receipt hashes are usable only under an externally anchored
+session, or through direct observations in the current invocation. An unanchored
+read of a completed session returns `recorded_untrusted`, never `verified`.
+
+Each completed baseline and modified-verification attempt is also copied into an
+exclusive, mode-0600 private receipt archive before completing the session stage.
+Copies are byte-checked and fsynced. Failed schedules remain separately addressable
+when a retry replaces the core engine's current receipt. Archived names contain
+only a fixed phase, bounded attempt number and content hash. Reopening the session
+checks those archived bytes, their file type, ownership, link count and permissions.
+Do not publish these archives or the target's source/preimages.
+
+The journal records immutable run and repository identities, bounded source/config
+hashes and modes, engine identity, reviewed input digest, objective and answers,
+stage, pending intent, attempts, failure history, owned bundle, authorization
+references and receipt history. It uses a locked append-only hash chain and requests
+file and directory fsync before effects. This is integrity/recovery machinery, not
+cryptographic authentication, independent execution attestation, an OS sandbox, or
+power-loss qualification of an arbitrary filesystem.
+
+## Interruption, retry, cancellation and recovery
+
+A session lock prevents two writers to the same session. A torn or modified journal
+is preserved and rejected, never auto-truncated. The engine's own journal and
+exact owned bytes are reconciled before resuming; prior constraints remain intact.
+
+A finished plan can be adopted after interruption only when its source, full
+artifacts, prepared response digest, engine and final planning journal agree.
+Interrupted incomplete read-only preparation requires `--retry`, the same reviewed
+proposal, a fresh externally anchored prepare scope and an available attempt.
+Its partial private directory remains untouched; the next attempt gets a distinct
+owned path. This is bounded retry of the same reviewed preparation, not a new
+semantic replan or permission to discard a failed attempt.
+
+A completed apply followed by a process crash is adopted without reapplying it.
+Partial application never becomes verified. Baseline/modified receipt recovery
+requires an explicitly supplied external receipt anchor and a matching completed
+engine journal. Both passed and failed completed schedules are retained; recovered
+failure remains failure, and a retry still requires `--retry` and scope. Interrupted
+execution without independently retained completion evidence stays blocked rather
+than replaying effects.
+
+```sh
+# Stop exposure/progression; cancellation does not undo an already attempted effect.
+python -m jev_integration_evaluator.repository_run /absolute/target \
+  --session /caller/private/run --cancel
+
+# Recovery requires the exact owned rollback digest and separate rollback scope.
+python -m jev_integration_evaluator.repository_run /absolute/target \
+  --session /caller/private/run --recover --scope /caller/rollback-scope.json
+```
+
+Cancellation preserves ownership, history and receipts and blocks normal resume.
+Explicit owned rollback remains available. The existing engine refuses changed
+owned bytes or modes, preserves unrelated concurrent edits, and never restores
+unowned paths. A rolled-back bundle stays historical; reapplication needs a fresh
+source review and run. A session lock is not cross-bundle repository coordination;
+composite transactions and cross-worktree ownership remain issue #13.
+
+## Bounds and coverage
+
+Default bounds are two attempts per operation, 128 journal events, 64 scheduled
+input cases and a 60-second per-case/per-command verification deadline. Strict
+ceilings are three attempts, 128 events, 64 input cases and 120 seconds. Baseline
+executes one mode per case; modified verification executes off, shadow and fixture
+active modes. These are finite schedule bounds, not a CPU, memory or deployment-
+wide spending guarantee. The journal is capped at 64 MB and each record at 1 MB;
+individual archived execution receipts are capped at 64 MB, at most six receipts.
+No model/provider spend is enabled by these limits.
+
+Snapshots cover the existing bounded source/configuration policy, not every
+repository byte, arbitrary asset, external dependency or installed environment.
+Source-byte, mode, added-source and removed-source drift invalidate the decision.
+Unsupported language/parser paths remain explicit. Complete arbitrary-repository
+snapshotting and native environment contracts still require the remaining roadmap.
+
+Execution is **trusted-host synthetic verification** only. Requesting an isolated
+backend fails with `independent_isolation_backend_unsupported`, without silently
+executing on the host. The current core probe injects its fixture runtime; this
+does not prove actual application bootstrap or provider connectivity. No existing
+Python recipe is generalized, and no methods, async seams, package rewriting,
+JS/TS runtime, distributed budget, production activation or benefit is advertised.
+
+Local session qualification targets Linux/Python 3.13. Other interpreters,
+filesystems, Windows/macOS and hosted jobs must be qualified separately. The
+session filesystem implementation explicitly rejects non-POSIX execution.
+
+## Qualification commands
+
+```sh
+python -m pytest -q tests/test_repository_run.py tests/test_repository_run_wheel.py
+python scripts/run_repository_session_demo.py --out /fresh/private/session-demo
+python -m pytest -q
+python scripts/validate_package.py
+python scripts/run_v11_demo.py --out /fresh/private/v11
+python scripts/run_v12_demo.py --out /fresh/private/v12
+python scripts/run_implementation_demo.py --out /fresh/private/implementation
+python scripts/rebuild_checksums.py --write
+python scripts/validate_package.py --check-manifest
+```
+
+The session demo uses all thirteen existing generated A–M fixtures, validates real
+edited entrypoints through the existing verifier and rolls every target back. It
+is not the independent host corpus requested in #9. Installed-wheel tests import
+the package outside its source checkout and exercise planning, baseline, apply,
+verification, untrusted status and owned rollback. The integrated release checks
+are recorded in `validation/REPOSITORY-SESSION-VALIDATION-1.3.0.dev11.md`.
+Independent security and real-host qualification remain separate issue gates.
+
+## Integration boundary
+
+The dev10 repository-placement context/outcome and experimental selection flow
+remain separate from this fixed-input session. The path-only discovery result is
+not a substitute for a complete, policy-scoped source-reviewed negative judgment.
+The historical checkpoint's qualification tree was incomplete; its totals are
+not release evidence. The current release report records checks against the full
+checkout and names the remaining issue #4 work.

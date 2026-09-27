@@ -26,7 +26,7 @@ evidence of a live provider connection or production benefit.
 
 ## Integrated checks
 
-On the current checkout under Linux/CPython 3.13, the full test suite passed:
+On the current checkout under WSL Linux/CPython 3.12.3, the full test suite passed:
 **1,370 passed, four skipped**. Three skips exercise native non-POSIX rejection;
 the fourth requires trusted Node/TypeScript tooling absent from this local
 environment. The 160 focused placement tests passed separately. Package

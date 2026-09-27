@@ -4,10 +4,16 @@ description: Discover, score, design, optimize, and experimentally validate high
 license: MIT
 metadata:
   author: CompleteTech LLC
-  version: 1.3.0.dev10
+  version: 1.3.0.dev11
 ---
 
 # JEV Integration Evaluator
+
+For a read-only path inspection or an explicitly scoped, resumable
+single-placement session, use `python -m jev_integration_evaluator.repository_run`
+and read `references/repository-session-command.md`. The fixed adapter requires
+caller-supplied source-reviewed bindings and policy. A session does not grant
+provider connectivity, native isolation or production activation.
 
 **LLMs generate. JEV classifies, selects, and evaluates. Deterministic code enforces. Instrumentation measures. Experiments decide whether JEV stays.**
 

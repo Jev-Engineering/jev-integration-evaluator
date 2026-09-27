@@ -34,7 +34,7 @@ def validate(check_manifest=False):
               'schemas/implementation-manifest.schema.json','schemas/implementation-tests.schema.json',
               'tests/test_executable_recipes.py','tests/test_executable_runtime.py','tests/test_executable_safety.py','tests/test_executable_cli.py','tests/test_executable_wheel.py',
               'tests/test_executable_host_boundaries.py','tests/test_executable_source_scope.py','tests/test_executable_verification_identity.py',
-              'validation/SCOPE-CONFLICT-VALIDATION-1.3.0.dev10.md',
+              'validation/REPOSITORY-SESSION-VALIDATION-1.3.0.dev11.md',
               'jev_integration_evaluator/integrations/observations.py','schemas/implementation-observation.schema.json',
               'tests/test_executable_failure_receipts.py','tests/test_executable_source_fidelity.py','tests/test_executable_command_receipts.py',
               'examples/implementation/observation.example.json',
@@ -89,6 +89,17 @@ def validate(check_manifest=False):
     required += [f'{directory}/{name}.schema.json'
                  for directory in ('schemas', 'jev_integration_evaluator/data')
                  for name in ('repository-coverage-review-v1', 'repository-conclusion-v1')]
+    required += ['jev_integration_evaluator/repository_run.py',
+                 'scripts/run_repository.py', 'scripts/run_repository_session_demo.py',
+                 'scripts/run_repository_session_mutations.py',
+                 'references/repository-session-command.md',
+                 'tests/test_repository_run.py', 'tests/test_repository_run_wheel.py',
+                 'examples/repository-session/context.example.json',
+                 'examples/repository-session/scope-denied.example.json']
+    required += [f'{directory}/{name}.schema.json'
+                 for directory in ('schemas', 'jev_integration_evaluator/data')
+                 for name in ('repository-run-context-v1', 'repository-run-scope-v1',
+                              'repository-session-v1')]
     for item in required:
         if not (ROOT/item).is_file():raise InputError('Required package file missing: '+item)
     front=(ROOT/'SKILL.md').read_text().split('---',2)
@@ -106,6 +117,12 @@ def validate(check_manifest=False):
         schema=read_json(path);jsonschema.Draft202012Validator.check_schema(schema)
         if schema!=read_json(ROOT/'jev_integration_evaluator/data'/path.name):raise InputError('Packaged schema mismatch: '+path.name)
         schemas[path.name.removesuffix('.schema.json')]=schema
+    jsonschema.validate(read_json(ROOT/'examples/repository-session/context.example.json'),
+                        schemas['repository-run-context-v1'])
+    denied_scope=read_json(ROOT/'examples/repository-session/scope-denied.example.json')
+    jsonschema.validate(denied_scope,schemas['repository-run-scope-v1'])
+    if any(denied_scope['grants'].values()):
+        raise InputError('Repository session example must deny every grant')
     from jev_integration_evaluator.integrations.contracts import validate_spec, validate_inventory
     from jev_integration_evaluator.integrations.recipes import transform
     implementation_examples=0

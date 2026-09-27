@@ -1,0 +1,26 @@
+{
+  "adapter": "recorded-reviewed-input-v1",
+  "bounds": {
+    "max_attempts": 2,
+    "max_cases": 64,
+    "max_events": 128,
+    "max_timeout_s": 60
+  },
+  "objective": "Review existing finite choices; prepare only with source-matched policy",
+  "policy": {
+    "exclude": [],
+    "hard_real_time": [],
+    "max_ast_nodes": 50000,
+    "max_depth": 16,
+    "max_entries": 20000,
+    "max_file_bytes": 1048576,
+    "max_files": 1000,
+    "max_report_bytes": 4194304,
+    "max_symbols": 2000,
+    "max_total_bytes": 16777216
+  },
+  "saved_answers": {
+    "benefit_estimate": null,
+    "context_choice": "/prune and /compact require separate explicit choices"
+  }
+}
