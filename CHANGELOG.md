@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.0.dev11 — bounded repository session checkpoint
+
+- Add a read-only path command and an opt-in, private, resumable session around
+  the existing single-placement implementation lifecycle. Exact external scopes
+  and journal heads are required for effectful continuation and recovery.
+- Retain completed verification schedules and failed attempts across retries;
+  fail closed on source drift, incomplete operations and unsupported isolation.
+- This is partial issue #4: source-matched agent drafting, repository selection
+  integration, native isolation and real-host qualification remain separate work.
+
 ## 1.3.0.dev10 — mixed scope-review conflict guard
 
 - Block experimental selection when an approved candidate conflicts with a

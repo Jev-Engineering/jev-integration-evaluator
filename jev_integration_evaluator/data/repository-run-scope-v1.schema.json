@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:repository-run-scope-v1:1.0",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "repository-run-scope-v1"
+    },
+    "reference": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "repository_identity": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "context_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "bundle_digest": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "trusted_session_head": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "trusted_baseline_receipt": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "trusted_modified_receipt": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "rollback_digest": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "execution_environment": {
+      "enum": [
+        "none",
+        "trusted_host",
+        "isolated"
+      ]
+    },
+    "grants": {
+      "type": "object",
+      "properties": {
+        "prepare": {
+          "type": "boolean"
+        },
+        "baseline": {
+          "type": "boolean"
+        },
+        "apply": {
+          "type": "boolean"
+        },
+        "modified": {
+          "type": "boolean"
+        },
+        "rollback": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "prepare",
+        "baseline",
+        "apply",
+        "modified",
+        "rollback"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schema_version",
+    "kind",
+    "reference",
+    "repository_identity",
+    "context_sha256",
+    "bundle_digest",
+    "trusted_session_head",
+    "trusted_baseline_receipt",
+    "trusted_modified_receipt",
+    "rollback_digest",
+    "execution_environment",
+    "grants"
+  ],
+  "additionalProperties": false
+}

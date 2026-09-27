@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "kind": "repository-run-scope-v1",
+  "reference": "EXAMPLE-NOT-AUTHORIZATION",
+  "repository_identity": "0000000000000000000000000000000000000000000000000000000000000000",
+  "context_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "bundle_digest": null,
+  "trusted_session_head": null,
+  "trusted_baseline_receipt": null,
+  "trusted_modified_receipt": null,
+  "rollback_digest": null,
+  "execution_environment": "none",
+  "grants": {
+    "prepare": false,
+    "baseline": false,
+    "apply": false,
+    "modified": false,
+    "rollback": false
+  }
+}

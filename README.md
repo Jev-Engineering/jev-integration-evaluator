@@ -1,4 +1,4 @@
-# JEV Integration Evaluator 1.3.0.dev10
+# JEV Integration Evaluator 1.3.0.dev11
 
 **CompleteTech LLC · Evidence-driven integration analysis and evaluation**
 
@@ -9,6 +9,19 @@ The skill, Python distribution, and console command are named `jev-integration-e
 The [original executable implementation specification](references/executable-implementation-prompt.md) is retained as requirements provenance. The supported commands and deliberately bounded implementation coverage in this development build are documented in [the current support contract](references/executable-integrations.md).
 
 The default is deliberately conservative: **read-only analysis; no network; runtime off; no target code execution; no automatic adoption**. An unfamiliar repository can produce “no justified integration set.” That is a successful result, not an error.
+
+## Repository session checkpoint in 1.3.0.dev11
+
+`jev-integration-evaluator repository-run /absolute/repository` (or
+`python -m jev_integration_evaluator.repository_run /absolute/repository`) performs
+read-only static inspection. With a private external session, source-reviewed
+inventory and implementation specification, and separate exact-bundle scopes, the
+same command can journal the existing single-placement plan, baseline, apply,
+modified verification, status and owned rollback lifecycle. The fixed adapter
+does not author a semantic review, choose callbacks or policy, or compose the
+experimental repository selection flow. Issue #4 remains open. See the
+[session contract](references/repository-session-command.md) and
+[dev11 validation](validation/REPOSITORY-SESSION-VALIDATION-1.3.0.dev11.md).
 
 ## Mixed source-review correction in 1.3.0.dev10
 
@@ -262,7 +275,7 @@ Static analysis cannot recover every reflective/dynamic call, macro, callback, g
 
 A socket timeout and bounded thread pool are not hard real-time guarantees. The test runner is not a security sandbox; use an isolated runner for untrusted projects. Externally retained hash/length checkpoints detect mismatching audit prefixes, but hash chains do not authenticate an adversarial writer. Frozen local manifests cannot prove an untouched holdout or independent trials; their statistical assumptions remain explicit. API fixtures and receipts can be forged by an untrusted editor; authorization and independent experiment review remain host responsibilities.
 
-Development validation is in [the dev10 scope-conflict report](validation/SCOPE-CONFLICT-VALIDATION-1.3.0.dev10.md), with supplied-fragment and full integration qualification distinguished. Earlier validation records are retained as historical evidence; they are not measurements for this build. Live JEV accuracy, cost, latency and calibration were not measured during package construction. The tested model interface uses mocked HTTP and exact local fixtures.
+Development validation is in [the dev11 repository-session report](validation/REPOSITORY-SESSION-VALIDATION-1.3.0.dev11.md), with supplied-fragment and full integration qualification distinguished. Earlier validation records are retained as historical evidence; they are not measurements for this build. Live JEV accuracy, cost, latency and calibration were not measured during package construction. The tested model interface uses mocked HTTP and exact local fixtures.
 
 ## License
 

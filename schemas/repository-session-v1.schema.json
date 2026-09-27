@@ -1,0 +1,480 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:repository-session-v1:1.0",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "repository-session-v1"
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "repository_identity": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "engine_identity": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "context": {
+      "type": "object",
+      "properties": {
+        "objective": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "saved_answers": {
+          "type": "object"
+        },
+        "policy": {
+          "type": "object"
+        },
+        "bounds": {
+          "type": "object",
+          "properties": {
+            "max_attempts": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 3
+            },
+            "max_events": {
+              "type": "integer",
+              "minimum": 16,
+              "maximum": 128
+            },
+            "max_cases": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 64
+            },
+            "max_timeout_s": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120
+            }
+          },
+          "required": [
+            "max_attempts",
+            "max_events",
+            "max_cases",
+            "max_timeout_s"
+          ],
+          "additionalProperties": false
+        },
+        "adapter": {
+          "const": "recorded-reviewed-input-v1"
+        }
+      },
+      "required": [
+        "objective",
+        "saved_answers",
+        "policy",
+        "bounds",
+        "adapter"
+      ],
+      "additionalProperties": false
+    },
+    "context_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "source_files": {
+      "type": "object",
+      "maxProperties": 10000,
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "mode": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4095
+          }
+        },
+        "required": [
+          "sha256",
+          "mode"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "initial_report_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "stage": {
+      "enum": [
+        "prepared",
+        "planned",
+        "baseline_passed",
+        "applied_unverified",
+        "verified",
+        "rolled_back",
+        "blocked_recovery",
+        "plan_pending",
+        "baseline_pending",
+        "apply_pending",
+        "modified_pending",
+        "rollback_pending",
+        "plan_failed",
+        "baseline_failed",
+        "apply_failed",
+        "modified_failed",
+        "rollback_failed"
+      ]
+    },
+    "pending": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "operation": {
+              "enum": [
+                "plan",
+                "baseline",
+                "apply",
+                "modified",
+                "rollback"
+              ]
+            },
+            "attempt": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 3
+            },
+            "authority_reference": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "authority_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "operation",
+            "attempt",
+            "authority_reference",
+            "authority_sha256"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "bundle": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 8192
+            },
+            "digest": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "path",
+            "digest"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "planned_output": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8192
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "prepared_sha256": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "receipts": {
+      "type": "object",
+      "properties": {
+        "baseline": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "provenance": {
+                  "enum": [
+                    "direct_tool_observation",
+                    "externally_retained_recovery_anchor"
+                  ]
+                }
+              },
+              "required": [
+                "sha256",
+                "provenance"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "modified": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "provenance": {
+                  "enum": [
+                    "direct_tool_observation",
+                    "externally_retained_recovery_anchor"
+                  ]
+                }
+              },
+              "required": [
+                "sha256",
+                "provenance"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "baseline",
+        "modified"
+      ],
+      "additionalProperties": false
+    },
+    "attempts": {
+      "type": "object",
+      "properties": {
+        "plan": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 128
+        },
+        "baseline": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 128
+        },
+        "apply": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 128
+        },
+        "modified": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 128
+        },
+        "rollback": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 128
+        }
+      },
+      "required": [
+        "plan",
+        "baseline",
+        "apply",
+        "modified",
+        "rollback"
+      ],
+      "additionalProperties": false
+    },
+    "failures": {
+      "type": "array",
+      "maxItems": 15,
+      "items": {
+        "type": "object",
+        "properties": {
+          "operation": {
+            "enum": [
+              "plan",
+              "baseline",
+              "apply",
+              "modified",
+              "rollback"
+            ]
+          },
+          "attempt": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "operation",
+          "attempt",
+          "code"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "receipt_history": {
+      "type": "array",
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string",
+            "pattern": "^receipt-(baseline|modified)-[1-3]-[a-f0-9]{64}\\.json$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "phase": {
+            "enum": [
+              "baseline",
+              "modified"
+            ]
+          },
+          "attempt": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3
+          },
+          "status": {
+            "enum": [
+              "passed",
+              "failed"
+            ]
+          },
+          "scheduled_cases": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 192
+          },
+          "completed_cases": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 192
+          },
+          "provenance": {
+            "enum": [
+              "direct_tool_observation",
+              "externally_retained_recovery_anchor"
+            ]
+          }
+        },
+        "required": [
+          "file",
+          "sha256",
+          "phase",
+          "attempt",
+          "status",
+          "scheduled_cases",
+          "completed_cases",
+          "provenance"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "authorization_references": {
+      "type": "array",
+      "maxItems": 15,
+      "items": {
+        "type": "object",
+        "properties": {
+          "reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "reference",
+          "sha256"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "cancelled": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "schema_version",
+    "kind",
+    "run_id",
+    "repository_identity",
+    "engine_identity",
+    "context",
+    "context_sha256",
+    "source_files",
+    "initial_report_sha256",
+    "stage",
+    "pending",
+    "bundle",
+    "planned_output",
+    "prepared_sha256",
+    "receipts",
+    "attempts",
+    "failures",
+    "receipt_history",
+    "authorization_references",
+    "cancelled"
+  ],
+  "additionalProperties": false
+}
