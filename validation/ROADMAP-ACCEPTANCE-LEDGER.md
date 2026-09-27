@@ -25,8 +25,9 @@ before it can be credited in a release audit.
 The initial audit found a clean local `main` at
 `fa44cf7c28fe918f946ab3d4f9856d759f7260ea`, matching `origin/main`.
 Draft PR #27 at `c16c71e3f8dd61abc6a196cdce12594e90a00861` has generic
-green jobs, no recorded independent review and no privileged native-runner
-qualification. The repository session's secure filesystem requires POSIX;
+green jobs and a [separate Codex source review](https://github.com/Jev-Engineering/jev-integration-evaluator/pull/27#issuecomment-5860945528),
+but no independent approval or privileged native-runner qualification. The
+repository session's secure filesystem requires POSIX;
 native Windows tests that fail this prerequisite are not acceptance evidence.
 
 Each issue remains open until its requirements have fresh, revision-bound

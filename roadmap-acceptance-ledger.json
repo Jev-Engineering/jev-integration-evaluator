@@ -208,16 +208,21 @@
       ],
       "workstream": "pending-dependency",
       "source_revision": "fa44cf7c28fe918f946ab3d4f9856d759f7260ea",
-      "pr": [],
-      "commit": [],
+      "pr": [
+        "https://github.com/Jev-Engineering/jev-integration-evaluator/pull/22"
+      ],
+      "commit": [
+        "2d32dff54566c555c0974d5e1f34611bc44141b2"
+      ],
       "review": [],
-      "merge_sha": null,
+      "merge_sha": "245d847dcd8e37b3ff5464a2cd5c15caf42d8402",
       "post_merge_checks": [],
       "native_blocked_by": [],
       "candidate_code_and_tests": [
         "jev_integration_evaluator/capabilities.py",
         "references/repository-discovery-v1.md"
-      ]
+      ],
+      "current_finding": "Issue closed after merged PR #22; earlier discovery delivery and requirement-level validation still need backfill. PR #22 has no recorded GitHub review."
     },
     {
       "number": 6,
