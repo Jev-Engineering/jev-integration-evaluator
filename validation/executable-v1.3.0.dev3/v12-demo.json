@@ -1,0 +1,18 @@
+{
+  "version": "1.2.0",
+  "evidence_type": "synthetic",
+  "network_requests": 0,
+  "target_code_executed": false,
+  "host_actions_executed": 0,
+  "task_pairs": 80,
+  "gate_count": 2,
+  "calibration_observations": 80,
+  "holdout_observations": 240,
+  "monitor_tasks": 80,
+  "shared_fixture_calls": 2,
+  "shadow_submissions": 3,
+  "study_recommendation": "needs_more_evidence",
+  "synthetic_adoption_blocked": true,
+  "monitor_incident_suspension_is_recommendation_only": true,
+  "command_count": 17
+}

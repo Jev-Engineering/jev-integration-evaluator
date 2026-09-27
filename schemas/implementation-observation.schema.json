@@ -1,0 +1,198 @@
+{
+  "type": "object",
+  "properties": {
+    "outcome": {
+      "type": "object",
+      "properties": {
+        "result": {},
+        "exception": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "exception_message_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "result",
+        "exception",
+        "exception_message_sha256"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "exception": {
+                "type": "null"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "exception_message_sha256": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "result": {
+                "type": "null"
+              },
+              "exception_message_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "calls": {
+      "type": "object",
+      "maxProperties": 4096,
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 100001
+      }
+    },
+    "globals": {
+      "type": "object",
+      "maxProperties": 4096
+    },
+    "adapter_calls": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100001
+    },
+    "handler_calls": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100001
+    },
+    "model_calls": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100001
+    },
+    "network_attempts_denied": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100001
+    },
+    "classification": {
+      "const": "synthetic"
+    },
+    "trace": {
+      "type": "array",
+      "maxItems": 512,
+      "items": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "enum": [
+              "items",
+              "generate",
+              "retain",
+              "observe",
+              "postcondition",
+              "finish",
+              "gate",
+              "validate",
+              "risk",
+              "revision",
+              "reserve_retry",
+              "effect_state",
+              "ownership",
+              "verify_child",
+              "checks",
+              "verify_claims"
+            ]
+          },
+          "event": {
+            "enum": [
+              "call",
+              "return"
+            ]
+          },
+          "args": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 3,
+            "items": {}
+          },
+          "result": {}
+        },
+        "required": [
+          "role",
+          "event"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "event": {
+                  "const": "call"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "args"
+              ],
+              "not": {
+                "required": [
+                  "result"
+                ]
+              }
+            },
+            "else": {
+              "not": {
+                "required": [
+                  "args"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    "trace_truncated": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "outcome",
+    "calls",
+    "globals",
+    "adapter_calls",
+    "handler_calls",
+    "model_calls",
+    "network_attempts_denied",
+    "classification",
+    "trace",
+    "trace_truncated"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:implementation-observation:1.0"
+}

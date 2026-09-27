@@ -1,0 +1,11 @@
+{
+  "status": "passed",
+  "wheel": "jev_integration_evaluator-1.3.0.dev3-py3-none-any.whl",
+  "wheel_sha256": "b1e0f9751ed9acbe88ddaf7b7c8b65a3458d4ea9810e6f959737dd2f0c9d281b",
+  "module_and_data_files_matching_source": 68,
+  "schema_count": 28,
+  "record_entries_verified": 73,
+  "installed_observation_schema_cli_passed": true,
+  "offline_build_and_install": true,
+  "elapsed_s": 87.876
+}

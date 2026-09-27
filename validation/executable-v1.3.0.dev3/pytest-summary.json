@@ -1,0 +1,12 @@
+{
+  "tests": 663,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "passed": 663,
+  "elapsed_s": 256.455,
+  "python": "3.13.5",
+  "platform": "Linux-6.18.44-x86_64-with-glibc2.41",
+  "classification": "synthetic_test_qualification",
+  "timestamp_utc": "2026-09-27T11:03:42.703526+00:00"
+}

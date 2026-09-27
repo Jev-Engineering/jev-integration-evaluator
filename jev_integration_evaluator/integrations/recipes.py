@@ -2,6 +2,9 @@
 from __future__ import annotations
 
 import ast
+import codecs
+import io
+import tokenize
 from dataclasses import dataclass
 from pathlib import Path
 import keyword
@@ -221,6 +224,12 @@ def transform(root: Path, spec: dict) -> dict:
     if len(raw) > 2_000_000 or raw.startswith(b'\xef\xbb\xbf'):
         raise UnsupportedShape('Unsupported oversized/BOM source; UTF-8 without BOM is required')
     try:
+        encoding, _ = tokenize.detect_encoding(io.BytesIO(raw).readline)
+        if codecs.lookup(encoding).name != 'utf-8':
+            raise UnsupportedShape('Unsupported source encoding: UTF-8 is required')
+    except (SyntaxError, LookupError):
+        raise UnsupportedShape('Unsupported or invalid source encoding: UTF-8 is required') from None
+    try:
         text = raw.decode('utf-8')
         tree = ast.parse(text, filename=rel)
     except (UnicodeError, SyntaxError):
@@ -305,7 +314,16 @@ def transform(root: Path, spec: dict) -> dict:
         if is_doc or (isinstance(node, ast.ImportFrom) and node.module == '__future__'):
             insertion = offsets[node.end_lineno]
         else:
-            insertion = max(insertion, offsets[node.lineno - 1])
+            first_line = node.lineno
+            if getattr(node, 'decorator_list', []):
+                # Decorator AST spans omit the opening @ and parentheses. Locate
+                # the first real @ token after the docstring/future-import prefix,
+                # including when the decorator expression starts on a later line.
+                first_line = next(token.start[0] for token in tokenize.tokenize(io.BytesIO(raw).readline)
+                                  if token.type == tokenize.OP and token.string == '@'
+                                  and token.start[0] < node.lineno
+                                  and offsets[token.start[0] - 1] >= insertion)
+            insertion = max(insertion, offsets[first_line - 1])
             break
     import_line = f'from {spec["output"]["module"]} import invoke as {alias}'.encode() + newline
     changed = changed[:insertion] + import_line + changed[insertion:]

@@ -1,0 +1,474 @@
+{
+  "status": "passed",
+  "version": "1.3.0.dev3",
+  "classification": "synthetic",
+  "python": "3.13.5",
+  "platform": "Linux-6.18.44-x86_64-with-glibc2.41",
+  "engine_identity": "c93ded9292a77316861b4f940abb57d3aaaffc2293f4ba69910828e927e20484",
+  "import_outside_checkout": true,
+  "path_excludes_node": true,
+  "recipes": [
+    {
+      "recipe": "python.A",
+      "shape": "module-tail-call-v1",
+      "baseline_cases": 2,
+      "modified_cases": 6,
+      "passed_cases": 6,
+      "contract_assertions": [
+        "pattern_specific_handler_observed",
+        "assessment_changes_finite_host_behavior",
+        "complete_offline_observation",
+        "blocked_zero_executor_calls"
+      ],
+      "modes": {
+        "off": {
+          "cases": 2,
+          "adapter_calls": 2,
+          "handler_calls": 0,
+          "model_calls": 0
+        },
+        "shadow": {
+          "cases": 2,
+          "adapter_calls": 2,
+          "handler_calls": 0,
+          "model_calls": 2
+        },
+        "active": {
+          "cases": 2,
+          "adapter_calls": 2,
+          "handler_calls": 2,
+          "model_calls": 2
+        }
+      },
+      "classification": "synthetic",
+      "target_restored": true
+    },
+    {
+      "recipe": "python.B",
+      "shape": "module-tail-call-v1",
+      "baseline_cases": 2,
+      "modified_cases": 6,
+      "passed_cases": 6,
+      "contract_assertions": [
+        "pattern_specific_handler_observed",
+        "assessment_changes_finite_host_behavior",
+        "complete_offline_observation",
+        "scope_budget_and_irreversible_approval"
+      ],
+      "modes": {
+        "off": {
+          "cases": 2,
+          "adapter_calls": 2,
+          "handler_calls": 0,
+          "model_calls": 0
+        },
+        "shadow": {
+          "cases": 2,
+          "adapter_calls": 2,
+          "handler_calls": 0,
+          "model_calls": 2
+        },
+        "active": {
+          "cases": 2,
+          "adapter_calls": 2,
+          "handler_calls": 2,
+          "model_calls": 2
+        }
+      },
+      "classification": "synthetic",
+      "target_restored": true
+    },
+    {
+      "recipe": "python.C",
+      "shape": "module-tail-call-v1",
+      "baseline_cases": 1,
+      "modified_cases": 3,
+      "passed_cases": 3,
+      "contract_assertions": [
+        "pattern_specific_handler_observed",
+        "assessment_changes_finite_host_behavior",
+        "complete_offline_observation",
+        "final_tool_at_most_once"
+      ],
+      "modes": {
+        "off": {
+          "cases": 1,
+          "adapter_calls": 1,
+          "handler_calls": 0,
+          "model_calls": 0
+        },
+        "shadow": {
+          "cases": 1,
+          "adapter_calls": 1,
+          "handler_calls": 0,
+          "model_calls": 1
+        },
+        "active": {
+          "cases": 1,
+          "adapter_calls": 1,
+          "handler_calls": 1,
+          "model_calls": 1
+        }
+      },
+      "classification": "synthetic",
+      "target_restored": true
+    },
+    {
+      "recipe": "python.D",
+      "shape": "module-tail-call-v1",
+      "baseline_cases": 1,
+      "modified_cases": 3,
+      "passed_cases": 3,
+      "contract_assertions": [
+        "pattern_specific_handler_observed",
+        "assessment_changes_finite_host_behavior",
+        "complete_offline_observation",
+        "provenance_and_contradictions_preserved"
+      ],
+      "modes": {
+        "off": {
+          "cases": 1,
+          "adapter_calls": 1,
+          "handler_calls": 0,
+          "model_calls": 0
+        },
+        "shadow": {
+          "cases": 1,
+          "adapter_calls": 1,
+          "handler_calls": 0,
+          "model_calls": 1
+        },
+        "active": {
+          "cases": 1,
+          "adapter_calls": 1,
+          "handler_calls": 1,
+          "model_calls": 1
+        }
+      },
+      "classification": "synthetic",
+      "target_restored": true
+    },
+    {
+      "recipe": "python.E",
+      "shape": "module-tail-call-v1",
+      "baseline_cases": 2,
+      "modified_cases": 6,
+      "passed_cases": 6,
+      "contract_assertions": [
+        "pattern_specific_handler_observed",
+        "assessment_changes_finite_host_behavior",
+        "complete_offline_observation",
+        "independent_postcondition_and_no_reexecution"
+      ],
+      "modes": {
+        "off": {
+          "cases": 2,
+          "adapter_calls": 2,
+          "handler_calls": 0,
+          "model_calls": 0
+        },
+        "shadow": {
+          "cases": 2,
+          "adapter_calls": 2,
+          "handler_calls": 0,
+          "model_calls": 0
+        },
+        "active": {
+          "cases": 2,
+          "adapter_calls": 2,
+          "handler_calls": 2,
+          "model_calls": 2
+        }
+      },
+      "classification": "synthetic",
+      "target_restored": true
+    },
+    {
+      "recipe": "python.F",
+      "shape": "module-tail-call-v1",
+      "baseline_cases": 2,
+      "modified_cases": 6,
+      "passed_cases": 6,
+      "contract_assertions": [
+        "pattern_specific_handler_observed",
+        "assessment_changes_finite_host_behavior",
+        "complete_offline_observation",
+        "bounded_registered_transition"
+      ],
+      "modes": {
+        "off": {
+          "cases": 2,
+          "adapter_calls": 6,
+          "handler_calls": 0,
+          "model_calls": 0
+        },
+        "shadow": {
+          "cases": 2,
+          "adapter_calls": 6,
+          "handler_calls": 0,
+          "model_calls": 2
+        },
+        "active": {
+          "cases": 2,
+          "adapter_calls": 4,
+          "handler_calls": 4,
+          "model_calls": 4
+        }
+      },
+      "classification": "synthetic",
+      "target_restored": true
+    },
+    {
+      "recipe": "python.G",
+      "shape": "module-tail-call-v1",
+      "baseline_cases": 1,
+      "modified_cases": 3,
+      "passed_cases": 3,
+      "contract_assertions": [
+        "pattern_specific_handler_observed",
+        "assessment_changes_finite_host_behavior",
+        "complete_offline_observation",
+        "bounded_existing_plan_and_per_step_gate"
+      ],
+      "modes": {
+        "off": {
+          "cases": 1,
+          "adapter_calls": 1,
+          "handler_calls": 0,
+          "model_calls": 0
+        },
+        "shadow": {
+          "cases": 1,
+          "adapter_calls": 1,
+          "handler_calls": 0,
+          "model_calls": 1
+        },
+        "active": {
+          "cases": 1,
+          "adapter_calls": 1,
+          "handler_calls": 1,
+          "model_calls": 1
+        }
+      },
+      "classification": "synthetic",
+      "target_restored": true
+    },
+    {
+      "recipe": "python.H",
+      "shape": "module-tail-call-v1",
+      "baseline_cases": 1,
+      "modified_cases": 3,
+      "passed_cases": 3,
+      "contract_assertions": [
+        "pattern_specific_handler_observed",
+        "assessment_changes_finite_host_behavior",
+        "complete_offline_observation",
+        "pinned_retention_without_compaction"
+      ],
+      "modes": {
+        "off": {
+          "cases": 1,
+          "adapter_calls": 1,
+          "handler_calls": 0,
+          "model_calls": 0
+        },
+        "shadow": {
+          "cases": 1,
+          "adapter_calls": 1,
+          "handler_calls": 0,
+          "model_calls": 1
+        },
+        "active": {
+          "cases": 1,
+          "adapter_calls": 1,
+          "handler_calls": 1,
+          "model_calls": 1
+        }
+      },
+      "classification": "synthetic",
+      "target_restored": true
+    },
+    {
+      "recipe": "python.I",
+      "shape": "module-tail-call-v1",
+      "baseline_cases": 2,
+      "modified_cases": 6,
+      "passed_cases": 6,
+      "contract_assertions": [
+        "pattern_specific_handler_observed",
+        "assessment_changes_finite_host_behavior",
+        "complete_offline_observation",
+        "bounded_retry_without_completed_effect_replay"
+      ],
+      "modes": {
+        "off": {
+          "cases": 2,
+          "adapter_calls": 2,
+          "handler_calls": 0,
+          "model_calls": 0
+        },
+        "shadow": {
+          "cases": 2,
+          "adapter_calls": 2,
+          "handler_calls": 0,
+          "model_calls": 2
+        },
+        "active": {
+          "cases": 2,
+          "adapter_calls": 2,
+          "handler_calls": 2,
+          "model_calls": 1
+        }
+      },
+      "classification": "synthetic",
+      "target_restored": true
+    },
+    {
+      "recipe": "python.J",
+      "shape": "module-tail-call-v1",
+      "baseline_cases": 1,
+      "modified_cases": 3,
+      "passed_cases": 3,
+      "contract_assertions": [
+        "pattern_specific_handler_observed",
+        "assessment_changes_finite_host_behavior",
+        "complete_offline_observation",
+        "shared_concurrency_and_child_identity"
+      ],
+      "modes": {
+        "off": {
+          "cases": 1,
+          "adapter_calls": 1,
+          "handler_calls": 0,
+          "model_calls": 0
+        },
+        "shadow": {
+          "cases": 1,
+          "adapter_calls": 1,
+          "handler_calls": 0,
+          "model_calls": 1
+        },
+        "active": {
+          "cases": 1,
+          "adapter_calls": 1,
+          "handler_calls": 1,
+          "model_calls": 1
+        }
+      },
+      "classification": "synthetic",
+      "target_restored": true
+    },
+    {
+      "recipe": "python.K",
+      "shape": "module-tail-call-v1",
+      "baseline_cases": 2,
+      "modified_cases": 6,
+      "passed_cases": 6,
+      "contract_assertions": [
+        "pattern_specific_handler_observed",
+        "assessment_changes_finite_host_behavior",
+        "complete_offline_observation",
+        "deterministic_checks_without_publication"
+      ],
+      "modes": {
+        "off": {
+          "cases": 2,
+          "adapter_calls": 2,
+          "handler_calls": 0,
+          "model_calls": 0
+        },
+        "shadow": {
+          "cases": 2,
+          "adapter_calls": 2,
+          "handler_calls": 0,
+          "model_calls": 2
+        },
+        "active": {
+          "cases": 2,
+          "adapter_calls": 2,
+          "handler_calls": 2,
+          "model_calls": 2
+        }
+      },
+      "classification": "synthetic",
+      "target_restored": true
+    },
+    {
+      "recipe": "python.L",
+      "shape": "module-tail-call-v1",
+      "baseline_cases": 2,
+      "modified_cases": 6,
+      "passed_cases": 6,
+      "contract_assertions": [
+        "pattern_specific_handler_observed",
+        "assessment_changes_finite_host_behavior",
+        "complete_offline_observation",
+        "revision_and_approval_before_mutation"
+      ],
+      "modes": {
+        "off": {
+          "cases": 2,
+          "adapter_calls": 2,
+          "handler_calls": 0,
+          "model_calls": 0
+        },
+        "shadow": {
+          "cases": 2,
+          "adapter_calls": 2,
+          "handler_calls": 0,
+          "model_calls": 2
+        },
+        "active": {
+          "cases": 2,
+          "adapter_calls": 2,
+          "handler_calls": 2,
+          "model_calls": 2
+        }
+      },
+      "classification": "synthetic",
+      "target_restored": true
+    },
+    {
+      "recipe": "python.M",
+      "shape": "module-tail-call-v1",
+      "baseline_cases": 2,
+      "modified_cases": 6,
+      "passed_cases": 6,
+      "contract_assertions": [
+        "pattern_specific_handler_observed",
+        "assessment_changes_finite_host_behavior",
+        "complete_offline_observation",
+        "registered_disposition_without_generation"
+      ],
+      "modes": {
+        "off": {
+          "cases": 2,
+          "adapter_calls": 2,
+          "handler_calls": 0,
+          "model_calls": 0
+        },
+        "shadow": {
+          "cases": 2,
+          "adapter_calls": 2,
+          "handler_calls": 0,
+          "model_calls": 2
+        },
+        "active": {
+          "cases": 2,
+          "adapter_calls": 2,
+          "handler_calls": 2,
+          "model_calls": 2
+        }
+      },
+      "classification": "synthetic",
+      "target_restored": true
+    }
+  ],
+  "baseline_cases": 21,
+  "modified_cases": 63,
+  "passed_modified_cases": 63,
+  "targets_applied_unverified": 0,
+  "live_provider_calls": 0,
+  "activation_authorized": false,
+  "benefit_demonstrated": false
+}

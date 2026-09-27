@@ -234,6 +234,24 @@ def _receipt(root, bundle, plan, spec, phase, trusted_sha256=None):
     receipt = read_json(p)
     validate_contract(receipt, 'implementation-receipt')
     verify(receipt)
+    from .observations import validate_observation
+    expected_schedule = [(case['id'], mode) for case in spec['verification']['cases']
+                         for mode in (('baseline',) if phase == 'baseline' else ('off', 'shadow', 'active'))]
+    if ([(row['case_id'], row['mode']) for row in receipt['results']] != expected_schedule
+            or receipt['scheduled_cases'] != len(expected_schedule)
+            or receipt['completed_cases'] != sum(row['status'] in ('passed', 'failed') for row in receipt['results'])):
+        raise InputError('Execution receipt does not cover the reviewed schedule')
+    command = spec['verification'][phase+'_command']
+    if [row['definition_sha256'] for row in receipt['command_checks']] != ([digest(command)] if command else []):
+        raise InputError('Execution receipt omits or changes a reviewed command')
+    for row in receipt['results']:
+        if row['observation'] is not None:
+            validate_observation(row['observation'], spec)
+        elif row['status'] == 'passed':
+            raise InputError('Passing execution case has no validated observation')
+    if receipt['status'] == 'passed' and (any(row['status'] != 'passed' for row in receipt['results'])
+            or any(row['status'] != 'passed' for row in receipt['command_checks'])):
+        raise InputError('Passing receipt contains unsuccessful scheduled execution')
     if receipt.get('file_identity_valid') is False and receipt['status']=='passed':
         raise InputError('Passing execution receipt contradicts its final file identity check')
     if (receipt['bundle_digest'] != plan['contract_digest'] or receipt['phase'] != phase
@@ -259,13 +277,20 @@ def implementation_status(root, bundle, *, trusted_receipt_sha256=None):
     identities = {r['file']: _inspect_file(root, r) for r in plan['owned_files']}
     states = set(identities.values())
     events = [row['event'] for row in _journal(bundle, plan)]
+    baseline_events = ('baseline_verification_started', 'baseline_verification_passed', 'baseline_verification_failed')
+    # Baseline checks cannot reopen a rolled-back bundle or clear unfinished
+    # mutation recovery. Their own incomplete start still blocks below.
+    disposition_events = [event for event in events if event not in baseline_events]
+    terminal_events = ('planned', 'applied_unverified', 'verification_failed', 'verified', 'rolled_back')
     if states == {'baseline'}:
-        state = 'rolled_back' if events and events[-1] == 'rolled_back' else 'planned'
+        state = 'rolled_back' if disposition_events and disposition_events[-1] == 'rolled_back' else 'planned'
     elif states == {'applied'}:
         state = 'applied_unverified'
     else:
         state = 'blocked_recovery'
-    if events and events[-1] not in ('planned', 'applied_unverified', 'verification_failed', 'verified', 'rolled_back'):
+    if disposition_events and disposition_events[-1] not in terminal_events:
+        state = 'blocked_recovery'
+    if events and events[-1] not in terminal_events + baseline_events[1:]:
         state = 'blocked_recovery'
     receipt_state = 'absent'
     p = safe_child(bundle, 'verification-receipt.json')

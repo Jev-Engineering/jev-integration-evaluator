@@ -1,0 +1,50 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-9.0.2, pluggy-1.6.0 -- /opt/pyvenv/bin/python
+cachedir: .pytest_cache
+metadata: {'Python': '3.13.5', 'Platform': 'Linux-6.18.44-x86_64-with-glibc2.41', 'Packages': {'pytest': '9.0.2', 'pluggy': '1.6.0'}, 'Plugins': {'anyio': '4.13.0', 'ddtrace': '4.4.0', 'Faker': '40.1.2', 'asyncio': '1.3.0', 'cov': '7.0.0', 'json-report': '1.5.0', 'metadata': '3.1.1'}, 'PLATFORM': 'linux/amd64', 'CI': 'true'}
+rootdir: /mnt/data/jev-dev3-work/candidate
+configfile: pyproject.toml
+plugins: anyio-4.13.0, ddtrace-4.4.0, Faker-40.1.2, asyncio-1.3.0, cov-7.0.0, json-report-1.5.0, metadata-3.1.1
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 38 items
+
+tests/test_executable_failure_receipts.py::test_null_probe_output_cannot_pass_a_baseline PASSED [  2%]
+tests/test_executable_failure_receipts.py::test_bad_observations_produce_complete_failed_receipts[empty] PASSED [  5%]
+tests/test_executable_failure_receipts.py::test_bad_observations_produce_complete_failed_receipts[list] PASSED [  7%]
+tests/test_executable_failure_receipts.py::test_bad_observations_produce_complete_failed_receipts[missing_calls] PASSED [ 10%]
+tests/test_executable_failure_receipts.py::test_bad_observations_produce_complete_failed_receipts[negative_counter] PASSED [ 13%]
+tests/test_executable_failure_receipts.py::test_bad_observations_produce_complete_failed_receipts[bool_counter] PASSED [ 15%]
+tests/test_executable_failure_receipts.py::test_bad_observations_produce_complete_failed_receipts[unknown_field] PASSED [ 18%]
+tests/test_executable_failure_receipts.py::test_bad_observations_produce_complete_failed_receipts[bad_trace] PASSED [ 21%]
+tests/test_executable_failure_receipts.py::test_bad_observations_produce_complete_failed_receipts[bad_outcome] PASSED [ 23%]
+tests/test_executable_failure_receipts.py::test_bad_observations_produce_complete_failed_receipts[nonfinite] PASSED [ 26%]
+tests/test_executable_failure_receipts.py::test_bad_observations_produce_complete_failed_receipts[unknown_role] PASSED [ 28%]
+tests/test_executable_failure_receipts.py::test_bad_observations_produce_complete_failed_receipts[wrong_arity] PASSED [ 31%]
+tests/test_executable_failure_receipts.py::test_missing_scheduled_command_is_not_run_and_blocks_pass[baseline] PASSED [ 34%]
+tests/test_executable_failure_receipts.py::test_missing_scheduled_command_is_not_run_and_blocks_pass[modified] PASSED [ 36%]
+tests/test_executable_failure_receipts.py::test_unlaunchable_command_arguments_rejected_before_bundle[baseline] PASSED [ 39%]
+tests/test_executable_failure_receipts.py::test_unlaunchable_command_arguments_rejected_before_bundle[modified] PASSED [ 42%]
+tests/test_executable_failure_receipts.py::test_interrupted_reverification_does_not_reuse_old_success PASSED [ 44%]
+tests/test_executable_failure_receipts.py::test_unsuccessful_probe_cannot_promote_even_valid_observation[timeout] PASSED [ 47%]
+tests/test_executable_failure_receipts.py::test_unsuccessful_probe_cannot_promote_even_valid_observation[not_run] PASSED [ 50%]
+tests/test_executable_failure_receipts.py::test_unsuccessful_probe_cannot_promote_even_valid_observation[failed] PASSED [ 52%]
+tests/test_executable_failure_receipts.py::test_unsuccessful_probe_cannot_promote_even_valid_observation[unknown] PASSED [ 55%]
+tests/test_executable_failure_receipts.py::test_self_consistent_receipt_still_needs_its_actual_schedule[omitted] PASSED [ 57%]
+tests/test_executable_failure_receipts.py::test_self_consistent_receipt_still_needs_its_actual_schedule[duplicate] PASSED [ 60%]
+tests/test_executable_failure_receipts.py::test_self_consistent_receipt_still_needs_its_actual_schedule[mode] PASSED [ 63%]
+tests/test_executable_failure_receipts.py::test_self_consistent_receipt_still_needs_its_actual_schedule[scheduled] PASSED [ 65%]
+tests/test_executable_failure_receipts.py::test_self_consistent_receipt_still_needs_its_actual_schedule[completed] PASSED [ 68%]
+tests/test_executable_failure_receipts.py::test_self_consistent_receipt_still_needs_its_actual_schedule[null_observation] PASSED [ 71%]
+tests/test_executable_failure_receipts.py::test_self_consistent_receipt_still_needs_its_actual_schedule[command] PASSED [ 73%]
+tests/test_executable_failure_receipts.py::test_actual_process_exit_during_reverification_leaves_recovery_marker PASSED [ 76%]
+tests/test_executable_failure_receipts.py::test_observation_contract_has_cli_validation_and_mirrored_schema PASSED [ 78%]
+tests/test_executable_source_fidelity.py::test_unrelated_leading_decorator_survives_real_host_lifecycle[function] PASSED [ 81%]
+tests/test_executable_source_fidelity.py::test_unrelated_leading_decorator_survives_real_host_lifecycle[class] PASSED [ 84%]
+tests/test_executable_source_fidelity.py::test_non_utf8_source_cookie_is_rejected_before_bundle[latin-1] PASSED [ 86%]
+tests/test_executable_source_fidelity.py::test_non_utf8_source_cookie_is_rejected_before_bundle[ascii] PASSED [ 89%]
+tests/test_executable_source_fidelity.py::test_non_utf8_source_cookie_is_rejected_before_bundle[unknown-encoding] PASSED [ 92%]
+tests/test_executable_source_fidelity.py::test_equivalent_utf8_cookie_is_still_supported[utf8] PASSED [ 94%]
+tests/test_executable_source_fidelity.py::test_equivalent_utf8_cookie_is_still_supported[UTF-8] PASSED [ 97%]
+tests/test_executable_source_fidelity.py::test_equivalent_utf8_cookie_is_still_supported[utf_8] PASSED [100%]
+
+============================= 38 passed in 41.89s ==============================

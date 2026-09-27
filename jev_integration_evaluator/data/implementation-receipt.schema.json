@@ -205,7 +205,44 @@
           "status",
           "returncode"
         ],
-        "additionalProperties": false
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "const": "passed"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "returncode": {
+                  "const": 0
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "enum": [
+                    "timeout",
+                    "not_run"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "returncode": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        ]
       },
       "minItems": 0,
       "maxItems": 1

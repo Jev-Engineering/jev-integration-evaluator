@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.3.0.dev3 — complete failure receipts and source fidelity
+
+- Add the strict mirrored `implementation-observation` contract, recipe-bound trace roles/arity and bounded counters. Invalid probe output becomes a failed scheduled case with no invalid payload copied into the receipt.
+- Record unavailable authorized command executables as `not_run`, preserve the full case schedule and block a passing receipt. Reject embedded NUL command arguments during planning rather than failing during execution.
+- Check the exact ordered case/mode schedule, completion count, command digests and observation validity when loading receipts. Passing-shaped, self-consistently rehashed documents cannot replace a reviewed execution schedule.
+- Fsync start events before baseline and modified execution. Interrupted or terminated re-verification blocks stale successful status and stale-baseline apply until fresh authorized verification or matching owned-byte rollback. Baseline checks preserve prior rollback and incomplete-mutation states.
+- Keep generated imports ahead of unrelated decorators, including parenthesized multiline forms. Validate declared UTF-8 encoding and reject non-UTF-8 or invalid cookies before bundle creation. Selected decorated seams remain unsupported.
+- Reject contradictory command status/exit-code receipts. Bound aggregate receipt output while retaining overflow observations as failed scheduled cases.
+- Add focused regressions, including real subprocess termination, CLI contract validation, modified-host execution and byte-exact rollback; update package validation, CI selection, examples and support documentation together. Integration preserves the additional PR #16 safety fixes and their regressions.
+- Retain dev2 safety fixes, existing public names, commands and valid receipt shapes. Old receipts remain tied to their engine identity; new observation/schedule checks tighten validation rather than recertifying historical evidence. No new runtime dependency, live model request, production activation or measured-benefit claim.
+- Current execution and publication status are recorded separately in `validation/SAFETY-VALIDATION-1.3.0.dev3.md`; older validation files are historical and unchanged.
+
+
 ## 1.3.0.dev2 — executable-integration safety follow-up
 
 - Preserve host exception objects and exactly-once effects even when executors, finishers, recovery callbacks or guard cleanup raise `PolicyBlock` or `UseFallback`. Router fallback cannot replay an attempted host operation. Off/shadow baseline calls run outside router-signal handlers.

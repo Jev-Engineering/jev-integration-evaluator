@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+import json
 from pathlib import Path
 import platform
 import shutil
@@ -15,6 +16,45 @@ from ..io import InputError, digest, file_hash, read_json, safe_child, write_jso
 from .lifecycle import (_load, _lock, _check_discovery, _inspect_file, _receipt, _record,
                         implementation_status)
 from .recipes import RECIPES
+from .observations import validate_observation
+
+
+# Match the bounded reader used by lifecycle receipt loading.
+MAX_RECEIPT_BYTES = 64_000_000
+
+
+def _pretty_size(value, continuation_indent=0):
+    """Count write_json's UTF-8/indentation format without a full output buffer."""
+    encoder = json.JSONEncoder(indent=2, ensure_ascii=False, allow_nan=False)
+    return sum(len(part.encode('utf-8')) + part.count('\n')*continuation_indent
+               for part in encoder.iterencode(value))
+
+
+def _bounded_receipt(receipt):
+    # A real digest has this fixed width. Include it and write_json's newline in
+    # the budget before sealing, so every emitted receipt can be read back.
+    receipt['contract_digest'] = '0'*64
+    size = _pretty_size(receipt) + 1
+    if size > MAX_RECEIPT_BYTES:
+        size += _pretty_size('failed') - _pretty_size(receipt['status'])
+        size += _pretty_size([], 2) - _pretty_size(receipt['contract_assertions'], 2)
+        receipt['status'], receipt['contract_assertions'] = 'failed', []
+        for row in reversed(receipt['results']):
+            if row['observation'] is None:
+                continue
+            # A result object is indented four spaces inside the receipt.
+            # Subtract its exact old contribution; avoid reserializing the whole
+            # potentially large receipt for every discarded observation.
+            previous = _pretty_size(row, 4)
+            row.update(status='failed', observation=None, assertions=[], diagnostic='receipt_size_limit')
+            size += _pretty_size(row, 4) - previous
+            if size <= MAX_RECEIPT_BYTES:
+                break
+    # Bounded schedule metadata fits the reader independently of observations.
+    # Keep a final exact check as a guard if that contract is expanded later.
+    if size > MAX_RECEIPT_BYTES or _pretty_size(receipt) + 1 > MAX_RECEIPT_BYTES:
+        raise InputError('Implementation receipt metadata exceeds the local byte limit')
+    return seal(receipt)
 
 
 def _lookup(data, path):
@@ -111,13 +151,19 @@ def _contract_assertions(results, spec, baseline_results):
             saw_call = True
             if len(consumers)!=1 or not source: ok=False;continue
             original, selected = source[0].get('result'), consumers[0]['args'][1]
-            if not isinstance(original,list) or not isinstance(selected,list): ok=False;continue
+            if (not isinstance(original,list) or not isinstance(selected,list)
+                    or any(not isinstance(x,dict) or not isinstance(x.get('id'),str)
+                           for x in original + selected)):
+                ok=False;continue
+            if len({x['id'] for x in original}) != len(original) or len({x['id'] for x in selected}) != len(selected):
+                ok=False;continue
             known = {x['id']:x for x in original}
             if any(x['id'] not in known or x != known[x['id']] for x in selected): ok=False
             required = {x['id'] for x in original if (x.get('pinned') is True if pattern=='H' else x.get('contradictory') is True or x.get('uncertain') is True)}
             if not required <= {x['id'] for x in selected}: ok=False
             if pattern=='D' and any(not x.get('provenance') for x in selected):ok=False
-            if pattern=='H' and consumers[0]['args'][0].get(spec['policy']['choice_field'])!='/prune':ok=False
+            if pattern=='H' and (not isinstance(consumers[0]['args'][0],dict)
+                    or consumers[0]['args'][0].get(spec['policy']['choice_field'])!='/prune'):ok=False
         ok = ok and saw_call
     elif pattern == 'E':
         ok = True; saw = False
@@ -161,13 +207,22 @@ def verify_implementation(root, bundle, phase, *, approve_execution=False, basel
             if baseline['status']!='passed':raise InputError('Baseline did not pass')
             baseline_rows={r['case_id']:r for r in baseline['results']}
         started=utc_now(); results=[]
+        # A crash or interruption in either phase cannot leave older success
+        # current, including a baseline receipt that would authorize apply.
+        _record(bundle, plan, 'verification_started' if phase == 'modified' else 'baseline_verification_started')
         for case in spec['verification']['cases']:
             for mode in (('baseline',) if phase=='baseline' else ('off','shadow','active')):
                 try:
                     observation,execution_status=_probe(root,bundle,plan,spec,case,mode)
-                except (InputError, OSError):
-                    # A raced/unavailable source is a failed scheduled case, not
-                    # permission to execute changed bytes or omit the denominator.
+                    if execution_status not in ('passed', 'failed', 'timeout', 'not_run'):
+                        raise InputError('Unknown probe execution status')
+                    if execution_status == 'passed':
+                        validate_observation(observation, spec)
+                    else:
+                        observation = None  # Unsuccessful execution cannot supply passing evidence.
+                except (ValueError, TypeError, OSError, RecursionError):
+                    # Bad output and raced/unavailable source remain scheduled
+                    # failures. Never save an unvalidated observation or its data.
                     observation,execution_status=None,'failed'
                 assertions=[]
                 if observation is not None:
@@ -193,7 +248,11 @@ def verify_implementation(root, bundle, phase, *, approve_execution=False, basel
         if command:
             # Explicitly reviewed argv; filtered environment is NOT a sandbox.
             # This additional suite must already be trusted/externally isolated.
-            check=run_authorized_tests(root,command,approve_execution=True,timeout_s=spec['verification']['timeout_s'])
+            try:
+                check=run_authorized_tests(root,command,approve_execution=True,timeout_s=spec['verification']['timeout_s'])
+            except OSError:
+                # The declared runner did not start; do not echo argv/OS diagnostics.
+                check={'status':'not_run', 'returncode':None}
             command_checks.append({'definition_sha256':digest(command),'status':check['status'],'returncode':check['returncode']})
         passed=all(r['status']=='passed' for r in results) and all(r['status']=='passed' for r in command_checks)
         if phase=='modified' and len(contracts)!=4:passed=False
@@ -205,7 +264,7 @@ def verify_implementation(root, bundle, phase, *, approve_execution=False, basel
         # The separately authorized command may change generated files or modes
         # even when its exit status is zero and every earlier scratch probe passed.
         passed=passed and identity_valid
-        receipt=seal({'schema_version':'1.0','bundle_digest':plan['contract_digest'],'spec_digest':plan['spec_digest'],
+        receipt=_bounded_receipt({'schema_version':'1.0','bundle_digest':plan['contract_digest'],'spec_digest':plan['spec_digest'],
                       'phase':phase,'engine_identity':plan['engine_identity'],'command_definition_digest':digest(spec['verification']),
                       'file_hashes':{r['file']:r['old_sha256' if phase=='baseline' else 'new_sha256'] for r in plan['owned_files']},
                       'classification':'synthetic','status':'passed' if passed else 'failed','file_identity_valid':identity_valid,'started_at':started,'finished_at':utc_now(),
@@ -215,10 +274,13 @@ def verify_implementation(root, bundle, phase, *, approve_execution=False, basel
                       'results':results,'contract_assertions':contracts,'command_checks':command_checks,
                       'baseline_receipt_sha256':baseline_sha256 if phase=='modified' else None,
                       'activation_authorized':False,'benefit_demonstrated':False})
+        passed, contracts = receipt['status'] == 'passed', receipt['contract_assertions']
         validate_contract(receipt,'implementation-receipt')
         path=bundle/('baseline-receipt.json' if phase=='baseline' else 'verification-receipt.json')
         write_json(path,receipt)
-        if phase=='modified':_record(bundle,plan,'verified' if passed else 'verification_failed')
+        event = ('verified' if passed else 'verification_failed') if phase == 'modified' else (
+            'baseline_verification_passed' if passed else 'baseline_verification_failed')
+        _record(bundle, plan, event)
         return {'status':('baseline_passed' if phase=='baseline' else 'verified') if passed else 'verification_failed',
                 'receipt_sha256':file_hash(path),'bundle_digest':plan['contract_digest'],
                 'scheduled_cases':len(results),'passed_cases':sum(r['status']=='passed' for r in results),

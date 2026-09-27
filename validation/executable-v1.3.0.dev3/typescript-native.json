@@ -1,0 +1,14 @@
+{
+  "status": "passed",
+  "classification": "synthetic_parser_input",
+  "node": "v22.16.0",
+  "typescript": "5.8.3",
+  "tooling_root": "/opt/nvm/versions/node/v22.16.0/lib/node_modules",
+  "helper_sha256": "62ae35743633fa26d0ee1e74c79c6cb55d4ee1a59af55ed3790190f0ba224baa",
+  "functions": 1,
+  "diagnostics": 0,
+  "parser": "typescript_ast",
+  "target_code_executed": false,
+  "target_plugins_or_tsconfig_loaded": false,
+  "rewriting_qualified": false
+}
