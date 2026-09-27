@@ -186,7 +186,9 @@ def test_nonnegative_scope_judgments_never_turn_into_absence(factory, part, disp
     scope = scope_review(case)
     scope[part][0]["disposition"] = disposition
     ctx = context(case, scope)
-    assert ctx["outcome"] == ("insufficient_evidence" if disposition == "unresolved" else "nomination_required")
+    expected = ("insufficient_evidence" if disposition == "unresolved" or
+                (part == "seams" and disposition == "useful") else "nomination_required")
+    assert ctx["outcome"] == expected
     assert not ctx["scope_review"]["no_useful_judgment"]
 
 
@@ -750,6 +752,8 @@ def test_source_linked_examples_and_all_four_schema_mirrors():
     for file, contract in pairs.items():
         data = json.loads((examples / (file + ".json")).read_text())
         selection._validate(data, contract)
+    assert json.loads((examples / "context.json").read_text())["selection_engine_sha256"] == selection._engine_identity()
+    assert json.loads((examples / "selection.json").read_text())["selection_engine_sha256"] == selection._engine_identity()
     report = json.loads((examples / "report.json").read_text())
     raw = (examples / "host/opaque.py").read_bytes()
     assert report["files"][0]["sha256"] == hashlib.sha256(raw).hexdigest()

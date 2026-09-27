@@ -1,4 +1,4 @@
-# JEV Integration Evaluator 1.3.0.dev9
+# JEV Integration Evaluator 1.3.0.dev10
 
 **CompleteTech LLC · Evidence-driven integration analysis and evaluation**
 
@@ -9,6 +9,16 @@ The skill, Python distribution, and console command are named `jev-integration-e
 The [original executable implementation specification](references/executable-implementation-prompt.md) is retained as requirements provenance. The supported commands and deliberately bounded implementation coverage in this development build are documented in [the current support contract](references/executable-integrations.md).
 
 The default is deliberately conservative: **read-only analysis; no network; runtime off; no target code execution; no automatic adoption**. An unfamiliar repository can produce “no justified integration set.” That is a successful result, not an error.
+
+## Mixed source-review correction in 1.3.0.dev10
+
+The repository placement selector now blocks an approved candidate when its
+exact seam or entire source file has a negative scope judgment. A useful
+judgment elsewhere cannot override that conflict. The result retains the full
+requested denominator and asks for reconciliation; it does not authorize
+execution or change implementation coverage. See the
+[source-scope contract](references/placement-selection-v1.md) and
+[dev10 validation](validation/SCOPE-CONFLICT-VALIDATION-1.3.0.dev10.md).
 
 ## Pattern-by-pattern source conclusion in 1.3.0.dev9
 
@@ -252,7 +262,7 @@ Static analysis cannot recover every reflective/dynamic call, macro, callback, g
 
 A socket timeout and bounded thread pool are not hard real-time guarantees. The test runner is not a security sandbox; use an isolated runner for untrusted projects. Externally retained hash/length checkpoints detect mismatching audit prefixes, but hash chains do not authenticate an adversarial writer. Frozen local manifests cannot prove an untouched holdout or independent trials; their statistical assumptions remain explicit. API fixtures and receipts can be forged by an untrusted editor; authorization and independent experiment review remain host responsibilities.
 
-Development validation is in [the dev9 conclusion report](validation/CONCLUSION-VALIDATION-1.3.0.dev9.md), with supplied-fragment and full integration qualification distinguished. Earlier validation records are retained as historical evidence; they are not measurements for this build. Live JEV accuracy, cost, latency and calibration were not measured during package construction. The tested model interface uses mocked HTTP and exact local fixtures.
+Development validation is in [the dev10 scope-conflict report](validation/SCOPE-CONFLICT-VALIDATION-1.3.0.dev10.md), with supplied-fragment and full integration qualification distinguished. Earlier validation records are retained as historical evidence; they are not measurements for this build. Live JEV accuracy, cost, latency and calibration were not measured during package construction. The tested model interface uses mocked HTTP and exact local fixtures.
 
 ## License
 

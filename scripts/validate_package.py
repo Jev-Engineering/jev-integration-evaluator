@@ -34,7 +34,7 @@ def validate(check_manifest=False):
               'schemas/implementation-manifest.schema.json','schemas/implementation-tests.schema.json',
               'tests/test_executable_recipes.py','tests/test_executable_runtime.py','tests/test_executable_safety.py','tests/test_executable_cli.py','tests/test_executable_wheel.py',
               'tests/test_executable_host_boundaries.py','tests/test_executable_source_scope.py','tests/test_executable_verification_identity.py',
-              'validation/CONCLUSION-VALIDATION-1.3.0.dev9.md',
+              'validation/SCOPE-CONFLICT-VALIDATION-1.3.0.dev10.md',
               'jev_integration_evaluator/integrations/observations.py','schemas/implementation-observation.schema.json',
               'tests/test_executable_failure_receipts.py','tests/test_executable_source_fidelity.py','tests/test_executable_command_receipts.py',
               'examples/implementation/observation.example.json',
@@ -68,6 +68,9 @@ def validate(check_manifest=False):
                  'references/placement-selection-v1.md',
                  'tests/test_repository_placement_selection.py',
                  'tests/test_repository_placement_wheel.py',
+                 'tests/test_scope_review_conflicts.py',
+                 'tests/test_placement_review_consistency.py',
+                 'tests/test_placement_review_consistency_cli.py',
                  'examples/placement-selection/host/opaque.py']
     required += [f'{directory}/{name}.schema.json'
                  for directory in ('schemas', 'jev_integration_evaluator/data')
@@ -177,6 +180,10 @@ def validate(check_manifest=False):
         jsonschema.validate(read_json(scope_examples/(name+'.json')), schemas[kind])
     scope_report=read_json(scope_examples/'report.json')
     scope_review=read_json(scope_examples/'scope-review.json')
+    from jev_integration_evaluator.placement_selection import _engine_identity as selection_engine_identity
+    if (read_json(scope_examples/'context.json')['selection_engine_sha256']!=selection_engine_identity()
+            or read_json(scope_examples/'selection.json')['selection_engine_sha256']!=selection_engine_identity()):
+        raise InputError('Repository scope example engine identity mismatch')
     if (not scope_report['files'] or
             any(file_hash(safe_child(scope_examples/'host',item['file']))!=item['sha256']
                 for item in scope_report['files']) or

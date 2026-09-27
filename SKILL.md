@@ -4,7 +4,7 @@ description: Discover, score, design, optimize, and experimentally validate high
 license: MIT
 metadata:
   author: CompleteTech LLC
-  version: 1.3.0.dev9
+  version: 1.3.0.dev10
 ---
 
 # JEV Integration Evaluator
@@ -56,6 +56,9 @@ not enough. `repository-placement select` records an experimental set but does
 not create an implementation bundle; use the existing single-candidate selector
 and planner for a reviewed supported implementation. Never treat a reviewer
 label or digest as authenticated permission. Read `references/placement-selection-v1.md`.
+An approved candidate cannot override a negative whole-file or exact-seam
+scope judgment on its own source, even if another reviewed source is useful.
+Resolve conflicting semantic reviews before experimental selection.
 
 For a pattern-by-pattern A–M conclusion, use `repository-discovery --stage
 conclude` with the fresh capability report, complete file and seam opinions,
