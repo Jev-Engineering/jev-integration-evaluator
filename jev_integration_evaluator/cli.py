@@ -26,6 +26,16 @@ def parser():
     sub=p.add_subparsers(dest="command",required=True)
     def common(name,help):
         q=sub.add_parser(name,help=help); q.add_argument("--config"); return q
+    for name, description in (
+        ("discover-capabilities", "Discover bounded source capabilities without executing target code"),
+        ("nominate-candidate", "Admit a source-anchored nomination; semantic and binding review remain pending"),
+    ):
+        s=sub.add_parser(name,help=description)
+        s.add_argument("--repo",required=True); s.add_argument("--out",required=True)
+        s.add_argument("--policy",help="External discovery policy; target configuration is not executed")
+        if name=="nominate-candidate":
+            s.add_argument("--nomination",required=True)
+            s.add_argument("--report-sha256",required=True)
     s=common("scan","Scan source and generate all analysis artifacts")
     s.add_argument("--repo",required=True); s.add_argument("--out",required=True)
     s.add_argument("--depth",choices=["QUICK","STANDARD","RESEARCH"]); s.add_argument("--traces"); s.add_argument("--reviews")
@@ -273,6 +283,15 @@ def execute(args):
         from .traceability import link_artifact
         return _save(args.out,link_artifact(read_json(args.inventory),args.candidate,args.kind,args.artifact))
     if cmd=="validate":
+        if args.kind in ("repository-capabilities", "candidate-nomination", "admitted-nomination"):
+            from .capabilities import _schema, _digest, _load, MAX_INPUT_BYTES
+            limit=16_777_217 if args.kind=="repository-capabilities" else MAX_INPUT_BYTES
+            data=_load(Path(args.input),max_bytes=limit)
+            _schema(args.kind,data)
+            if args.kind=="repository-capabilities":
+                if _digest({k:v for k,v in data.items() if k!="report_sha256"})!=data["report_sha256"]:
+                    raise InputError("Capability report digest mismatch")
+            return {"status":"valid","kind":args.kind,"records":1,"source_revalidated":False}
         import jsonschema
         schema=read_json(Path(__file__).parent/"data"/(args.kind+".schema.json"))
         if args.kind=="config": data={"jev_analysis":load_config(args.input)}
@@ -348,6 +367,16 @@ def execute(args):
 def main(argv=None):
     args=parser().parse_args(argv)
     try:
+        if args.command in ("discover-capabilities", "nominate-candidate"):
+            from .capabilities import main as capabilities_main
+            forwarded=["discover" if args.command=="discover-capabilities" else "nominate",
+                       "--repo",args.repo,"--out",args.out]
+            if args.policy: forwarded.extend(["--policy",args.policy])
+            if args.command=="nominate-candidate":
+                forwarded.extend(["--nomination",args.nomination,"--report-sha256",args.report_sha256])
+            # The capability CLI owns strict input parsing, redacted diagnostics
+            # and exclusive private outputs. Do not use generic _save/stdout here.
+            return capabilities_main(forwarded)
         result=execute(args)
         # Artifacts contain details; concise stdout remains useful in scripts.
         if getattr(args,"out",None) and args.command not in ("scan","architecture","report","scaffold","implement-plan","implement-verify"):

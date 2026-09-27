@@ -15,3 +15,11 @@ Keep configuration strict, stable CLI errors actionable, archives free of creden
 For executable-integration changes, also run `python scripts/run_implementation_demo.py --out NEW_PRIVATE_DIRECTORY` and the installed-wheel host test. Keep the support matrix and all strict implementation schema copies current. Do not publish private target bundles. Record actual interpreters/platforms; unrun CI jobs and live activation are not local validation results.
 
 For dev3 changes, retain the observation-contract, full-schedule receipt, unavailable-command, real process-termination and source-fidelity regressions. Re-verification after interruption must not reuse a historical pass as current evidence.
+
+For discovery changes, run all `tests/test_capabilities*.py` suites on a supported
+POSIX filesystem, including the installed-wheel CLI check. Retain the native
+unsupported-platform result, redacted failures, exclusive external outputs,
+source/policy/parser identity guards and mandatory eligibility exclusions.
+Historical examples bind their recorded parser; regenerate fresh anchors for a
+different interpreter or repository. Keep issue #5 open while the inventory and
+semantic-review bridge remains absent.

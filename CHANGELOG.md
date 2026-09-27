@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.0.dev4 — source-bound discovery and nominations
+
+- Integrate the supplied issue #5 checkpoint into the complete evaluator. Add bounded read-only Python capability discovery, opaque-name source/AST anchors, package/test/configuration sightings, static registry possibilities and explicit incomplete-coverage outcomes.
+- Admit strict source-hashed nomination records against a freshly recomputed, externally retained report digest and caller-owned policy. Keep semantic review, binding review, benefit, execution qualification and authority unresolved.
+- Expose `discover-capabilities` and `nominate-candidate` in the main CLI, preserve the standalone module/script, and register all three mirrored contracts with package and CLI validation.
+- Qualify the complete installed package and parser-specific synthetic examples. Keep the legacy scanner, transformations and runtime behavior intact; discovery uses POSIX descriptor-relative access and does not import target code or invoke target tooling.
+- Harden JSON input reads against linked/special files and preserve bounded, redacted failures. Correct conditional rebinding, local-scope and shadowed/decorated-callee classification; reject misleading generator and invalid/reserved-module structural preflight hints.
+- This is a partial contribution to issue #5. The nomination-to-inventory/semantic-review bridge, repository session command and the remaining roadmap are outstanding. No provider connection, production activation or measured benefit is established.
+- Current executed qualification is recorded in `validation/DISCOVERY-VALIDATION-1.3.0.dev4.md`; previous validation records remain historical.
+
 ## 1.3.0.dev3 — complete failure receipts and source fidelity
 
 - Add the strict mirrored `implementation-observation` contract, recipe-bound trace roles/arity and bounded counters. Invalid probe output becomes a failed scheduled case with no invalid payload copied into the receipt.

@@ -34,10 +34,16 @@ def validate(check_manifest=False):
               'schemas/implementation-manifest.schema.json','schemas/implementation-tests.schema.json',
               'tests/test_executable_recipes.py','tests/test_executable_runtime.py','tests/test_executable_safety.py','tests/test_executable_cli.py','tests/test_executable_wheel.py',
               'tests/test_executable_host_boundaries.py','tests/test_executable_source_scope.py','tests/test_executable_verification_identity.py',
-              'validation/SAFETY-VALIDATION-1.3.0.dev3.md',
+              'validation/DISCOVERY-VALIDATION-1.3.0.dev4.md',
               'jev_integration_evaluator/integrations/observations.py','schemas/implementation-observation.schema.json',
               'tests/test_executable_failure_receipts.py','tests/test_executable_source_fidelity.py','tests/test_executable_command_receipts.py',
-              'examples/implementation/observation.example.json']
+              'examples/implementation/observation.example.json',
+              'jev_integration_evaluator/capabilities.py','scripts/discover_capabilities.py','references/capabilities.md',
+              'schemas/repository-capabilities.schema.json','schemas/candidate-nomination.schema.json','schemas/admitted-nomination.schema.json',
+              'tests/test_capabilities.py','tests/test_capabilities_adversarial.py','tests/test_capabilities_examples.py',
+              'tests/test_capabilities_cli.py','tests/test_capabilities_wheel.py',
+              'examples/capabilities/report.example.json','examples/capabilities/nomination.example.json',
+              'examples/capabilities/admitted.example.json','examples/capabilities/opaque_host/opaque.py']
     for item in required:
         if not (ROOT/item).is_file():raise InputError('Required package file missing: '+item)
     front=(ROOT/'SKILL.md').read_text().split('---',2)
@@ -65,6 +71,26 @@ def validate(check_manifest=False):
         transform(example/'target',spec)
         implementation_examples+=1
     jsonschema.validate(read_json(ROOT/'examples/implementation/observation.example.json'),schemas['implementation-observation'])
+    from jev_integration_evaluator.capabilities import _digest as capability_digest
+    capability_examples={}
+    for name,kind in (('report','repository-capabilities'),('nomination','candidate-nomination'),('admitted','admitted-nomination')):
+        value=read_json(ROOT/'examples/capabilities'/(name+'.example.json'))
+        jsonschema.validate(value,schemas[kind]);capability_examples[name]=value
+    report,nomination,admitted=(capability_examples[name] for name in ('report','nomination','admitted'))
+    if (report['report_sha256']!=capability_digest({k:v for k,v in report.items() if k!='report_sha256'})
+            or report['snapshot_sha256']!=capability_digest(report['files'])
+            or nomination['report_sha256']!=report['report_sha256']
+            or admitted['report_sha256']!=report['report_sha256']
+            or admitted['nomination_sha256']!=capability_digest(nomination)
+            or admitted['source']!=nomination['source']):
+        raise InputError('Capability example provenance mismatch')
+    selected=[s for s in report['seams'] if s['seam_id']==nomination['seam_id']]
+    if len(selected)!=1 or selected[0]['source']!=nomination['source']:
+        raise InputError('Capability example nomination differs from discovered source')
+    for source in [s['source'] for s in report['seams']]:
+        path=safe_child(ROOT/'examples/capabilities/opaque_host',source['file'])
+        if file_hash(path)!=source['file_sha256'] or not 1<=source['start_line']<=source['end_line']<=len(path.read_bytes().splitlines()):
+            raise InputError('Capability example source identity mismatch')
     cfg=load_config(ROOT/'templates/jev-config.yaml')
     jsonschema.validate({'jev_analysis':cfg},schemas['config'])
     fixture_records=0
@@ -110,6 +136,7 @@ def validate(check_manifest=False):
     return {'status':'passed','schema_count':len(schemas),'synthetic_records_validated':fixture_records,
             'implementation_examples_validated_without_execution':implementation_examples,
             'synthetic_observation_examples_validated':1,
+            'capability_examples_validated_without_execution':len(capability_examples),
             'offline_replay_decisions':result['evaluated'],'manifest_files_verified':checked,
             'network_requests':0,'target_code_executed':False}
 
