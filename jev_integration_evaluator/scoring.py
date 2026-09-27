@@ -1,5 +1,6 @@
 """Transparent weighted scores, evidence intervals, and hard rejection gates."""
 from __future__ import annotations
+import copy
 import math
 from .config import WEIGHTS
 from .io import InputError, finite
@@ -75,8 +76,14 @@ def score_candidate(c: dict, cfg: dict) -> dict:
 
 
 def apply_reviews(scan: dict, reviews: dict, cfg: dict) -> dict:
-    known = {c["candidate_id"]: c for c in scan["candidates"]}
-    for cid, update in reviews.items():
+    # Stage the complete batch. A late validation failure must not leave an
+    # earlier approval, changed exclusion, or partial score in the caller's scan.
+    candidates = copy.deepcopy(scan["candidates"])
+    known = {c["candidate_id"]: c for c in candidates}
+    if len(known) != len(candidates):
+        raise InputError("Duplicate candidate identity in review inventory")
+    # Detach nested proposals: later caller edits cannot alter validated scores.
+    for cid, update in copy.deepcopy(reviews).items():
         if cid not in known: raise InputError(f"Unknown candidate {cid}")
         c = known[cid]
         if update.get("source_sha256") != c["source"]["source_sha256"]: raise InputError("Stale semantic review")
@@ -92,15 +99,33 @@ def apply_reviews(scan: dict, reviews: dict, cfg: dict) -> dict:
             if update["deterministic_alternative"] not in ("none", "weak", "equivalent", "preferred", "mandatory"):
                 raise InputError("Invalid deterministic alternative")
             # Anti-pattern classifications can only be changed by rerunning discovery, not a review score edit.
-            if c["pattern"] == "NONE" and update["deterministic_alternative"] not in ("preferred", "mandatory"):
+            if (c["pattern"] == "NONE" or c["deterministic_alternative"] in ("preferred", "mandatory")) and update["deterministic_alternative"] not in ("preferred", "mandatory"):
                 raise InputError("Cannot waive a deterministic anti-pattern by a scoring override")
+            if c["deterministic_alternative"] == "mandatory" and update["deterministic_alternative"] != "mandatory":
+                raise InputError("Cannot downgrade a mandatory deterministic exclusion by a scoring override")
             c["deterministic_alternative"] = update["deterministic_alternative"]
         if "estimates" in update:
             if set(update["estimates"]) - set(c["estimates"]): raise InputError("Unknown estimate field")
             c["estimates"].update(update["estimates"])
         if "hard_real_time" in update:
             if type(update["hard_real_time"]) is not bool: raise InputError("hard_real_time must be boolean")
+            if c.get("hard_real_time") is True and update["hard_real_time"] is False:
+                raise InputError("Cannot waive a hard real-time exclusion by a scoring override")
             c["hard_real_time"] = update["hard_real_time"]
         score_candidate(c, cfg)
-    scan["candidates"].sort(key=lambda c: (-c["tier"], -c["placement_score"], c["candidate_id"]))
+    # Sorting is also validation: an untouched malformed candidate must not
+    # cause a late failure after the review has changed another candidate.
+    try:
+        candidates.sort(key=lambda c: (-c["tier"], -c["placement_score"], c["candidate_id"]))
+    except (KeyError, TypeError, ValueError):
+        raise InputError("Invalid candidate score in review inventory") from None
+    # Commit only after the whole batch has passed. Keep existing candidate and
+    # list objects so callers holding a reviewed candidate see later trace data.
+    originals = scan["candidates"]
+    original_by_id = {c["candidate_id"]: c for c in originals}
+    for staged in candidates:
+        original = original_by_id[staged["candidate_id"]]
+        original.clear()
+        original.update(staged)
+    originals[:] = [original_by_id[staged["candidate_id"]] for staged in candidates]
     return scan

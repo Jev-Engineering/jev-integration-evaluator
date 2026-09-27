@@ -1,6 +1,6 @@
 # Source capability discovery and nominations
 
-Status: **dev4 discovery contracts retained in 1.3.0.dev5**.
+Status: **dev4 discovery contracts retained in 1.3.0.dev6**.
 The integrated read-only discovery contract is available through the central CLI
 and standalone module/script. The [dev5 inventory/semantic-review bridge](repository-discovery-v1.md)
 uses these contracts. A complete source-reviewed no-useful-placement outcome
@@ -132,7 +132,7 @@ Its secure artifact reader has the same POSIX requirement and rejects special,
 linked or oversized input files. Use `nominate-candidate` for fresh
 source/policy/report checks.
 
-See `validation/SEMANTIC-BRIDGE-VALIDATION-1.3.0.dev5.md` for current qualification,
+See `validation/REVIEW-GATE-VALIDATION-1.3.0.dev6.md` for current qualification,
 including its actual platforms and interpreters. The original checkpoint's
 fragment-only Python 3.13.5 run is historical and does not establish full-package
 qualification. Native Windows discovery, new-language rewriting, independently

@@ -1,4 +1,4 @@
-# JEV Integration Evaluator 1.3.0.dev5
+# JEV Integration Evaluator 1.3.0.dev6
 
 **CompleteTech LLC · Evidence-driven integration analysis and evaluation**
 
@@ -9,6 +9,16 @@ The skill, Python distribution, and console command are named `jev-integration-e
 The [original executable implementation specification](references/executable-implementation-prompt.md) is retained as requirements provenance. The supported commands and deliberately bounded implementation coverage in this development build are documented in [the current support contract](references/executable-integrations.md).
 
 The default is deliberately conservative: **read-only analysis; no network; runtime off; no target code execution; no automatic adoption**. An unfamiliar repository can produce “no justified integration set.” That is a successful result, not an error.
+
+## Review exclusions in 1.3.0.dev6
+
+Semantic reviews now retain deterministic and hard-real-time exclusions. A
+review cannot clear a hard-real-time flag or downgrade a preferred/mandatory
+deterministic alternative. The whole review batch is validated before the
+inventory changes, and duplicate candidate IDs are rejected. Successful review
+preserves existing candidate references used by later trace analysis. See
+[the review boundary](references/review-gate-invariants.md) and
+[dev6 validation](validation/REVIEW-GATE-VALIDATION-1.3.0.dev6.md).
 
 ## Source-bound discovery and semantic review in 1.3.0.dev5
 
@@ -200,7 +210,7 @@ Static analysis cannot recover every reflective/dynamic call, macro, callback, g
 
 A socket timeout and bounded thread pool are not hard real-time guarantees. The test runner is not a security sandbox; use an isolated runner for untrusted projects. Externally retained hash/length checkpoints detect mismatching audit prefixes, but hash chains do not authenticate an adversarial writer. Frozen local manifests cannot prove an untouched holdout or independent trials; their statistical assumptions remain explicit. API fixtures and receipts can be forged by an untrusted editor; authorization and independent experiment review remain host responsibilities.
 
-Development validation is in [the dev5 semantic bridge report](validation/SEMANTIC-BRIDGE-VALIDATION-1.3.0.dev5.md), with supplied-fragment and full integration qualification distinguished. Earlier v1.1, v1.2 and dev1–dev4 validation records are retained byte-for-byte as historical evidence; they are not measurements for this build. Live JEV accuracy, cost, latency and calibration were not measured during package construction. The tested model interface uses mocked HTTP and exact local fixtures.
+Development validation is in [the dev6 review-gate report](validation/REVIEW-GATE-VALIDATION-1.3.0.dev6.md), with supplied-fragment and full integration qualification distinguished. Earlier v1.1, v1.2 and dev1–dev5 validation records are retained byte-for-byte as historical evidence; they are not measurements for this build. Live JEV accuracy, cost, latency and calibration were not measured during package construction. The tested model interface uses mocked HTTP and exact local fixtures.
 
 ## License
 

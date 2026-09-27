@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.0.dev6 — review exclusion and batch safety
+
+- Reject semantic reviews that clear a hard-real-time gate, remove a preferred or mandatory deterministic exclusion, or downgrade a mandatory exclusion to preferred.
+- Validate every review before changing the inventory, reject duplicate candidate IDs, and detach mutable review input. Preserve candidate/list references on successful review for existing trace consumers.
+- Add 65 synthetic regression cases covering exclusion retention, failed-batch atomicity, alias compatibility and scoring behavior. The dev5 discovery and inventory bridge remains available; issues #5 and #7 remain open for their separate outstanding acceptance work.
+- Current qualification is recorded in `validation/REVIEW-GATE-VALIDATION-1.3.0.dev6.md`. No provider connection, activation or measured benefit is established.
+
 ## 1.3.0.dev5 — source-matched inventory and semantic review
 
 - Add read-only `repository-discovery` discover/prepare/review stages to the installed CLI, with mandatory private external output and redacted status/error summaries.

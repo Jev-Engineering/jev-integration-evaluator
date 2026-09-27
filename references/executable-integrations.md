@@ -1,6 +1,6 @@
 # Executable Python integrations — development support contract
 
-Version: **1.3.0.dev5**. This is a bounded implementation engine, not a general-purpose program rewriter or production activation certification. Public CLI and package names remain `jev-integration-evaluator` and `jev_integration_evaluator`. Legacy commands and receipts are retained.
+Version: **1.3.0.dev6**. This is a bounded implementation engine, not a general-purpose program rewriter or production activation certification. Public CLI and package names remain `jev-integration-evaluator` and `jev_integration_evaluator`. Legacy commands and receipts are retained.
 
 The new [capability discovery contract](capabilities.md) is a separate preparation
 step. Its structural preflight and admitted nominations do not replace a reviewed
@@ -129,4 +129,4 @@ Modified verification appends and fsyncs `verification_started` before executing
 
 The transformer checks Python's declared source encoding, not just whether the bytes happen to decode as UTF-8. Equivalent UTF-8 spellings are accepted; non-UTF-8, unknown encodings and BOM inputs remain unsupported. A leading unrelated decorated function or class is preserved: generated imports are inserted before its earliest decorator token, including parenthesized multiline forms, never between decorator and definition. This is source-fidelity correction within the existing flat-module shape, not support for a decorated selected seam, packages or arbitrary control flow.
 
-Full-source code and data identity changes require fresh plans and corresponding receipts. Existing valid receipt JSON shapes remain readable; semantic validation is stricter. All published verification remains synthetic host-wiring evidence, not provider connectivity, application benefit or activation authority. See `validation/SEMANTIC-BRIDGE-VALIDATION-1.3.0.dev5.md` for current integration qualification; `validation/SAFETY-VALIDATION-1.3.0.dev3.md` records the historical dev3 matrix.
+Full-source code and data identity changes require fresh plans and corresponding receipts. Existing valid receipt JSON shapes remain readable; semantic validation is stricter. All published verification remains synthetic host-wiring evidence, not provider connectivity, application benefit or activation authority. See `validation/REVIEW-GATE-VALIDATION-1.3.0.dev6.md` for current integration qualification; `validation/SEMANTIC-BRIDGE-VALIDATION-1.3.0.dev5.md` records the historical dev5 matrix.
