@@ -1,0 +1,75 @@
+"""Build the two new strict mirrored runner contracts deterministically.
+
+This writes only these contribution-owned schemas. It does not rebuild the
+repository release manifest or imply full-repository validation.
+"""
+from pathlib import Path
+import json
+
+ROOT=Path(__file__).resolve().parents[1]
+HEX={'type':'string','pattern':'^[0-9a-f]{64}$'}
+ID={'type':'string','pattern':'^[A-Za-z0-9][A-Za-z0-9_.-]{0,95}$'}
+REL={'type':'string','minLength':1,'maxLength':240,
+     'pattern':r'^(?!/)(?!.*\\)(?!.*[\u0000-\u001f\u007f])(?!.*(?:^|/)\.\.?(/|$))[^/]+(?:/[^/]+)*$'}
+
+def obj(properties):
+    return {'type':'object','additionalProperties':False,'required':list(properties),'properties':properties}
+
+def integer(low,high):return {'type':'integer','minimum':low,'maximum':high}
+
+def const(value):return {'const':value}
+
+ENV_KEYS=['python_executable','python_sha256','python_version','machine','kernel',
+          'worker_sha256','supervisor_sha256','library_path','library_sha256',
+          'runtime_dependencies_sha256']
+environment_identity=obj({key:HEX if key.endswith('_sha256') else {'type':'string','minLength':1,'maxLength':4096}
+                          for key in ENV_KEYS})
+limits=obj({key:integer(*bounds) for key,bounds in {
+    'wall_seconds':(1,30),'cpu_seconds':(1,20),'address_space_bytes':(67108864,536870912),
+    'open_files':(16,64),'output_bytes':(64,1048576),'schedule_seconds':(1,120)}.items()})
+spec=obj({
+    'schema_version':const('1.0'),'backend':const('linux-chroot-seccomp-python-ro-v1'),
+    'source_identity':obj({'device':integer(0,2**64-1),'inode':integer(0,2**64-1)}),
+    'files':{'type':'array','minItems':1,'maxItems':256,'uniqueItems':True,
+             'items':obj({'path':REL,'sha256':HEX,'bytes':integer(0,2097152),
+                          'mode':{'type':'integer','enum':[292,420,365,493]}})},
+    'environment_identity':environment_identity,
+    'environment':{'type':'object','maxProperties':16,'additionalProperties':False,
+                   'patternProperties':{'^JEV_[A-Z0-9_]{1,40}$':{'type':'string','maxLength':256,'pattern':'^[^\u0000]*$'}}},
+    'schedule':{'type':'array','minItems':1,'maxItems':64,
+                'items':obj({'case_id':ID,'entry':REL,'argv':{'type':'array','maxItems':32,
+                    'items':{'type':'string','maxLength':1024,'pattern':'^[^\u0000]*$'}}})},
+    'limits':limits,
+})
+outcomes=['exited_zero','execution_failed','timeout','output_limit','setup_failed',
+    'cleanup_failed','copied_source_drift','schedule_deadline','environment_drift',
+    'source_root_changed','source_drift','source_changed_during_read','unsafe_or_missing_root',
+    'unsafe_or_missing_source','unsupported_source_file','source_byte_limit','unsupported_platform',
+    'privileged_launcher_required','libseccomp_missing','runtime_probe_failed','absolute_root_required',
+    'prerequisite_io_error']
+row=obj({'case_id':ID,'command_sha256':HEX,'outcome':{'type':'string','enum':outcomes},
+    'target_launch_released':{'type':'boolean'},'isolation_established':{'type':'boolean'},
+    'returncode':{'anyOf':[{'type':'null'},integer(-128,255)]},
+    'stdout_bytes':integer(0,1048576),'stderr_bytes':integer(0,1048576),
+    'stdout_sha256':HEX,'stderr_sha256':HEX,'elapsed_ms':integer(0,180000),
+    'cleanup_complete':{'type':'boolean'}})
+receipt=obj({'schema_version':const('1.0'),'backend':const('linux-chroot-seccomp-python-ro-v1'),
+    'run_id':{'type':'string','format':'uuid'},'request_sha256':HEX,
+    'authority_reference_sha256':HEX,'source_manifest_sha256':HEX,'environment_identity_sha256':HEX,
+    'schedule_sha256':HEX,'evidence_kind':const('runner_execution_only'),
+    'integration_verified':const(False),'activation_eligible':const(False),
+    'source_identity_valid':{'type':'boolean'},'scheduled':integer(1,64),'recorded':integer(1,64),
+    'exited_zero':integer(0,64),'cases':{'type':'array','minItems':1,'maxItems':64,'items':row}})
+
+
+def main():
+    for name,value in [('native-runner-spec-v1',spec),('native-runner-receipt-v1',receipt)]:
+        value={'$schema':'https://json-schema.org/draft/2020-12/schema',
+               'title':name,'description':'Runner-only contribution. Cross-artifact semantic validation is mandatory.',**value}
+        data=(json.dumps(value,sort_keys=True,indent=2)+'\n').encode()
+        for folder in [ROOT/'schemas',ROOT/'jev_integration_evaluator'/'data']:
+            folder.mkdir(parents=True,exist_ok=True)
+            (folder/(name+'.schema.json')).write_bytes(data)
+    print('Wrote two mirrored native-runner contracts.')
+
+if __name__=='__main__':main()
