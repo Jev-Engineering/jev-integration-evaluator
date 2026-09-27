@@ -1,6 +1,8 @@
 # Repository discovery and semantic review
 
-Version 1.3.0.dev5 provides three read-only stages of issue #5. They use the
+Version 1.3.0.dev5 introduced three read-only stages of issue #5. The later
+`conclude` stage is specified separately in
+[`repository-conclusion-v1.md`](repository-conclusion-v1.md). They use the
 published dev4 discovery engine and the existing scanner/scoring constructors.
 They do not implement issue #4's durable repository implementation session.
 

@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.3.0.dev9 — pattern-by-pattern repository conclusions
+
+- Add a read-only `repository-discovery --stage conclude` operation with
+  complete file/seam A–M opinions, objective and engine binding, unresolved
+  denominators, and an independently retained review-digest requirement for a
+  bounded negative conclusion.
+- Preserve dev8 `repository-placement` and dev7 selection contracts. The new
+  conclusion is an additional review artifact, not implementation authority,
+  provider qualification, production activation or measured benefit.
+- Add strict mirrored schemas, a fresh synthetic demonstration, installed-wheel
+  and adversarial checks, and the dev9 validation record.
+
 ## 1.3.0.dev8 — reviewed repository-scope outcomes
 
 - Add a source-revalidated repository placement context that distinguishes

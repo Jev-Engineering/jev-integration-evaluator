@@ -1,4 +1,4 @@
-# JEV Integration Evaluator 1.3.0.dev8
+# JEV Integration Evaluator 1.3.0.dev9
 
 **CompleteTech LLC · Evidence-driven integration analysis and evaluation**
 
@@ -9,6 +9,16 @@ The skill, Python distribution, and console command are named `jev-integration-e
 The [original executable implementation specification](references/executable-implementation-prompt.md) is retained as requirements provenance. The supported commands and deliberately bounded implementation coverage in this development build are documented in [the current support contract](references/executable-integrations.md).
 
 The default is deliberately conservative: **read-only analysis; no network; runtime off; no target code execution; no automatic adoption**. An unfamiliar repository can produce “no justified integration set.” That is a successful result, not an error.
+
+## Pattern-by-pattern source conclusion in 1.3.0.dev9
+
+`repository-discovery --stage conclude` adds a read-only A–M review for every
+enumerated file and seam. It binds the objective, source, configuration, policy
+and conclusion engine, and requires an independently retained review digest
+before a complete negative opinion can be reported. Missing or unresolved
+opinions remain in the denominator. The result is limited to the reviewed
+source scope and never certifies implementation, live connectivity, activation
+or benefit. See the [conclusion contract](references/repository-conclusion-v1.md).
 
 ## Reviewed source-scope outcomes in 1.3.0.dev8
 
@@ -74,9 +84,9 @@ external policy, private output and review requirements. Existing
 discovery engine. Native Windows discovery is unsupported; JS/TS coverage in this
 command remains explicitly incomplete.
 
-This is a partial delivery for [issue #5](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/5).
-A complete source-reviewed no-useful-placement outcome and the repository
-implementation session remain outstanding. A semantic opinion supplies neither
+This original dev5 stage was a partial delivery for [issue #5](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/5).
+The later dev8 and dev9 review contracts provide bounded source conclusions;
+the repository implementation session remains outstanding. A semantic opinion supplies neither
 host bindings nor execution/activation authority. Current qualification is in
 [the dev5 validation record](validation/SEMANTIC-BRIDGE-VALIDATION-1.3.0.dev5.md).
 
@@ -242,7 +252,7 @@ Static analysis cannot recover every reflective/dynamic call, macro, callback, g
 
 A socket timeout and bounded thread pool are not hard real-time guarantees. The test runner is not a security sandbox; use an isolated runner for untrusted projects. Externally retained hash/length checkpoints detect mismatching audit prefixes, but hash chains do not authenticate an adversarial writer. Frozen local manifests cannot prove an untouched holdout or independent trials; their statistical assumptions remain explicit. API fixtures and receipts can be forged by an untrusted editor; authorization and independent experiment review remain host responsibilities.
 
-Development validation is in [the dev8 scope-outcome report](validation/SCOPE-OUTCOME-VALIDATION-1.3.0.dev8.md), with supplied-fragment and full integration qualification distinguished. Earlier validation records are retained as historical evidence; they are not measurements for this build. Live JEV accuracy, cost, latency and calibration were not measured during package construction. The tested model interface uses mocked HTTP and exact local fixtures.
+Development validation is in [the dev9 conclusion report](validation/CONCLUSION-VALIDATION-1.3.0.dev9.md), with supplied-fragment and full integration qualification distinguished. Earlier validation records are retained as historical evidence; they are not measurements for this build. Live JEV accuracy, cost, latency and calibration were not measured during package construction. The tested model interface uses mocked HTTP and exact local fixtures.
 
 ## License
 
