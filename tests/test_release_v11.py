@@ -1,4 +1,5 @@
 import importlib.util
+import json
 import shutil
 from pathlib import Path
 import pytest
@@ -10,6 +11,11 @@ def release_validator(root, tmp_path):
     destination = tmp_path / 'package'
     shutil.copytree(root, destination, ignore=shutil.ignore_patterns('.git', 'validation', 'node_modules', '__pycache__',
                         '.pytest_cache', '.venv', 'build', 'dist', '*.egg-info'))
+    # Exclude large historical evidence, but include the current release's
+    # required validation metadata in this otherwise complete package fixture.
+    current_validation = json.loads((root / 'skill-package.json').read_text())['validation']
+    (destination / current_validation).parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(root / current_validation, destination / current_validation)
     spec = importlib.util.spec_from_file_location('validate_test_copy', root / 'scripts/validate_package.py')
     module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
     module.ROOT = destination

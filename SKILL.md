@@ -4,7 +4,7 @@ description: Discover, score, design, optimize, and experimentally validate high
 license: MIT
 metadata:
   author: CompleteTech LLC
-  version: 1.3.0.dev1
+  version: 1.3.0.dev2
 ---
 
 # JEV Integration Evaluator
@@ -12,6 +12,8 @@ metadata:
 **LLMs generate. JEV classifies, selects, and evaluates. Deterministic code enforces. Instrumentation measures. Experiments decide whether JEV stays.**
 
 ## Executable implementation mode
+
+Use the dev2 host-effect boundary: do not interpret an executor/finisher exception as a routing fallback, and never recreate a router or coordinator per decision to reset budgets. Collected owners leave bounded process-local tombstones. Treat source-name shadowing/capture rebinding as unsupported until a scope-aware recipe handles it. Verification must bind copied bytes to the plan and recheck generated files/modes after authorized commands; a false `file_identity_valid` cannot pass. These checks do not authenticate hostile host code or authorize production activation.
 
 For a source-matched, semantically reviewed opportunity, consult `implementation-recipes --json` and `references/executable-integrations.md`. Use `implement-plan` with a strict existing-symbol binding specification to generate a complete private bundle **outside the target**, including actual AST-selected host edits and scheduled verification assertions. Do not author replacement functions in `changes.json` for shapes covered by a recipe; do not silently fall back to keyword patching for unsupported shapes. Keep a valid no-useful-placement result.
 

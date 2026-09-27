@@ -76,8 +76,25 @@ def _module_bindings(tree: ast.Module) -> dict[str, list[ast.AST]]:
     def add(name, node):
         found.setdefault(name, []).append(node)
     def visit(node):
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             add(node.name, node)
+            # Defaults, decorators and (on some supported interpreters)
+            # annotations are evaluated outside the function's local scope.
+            # Inspect those expressions, but never treat its body as module code.
+            visit(node.args)
+            for expression in node.decorator_list:
+                visit(expression)
+            if node.returns is not None:
+                visit(node.returns)
+            return
+        if isinstance(node, ast.ClassDef):
+            add(node.name, node)
+            for expression in (*node.decorator_list, *node.bases, *node.keywords):
+                visit(expression)
+            return
+        if isinstance(node, ast.Lambda):
+            # A lambda default can rebind its enclosing module; its body cannot.
+            visit(node.args)
             return
         if isinstance(node, ast.Import):
             for alias in node.names: add(alias.asname or alias.name.split('.')[0], node)
@@ -85,6 +102,14 @@ def _module_bindings(tree: ast.Module) -> dict[str, list[ast.AST]]:
             for alias in node.names:
                 if alias.name == '*': raise UnsupportedShape('Unsupported source shape: wildcard imports')
                 add(alias.asname or alias.name, node)
+        # These bindings are stored as strings, not Name(Store) children.
+        # Exception targets are also deleted after the handler completes.
+        elif isinstance(node, ast.ExceptHandler) and node.name:
+            add(node.name, node)
+        elif isinstance(node, (ast.MatchAs, ast.MatchStar)) and node.name:
+            add(node.name, node)
+        elif isinstance(node, ast.MatchMapping) and node.rest:
+            add(node.rest, node)
         elif isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del)):
             add(node.id, node)
         for child in ast.iter_child_nodes(node): visit(child)
@@ -111,6 +136,9 @@ def _literal_registry(tree, found, function_name):
     if len(body) != 1 or not isinstance(body[0], ast.Return):
         raise UnsupportedShape('Unsupported registry: one return of an explicit module dictionary is required')
     value = body[0].value
+    parameters = {arg.arg for arg in function.args.posonlyargs + function.args.args}
+    if any(isinstance(node, ast.Name) and node.id in parameters for node in ast.walk(value)):
+        raise UnsupportedShape('Unsupported registry: a parameter shadows a required module or built-in symbol')
     if isinstance(value, ast.Call) and isinstance(value.func, ast.Name) and value.func.id == 'dict' and len(value.args) == 1 and not value.keywords:
         if 'dict' in found: raise UnsupportedShape('Unsupported registry: built-in dict is shadowed')
         value = value.args[0]
@@ -217,6 +245,8 @@ def transform(root: Path, spec: dict) -> dict:
         if len(nodes) != 1 or not isinstance(nodes[0], ast.FunctionDef) or nodes[0] not in tree.body:
             raise InputError('Effect observation must identify an existing top-level function')
     original = call.func.id
+    if parameter in {original, *spec['bindings'].values()}:
+        raise UnsupportedShape('Unsupported seam: a parameter shadows a required module symbol')
     _function(tree, found, original, 1)
     if original == f.name: raise UnsupportedShape('Unsupported recursive seam')
     for role, arity in r.bindings.items():
@@ -245,6 +275,8 @@ def transform(root: Path, spec: dict) -> dict:
                 or len(operation.args)!=1 or operation.keywords
                 or not isinstance(operation.args[0], ast.Name) or operation.args[0].id!=argument):
             raise UnsupportedShape('Unsupported post-action baseline: one named executor tail call is required')
+        if operation.func.id == argument:
+            raise UnsupportedShape('Unsupported post-action baseline: a parameter shadows the executor')
         _function(tree, found, operation.func.id, 1)
         expected_effects = {operation.func.id}
     else:
@@ -252,7 +284,7 @@ def transform(root: Path, spec: dict) -> dict:
     if observed != expected_effects:
         raise InputError('Effect observations must exactly cover the parsed executor/consumer registry')
     alias = '_jev_invoke_' + digest(spec)[:16]
-    if alias in found: raise InputError('Generated import alias conflicts with an existing module symbol')
+    if alias in found or alias == parameter: raise InputError('Generated import alias conflicts with an existing symbol')
     # AST offsets are UTF-8 byte offsets, not Unicode character offsets.
     lines = raw.splitlines(keepends=True)
     offsets = [0]

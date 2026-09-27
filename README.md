@@ -1,4 +1,4 @@
-# JEV Integration Evaluator 1.3.0.dev1
+# JEV Integration Evaluator 1.3.0.dev2
 
 **CompleteTech LLC · Evidence-driven integration analysis and evaluation**
 
@@ -10,7 +10,7 @@ The [original executable implementation specification](references/executable-imp
 
 The default is deliberately conservative: **read-only analysis; no network; runtime off; no target code execution; no automatic adoption**. An unfamiliar repository can produce “no justified integration set.” That is a successful result, not an error.
 
-## Executable integrations in 1.3.0.dev1
+## Executable integrations in 1.3.0.dev2
 
 This development build implements **A–M Python host transformations** for the explicitly bounded `module-tail-call-v1` source shape. A strict source-matched binding spec drives generated host edits, default-off runtime wiring, exact reviewed apply, actual host-entry verification, externally anchored status and owned-byte rollback. It does not ask the caller to write the replacement function. The thirteen synthetic examples and the complete CLI demo exercise the edited hosts, not just adapter methods.
 
@@ -22,6 +22,12 @@ python scripts/run_implementation_demo.py --out ../jev-implementation-demo
 Read [the executable support matrix and lifecycle](references/executable-integrations.md) before using a recipe. It documents mandatory existing host bindings, the strict source/registry shapes, the exact CLI flags, local receipt trust boundaries, interrupted recovery and limits. `examples/implementation/` contains real source-matched binding examples. Analysis and plan/status commands do not execute target code. Mutation and host verification require their distinct scopes.
 
 The verifier demonstrates **synthetic host wiring**, not application benefit or production activation. Its test runtime is deliberately injected; it does not certify a real provider/bootstrap. Unsupported Python shapes are rejected before mutation; JavaScript/TypeScript remain analysis-only. No Node runtime is needed for Python rewriting. Earlier v1.1/v1.2 validation remains historical evidence, not a claim about this development build.
+
+## Safety follow-up in 1.3.0.dev2
+
+Host-owned exceptions are never model routing instructions: after an executor, finisher or completed-result callback starts, fallback cannot replay it. Runtime/coordinator ownership tombstones survive garbage collection, so constructing replacements cannot reset a workflow's charged work. Parameter shadowing and Python exception/match captures are rejected before mutation when they make bindings ambiguous.
+
+Every verification copy must match the reviewed phase bytes and modes. A final check includes the generated adapter, including after an authorized command exits successfully. New receipts expose `file_identity_valid`; this field is evidence metadata, never execution or activation authority. The support matrix and CLI remain bounded and unchanged. Fresh local results are in `validation/SAFETY-VALIDATION-1.3.0.dev2.md`; earlier records are historical.
 
 ## New in 1.2
 
@@ -158,7 +164,7 @@ Static analysis cannot recover every reflective/dynamic call, macro, callback, g
 
 A socket timeout and bounded thread pool are not hard real-time guarantees. The test runner is not a security sandbox; use an isolated runner for untrusted projects. Externally retained hash/length checkpoints detect mismatching audit prefixes, but hash chains do not authenticate an adversarial writer. Frozen local manifests cannot prove an untouched holdout or independent trials; their statistical assumptions remain explicit. API fixtures and receipts can be forged by an untrusted editor; authorization and independent experiment review remain host responsibilities.
 
-Current development validation is in `validation/executable-v1.3.0.dev1/REPORT.md`. The other `validation/` records are retained verbatim from the supplied historical v1.2.0 archive, including its pre-rename names, and are not measurements for this build. Live JEV accuracy, cost, latency and calibration were not measured during package construction. The tested model interface uses mocked HTTP and exact local fixtures.
+Development validation is in [the dev2 safety report](validation/SAFETY-VALIDATION-1.3.0.dev2.md), with subsequent integration qualification recorded separately there. The other `validation/` records retain historical v1.1, v1.2 and dev1 evidence, including their earlier names, and are not measurements for this build. Live JEV accuracy, cost, latency and calibration were not measured during package construction. The tested model interface uses mocked HTTP and exact local fixtures.
 
 ## License
 

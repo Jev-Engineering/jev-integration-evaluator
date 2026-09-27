@@ -46,16 +46,26 @@ def _probe(root, bundle, plan, spec, case, mode):
     with tempfile.TemporaryDirectory(prefix='.host-probe-', dir=bundle) as scratch:
         scratch = Path(scratch)
         work = scratch / 'target'; work.mkdir()
-        paths = set(plan['discovery_files']) | {r['file'] for r in plan['owned_files']}
+        identities = {rel: (row['sha256'], row['mode']) for rel, row in plan['discovery_files'].items()}
+        phase = 'old' if mode == 'baseline' else 'new'
+        identities.update({row['file']: (row[phase+'_sha256'], row[phase+'_mode'])
+                           for row in plan['owned_files']})
         total = 0
-        for rel in sorted(paths):
+        for rel, (expected_hash, expected_mode) in sorted(identities.items()):
             source = safe_child(root, rel)
-            if not source.exists(): continue
+            if expected_hash is None:
+                if source.exists(): raise InputError('Reserved output appeared during baseline source copy')
+                continue
+            if not source.is_file() or stat.S_IMODE(source.stat().st_mode) != expected_mode:
+                raise InputError('Reviewed source or file mode changed before isolated copy')
             total += source.stat().st_size
             if total > 128_000_000: raise InputError('Isolated probe source-copy limit exceeded')
             dest = safe_child(work, rel); dest.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(source, dest); dest.chmod(stat.S_IMODE(source.stat().st_mode))
-            if file_hash(dest) != file_hash(source): raise InputError('Source changed during isolated probe copy')
+            shutil.copyfile(source, dest); dest.chmod(expected_mode)
+            # Comparing the copy only with the current source would accept a
+            # consistently changed but unreviewed snapshot after phase preflight.
+            if file_hash(dest) != expected_hash:
+                raise InputError('Isolated probe copy differs from the reviewed phase hash')
         request, output = scratch / 'request.json', scratch / 'result.json'
         write_json(request, {'root':str(work),'spec':spec,'case':case,'mode':mode})
         trusted_root = str(Path(__file__).resolve().parents[2])
@@ -153,7 +163,12 @@ def verify_implementation(root, bundle, phase, *, approve_execution=False, basel
         started=utc_now(); results=[]
         for case in spec['verification']['cases']:
             for mode in (('baseline',) if phase=='baseline' else ('off','shadow','active')):
-                observation,execution_status=_probe(root,bundle,plan,spec,case,mode)
+                try:
+                    observation,execution_status=_probe(root,bundle,plan,spec,case,mode)
+                except (InputError, OSError):
+                    # A raced/unavailable source is a failed scheduled case, not
+                    # permission to execute changed bytes or omit the denominator.
+                    observation,execution_status=None,'failed'
                 assertions=[]
                 if observation is not None:
                     expected=case['active'] if mode=='active' else case['baseline']
@@ -182,12 +197,18 @@ def verify_implementation(root, bundle, phase, *, approve_execution=False, basel
             command_checks.append({'definition_sha256':digest(command),'status':check['status'],'returncode':check['returncode']})
         passed=all(r['status']=='passed' for r in results) and all(r['status']=='passed' for r in command_checks)
         if phase=='modified' and len(contracts)!=4:passed=False
-        try:_check_discovery(root,plan,applied=phase=='modified')
-        except InputError:passed=False
+        try:
+            _check_discovery(root,plan,applied=phase=='modified')
+            identity_valid=all(_inspect_file(root,row)==state for row in plan['owned_files'])
+        except (InputError, OSError):
+            identity_valid=False
+        # The separately authorized command may change generated files or modes
+        # even when its exit status is zero and every earlier scratch probe passed.
+        passed=passed and identity_valid
         receipt=seal({'schema_version':'1.0','bundle_digest':plan['contract_digest'],'spec_digest':plan['spec_digest'],
                       'phase':phase,'engine_identity':plan['engine_identity'],'command_definition_digest':digest(spec['verification']),
                       'file_hashes':{r['file']:r['old_sha256' if phase=='baseline' else 'new_sha256'] for r in plan['owned_files']},
-                      'classification':'synthetic','status':'passed' if passed else 'failed','started_at':started,'finished_at':utc_now(),
+                      'classification':'synthetic','status':'passed' if passed else 'failed','file_identity_valid':identity_valid,'started_at':started,'finished_at':utc_now(),
                       'environment':{'python':platform.python_version(),'platform':platform.platform(),
                                      'runner_executable_sha256':file_hash(Path(sys.executable).resolve()),'sandboxed':False},
                       'scheduled_cases':len(results),'completed_cases':sum(r['status'] in ('passed','failed') for r in results),
@@ -201,5 +222,6 @@ def verify_implementation(root, bundle, phase, *, approve_execution=False, basel
         return {'status':('baseline_passed' if phase=='baseline' else 'verified') if passed else 'verification_failed',
                 'receipt_sha256':file_hash(path),'bundle_digest':plan['contract_digest'],
                 'scheduled_cases':len(results),'passed_cases':sum(r['status']=='passed' for r in results),
+                'file_identity_valid':identity_valid,
                 'contract_assertions':contracts,'classification':'synthetic','runtime_activation_authorized':False,
                 'benefit_demonstrated':False,'receipt_path':str(path)}
