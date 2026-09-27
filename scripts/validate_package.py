@@ -26,7 +26,13 @@ def validate(check_manifest=False):
               'schemas/scenario-spec.schema.json','schemas/deployment-gate.schema.json','schemas/gate-bundle.schema.json',
               'schemas/monitor-spec.schema.json','schemas/monitor.schema.json','schemas/monitor-outcome.schema.json',
               'tests/test_budget_runtime_v12.py','tests/test_scenarios_v12.py','tests/test_gates_v12.py',
-              'tests/test_monitoring_v12.py','tests/test_cli_v12.py']
+              'tests/test_monitoring_v12.py','tests/test_cli_v12.py',
+              'references/executable-integrations.md','scripts/run_implementation_demo.py','scripts/implementation_fixtures.py',
+              'jev_integration_evaluator/integrations/recipes.py','jev_integration_evaluator/integrations/host.py',
+              'jev_integration_evaluator/integrations/lifecycle.py','jev_integration_evaluator/integrations/verification.py',
+              'schemas/implementation-spec.schema.json','schemas/implementation-plan.schema.json','schemas/implementation-receipt.schema.json',
+              'schemas/implementation-manifest.schema.json','schemas/implementation-tests.schema.json',
+              'tests/test_executable_recipes.py','tests/test_executable_runtime.py','tests/test_executable_safety.py','tests/test_executable_cli.py','tests/test_executable_wheel.py']
     for item in required:
         if not (ROOT/item).is_file():raise InputError('Required package file missing: '+item)
     front=(ROOT/'SKILL.md').read_text().split('---',2)
@@ -44,6 +50,15 @@ def validate(check_manifest=False):
         schema=read_json(path);jsonschema.Draft202012Validator.check_schema(schema)
         if schema!=read_json(ROOT/'jev_integration_evaluator/data'/path.name):raise InputError('Packaged schema mismatch: '+path.name)
         schemas[path.name.removesuffix('.schema.json')]=schema
+    from jev_integration_evaluator.integrations.contracts import validate_spec, validate_inventory
+    from jev_integration_evaluator.integrations.recipes import transform
+    implementation_examples=0
+    for letter in 'abcdefghijklm':
+        example=ROOT/'examples/implementation'/letter
+        spec=validate_spec(read_json(example/'binding.example.json'))
+        validate_inventory(example/'target',read_json(example/'reviewed-inventory.example.json'),spec)
+        transform(example/'target',spec)
+        implementation_examples+=1
     cfg=load_config(ROOT/'templates/jev-config.yaml')
     jsonschema.validate({'jev_analysis':cfg},schemas['config'])
     fixture_records=0
@@ -87,6 +102,7 @@ def validate(check_manifest=False):
         if actual != listed:
             raise InputError('Release manifest file set differs from package; added or missing files detected')
     return {'status':'passed','schema_count':len(schemas),'synthetic_records_validated':fixture_records,
+            'implementation_examples_validated_without_execution':implementation_examples,
             'offline_replay_decisions':result['evaluated'],'manifest_files_verified':checked,
             'network_requests':0,'target_code_executed':False}
 

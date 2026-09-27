@@ -1,6 +1,10 @@
 # Authorized integration playbook
 
-For development of scripts that generate and verify host call-site edits, see [the executable implementation engineering prompt](executable-implementation-prompt.md). The current commands below provide adapter generation and exact patch application; the prompt describes the missing orchestration and transformations as future work.
+The [original implementation engineering prompt](executable-implementation-prompt.md) is retained as requirements provenance. The implemented bounded source shapes and current commands are described below and in `executable-integrations.md`.
+
+## Generated host edits
+
+For the implemented A–M Python shapes, follow `executable-integrations.md`: the strict binding spec names existing symbols and policy; `implement-plan` derives the host edits, and the connected baseline/apply/verify/status/rollback commands check actual host entry points. Do not delegate those supported edits to manual adapter wiring. The legacy scaffold workflow below remains available for analysis and unsupported transformations; it must not be represented as an applied integration.
 
 ## Establish the baseline first
 

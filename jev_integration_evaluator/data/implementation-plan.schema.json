@@ -1,0 +1,211 @@
+{
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "root_identity": {
+      "type": "object",
+      "properties": {
+        "path_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "device": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "inode": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "path_sha256",
+        "device",
+        "inode"
+      ],
+      "additionalProperties": false
+    },
+    "engine_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "engine_identity": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "recipe": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "enum": [
+            "python.A",
+            "python.B",
+            "python.C",
+            "python.D",
+            "python.E",
+            "python.F",
+            "python.G",
+            "python.H",
+            "python.I",
+            "python.J",
+            "python.K",
+            "python.L",
+            "python.M"
+          ]
+        },
+        "version": {
+          "const": "1.0"
+        },
+        "shape": {
+          "const": "module-tail-call-v1"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "shape"
+      ],
+      "additionalProperties": false
+    },
+    "candidate_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "experiment_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "spec_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "binding_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "patch_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "owned_files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string",
+            "minLength": 1
+          },
+          "old_sha256": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "new_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "old_mode": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4095
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "new_mode": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4095
+          },
+          "preimage": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "file",
+          "old_sha256",
+          "new_sha256",
+          "old_mode",
+          "new_mode",
+          "preimage"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "discovery_files": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "mode": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4095
+          }
+        },
+        "required": [
+          "sha256",
+          "mode"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{64}$"
+      }
+    },
+    "contract_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  },
+  "required": [
+    "schema_version",
+    "root_identity",
+    "engine_version",
+    "engine_identity",
+    "recipe",
+    "candidate_id",
+    "experiment_id",
+    "spec_digest",
+    "binding_digest",
+    "patch_digest",
+    "owned_files",
+    "discovery_files",
+    "artifacts",
+    "contract_digest"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:implementation-plan:1.0"
+}

@@ -22,3 +22,16 @@ jobs:
       - run: python scripts/validate_package.py
       - run: python scripts/run_v11_demo.py --out "$RUNNER_TEMP/jev-v11-demo"
       - run: python scripts/run_v12_demo.py --out "$RUNNER_TEMP/jev-v12-demo"
+
+      - run: python scripts/run_implementation_demo.py --out "$RUNNER_TEMP/jev-implementation-demo"
+  python-only:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install -e ".[test]"
+      - run: python scripts/validate_package.py
+      - run: python -m pytest -q tests/test_executable_recipes.py tests/test_executable_runtime.py tests/test_executable_safety.py tests/test_executable_cli.py tests/test_executable_wheel.py
+      - run: python scripts/run_implementation_demo.py --out "$RUNNER_TEMP/jev-python-only-implementation"

@@ -1,0 +1,236 @@
+{
+  "schema_version": "1.0",
+  "candidate_id": "JEV-F40B912DA87C",
+  "experiment_id": "JEV-F40B912DA87C-EXP-01",
+  "inventory_sha256": "2d0343594eb447b405bd8cb1ff5ceb09c7c1a122db38de24b7aea29614bd49b3",
+  "inventory_fingerprint": "617f68129970141a0a1d3d4bfd7a7967375e67f84e96a0cc8bdeb58d73e8bb36",
+  "source": {
+    "file": "host_example_a.py",
+    "symbol": "select_boundary_example_a",
+    "file_sha256": "a81e5c4cbcc237377efe1006d6126d63e279d0f96d77ff24f291df7ab6fdc78d",
+    "source_sha256": "6ec02b4fb05b3e1f977042b7d3287511d075301a1ff2d17c1303370f8fedf85b",
+    "anchor_sha256": "26813ee4e09bf8c94bccb5a7092aa2b1139a8a1d10d03d17e1aef4c1a9689fcc"
+  },
+  "recipe": {
+    "id": "python.A",
+    "version": "1.0",
+    "shape": "module-tail-call-v1"
+  },
+  "bindings": {
+    "runtime": "bound_runtime_example_a",
+    "evidence": "bound_evidence_example_a",
+    "baseline_action": "bound_baseline_action_example_a",
+    "registry": "bound_registry_example_a",
+    "gate": "bound_gate_example_a",
+    "validate": "bound_validate_example_a",
+    "blocked": "bound_blocked_example_a",
+    "guard": "bound_guard_example_a"
+  },
+  "binding_review": {
+    "approved": true,
+    "source_sha256": "6ec02b4fb05b3e1f977042b7d3287511d075301a1ff2d17c1303370f8fedf85b",
+    "pattern": "A",
+    "reviewer": "offline-synthetic-fixture-author",
+    "reason": "Synthetic source-matched review: the finite A decision consumes supplied ambiguous evidence; deterministic policy remains with the host."
+  },
+  "questions": {
+    "decision": {
+      "type": "choice",
+      "instructions": "Which declared finite consequence is justified by the supplied evidence?",
+      "criteria": {
+        "primary": "Explicit fixture semantic criterion for primary",
+        "alternative": "Explicit fixture semantic criterion for alternative",
+        "uncertain": "Explicit fixture semantic criterion for uncertain"
+      }
+    },
+    "sufficient": {
+      "type": "noul",
+      "instructions": "Is the supplied evidence adequate for this bounded classification?"
+    }
+  },
+  "primary_question": "decision",
+  "evidence_question": "sufficient",
+  "label_actions": {
+    "primary": "base",
+    "alternative": "alt",
+    "uncertain": null
+  },
+  "policy": {
+    "fallback": "block"
+  },
+  "runtime": {
+    "configuration": {
+      "mode": "off",
+      "model": "jev-1.13.0",
+      "timeout_ms": 2000,
+      "canary_fraction": 0.05,
+      "max_calls_per_task": 5,
+      "max_cost_per_task": 0.01,
+      "circuit_failures": 3,
+      "circuit_cooldown_s": 30,
+      "cache_ttl_s": 0,
+      "max_cache_entries": 1000,
+      "input_usd_per_million": null,
+      "output_usd_per_million": null
+    },
+    "policy_version": "fixture-v1",
+    "canary_scope": "synthetic-example_a",
+    "task_field": "task_id",
+    "max_evidence_bytes": 96000,
+    "cost_upper_bound": 0.0,
+    "ownership": "stable_host",
+    "coordinator": "shared_process_local",
+    "task_completion": "host_owned",
+    "audit": "required",
+    "immutable_cache": false
+  },
+  "output": {
+    "module": "_generated_example_a",
+    "permitted_edits": [
+      "host_example_a.py",
+      "_generated_example_a.py"
+    ],
+    "feature_flag_default": false,
+    "dependencies": [
+      "jev-integration-evaluator>=1.3.0.dev1"
+    ]
+  },
+  "verification": {
+    "classification": "synthetic",
+    "entry_point": "public_entry_example_a",
+    "effect_symbols": [
+      "perform_primary_example_a",
+      "perform_alternative_example_a"
+    ],
+    "cases": [
+      {
+        "id": "intended_change",
+        "request": {
+          "task_id": "fixture-task",
+          "objective": "Interpret ambiguous supplied evidence",
+          "command": "/prune"
+        },
+        "initial_globals": {
+          "STATE": {
+            "effects": [],
+            "kept": [],
+            "blocked": 0,
+            "step": 0,
+            "retries": 0,
+            "completed": false,
+            "idempotent": true,
+            "approval": true,
+            "remaining": 10,
+            "scope": true,
+            "ineffective": false,
+            "records": 0,
+            "checks": true,
+            "revision": 0,
+            "compactions": 0,
+            "owner_allowed": true,
+            "child_valid": true,
+            "hard_block": false,
+            "valid": true
+          }
+        },
+        "baseline": {
+          "result": "first",
+          "exception": null,
+          "calls": {
+            "perform_primary_example_a": 1,
+            "perform_alternative_example_a": 0
+          },
+          "globals": {
+            "STATE.effects": [
+              "first"
+            ],
+            "STATE.blocked": 0
+          }
+        },
+        "active": {
+          "result": "blocked",
+          "exception": null,
+          "calls": {
+            "perform_primary_example_a": 0,
+            "perform_alternative_example_a": 0
+          },
+          "globals": {
+            "STATE.effects": [],
+            "STATE.blocked": 1
+          }
+        },
+        "assessment_label": "alternative"
+      },
+      {
+        "id": "policy_or_fallback",
+        "request": {
+          "task_id": "fixture-task",
+          "objective": "Interpret ambiguous supplied evidence",
+          "command": "/prune"
+        },
+        "initial_globals": {
+          "STATE": {
+            "effects": [],
+            "kept": [],
+            "blocked": 0,
+            "step": 0,
+            "retries": 0,
+            "completed": false,
+            "idempotent": true,
+            "approval": true,
+            "remaining": 10,
+            "scope": true,
+            "ineffective": false,
+            "records": 0,
+            "checks": true,
+            "revision": 0,
+            "compactions": 0,
+            "owner_allowed": true,
+            "child_valid": true,
+            "hard_block": false,
+            "valid": true
+          }
+        },
+        "baseline": {
+          "result": "first",
+          "exception": null,
+          "calls": {
+            "perform_primary_example_a": 1,
+            "perform_alternative_example_a": 0
+          },
+          "globals": {
+            "STATE.effects": [
+              "first"
+            ],
+            "STATE.blocked": 0
+          }
+        },
+        "active": {
+          "result": "first",
+          "exception": null,
+          "calls": {
+            "perform_primary_example_a": 1,
+            "perform_alternative_example_a": 0
+          },
+          "globals": {
+            "STATE.effects": [
+              "first"
+            ],
+            "STATE.blocked": 0
+          }
+        },
+        "assessment_label": "primary"
+      }
+    ],
+    "timeout_s": 20,
+    "baseline_command": [],
+    "modified_command": []
+  },
+  "authorization_context": {
+    "reference": "explicit offline demonstration request",
+    "scopes": [
+      "synthetic_workspace_only"
+    ],
+    "not_authority": true
+  }
+}

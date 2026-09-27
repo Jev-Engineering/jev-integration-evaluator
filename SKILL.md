@@ -4,12 +4,22 @@ description: Discover, score, design, optimize, and experimentally validate high
 license: MIT
 metadata:
   author: CompleteTech LLC
-  version: 1.2.0
+  version: 1.3.0.dev1
 ---
 
 # JEV Integration Evaluator
 
 **LLMs generate. JEV classifies, selects, and evaluates. Deterministic code enforces. Instrumentation measures. Experiments decide whether JEV stays.**
+
+## Executable implementation mode
+
+For a source-matched, semantically reviewed opportunity, consult `implementation-recipes --json` and `references/executable-integrations.md`. Use `implement-plan` with a strict existing-symbol binding specification to generate a complete private bundle **outside the target**, including actual AST-selected host edits and scheduled verification assertions. Do not author replacement functions in `changes.json` for shapes covered by a recipe; do not silently fall back to keyword patching for unsupported shapes. Keep a valid no-useful-placement result.
+
+Capture the separately authorized baseline, retain its digest in a trusted channel, review the complete bundle/diff, and obtain exact bundle-digest approval before `implement-apply`. Run authorized modified-host checks, then distinguish fresh tool-observed synthetic verification from later unanchored status. `implement-status` never executes code and cannot trust a success-shaped JSON claim; certified recorded status requires an externally authenticated receipt digest. Use `implement-rollback` only for matching owned bytes and retain the recovery journal/preimages until recovery is complete. Never overwrite unrelated work.
+
+All thirteen Python recipes currently support only the documented top-level, synchronous, single-tail-call shape and explicit static registries. Existing functions supply runtime ownership, legal actions, permission/state checks, locking, baseline behavior and independent observations. The generated feature flag is off. The synthetic probe injects a test runtime; it is not a live provider integration or approval to activate. Preserve shared coordinator/task identity, strict runtime receipts and semantic label mappings. `/prune` and `/compact` remain separate explicit choices. JavaScript/TypeScript are analysis-only; disclose unsupported source/platform paths.
+
+Run `scripts/run_implementation_demo.py --out NEW_PRIVATE_DIRECTORY`, the existing v1.1/v1.2 demos, full regressions, installed-wheel host checks and package validation for implementation changes. Publish only minimal synthetic validation metadata, never private target source, preimages, raw test output or activation fixtures. Prior validation reports remain historical.
 
 ## Activation and scope
 

@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:implementation-manifest:1.0",
+  "type": "object",
+  "properties": {
+    "entry_point": {
+      "type": "string",
+      "minLength": 1
+    },
+    "baseline_symbol": {
+      "type": "string",
+      "minLength": 1
+    },
+    "adapter_symbol": {
+      "type": "string",
+      "minLength": 1
+    },
+    "binding_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "source_shape": {
+      "const": "module-tail-call-v1"
+    },
+    "recipe_contract": {
+      "type": "string",
+      "minLength": 1
+    },
+    "required_bindings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 8,
+      "maxItems": 20,
+      "uniqueItems": true
+    },
+    "imports_resolved_by": {
+      "const": "installed evaluator wheel when enabled"
+    },
+    "candidate_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "experiment_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "original_discovery_source": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "string"
+        },
+        "symbol": {
+          "type": "string"
+        },
+        "start_line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "end_line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "file_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "source_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "parser": {
+          "enum": [
+            "python_ast",
+            "typescript_ast",
+            "lexical_review_only"
+          ]
+        }
+      },
+      "required": [
+        "file",
+        "symbol",
+        "start_line",
+        "end_line",
+        "file_sha256",
+        "source_sha256",
+        "parser"
+      ],
+      "additionalProperties": false
+    },
+    "binding_review": {
+      "type": "object",
+      "properties": {
+        "approved": {
+          "const": true
+        },
+        "source_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "pattern": {
+          "enum": [
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F",
+            "G",
+            "H",
+            "I",
+            "J",
+            "K",
+            "L",
+            "M"
+          ]
+        },
+        "reviewer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "approved",
+        "source_sha256",
+        "pattern",
+        "reviewer",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "wiring_status": {
+      "const": "planned_not_applied"
+    },
+    "activation_authorized": {
+      "const": false
+    }
+  },
+  "required": [
+    "entry_point",
+    "baseline_symbol",
+    "adapter_symbol",
+    "binding_digest",
+    "source_shape",
+    "recipe_contract",
+    "required_bindings",
+    "imports_resolved_by",
+    "candidate_id",
+    "experiment_id",
+    "original_discovery_source",
+    "binding_review",
+    "wiring_status",
+    "activation_authorized"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,247 @@
+{
+  "version": "1.2.0",
+  "evidence_type": "synthetic",
+  "network_requests": 0,
+  "target_code_executed": false,
+  "host_actions_executed": 0,
+  "task_pairs": 80,
+  "gate_count": 2,
+  "calibration_observations": 80,
+  "holdout_observations": 240,
+  "monitor_tasks": 80,
+  "shared_fixture_calls": 2,
+  "shadow_submissions": 3,
+  "study_recommendation": "needs_more_evidence",
+  "synthetic_adoption_blocked": true,
+  "monitor_incident_suspension_is_recommendation_only": true,
+  "commands": [
+    {
+      "command": [
+        "optimize-robust",
+        "--inventory",
+        "/mnt/data/final-validation/v12/reviewed-inventory.json",
+        "--spec",
+        "/mnt/data/final-validation/v12/scenarios.json",
+        "--config",
+        "/mnt/data/final-validation/v12/config.json",
+        "--out",
+        "/mnt/data/final-validation/v12/robust-placement-sets.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "threshold-check",
+        "--plan",
+        "/mnt/data/final-validation/v12/gate-0-threshold-policy.json",
+        "--input",
+        "/mnt/data/final-validation/v12/gate-0-holdout.json",
+        "--expected-digest",
+        "27fda826aa6f5f0477ab442115e4a49997b9a9d7a2cea6b2c003514ba9c1d4df",
+        "--out",
+        "/mnt/data/final-validation/v12/gate-0-holdout-report.json",
+        "--enforce"
+      ],
+      "exit_code": 3
+    },
+    {
+      "command": [
+        "threshold-check",
+        "--plan",
+        "/mnt/data/final-validation/v12/gate-1-threshold-policy.json",
+        "--input",
+        "/mnt/data/final-validation/v12/gate-1-holdout.json",
+        "--expected-digest",
+        "53a0f5037c32f50ca82f0d85c2871d8af2a22709c93f6fc903d8d89c7e3ec513",
+        "--out",
+        "/mnt/data/final-validation/v12/gate-1-holdout-report.json",
+        "--enforce"
+      ],
+      "exit_code": 3
+    },
+    {
+      "command": [
+        "study-freeze",
+        "--spec",
+        "/mnt/data/final-validation/v12/study-spec.json",
+        "--inventory",
+        "/mnt/data/final-validation/v12/reviewed-inventory.json",
+        "--config",
+        "/mnt/data/final-validation/v12/config.json",
+        "--out",
+        "/mnt/data/final-validation/v12/study.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "study-check",
+        "--plan",
+        "/mnt/data/final-validation/v12/study.json",
+        "--inventory",
+        "/mnt/data/final-validation/v12/reviewed-inventory.json",
+        "--baseline",
+        "/mnt/data/final-validation/v12/baseline.json",
+        "--jev",
+        "/mnt/data/final-validation/v12/treatment.json",
+        "--expected-digest",
+        "4bd2c3c88833487cc84853c84036b479f3560734e228b64742c3841f6b50eafa",
+        "--out",
+        "/mnt/data/final-validation/v12/study-check.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "study-evaluate",
+        "--plan",
+        "/mnt/data/final-validation/v12/study.json",
+        "--inventory",
+        "/mnt/data/final-validation/v12/reviewed-inventory.json",
+        "--baseline",
+        "/mnt/data/final-validation/v12/baseline.json",
+        "--jev",
+        "/mnt/data/final-validation/v12/treatment.json",
+        "--expected-digest",
+        "4bd2c3c88833487cc84853c84036b479f3560734e228b64742c3841f6b50eafa",
+        "--out",
+        "/mnt/data/final-validation/v12/study-evaluate.json",
+        "--gate-bundle",
+        "/mnt/data/final-validation/v12/gate-bundle.json",
+        "--enforce"
+      ],
+      "exit_code": 3
+    },
+    {
+      "command": [
+        "monitor-freeze",
+        "--spec",
+        "/mnt/data/final-validation/v12/monitor-spec.json",
+        "--out",
+        "/mnt/data/final-validation/v12/monitor.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "monitor-check",
+        "--plan",
+        "/mnt/data/final-validation/v12/monitor.json",
+        "--input",
+        "/mnt/data/final-validation/v12/monitor-outcomes.json",
+        "--as-of",
+        "2026-09-26T12:00:00+00:00",
+        "--expected-digest",
+        "696e7972e4eed831e1b6fbfb3c14da403bc881701c804feee6d81a34d670aed3",
+        "--out",
+        "/mnt/data/final-validation/v12/monitor-healthy.json",
+        "--enforce"
+      ],
+      "exit_code": 3
+    },
+    {
+      "command": [
+        "monitor-check",
+        "--plan",
+        "/mnt/data/final-validation/v12/monitor.json",
+        "--input",
+        "/mnt/data/final-validation/v12/monitor-incident-outcomes.json",
+        "--as-of",
+        "2026-09-26T12:00:00+00:00",
+        "--expected-digest",
+        "696e7972e4eed831e1b6fbfb3c14da403bc881701c804feee6d81a34d670aed3",
+        "--out",
+        "/mnt/data/final-validation/v12/monitor-incident.json",
+        "--enforce"
+      ],
+      "exit_code": 3
+    },
+    {
+      "command": [
+        "monitor-check",
+        "--plan",
+        "/mnt/data/final-validation/v12/monitor.json",
+        "--input",
+        "/mnt/data/final-validation/v12/monitor-incomplete-outcomes.json",
+        "--as-of",
+        "2026-09-26T12:02:00+00:00",
+        "--expected-digest",
+        "696e7972e4eed831e1b6fbfb3c14da403bc881701c804feee6d81a34d670aed3",
+        "--out",
+        "/mnt/data/final-validation/v12/monitor-incomplete.json",
+        "--enforce"
+      ],
+      "exit_code": 3
+    },
+    {
+      "command": [
+        "validate",
+        "--kind",
+        "scenario-spec",
+        "--input",
+        "/mnt/data/final-validation/v12/scenarios.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "validate",
+        "--kind",
+        "gate-bundle",
+        "--input",
+        "/mnt/data/final-validation/v12/gate-bundle.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "validate",
+        "--kind",
+        "study-spec",
+        "--input",
+        "/mnt/data/final-validation/v12/study-spec.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "validate",
+        "--kind",
+        "study",
+        "--input",
+        "/mnt/data/final-validation/v12/study.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "validate",
+        "--kind",
+        "monitor-spec",
+        "--input",
+        "/mnt/data/final-validation/v12/monitor-spec.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "validate",
+        "--kind",
+        "monitor",
+        "--input",
+        "/mnt/data/final-validation/v12/monitor.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "validate",
+        "--kind",
+        "monitor-outcome",
+        "--input",
+        "/mnt/data/final-validation/v12/monitor-outcomes.json"
+      ],
+      "exit_code": 0
+    }
+  ]
+}

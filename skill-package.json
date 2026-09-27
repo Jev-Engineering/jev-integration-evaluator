@@ -1,6 +1,6 @@
 {
   "name": "jev-integration-evaluator",
-  "version": "1.2.0",
+  "version": "1.3.0.dev1",
   "author": "CompleteTech LLC",
   "license": "MIT",
   "entrypoint": "SKILL.md",
@@ -14,7 +14,7 @@
     "STANDARD",
     "RESEARCH"
   ],
-  "implementation": "authorized source-specific agent wiring with exact reviewed patch plans",
+  "implementation": "AST-derived A\u2013M Python module-tail-call-v1 host wiring with exact reviewed lifecycle",
   "primary_languages": [
     "python",
     "javascript",
@@ -22,10 +22,16 @@
   ],
   "other_languages": "review-only fallback",
   "branding_profile": "branding/profile.json",
-  "validation": "validation/VALIDATION.md",
+  "validation": "validation/executable-v1.3.0.dev1/REPORT.md",
   "release_notes": "CHANGELOG.md",
   "evidence_lifecycle": "references/lifecycle-and-evidence.md",
   "offline_lifecycle_demo": "scripts/run_v11_demo.py",
   "operational_evidence": "references/operational-evidence-v1.2.md",
-  "offline_operational_demo": "scripts/run_v12_demo.py"
+  "offline_operational_demo": "scripts/run_v12_demo.py",
+  "implementation_support": "references/executable-integrations.md",
+  "offline_implementation_demo": "scripts/run_implementation_demo.py",
+  "implementation_languages": [
+    "python"
+  ],
+  "implementation_evidence": "synthetic host wiring; not runtime activation or application benefit"
 }

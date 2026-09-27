@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.0.dev1 — bounded executable integrations
+
+- Added strict reviewed binding specifications and executable AST-selected host edits for thirteen A–M Python recipes; no caller-authored replacement source required.
+- Added complete plan/baseline/apply/modified verification/status/rollback CLI and matching scripts, with protected exact digests, original/applied identity separation, private preimages, fsynced recovery journals and process-interruption recovery.
+- Added semantic Choice-to-host-action mappings bound into strict runtime receipts/cache contracts without changing legacy no-mapping hashes or adding model labels to host permissions.
+- Added pattern-specific guarded behavior, independent post-action state observations, pinned context retention, explicit graph revision/approval checks, bounded plans/retries/delegation and retained partial/child outcomes.
+- Added actual edited-host synthetic verification, externally anchored receipt status, code-owned call/effect assertions, full offline A–M demo, failure-injection tests and installed-wheel host checks.
+- Source support is deliberately narrow and rejects unsupported Python shapes, dynamic registries and JS/TS rewriting. All implementation verification is synthetic; no live deployment, benefit or provider/bootstrap certification is claimed.
+- No new runtime dependency. Older validation evidence remains historical. This is a development build pending whatever repository publication/review/CI qualification is recorded in the delivery report.
+
 ## 1.2.0 — 2026-09-26
 
 ### Implemented

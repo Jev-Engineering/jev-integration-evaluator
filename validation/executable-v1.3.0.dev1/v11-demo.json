@@ -1,0 +1,238 @@
+{
+  "version": "1.1.0",
+  "evidence_type": "synthetic",
+  "network_requests": 0,
+  "host_actions_executed": 0,
+  "task_pairs": 80,
+  "calibration_observations": 40,
+  "holdout_observations": 120,
+  "robustness_probes": 5,
+  "threshold_enforcement_exit": 3,
+  "commands": [
+    {
+      "command": [
+        "scan",
+        "--repo",
+        "/tmp/jev-synthetic-diff-5whbeqk8/synthetic-agent",
+        "--out",
+        "/mnt/data/final-validation/v11/before",
+        "--config",
+        "/mnt/data/final-validation/v11/demo-config.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "scan",
+        "--repo",
+        "/tmp/jev-synthetic-diff-5whbeqk8/synthetic-agent",
+        "--out",
+        "/mnt/data/final-validation/v11/after",
+        "--config",
+        "/mnt/data/final-validation/v11/demo-config.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "diff",
+        "--before",
+        "/mnt/data/final-validation/v11/before/jev-opportunities.json",
+        "--after",
+        "/mnt/data/final-validation/v11/after/jev-opportunities.json",
+        "--out",
+        "/mnt/data/final-validation/v11/snapshot-diff.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "study-freeze",
+        "--spec",
+        "/mnt/data/final-validation/v11/study-spec.json",
+        "--out",
+        "/mnt/data/final-validation/v11/study.json",
+        "--config",
+        "/mnt/data/final-validation/v11/demo-config.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "study-check",
+        "--plan",
+        "/mnt/data/final-validation/v11/study.json",
+        "--baseline",
+        "/mnt/data/final-validation/v11/baseline.json",
+        "--jev",
+        "/mnt/data/final-validation/v11/treatment.json",
+        "--expected-digest",
+        "16fe1f6663ef386496328df6f5cb78b0250e81611f9ddaf452a0d2794c42236f",
+        "--out",
+        "/mnt/data/final-validation/v11/study-check.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "study-evaluate",
+        "--plan",
+        "/mnt/data/final-validation/v11/study.json",
+        "--baseline",
+        "/mnt/data/final-validation/v11/baseline.json",
+        "--jev",
+        "/mnt/data/final-validation/v11/treatment.json",
+        "--expected-digest",
+        "16fe1f6663ef386496328df6f5cb78b0250e81611f9ddaf452a0d2794c42236f",
+        "--out",
+        "/mnt/data/final-validation/v11/study-evaluate.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "threshold-freeze",
+        "--input",
+        "/mnt/data/final-validation/v11/calibration.json",
+        "--spec",
+        "/mnt/data/final-validation/v11/threshold-spec.json",
+        "--out",
+        "/mnt/data/final-validation/v11/threshold-policy.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "threshold-check",
+        "--input",
+        "/mnt/data/final-validation/v11/holdout.json",
+        "--plan",
+        "/mnt/data/final-validation/v11/threshold-policy.json",
+        "--out",
+        "/mnt/data/final-validation/v11/holdout-report.json",
+        "--enforce"
+      ],
+      "exit_code": 3
+    },
+    {
+      "command": [
+        "rubric-lint",
+        "--input",
+        "/mnt/data/final-validation/v11/questions.json",
+        "--out",
+        "/mnt/data/final-validation/v11/rubric-lint.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "robustness-plan",
+        "--input",
+        "/mnt/data/final-validation/v11/probe-event.json",
+        "--out",
+        "/mnt/data/final-validation/v11/probe-suite.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "robustness-run",
+        "--plan",
+        "/mnt/data/final-validation/v11/probe-suite.json",
+        "--fixtures",
+        "/mnt/data/final-validation/v11/probe-fixtures.json",
+        "--out",
+        "/mnt/data/final-validation/v11/robustness-run.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "robustness-report",
+        "--plan",
+        "/mnt/data/final-validation/v11/probe-suite.json",
+        "--input",
+        "/mnt/data/final-validation/v11/probe-records.json",
+        "--out",
+        "/mnt/data/final-validation/v11/robustness-report.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "verify-log",
+        "--input",
+        "/mnt/data/final-validation/v11/audit.jsonl",
+        "--expected-events",
+        "3",
+        "--expected-final-hash",
+        "c15fe81944510e561e701ebdfd8f4dd1f57edaa5f319117366668ca51c36c039",
+        "--out",
+        "/mnt/data/final-validation/v11/audit-verification.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "validate",
+        "--kind",
+        "study-spec",
+        "--input",
+        "/mnt/data/final-validation/v11/study-spec.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "validate",
+        "--kind",
+        "study",
+        "--input",
+        "/mnt/data/final-validation/v11/study.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "validate",
+        "--kind",
+        "threshold-spec",
+        "--input",
+        "/mnt/data/final-validation/v11/threshold-spec.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "validate",
+        "--kind",
+        "threshold-policy",
+        "--input",
+        "/mnt/data/final-validation/v11/threshold-policy.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "validate",
+        "--kind",
+        "holdout-report",
+        "--input",
+        "/mnt/data/final-validation/v11/holdout-report.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "validate",
+        "--kind",
+        "robustness-suite",
+        "--input",
+        "/mnt/data/final-validation/v11/probe-suite.json"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "study_recommendation": "needs_more_evidence",
+  "holdout_eligible_for_activation": false
+}

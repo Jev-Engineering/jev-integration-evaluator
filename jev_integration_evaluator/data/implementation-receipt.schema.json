@@ -1,0 +1,261 @@
+{
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "bundle_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "spec_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "phase": {
+      "enum": [
+        "baseline",
+        "modified"
+      ]
+    },
+    "engine_identity": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "command_definition_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "file_hashes": {
+      "type": "object",
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "classification": {
+      "const": "synthetic"
+    },
+    "status": {
+      "enum": [
+        "passed",
+        "failed",
+        "timeout",
+        "not_run"
+      ]
+    },
+    "started_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "finished_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "environment": {
+      "type": "object",
+      "properties": {
+        "python": {
+          "type": "string",
+          "minLength": 1
+        },
+        "platform": {
+          "type": "string",
+          "minLength": 1
+        },
+        "runner_executable_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "sandboxed": {
+          "const": false
+        }
+      },
+      "required": [
+        "python",
+        "platform",
+        "runner_executable_sha256",
+        "sandboxed"
+      ],
+      "additionalProperties": false
+    },
+    "scheduled_cases": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "completed_cases": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "mode": {
+            "enum": [
+              "baseline",
+              "off",
+              "shadow",
+              "active"
+            ]
+          },
+          "status": {
+            "enum": [
+              "passed",
+              "failed",
+              "timeout",
+              "not_run"
+            ]
+          },
+          "observation": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "assertions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 0,
+            "maxItems": 64
+          },
+          "diagnostic": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "case_id",
+          "mode",
+          "status",
+          "observation",
+          "assertions",
+          "diagnostic"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 256
+    },
+    "contract_assertions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0,
+      "maxItems": 64
+    },
+    "command_checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "definition_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "status": {
+            "enum": [
+              "passed",
+              "failed",
+              "timeout",
+              "not_run"
+            ]
+          },
+          "returncode": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "definition_sha256",
+          "status",
+          "returncode"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 1
+    },
+    "baseline_receipt_sha256": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "activation_authorized": {
+      "const": false
+    },
+    "benefit_demonstrated": {
+      "const": false
+    },
+    "contract_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  },
+  "required": [
+    "schema_version",
+    "bundle_digest",
+    "spec_digest",
+    "phase",
+    "engine_identity",
+    "command_definition_digest",
+    "file_hashes",
+    "classification",
+    "status",
+    "started_at",
+    "finished_at",
+    "environment",
+    "scheduled_cases",
+    "completed_cases",
+    "results",
+    "contract_assertions",
+    "command_checks",
+    "baseline_receipt_sha256",
+    "activation_authorized",
+    "benefit_demonstrated",
+    "contract_digest"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:implementation-receipt:1.0"
+}

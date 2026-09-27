@@ -133,7 +133,7 @@ class SafeRouter:
             return Decision("block","policy","no_permitted_baseline",assessment)
         return Decision(baseline,"baseline",reason,assessment)
 
-    def runtime_contract_hash(self, questions, primary_question, evidence_question=None):
+    def runtime_contract_hash(self, questions, primary_question, evidence_question=None, *, label_actions=None):
         """Bind the exact operational policy and question roles for host approval.
 
         Changing canary exposure, prices, deadlines, thresholds or the chosen
@@ -141,22 +141,39 @@ class SafeRouter:
         created by computing this hash.
         """
         from .robustness import request_fingerprint
-        return digest({"runtime":self.config, "policy_version":self.policy_version,
+        contract={"runtime":self.config, "policy_version":self.policy_version,
                        "ordered_questions_hash":request_fingerprint(None,questions,self.config["model"]),
                        "primary_question":primary_question, "evidence_question":evidence_question,
                        "thresholds":asdict(self.thresholds),
                        "action_thresholds":{k:asdict(v) for k,v in self.action_thresholds.items()},
                        "max_concurrent_calls":self.max_concurrent_calls, "canary_scope":self.canary_scope,
-                       "shared_budget_limits":self.budget_coordinator.limits if self.budget_coordinator else None})
+                       "shared_budget_limits":self.budget_coordinator.limits if self.budget_coordinator else None}
+        # Omitting a translation preserves byte-for-byte legacy receipt semantics.
+        if label_actions is not None:
+            contract["label_actions"]=self._label_translation(questions,primary_question,label_actions)
+        return digest(contract)
 
-    def _active_authorized(self, questions, primary=None, evidence_q=None):
+    @staticmethod
+    def _label_translation(questions, primary, label_actions):
+        if label_actions is None:
+            return None
+        if (not isinstance(label_actions,dict) or primary not in questions
+                or questions[primary].get("type")!="choice"
+                or set(label_actions)!=set(questions[primary]["criteria"])
+                or any(v is not None and (not isinstance(v,str) or not v) for v in label_actions.values())):
+            raise InputError("Translation must exhaustively map Choice labels to host IDs or explicit abstention")
+        if "uncertain" in label_actions and label_actions["uncertain"] is not None:
+            raise InputError("Uncertainty cannot be translated into execution authority")
+        return copy.deepcopy(label_actions)
+
+    def _active_authorized(self, questions, primary=None, evidence_q=None, label_actions=None):
         from .contracts import parse_utc
         from .robustness import request_fingerprint
         from datetime import datetime, timezone
         a=self.activation
         if self.require_runtime_binding or "runtime_contract_hash" in a:
             if (not self.require_expiring_activation or a.get("runtime_contract_hash") !=
-                    self.runtime_contract_hash(questions,primary,evidence_q)):
+                    self.runtime_contract_hash(questions,primary,evidence_q,label_actions=label_actions)):
                 return False
         if a.get("revoked",False) is not False:
             return False
@@ -182,11 +199,12 @@ class SafeRouter:
     def route(self, *, task_id: str, state: Any, questions: dict, primary_question: str, baseline_action: str,
               gate: HostGate, evidence_question: str | None=None, immutable_state: bool=False,
               cache_scope: str | None=None, estimated_cost_upper_bound: float | None=None,
-              provenance: dict | None=None) -> Decision:
+              provenance: dict | None=None, label_actions: dict[str,str | None] | None=None) -> Decision:
         # Freeze caller-owned inputs before validating, hashing or scheduling.
         questions=copy.deepcopy(questions)
         state=copy.deepcopy(state)
         validate_questions(questions)
+        label_actions=self._label_translation(questions,primary_question,label_actions)
         if type(immutable_state) is not bool:
             raise InputError("immutable_state must be an explicit boolean")
         if cache_scope is not None and (not isinstance(cache_scope,str) or not cache_scope):
@@ -216,7 +234,7 @@ class SafeRouter:
         mode=self.config["mode"]
         if mode=="off": return self._fallback(baseline_action,gate,"feature_off")
         if mode not in ("shadow","canary","active"): raise InputError("Unsupported mode")
-        if mode in ("active","canary") and not self._active_authorized(questions,primary_question,evidence_question):
+        if mode in ("active","canary") and not self._active_authorized(questions,primary_question,evidence_question,label_actions):
             return self._fallback(baseline_action,gate,"activation_or_calibration_missing")
         if mode=="canary":
             from .cohorts import canary_arm
@@ -225,7 +243,7 @@ class SafeRouter:
         if estimated_cost_upper_bound is not None: finite(estimated_cost_upper_bound,"estimated cost upper bound",0)
         if self.client.is_remote and estimated_cost_upper_bound is None:
             return self._fallback(baseline_action,gate,"unknown_spend_upper_bound")
-        args=(task_id,copy.deepcopy(state),copy.deepcopy(questions),primary_question,baseline_action,gate,evidence_question,immutable_state,cache_scope,estimated_cost_upper_bound or 0.0,provenance)
+        args=(task_id,copy.deepcopy(state),copy.deepcopy(questions),primary_question,baseline_action,gate,evidence_question,immutable_state,cache_scope,estimated_cost_upper_bound or 0.0,provenance,label_actions)
         if mode=="shadow":
             if not self.slots.acquire(blocking=False):
                 with self.lock: self.stats["shadow_dropped"]+=1
@@ -253,17 +271,19 @@ class SafeRouter:
         except Exception:
             with self.lock: self.stats["errors"]+=1
 
-    def _assess(self,task_id,state,questions,primary,baseline,gate,evidence_q,immutable,scope,cost_bound,provenance):
+    def _assess(self,task_id,state,questions,primary,baseline,gate,evidence_q,immutable,scope,cost_bound,provenance,label_actions=None):
         from .robustness import request_fingerprint
-        key=digest({"ordered_request":request_fingerprint(state,questions,self.config["model"]),
-                    "policy_version":self.policy_version,"allowed_actions":gate.allowed_actions,"scope":scope})
+        cache_contract={"ordered_request":request_fingerprint(state,questions,self.config["model"]),
+                        "policy_version":self.policy_version,"allowed_actions":gate.allowed_actions,"scope":scope}
+        if label_actions is not None: cache_contract["label_actions"]=label_actions
+        key=digest(cache_contract)
         now=time.monotonic(); cached=None; saved_latency=0.0
         reservation=None; request_slot=False; actual_cost=None
         cacheable=immutable and bool(scope) and self.config["cache_ttl_s"]>0
         with self.lock:
             if self.suspended or self.closed:
                 return self._fallback(baseline,gate,"runtime_suspended_or_closed_during_assessment")
-            if self.config["mode"] in ("active","canary") and not self._active_authorized(questions,primary,evidence_q):
+            if self.config["mode"] in ("active","canary") and not self._active_authorized(questions,primary,evidence_q,label_actions):
                 return self._fallback(baseline,gate,"activation_expired_or_revoked_during_assessment")
             if self.budget_coordinator and not self.budget_coordinator.permits_result(task_id):
                 return self._fallback(baseline,gate,"shared_budget_closed_or_suspended")
@@ -320,22 +340,23 @@ class SafeRouter:
                 self.budget_coordinator.settle(reservation,actual_cost=actual_cost)
                 reservation=None
             a=response["answers"][primary]; choice=a["choice"]; p=a["probabilities"][choice]; conf=a["confidence"]
+            selected=label_actions[choice] if label_actions is not None else choice
             thresholds=self.action_thresholds.get(choice,self.thresholds)
             if evidence_q is not None and response["answers"][evidence_q]["noul"]<thresholds.evidence_yes_floor:
                 decision=self._fallback(baseline,gate,"insufficient_semantic_evidence",a)
-            elif choice=="uncertain": decision=self._fallback(baseline,gate,"explicit_abstention",a)
-            elif choice not in gate.allowed_actions: decision=self._fallback(baseline,gate,"illegal_model_action",a)
+            elif choice=="uncertain" or selected is None: decision=self._fallback(baseline,gate,"explicit_abstention",a)
+            elif selected not in gate.allowed_actions: decision=self._fallback(baseline,gate,"illegal_model_action",a)
             elif p<thresholds.probability_floor or conf<thresholds.confidence_floor:
                 if p>=thresholds.inspect_probability_floor and "inspect" in gate.allowed_actions:
                     decision=Decision("inspect","policy","gather_more_evidence",a)
                 else: decision=self._fallback(baseline,gate,"low_confidence_or_probability",a)
-            else: decision=Decision(choice,"jev_assessment","bounded_proposal_not_execution_authorization",a)
+            else: decision=Decision(selected,"jev_assessment","bounded_proposal_not_execution_authorization",a)
             in_price=self.config.get("input_usd_per_million"); out_price=self.config.get("output_usd_per_million")
             cost=(response["usage"]["input_tokens"]*in_price+response["usage"]["output_tokens"]*out_price)/1e6 if in_price is not None and out_price is not None else None
             with self.lock:
                 if self.suspended or self.closed:
                     decision=self._fallback(baseline,gate,"runtime_suspended_or_closed_during_assessment")
-                elif self.config["mode"] in ("active","canary") and not self._active_authorized(questions,primary,evidence_q):
+                elif self.config["mode"] in ("active","canary") and not self._active_authorized(questions,primary,evidence_q,label_actions):
                     decision=self._fallback(baseline,gate,"activation_expired_or_revoked_during_assessment")
             if self.budget_coordinator and not self.budget_coordinator.permits_result(task_id):
                 decision=self._fallback(baseline,gate,"shared_budget_closed_or_suspended")
@@ -351,7 +372,7 @@ class SafeRouter:
             with self.lock:
                 if self.suspended or self.closed:
                     return self._fallback(baseline,gate,"runtime_suspended_or_closed_during_assessment")
-                if self.config["mode"] in ("active","canary") and not self._active_authorized(questions,primary,evidence_q):
+                if self.config["mode"] in ("active","canary") and not self._active_authorized(questions,primary,evidence_q,label_actions):
                     return self._fallback(baseline,gate,"activation_expired_or_revoked_during_assessment")
                 if cacheable and cached is None:
                     if len(self.cache)>=self.config["max_cache_entries"]: self.cache.pop(next(iter(self.cache)))
