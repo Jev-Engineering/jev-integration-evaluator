@@ -1,0 +1,865 @@
+{
+  "schema": "jev-roadmap-acceptance-ledger-v1",
+  "snapshot_utc": "2026-09-27T23:41:55.7945158Z",
+  "repository": "Jev-Engineering/jev-integration-evaluator",
+  "main": "fa44cf7c28fe918f946ab3d4f9856d759f7260ea",
+  "notes": [
+    "Acceptance criteria transcribed from live GitHub issue bodies. Unverified means no requirement-level credit yet.",
+    "Native blocked-by relations and actual test revisions must be read back before closure.",
+    "Synthetic, observed, provider connectivity and activation evidence are distinct."
+  ],
+  "issues": [
+    {
+      "number": 3,
+      "title": "Deliver an agent-driven repository-to-JEV implementation command",
+      "url": "https://github.com/Jev-Engineering/jev-integration-evaluator/issues/3",
+      "state": "OPEN",
+      "milestone": null,
+      "acceptance": [
+        {
+          "requirement": "The MVP completes a supported placement from repository input and returns honest outcomes for unsupported, ambiguous, insufficient-evidence, and no-useful-placement cases.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Agent reviews and all generated changes remain source-bound; deterministic validators retain authority over policy, scope, registered actions, budgets and postconditions.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Resume/recovery preserves run identity, failure history, trusted receipt provenance, prior constraints and unrelated user work.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "New source shapes, host environments and language/runtime backends are advertised only after independent installed-artifact qualification.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Synthetic wiring, provider connectivity, measured downstream benefit and production activation remain separately reported states.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Every linked implementation issue is complete or explicitly removed from scope with a documented decision.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        }
+      ],
+      "workstream": "pending-dependency",
+      "source_revision": "fa44cf7c28fe918f946ab3d4f9856d759f7260ea",
+      "pr": [],
+      "commit": [],
+      "review": [],
+      "merge_sha": null,
+      "post_merge_checks": [],
+      "native_blocked_by": [],
+      "candidate_code_and_tests": [
+        "jev_integration_evaluator/repository_run.py",
+        "references/repository-session-command.md"
+      ]
+    },
+    {
+      "number": 4,
+      "title": "Add a resumable repository implementation command and session contract",
+      "url": "https://github.com/Jev-Engineering/jev-integration-evaluator/issues/4",
+      "state": "OPEN",
+      "milestone": "Repository implementation MVP",
+      "acceptance": [
+        {
+          "requirement": "Path-only invocation performs read-only preparation and returns a structured next action, no-useful-placement, insufficient-evidence, missing-prerequisite, or unsupported result.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Given externally prepared reviewed inputs and a configured agent adapter, one invocation can complete the existing supported single-placement lifecycle. Discovery/review stages expose concrete structured next-action contracts; automatic drafting and the final path-only MVP qualification are delivered by the linked follow-on issues.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Restart after every stage and after interrupted apply resumes the same run without duplicate mutation, repeated completed effects, or lost externally trusted receipt references.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Source drift invalidates affected decisions; preserved user constraints are not silently dropped. Stop/cancel and retry limits produce deterministic terminal or resumable states.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Repository instructions and agent proposals cannot trigger unscoped commands, egress, installation, publication, or activation; tests exercise these boundaries.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        }
+      ],
+      "workstream": "issue4",
+      "source_revision": "fa44cf7c28fe918f946ab3d4f9856d759f7260ea",
+      "pr": [
+        "https://github.com/Jev-Engineering/jev-integration-evaluator/pull/26"
+      ],
+      "commit": [],
+      "review": [],
+      "merge_sha": null,
+      "post_merge_checks": [],
+      "native_blocked_by": [],
+      "candidate_code_and_tests": [
+        "jev_integration_evaluator/repository_run.py",
+        "tests/test_repository_run.py"
+      ],
+      "current_finding": "PR #26 merged a partial session foundation; issue remains open."
+    },
+    {
+      "number": 5,
+      "title": "Discover implementation capabilities and admit source-anchored candidate nominations",
+      "url": "https://github.com/Jev-Engineering/jev-integration-evaluator/issues/5",
+      "state": "CLOSED",
+      "milestone": "Repository implementation MVP",
+      "acceptance": [
+        {
+          "requirement": "A semantically useful supported seam with opaque identifiers can be nominated and reviewed without renaming source or forging an inventory.\r",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Unknown, stale, ambiguous, excluded, or out-of-root anchors are rejected; nominated candidates cannot bypass deterministic eligibility gates.\r",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Flat Python, src/package Python, mixed-language, TS-only, and parser-unavailable repositories receive accurate capability and coverage results without target imports or target plugin execution.\r",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "No candidates, no useful candidates, unsupported transformations, and incomplete analysis remain distinguishable outcomes.\r",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Capability and nomination records have strict mirrored schemas and source-linked examples.\r",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        }
+      ],
+      "workstream": "pending-dependency",
+      "source_revision": "fa44cf7c28fe918f946ab3d4f9856d759f7260ea",
+      "pr": [],
+      "commit": [],
+      "review": [],
+      "merge_sha": null,
+      "post_merge_checks": [],
+      "native_blocked_by": [],
+      "candidate_code_and_tests": [
+        "jev_integration_evaluator/capabilities.py",
+        "references/repository-discovery-v1.md"
+      ]
+    },
+    {
+      "number": 6,
+      "title": "Add an agent review protocol that drafts validated bindings and policy specifications",
+      "url": "https://github.com/Jev-Engineering/jev-integration-evaluator/issues/6",
+      "state": "OPEN",
+      "milestone": "Repository implementation MVP",
+      "acceptance": [
+        {
+          "requirement": "A supported host with existing callbacks yields a valid implementation spec without caller-authored replacement source.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Ambiguous callbacks, absent independent observations, missing policy, invalid label mappings, and source drift yield actionable unresolved/blocked results.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Agent text cannot become evaluated code, shell commands, fabricated measurements, or self-issued authority.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Previously answered questions are reused; runtime defaults off and stable task/coordinator ownership remain explicit.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "An integration test runs discovery through reviewed-spec preparation using an opaque-name host and an offline agent adapter.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        }
+      ],
+      "workstream": "pending-dependency",
+      "source_revision": "fa44cf7c28fe918f946ab3d4f9856d759f7260ea",
+      "pr": [],
+      "commit": [],
+      "review": [],
+      "merge_sha": null,
+      "post_merge_checks": [],
+      "native_blocked_by": [
+        4,
+        5
+      ],
+      "candidate_code_and_tests": [
+        "jev_integration_evaluator/repository_run.py",
+        "jev_integration_evaluator/integrations/contracts.py"
+      ]
+    },
+    {
+      "number": 7,
+      "title": "Separate experimental placement selection from evidence-backed optimization",
+      "url": "https://github.com/Jev-Engineering/jev-integration-evaluator/issues/7",
+      "state": "OPEN",
+      "milestone": "Repository implementation MVP",
+      "acceptance": [
+        {
+          "requirement": "A reviewed candidate with missing outcome measurements can produce an explicitly experimental plan without fabricated estimates or a keep/adoption claim.\r",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Unknown spending bounds still block live spend; local code preparation does not imply provider execution or activation.\r",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "An empty feasible set caused by missing estimates is not reported as proof the repository has no useful placement.\r",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Rejected deterministic/hard-real-time candidates remain ineligible in every selection mode.\r",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Tests cover all selection outcomes, including genuine no-useful-placement and source-stale reviews.\r",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        }
+      ],
+      "workstream": "pending-dependency",
+      "source_revision": "fa44cf7c28fe918f946ab3d4f9856d759f7260ea",
+      "pr": [],
+      "commit": [],
+      "review": [],
+      "merge_sha": null,
+      "post_merge_checks": [],
+      "native_blocked_by": [
+        4
+      ],
+      "candidate_code_and_tests": [
+        "jev_integration_evaluator/selection.py",
+        "jev_integration_evaluator/placement_selection.py"
+      ],
+      "current_finding": "Four issue boxes checked, but connected durable command behavior and final outcome qualification remain unverified."
+    },
+    {
+      "number": 8,
+      "title": "Verify integrations through target-native runners with explicit execution isolation",
+      "url": "https://github.com/Jev-Engineering/jev-integration-evaluator/issues/8",
+      "state": "OPEN",
+      "milestone": "Repository implementation MVP",
+      "acceptance": [
+        {
+          "requirement": "The chosen target environment is used and recorded; missing dependencies/assets/interpreter fail precisely instead of using a silently different environment.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Actual host entrypoint execution proves integration reachability and baseline/off/shadow parity; a passing adapter-only test or forged success JSON is insufficient.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Real bootstrap can be tested without replacing its runtime callback; fixture-only tests remain labeled synthetic.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Permission, side-effect, timeout, crash, descendant-process, source-drift, and receipt-tampering tests preserve failures in scheduled denominators.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "At least one supported isolated backend is exercised against filesystem/network/process escape attempts. Missing runner support cannot silently fall back to host execution; qualified guarantees and unsupported platforms are explicit.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        }
+      ],
+      "workstream": "runner-review",
+      "source_revision": "fa44cf7c28fe918f946ab3d4f9856d759f7260ea",
+      "pr": [
+        "https://github.com/Jev-Engineering/jev-integration-evaluator/pull/27"
+      ],
+      "commit": [],
+      "review": [],
+      "merge_sha": null,
+      "post_merge_checks": [],
+      "native_blocked_by": [
+        4
+      ],
+      "candidate_code_and_tests": [
+        "jev_integration_evaluator/integrations/verification.py",
+        ".github/workflows/ci.yml"
+      ],
+      "current_finding": "Draft c16c71e; generic CI green but privileged cases unqualified, no independent review, no session/receipt integration."
+    },
+    {
+      "number": 9,
+      "title": "Qualify the repository command against independent hosts and failure cases",
+      "url": "https://github.com/Jev-Engineering/jev-integration-evaluator/issues/9",
+      "state": "OPEN",
+      "milestone": "Repository implementation MVP",
+      "acceptance": [
+        {
+          "requirement": "From only a target path and declared objective/authority, supported fixtures complete the connected lifecycle; other fixtures return the expected truthful result.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Code/model changes cannot pass by changing both the implementation and its only generated oracle; adversarial mutations are detected by independent assertions.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Existing full regressions, package validation, installed-wheel checks, v1.1/v1.2 demos, and the A-M demo pass.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Hosted checks run the advertised Python matrix plus Python-only mode; platform and parser omissions are recorded rather than silently skipped.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Report links bind qualification to exact source and command versions; no synthetic result is presented as measured application benefit.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        }
+      ],
+      "workstream": "pending-dependency",
+      "source_revision": "fa44cf7c28fe918f946ab3d4f9856d759f7260ea",
+      "pr": [],
+      "commit": [],
+      "review": [],
+      "merge_sha": null,
+      "post_merge_checks": [],
+      "native_blocked_by": [
+        6,
+        7,
+        8
+      ],
+      "candidate_code_and_tests": [
+        "tests/test_repository_run.py",
+        "tests/test_repository_run_wheel.py"
+      ]
+    },
+    {
+      "number": 10,
+      "title": "Support Python package layouts and source-bound cross-module bindings",
+      "url": "https://github.com/Jev-Engineering/jev-integration-evaluator/issues/10",
+      "state": "OPEN",
+      "milestone": "Python host integration expansion",
+      "acceptance": [
+        {
+          "requirement": "Installed-host lifecycle tests cover a flat module, src package, relative imports, and declared namespace-package behavior.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Imported or re-exported bindings resolve only through explicitly supported static paths; ambiguous, cyclic, dynamic, and shadowed bindings are rejected precisely.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Planning never imports target modules, invokes package hooks, or executes target compiler configuration.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Changes to a contributing module invalidate the plan; generated adapter imports resolve both in the supported source invocation and installed package.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Unsupported package forms remain zero-write results.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        }
+      ],
+      "workstream": "issue10",
+      "source_revision": "fa44cf7c28fe918f946ab3d4f9856d759f7260ea",
+      "pr": [],
+      "commit": [],
+      "review": [],
+      "merge_sha": null,
+      "post_merge_checks": [],
+      "native_blocked_by": [
+        5
+      ],
+      "candidate_code_and_tests": [
+        "jev_integration_evaluator/integrations/recipes.py",
+        "jev_integration_evaluator/integrations/host.py"
+      ],
+      "current_finding": "Issue open with only closed #5 native prerequisite. status:blocked corrected to status:ready on GitHub during this audit."
+    },
+    {
+      "number": 11,
+      "title": "Add a qualified Python adaptation path for broader seams and missing host prerequisites",
+      "url": "https://github.com/Jev-Engineering/jev-integration-evaluator/issues/11",
+      "state": "OPEN",
+      "milestone": "Python host integration expansion",
+      "acceptance": [
+        {
+          "requirement": "At least one realistic instance-method host and one async-tail-call host complete source-bound implementation and independent behavioral verification.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Every new strategy publishes precise preconditions, unsupported cases, tests, and versioned recipe identity; old single-tail-call semantics remain unchanged.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Preparation failure, changed policy, ambiguous callers, and unsupported control flow cannot result in mutation outside the reviewed plan or a false verified status.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Async tests include cancellation and exception propagation; method tests include receiver state and argument/effect ordering.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "A missing authority-bearing callback stays blocked unless its host-owned policy can be explicitly and correctly implemented; agent output cannot manufacture authority.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        }
+      ],
+      "workstream": "pending-dependency",
+      "source_revision": "fa44cf7c28fe918f946ab3d4f9856d759f7260ea",
+      "pr": [],
+      "commit": [],
+      "review": [],
+      "merge_sha": null,
+      "post_merge_checks": [],
+      "native_blocked_by": [
+        6,
+        10,
+        8
+      ],
+      "candidate_code_and_tests": [
+        "jev_integration_evaluator/integrations/recipes.py"
+      ]
+    },
+    {
+      "number": 12,
+      "title": "Wire and verify host-owned provider, router, budget, and dependency lifecycle",
+      "url": "https://github.com/Jev-Engineering/jev-integration-evaluator/issues/12",
+      "state": "OPEN",
+      "milestone": "Python host integration expansion",
+      "acceptance": [
+        {
+          "requirement": "Application startup constructs its actual runtime and reaches default-off/shadow behavior without a replacement runtime callback in the verifier.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Repeated decisions reuse router/coordinator identity, completed tasks remain closed, retries retain charges, and shutdown drains/closes resources.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Multiple placements and threads obey shared limits; multiprocess/distributed hosts are explicitly unsupported unless a separately qualified coordinator backend is configured.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Missing credentials, dependency conflicts, provider errors, deadlines, and invalid receipts fail safely with redacted diagnostics.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Provider connectivity needs explicit egress authority; no code installation or passing smoke test enables active treatment.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        }
+      ],
+      "workstream": "pending-dependency",
+      "source_revision": "fa44cf7c28fe918f946ab3d4f9856d759f7260ea",
+      "pr": [],
+      "commit": [],
+      "review": [],
+      "merge_sha": null,
+      "post_merge_checks": [],
+      "native_blocked_by": [
+        6,
+        10,
+        8
+      ],
+      "candidate_code_and_tests": [
+        "jev_integration_evaluator/client.py",
+        "jev_integration_evaluator/budget.py"
+      ]
+    },
+    {
+      "number": 13,
+      "title": "Compose multiple JEV placements into one recoverable implementation transaction",
+      "url": "https://github.com/Jev-Engineering/jev-integration-evaluator/issues/13",
+      "state": "OPEN",
+      "milestone": "Python host integration expansion",
+      "acceptance": [
+        {
+          "requirement": "Two supported placements in different files can be planned and applied together without treating the first intended edit as source drift.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Compatible same-file changes generate no duplicate imports/wrappers; conflicting changes are rejected with exact candidate/path reasons.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "One digest covers all final edits and policies; stale source or a changed selected set invalidates approval.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Crash and write-failure tests at each transaction boundary recover matching owned bytes, preserve unrelated work, and never report partial application as verified.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Second apply is idempotent; combined host tests prove each selected path and shared limits.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        }
+      ],
+      "workstream": "pending-dependency",
+      "source_revision": "fa44cf7c28fe918f946ab3d4f9856d759f7260ea",
+      "pr": [],
+      "commit": [],
+      "review": [],
+      "merge_sha": null,
+      "post_merge_checks": [],
+      "native_blocked_by": [
+        4,
+        6
+      ],
+      "candidate_code_and_tests": [
+        "jev_integration_evaluator/integrations/lifecycle.py"
+      ]
+    },
+    {
+      "number": 14,
+      "title": "Implement a qualified JavaScript/TypeScript transform and host-runtime backend",
+      "url": "https://github.com/Jev-Engineering/jev-integration-evaluator/issues/14",
+      "state": "OPEN",
+      "milestone": "JavaScript and TypeScript implementation backend",
+      "acceptance": [
+        {
+          "requirement": "Supported ESM, CommonJS, and TypeScript package fixtures compile/import and execute through their actual edited host entrypoints.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Tests cover async rejection/cancellation, argument/effect ordering, off/shadow parity, current host checks, budget contention, and receipt tampering.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Source and binding drift, import collisions, unsupported syntax, and unapproved tool execution fail before mutation.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Installed-package and rollback tests cover the chosen runtime strategy, including transport failure if a bridge is used.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Capability discovery and docs distinguish analysis-only, implementation-supported, and verified runtime coverage by version.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        }
+      ],
+      "workstream": "pending-dependency",
+      "source_revision": "fa44cf7c28fe918f946ab3d4f9856d759f7260ea",
+      "pr": [],
+      "commit": [],
+      "review": [],
+      "merge_sha": null,
+      "post_merge_checks": [],
+      "native_blocked_by": [
+        5,
+        6,
+        8
+      ],
+      "candidate_code_and_tests": [
+        "jev_integration_evaluator/integrations/recipes.py",
+        "tooling"
+      ]
+    },
+    {
+      "number": 15,
+      "title": "Connect verified implementation identities to observed studies and operational evidence",
+      "url": "https://github.com/Jev-Engineering/jev-integration-evaluator/issues/15",
+      "state": "OPEN",
+      "milestone": "Observed implementation evaluation",
+      "acceptance": [
+        {
+          "requirement": "Synthetic probes and a successful HTTP response cannot satisfy observed-benefit or activation gates.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Every collected outcome binds to the frozen schedule and exact implementation/configuration; missing outcomes/timeouts remain in the denominator.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Tampered holdout summaries are rejected through recomputation from raw inputs, and source/configuration drift invalidates dependent evidence.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Unknown budgets, missing egress scope, absent independent labels, or unavailable benchmark data yield explicit incomplete states rather than invented values.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        },
+        {
+          "requirement": "Offline fixtures validate orchestration deterministically; any live execution is separately authorized and documented as observed only for the executed scope.",
+          "evidence_state": "unverified",
+          "evidence": [],
+          "gaps": [
+            "Current implementation and validation need requirement-specific audit"
+          ]
+        }
+      ],
+      "workstream": "pending-dependency",
+      "source_revision": "fa44cf7c28fe918f946ab3d4f9856d759f7260ea",
+      "pr": [],
+      "commit": [],
+      "review": [],
+      "merge_sha": null,
+      "post_merge_checks": [],
+      "native_blocked_by": [
+        7,
+        12
+      ],
+      "candidate_code_and_tests": [
+        "jev_integration_evaluator/study.py",
+        "jev_integration_evaluator/gates.py"
+      ]
+    }
+  ],
+  "audit_runs": [
+    {
+      "revision": "fa44cf7c28fe918f946ab3d4f9856d759f7260ea",
+      "platform": "Windows native Python",
+      "command": "python -m pytest -q tests/test_repository_run.py tests/test_placement_review_consistency.py",
+      "result": "61 failed, 6 passed, 22 skipped; repository_run POSIX secure filesystem prerequisite absent; this is not acceptance evidence"
+    },
+    {
+      "revision": "fa44cf7c28fe918f946ab3d4f9856d759f7260ea",
+      "platform": "Windows native Python, PYTHONUTF8=1",
+      "command": "python scripts/validate_package.py",
+      "result": "passed; 49 schemas, 321 synthetic records, 13 implementation examples; not full roadmap qualification"
+    }
+  ]
+}
