@@ -8,7 +8,7 @@ from jev_integration_evaluator.io import InputError, file_hash
 @pytest.fixture
 def release_validator(root, tmp_path):
     destination = tmp_path / 'package'
-    shutil.copytree(root, destination, ignore=shutil.ignore_patterns('validation', 'node_modules', '__pycache__',
+    shutil.copytree(root, destination, ignore=shutil.ignore_patterns('.git', 'validation', 'node_modules', '__pycache__',
                         '.pytest_cache', '.venv', 'build', 'dist', '*.egg-info'))
     spec = importlib.util.spec_from_file_location('validate_test_copy', root / 'scripts/validate_package.py')
     module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
