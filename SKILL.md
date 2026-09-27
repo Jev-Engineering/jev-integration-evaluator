@@ -4,7 +4,7 @@ description: Discover, score, design, optimize, and experimentally validate high
 license: MIT
 metadata:
   author: CompleteTech LLC
-  version: 1.3.0.dev7
+  version: 1.3.0.dev8
 ---
 
 # JEV Integration Evaluator
@@ -46,6 +46,16 @@ still requires declared estimates and provenance. Missing estimates, incomplete
 coverage, unsupported implementation shapes, and a reviewed negative outcome
 remain distinct. The selector never authorizes spending, target execution,
 runtime activation, or adoption. See `references/experimental-selection.md`.
+
+For a **bounded whole-source outcome**, use `repository-placement context` with
+the current discovery report, prepared inventory, source-matched semantic review,
+and a separately authored scope review covering every enumerated file and seam.
+Only complete coverage and all-negative review can yield `no_useful_placement`
+within that stated policy scope. An empty inventory or a rejected candidate is
+not enough. `repository-placement select` records an experimental set but does
+not create an implementation bundle; use the existing single-candidate selector
+and planner for a reviewed supported implementation. Never treat a reviewer
+label or digest as authenticated permission. Read `references/placement-selection-v1.md`.
 
 ## Activation and scope
 

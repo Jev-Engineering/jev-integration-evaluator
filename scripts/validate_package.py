@@ -34,7 +34,7 @@ def validate(check_manifest=False):
               'schemas/implementation-manifest.schema.json','schemas/implementation-tests.schema.json',
               'tests/test_executable_recipes.py','tests/test_executable_runtime.py','tests/test_executable_safety.py','tests/test_executable_cli.py','tests/test_executable_wheel.py',
               'tests/test_executable_host_boundaries.py','tests/test_executable_source_scope.py','tests/test_executable_verification_identity.py',
-              'validation/SELECTION-VALIDATION-1.3.0.dev7.md',
+              'validation/SCOPE-OUTCOME-VALIDATION-1.3.0.dev8.md',
               'jev_integration_evaluator/integrations/observations.py','schemas/implementation-observation.schema.json',
               'tests/test_executable_failure_receipts.py','tests/test_executable_source_fidelity.py','tests/test_executable_command_receipts.py',
               'examples/implementation/observation.example.json',
@@ -61,6 +61,20 @@ def validate(check_manifest=False):
                  for name in ('placement-estimates', 'placement-interaction',
                               'placement-selection-envelope', 'placement-selection-request',
                               'placement-selection-summary', 'placement-selection')]
+    required += ['jev_integration_evaluator/placement_selection.py',
+                 'scripts/select_repository_placements.py',
+                 'scripts/run_placement_selection_demo.py',
+                 'scripts/build_placement_selection_schemas.py',
+                 'references/placement-selection-v1.md',
+                 'tests/test_repository_placement_selection.py',
+                 'tests/test_repository_placement_wheel.py',
+                 'examples/placement-selection/host/opaque.py']
+    required += [f'{directory}/{name}.schema.json'
+                 for directory in ('schemas', 'jev_integration_evaluator/data')
+                 for name in ('repository-placement-context-v1',
+                              'repository-placement-review-v1',
+                              'repository-placement-selection-v1',
+                              'repository-scope-review-v1')]
     for item in required:
         if not (ROOT/item).is_file():raise InputError('Required package file missing: '+item)
     front=(ROOT/'SKILL.md').read_text().split('---',2)
@@ -143,6 +157,22 @@ def validate(check_manifest=False):
         for item in envelope['inventory']['files']:
             if file_hash(safe_child(ROOT/'examples/repository-capabilities/host',item['file']))!=item['sha256']:
                 raise InputError('Bridge example source identity mismatch')
+    scope_examples = ROOT/'examples/placement-selection'
+    for name, kind in (('context','repository-placement-context-v1'),
+                       ('negative-context','repository-placement-context-v1'),
+                       ('selection-review','repository-placement-review-v1'),
+                       ('selection','repository-placement-selection-v1'),
+                       ('scope-review','repository-scope-review-v1')):
+        jsonschema.validate(read_json(scope_examples/(name+'.json')), schemas[kind])
+    scope_report=read_json(scope_examples/'report.json')
+    scope_review=read_json(scope_examples/'scope-review.json')
+    if (not scope_report['files'] or
+            any(file_hash(safe_child(scope_examples/'host',item['file']))!=item['sha256']
+                for item in scope_report['files']) or
+            len(scope_review['files'])!=len(scope_report['files']) or
+            len(scope_review['seams'])!=len(scope_report['seams']) or
+            read_json(scope_examples/'negative-context.json')['outcome']!='no_useful_placement'):
+        raise InputError('Repository scope example source or review mismatch')
     cfg=load_config(ROOT/'templates/jev-config.yaml')
     jsonschema.validate({'jev_analysis':cfg},schemas['config'])
     fixture_records=0

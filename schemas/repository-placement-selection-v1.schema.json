@@ -1,0 +1,394 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:jev-integration-evaluator:repository-placement-selection-v1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "contract": {
+      "const": "repository-placement-selection-v1"
+    },
+    "context_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "selection_review_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "report_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "reviewed_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "selection_engine_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "status": {
+      "enum": [
+        "blocked",
+        "experimental_selection"
+      ]
+    },
+    "requested_candidate_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^JEV-[A-Z0-9-]+$",
+        "maxLength": 128
+      },
+      "minItems": 1,
+      "maxItems": 32,
+      "uniqueItems": true
+    },
+    "selected_candidate_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^JEV-[A-Z0-9-]+$",
+        "maxLength": 128
+      },
+      "minItems": 0,
+      "maxItems": 32,
+      "uniqueItems": true
+    },
+    "requested_count": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 32
+    },
+    "selected_count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 32
+    },
+    "failures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "candidate_id": {
+            "type": "string",
+            "pattern": "^JEV-[A-Z0-9-]+$",
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "candidate_id",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 1024
+    },
+    "placements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "candidate_id": {
+            "type": "string",
+            "pattern": "^JEV-[A-Z0-9-]+$",
+            "maxLength": 128
+          },
+          "pattern": {
+            "enum": [
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "G",
+              "H",
+              "I",
+              "J",
+              "K",
+              "L",
+              "M",
+              "NONE"
+            ]
+          },
+          "seam_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "state": {
+            "enum": [
+              "excluded",
+              "unsupported",
+              "semantic_rejection",
+              "semantic_review_required",
+              "experimental_review_required"
+            ]
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "minItems": 1,
+            "maxItems": 16
+          },
+          "source": {
+            "type": "object",
+            "properties": {
+              "file": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1024
+              },
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1024
+              },
+              "start_line": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000000
+              },
+              "end_line": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000000
+              },
+              "file_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "source_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "required": [
+              "file",
+              "symbol",
+              "start_line",
+              "end_line",
+              "file_sha256",
+              "source_sha256"
+            ],
+            "additionalProperties": false
+          },
+          "estimates": {
+            "type": "object"
+          },
+          "missing_estimates": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "quality_gain",
+                "reliability_gain",
+                "failure_reduction",
+                "model_call_reduction",
+                "added_latency_ms",
+                "added_cost",
+                "calls_per_task",
+                "complexity",
+                "maintenance",
+                "false_positive_rate",
+                "false_negative_rate",
+                "risk",
+                "throughput"
+              ]
+            },
+            "minItems": 0,
+            "maxItems": 13,
+            "uniqueItems": true
+          },
+          "binding_review": {
+            "const": "not_performed"
+          },
+          "implementation_verified": {
+            "const": false
+          }
+        },
+        "required": [
+          "candidate_id",
+          "pattern",
+          "seam_id",
+          "state",
+          "reasons",
+          "source",
+          "estimates",
+          "missing_estimates",
+          "binding_review",
+          "implementation_verified"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 32
+    },
+    "resource_bounds": {
+      "type": "object",
+      "properties": {
+        "max_calls_total": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "max_cost_total_usd": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "deadline_seconds": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 604800
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "max_calls_total",
+        "max_cost_total_usd",
+        "deadline_seconds"
+      ],
+      "additionalProperties": false
+    },
+    "missing_resource_bounds": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "max_calls_total",
+          "max_cost_total_usd",
+          "deadline_seconds"
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 3,
+      "uniqueItems": true
+    },
+    "next_action": {
+      "enum": [
+        "resolve_selection_failures",
+        "prepare_source_bound_bindings"
+      ]
+    },
+    "requires_composite_transaction": {
+      "type": "boolean"
+    },
+    "binding_review": {
+      "const": "not_performed"
+    },
+    "implementation_verified": {
+      "const": false
+    },
+    "runtime_mode": {
+      "const": "off"
+    },
+    "benefit_supported": {
+      "const": false
+    },
+    "authority_authenticated": {
+      "const": false
+    },
+    "authorization": {
+      "type": "object",
+      "properties": {
+        "execution": {
+          "const": false
+        },
+        "mutation": {
+          "const": false
+        },
+        "egress": {
+          "const": false
+        },
+        "installation": {
+          "const": false
+        },
+        "publication": {
+          "const": false
+        },
+        "activation": {
+          "const": false
+        }
+      },
+      "required": [
+        "execution",
+        "mutation",
+        "egress",
+        "installation",
+        "publication",
+        "activation"
+      ],
+      "additionalProperties": false
+    },
+    "selection_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "schema_version",
+    "contract",
+    "context_sha256",
+    "selection_review_sha256",
+    "report_sha256",
+    "reviewed_sha256",
+    "selection_engine_sha256",
+    "status",
+    "requested_candidate_ids",
+    "selected_candidate_ids",
+    "requested_count",
+    "selected_count",
+    "failures",
+    "placements",
+    "resource_bounds",
+    "missing_resource_bounds",
+    "next_action",
+    "requires_composite_transaction",
+    "binding_review",
+    "implementation_verified",
+    "runtime_mode",
+    "benefit_supported",
+    "authority_authenticated",
+    "authorization",
+    "selection_sha256"
+  ],
+  "additionalProperties": false
+}

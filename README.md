@@ -1,4 +1,4 @@
-# JEV Integration Evaluator 1.3.0.dev7
+# JEV Integration Evaluator 1.3.0.dev8
 
 **CompleteTech LLC · Evidence-driven integration analysis and evaluation**
 
@@ -9,6 +9,24 @@ The skill, Python distribution, and console command are named `jev-integration-e
 The [original executable implementation specification](references/executable-implementation-prompt.md) is retained as requirements provenance. The supported commands and deliberately bounded implementation coverage in this development build are documented in [the current support contract](references/executable-integrations.md).
 
 The default is deliberately conservative: **read-only analysis; no network; runtime off; no target code execution; no automatic adoption**. An unfamiliar repository can produce “no justified integration set.” That is a successful result, not an error.
+
+## Reviewed source-scope outcomes in 1.3.0.dev8
+
+`repository-placement context` reconstructs current discovery and semantic
+review, then distinguishes incomplete analysis, absent candidates, unsupported
+shapes, deterministic rejection, and a separately reviewed negative conclusion
+covering **every enumerated source file and seam**. That conclusion is limited
+to the declared policy scope; it is neither universal absence nor measured
+benefit. The command also offers review-only experimental set selection and
+revalidation, without generating a bundle or authorizing execution. See the
+[source-scope contract](references/placement-selection-v1.md) and
+[dev8 validation](validation/SCOPE-OUTCOME-VALIDATION-1.3.0.dev8.md).
+
+The dev7 [single-candidate selector](references/experimental-selection.md)
+remains the path into existing Python plan preparation after exact external
+request approval. Repository-scope review is a separate input; callers must
+reconcile any conflicting reviews before planning. The durable end-to-end
+repository session and general point-at-a-repository command remain open work.
 
 ## Experimental selection in 1.3.0.dev7
 
@@ -224,7 +242,7 @@ Static analysis cannot recover every reflective/dynamic call, macro, callback, g
 
 A socket timeout and bounded thread pool are not hard real-time guarantees. The test runner is not a security sandbox; use an isolated runner for untrusted projects. Externally retained hash/length checkpoints detect mismatching audit prefixes, but hash chains do not authenticate an adversarial writer. Frozen local manifests cannot prove an untouched holdout or independent trials; their statistical assumptions remain explicit. API fixtures and receipts can be forged by an untrusted editor; authorization and independent experiment review remain host responsibilities.
 
-Development validation is in [the dev6 review-gate report](validation/REVIEW-GATE-VALIDATION-1.3.0.dev6.md), with supplied-fragment and full integration qualification distinguished. Earlier v1.1, v1.2 and dev1–dev5 validation records are retained byte-for-byte as historical evidence; they are not measurements for this build. Live JEV accuracy, cost, latency and calibration were not measured during package construction. The tested model interface uses mocked HTTP and exact local fixtures.
+Development validation is in [the dev8 scope-outcome report](validation/SCOPE-OUTCOME-VALIDATION-1.3.0.dev8.md), with supplied-fragment and full integration qualification distinguished. Earlier validation records are retained as historical evidence; they are not measurements for this build. Live JEV accuracy, cost, latency and calibration were not measured during package construction. The tested model interface uses mocked HTTP and exact local fixtures.
 
 ## License
 

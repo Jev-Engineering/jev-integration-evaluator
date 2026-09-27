@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:jev-integration-evaluator:repository-scope-review-v1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "contract": {
+      "const": "repository-scope-review-v1"
+    },
+    "report_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "prepared_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "reviewer": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048
+    },
+    "pattern_scope": {
+      "const": "all_existing_A_M_placements"
+    },
+    "snapshot_scope": {
+      "const": "bounded_source_and_configuration_not_full_repository"
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "file_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "line_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4194304
+          },
+          "coverage": {
+            "const": "entire_file"
+          },
+          "disposition": {
+            "enum": [
+              "no_useful_placement",
+              "useful",
+              "unresolved"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          }
+        },
+        "required": [
+          "file",
+          "file_sha256",
+          "line_count",
+          "coverage",
+          "disposition",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 10000
+    },
+    "seams": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "seam_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "source": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "file": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1024
+              },
+              "qualified_symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1024
+              },
+              "start_line": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000000
+              },
+              "end_line": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000000
+              },
+              "file_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "ast_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "required": [
+              "file",
+              "qualified_symbol",
+              "start_line",
+              "end_line",
+              "file_sha256",
+              "ast_sha256"
+            ]
+          },
+          "disposition": {
+            "enum": [
+              "no_useful_placement",
+              "useful",
+              "unresolved"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          }
+        },
+        "required": [
+          "seam_id",
+          "source",
+          "disposition",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 10000
+    }
+  },
+  "required": [
+    "schema_version",
+    "contract",
+    "report_sha256",
+    "prepared_sha256",
+    "reviewer",
+    "reason",
+    "pattern_scope",
+    "snapshot_scope",
+    "files",
+    "seams"
+  ],
+  "additionalProperties": false
+}

@@ -28,6 +28,7 @@ def parser():
         q=sub.add_parser(name,help=help); q.add_argument("--config"); return q
     from .repository_discovery import add_arguments as discovery_arguments
     discovery_arguments(sub.add_parser("repository-discovery",help="Discover, prepare an inventory and apply semantic review without target execution"))
+    sub.add_parser("repository-placement", help="Review complete source scope and select experimental placements without execution")
     for name, description in (
         ("discover-capabilities", "Discover bounded source capabilities without executing target code"),
         ("nominate-candidate", "Admit a source-anchored nomination; semantic and binding review remain pending"),
@@ -380,6 +381,10 @@ def main(argv=None):
         # through its diagnostics. The staged CLI owns exclusive private output.
         from .repository_discovery import main as discovery_main
         return discovery_main(supplied[1:])
+    if supplied and supplied[0]=="repository-placement":
+        # This staged command owns bounded external inputs and private outputs.
+        from .placement_selection import main as placement_main
+        return placement_main(supplied[1:])
     args=parser().parse_args(argv)
     try:
         if args.command in ("discover-capabilities", "nominate-candidate"):

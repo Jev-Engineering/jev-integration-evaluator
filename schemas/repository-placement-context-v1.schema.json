@@ -1,0 +1,466 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:jev-integration-evaluator:repository-placement-context-v1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "contract": {
+      "const": "repository-placement-context-v1"
+    },
+    "selection_engine_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "report_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "prepared_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "reviewed_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "semantic_review_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "settings_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "policy_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "snapshot_scope": {
+      "const": "bounded_source_and_configuration_not_full_repository"
+    },
+    "outcome": {
+      "enum": [
+        "incomplete_analysis",
+        "insufficient_evidence",
+        "no_useful_placement",
+        "experimental_review_required",
+        "nomination_required",
+        "no_candidates_discovered",
+        "deterministic_rejection",
+        "unsupported",
+        "source_scope_review_required",
+        "semantic_review_required"
+      ]
+    },
+    "next_action": {
+      "enum": [
+        "resolve_analysis_coverage",
+        "reconcile_conflicting_semantic_reviews",
+        "retain_baseline_within_reviewed_scope",
+        "complete_source_scope_review",
+        "review_explicit_experimental_selection",
+        "nominate_source_reviewed_placement",
+        "review_source_scope_or_nominate",
+        "retain_mandatory_exclusions",
+        "qualify_missing_implementation_strategy",
+        "review_complete_source_scope",
+        "review_source_matched_candidates"
+      ]
+    },
+    "coverage_complete_within_policy": {
+      "type": "boolean"
+    },
+    "excluded_entries": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    },
+    "scope_review": {
+      "type": "object",
+      "properties": {
+        "provided": {
+          "type": "boolean"
+        },
+        "complete": {
+          "type": "boolean"
+        },
+        "files_total": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "files_reviewed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "seams_total": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "seams_reviewed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "missing_files": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "minItems": 0,
+          "maxItems": 10000,
+          "uniqueItems": true
+        },
+        "missing_seams": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "minItems": 0,
+          "maxItems": 10000,
+          "uniqueItems": true
+        },
+        "unresolved": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20000
+        },
+        "useful": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20000
+        },
+        "no_useful_judgment": {
+          "type": "boolean"
+        },
+        "review_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "provided",
+        "complete",
+        "files_total",
+        "files_reviewed",
+        "seams_total",
+        "seams_reviewed",
+        "missing_files",
+        "missing_seams",
+        "unresolved",
+        "useful",
+        "no_useful_judgment",
+        "review_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "candidate_id": {
+            "type": "string",
+            "pattern": "^JEV-[A-Z0-9-]+$",
+            "maxLength": 128
+          },
+          "pattern": {
+            "enum": [
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "G",
+              "H",
+              "I",
+              "J",
+              "K",
+              "L",
+              "M",
+              "NONE"
+            ]
+          },
+          "seam_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "state": {
+            "enum": [
+              "excluded",
+              "unsupported",
+              "semantic_rejection",
+              "semantic_review_required",
+              "experimental_review_required"
+            ]
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "minItems": 1,
+            "maxItems": 16
+          },
+          "source": {
+            "type": "object",
+            "properties": {
+              "file": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1024
+              },
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1024
+              },
+              "start_line": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000000
+              },
+              "end_line": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000000
+              },
+              "file_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "source_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "required": [
+              "file",
+              "symbol",
+              "start_line",
+              "end_line",
+              "file_sha256",
+              "source_sha256"
+            ],
+            "additionalProperties": false
+          },
+          "estimates": {
+            "type": "object"
+          },
+          "missing_estimates": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "quality_gain",
+                "reliability_gain",
+                "failure_reduction",
+                "model_call_reduction",
+                "added_latency_ms",
+                "added_cost",
+                "calls_per_task",
+                "complexity",
+                "maintenance",
+                "false_positive_rate",
+                "false_negative_rate",
+                "risk",
+                "throughput"
+              ]
+            },
+            "minItems": 0,
+            "maxItems": 13,
+            "uniqueItems": true
+          },
+          "binding_review": {
+            "const": "not_performed"
+          },
+          "implementation_verified": {
+            "const": false
+          }
+        },
+        "required": [
+          "candidate_id",
+          "pattern",
+          "seam_id",
+          "state",
+          "reasons",
+          "source",
+          "estimates",
+          "missing_estimates",
+          "binding_review",
+          "implementation_verified"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 10000
+    },
+    "experimental_candidate_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^JEV-[A-Z0-9-]+$",
+        "maxLength": 128
+      },
+      "minItems": 0,
+      "maxItems": 10000,
+      "uniqueItems": true
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "a": {
+            "type": "string",
+            "pattern": "^JEV-[A-Z0-9-]+$",
+            "maxLength": 128
+          },
+          "b": {
+            "type": "string",
+            "pattern": "^JEV-[A-Z0-9-]+$",
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "a",
+          "b"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 100000
+    },
+    "optimization": {
+      "type": "object",
+      "properties": {
+        "declared_model_status": {
+          "enum": [
+            "no_justified_integration_set",
+            "conditional_on_declared_estimates"
+          ]
+        },
+        "eligible_candidates": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "status": {
+          "enum": [
+            "insufficient_estimates",
+            "no_supported_benefit_claim"
+          ]
+        },
+        "benefit_supported": {
+          "const": false
+        },
+        "no_useful_placement_inferred": {
+          "const": false
+        }
+      },
+      "required": [
+        "declared_model_status",
+        "eligible_candidates",
+        "status",
+        "benefit_supported",
+        "no_useful_placement_inferred"
+      ],
+      "additionalProperties": false
+    },
+    "runtime_mode": {
+      "const": "off"
+    },
+    "benefit_supported": {
+      "const": false
+    },
+    "authority_authenticated": {
+      "const": false
+    },
+    "authorization": {
+      "type": "object",
+      "properties": {
+        "execution": {
+          "const": false
+        },
+        "mutation": {
+          "const": false
+        },
+        "egress": {
+          "const": false
+        },
+        "installation": {
+          "const": false
+        },
+        "publication": {
+          "const": false
+        },
+        "activation": {
+          "const": false
+        }
+      },
+      "required": [
+        "execution",
+        "mutation",
+        "egress",
+        "installation",
+        "publication",
+        "activation"
+      ],
+      "additionalProperties": false
+    },
+    "context_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "schema_version",
+    "contract",
+    "selection_engine_sha256",
+    "report_sha256",
+    "prepared_sha256",
+    "reviewed_sha256",
+    "semantic_review_sha256",
+    "settings_sha256",
+    "policy_sha256",
+    "snapshot_scope",
+    "outcome",
+    "next_action",
+    "coverage_complete_within_policy",
+    "excluded_entries",
+    "scope_review",
+    "candidates",
+    "experimental_candidate_ids",
+    "conflicts",
+    "optimization",
+    "runtime_mode",
+    "benefit_supported",
+    "authority_authenticated",
+    "authorization",
+    "context_sha256"
+  ],
+  "additionalProperties": false
+}

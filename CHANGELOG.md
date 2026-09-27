@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.3.0.dev8 — reviewed repository-scope outcomes
+
+- Add a source-revalidated repository placement context that distinguishes
+  incomplete coverage, no discovered candidates, unsupported shapes and a
+  bounded, complete-source reviewed no-useful-placement judgment.
+- Add a central `repository-placement` command, strict mirrored contracts,
+  source-linked synthetic examples and adversarial regression coverage.
+- Preserve the dev7 planner-backed selector and its tests. The new set review
+  is read-only and does not compose edits, authenticate approval or establish
+  measured benefit. See `validation/SCOPE-OUTCOME-VALIDATION-1.3.0.dev8.md`.
+
 ## 1.3.0.dev7 — experimental placement selection
 
 - Add a source-bound, externally approved experimental-selection contract that
