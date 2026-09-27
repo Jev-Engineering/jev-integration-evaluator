@@ -4,7 +4,7 @@ description: Discover, score, design, optimize, and experimentally validate high
 license: MIT
 metadata:
   author: CompleteTech LLC
-  version: 1.3.0.dev8
+  version: 1.3.0.dev9
 ---
 
 # JEV Integration Evaluator
@@ -57,6 +57,13 @@ not create an implementation bundle; use the existing single-candidate selector
 and planner for a reviewed supported implementation. Never treat a reviewer
 label or digest as authenticated permission. Read `references/placement-selection-v1.md`.
 
+For a pattern-by-pattern A–M conclusion, use `repository-discovery --stage
+conclude` with the fresh capability report, complete file and seam opinions,
+and a review digest retained independently of the review file. Bind the stated
+objective and effective policy; an unanchored or incomplete review cannot yield
+`no_useful_placement`. This read-only conclusion does not replace the placement
+selector or implementation planner. Read `references/repository-conclusion-v1.md`.
+
 ## Activation and scope
 
 Use this skill when asked where, why, how, or whether to integrate JEV into unfamiliar code, or to implement and evaluate an explicitly selected integration. Do not interpret a request to analyze as permission to install dependencies, run repository code, transmit source, modify the target, publish a branch, merge, or deploy.
@@ -77,8 +84,9 @@ The standalone `discover-capabilities` and `nominate-candidate` commands retain
 their published contracts in `references/capabilities.md`; their default file
 limit differs from the evaluator-aware pipeline, so reports require matching
 explicit policy/configuration or a fresh pipeline scan. A complete reviewed
-no-useful-placement outcome remains outstanding under issue #5. Native Windows
-discovery and JS/TS parsing in this contract are unsupported; the older scanner
+no-useful-placement outcome is available through the separate source-scope
+review contracts. Native Windows discovery and JS/TS parsing in this contract
+are unsupported; the older scanner
 retains its separate parser coverage.
 
 Run from this skill's directory, with dependencies installed through an approved environment:

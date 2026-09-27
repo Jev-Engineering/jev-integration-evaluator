@@ -286,12 +286,17 @@ def execute(args):
         from .traceability import link_artifact
         return _save(args.out,link_artifact(read_json(args.inventory),args.candidate,args.kind,args.artifact))
     if cmd=="validate":
-        if args.kind in ("repository-nominated-inventory-v1", "repository-semantic-review-v1", "repository-reviewed-inventory-v1"):
+        if args.kind in ("repository-nominated-inventory-v1", "repository-semantic-review-v1", "repository-reviewed-inventory-v1",
+                         "repository-coverage-review-v1", "repository-conclusion-v1"):
             from .capabilities import _load
             from .contracts import validate_contract
             from .nomination_inventory import MAX_RECORD_BYTES
             data=_load(Path(args.input),max_bytes=MAX_RECORD_BYTES)
             validate_contract(data,args.kind)
+            if args.kind=="repository-conclusion-v1":
+                from .capabilities import _digest, CapabilityError
+                if _digest({k:v for k,v in data.items() if k!="conclusion_sha256"})!=data["conclusion_sha256"]:
+                    raise CapabilityError("repository_conclusion_digest_mismatch")
             return {"status":"valid","kind":args.kind,"records":1,"source_revalidated":False}
         if args.kind in ("repository-capabilities", "candidate-nomination", "admitted-nomination"):
             from .capabilities import _schema, _digest, _load, MAX_INPUT_BYTES

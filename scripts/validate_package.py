@@ -34,7 +34,7 @@ def validate(check_manifest=False):
               'schemas/implementation-manifest.schema.json','schemas/implementation-tests.schema.json',
               'tests/test_executable_recipes.py','tests/test_executable_runtime.py','tests/test_executable_safety.py','tests/test_executable_cli.py','tests/test_executable_wheel.py',
               'tests/test_executable_host_boundaries.py','tests/test_executable_source_scope.py','tests/test_executable_verification_identity.py',
-              'validation/SCOPE-OUTCOME-VALIDATION-1.3.0.dev8.md',
+              'validation/CONCLUSION-VALIDATION-1.3.0.dev9.md',
               'jev_integration_evaluator/integrations/observations.py','schemas/implementation-observation.schema.json',
               'tests/test_executable_failure_receipts.py','tests/test_executable_source_fidelity.py','tests/test_executable_command_receipts.py',
               'examples/implementation/observation.example.json',
@@ -75,6 +75,17 @@ def validate(check_manifest=False):
                               'repository-placement-review-v1',
                               'repository-placement-selection-v1',
                               'repository-scope-review-v1')]
+    required += ['jev_integration_evaluator/repository_conclusion.py',
+                 'scripts/conclude_repository.py',
+                 'scripts/rebuild_repository_conclusion_schemas.py',
+                 'scripts/run_repository_conclusion_demo.py',
+                 'references/repository-conclusion-v1.md',
+                 'tests/test_repository_conclusion.py',
+                 'tests/test_repository_conclusion_cli.py',
+                 'tests/test_repository_conclusion_wheel.py']
+    required += [f'{directory}/{name}.schema.json'
+                 for directory in ('schemas', 'jev_integration_evaluator/data')
+                 for name in ('repository-coverage-review-v1', 'repository-conclusion-v1')]
     for item in required:
         if not (ROOT/item).is_file():raise InputError('Required package file missing: '+item)
     front=(ROOT/'SKILL.md').read_text().split('---',2)

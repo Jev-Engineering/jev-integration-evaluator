@@ -4,8 +4,8 @@ Status: **dev4 discovery contracts retained in 1.3.0.dev6**.
 The integrated read-only discovery contract is available through the central CLI
 and standalone module/script. The [dev5 inventory/semantic-review bridge](repository-discovery-v1.md)
 uses these contracts. A complete source-reviewed no-useful-placement outcome
-remains outstanding, so issue #5 and the repository implementation roadmap remain open.
-Discovery preserves the existing scanner,
+was completed by the later dev8/dev9 bounded review contracts. The repository
+implementation roadmap remains open. Discovery preserves the existing scanner,
 recipe, review, optimizer, lifecycle, runtime, receipt and safety validators.
 
 ## Commands

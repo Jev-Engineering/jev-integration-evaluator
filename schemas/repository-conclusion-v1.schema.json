@@ -1,0 +1,416 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:jev-integration-evaluator:repository-conclusion-v1",
+  "title": "repository-conclusion-v1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "contract": {
+      "const": "repository-conclusion-v1"
+    },
+    "report_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "conclusion_engine_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "settings_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "objective_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "review_sha256": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "reviewer_claim": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "review_anchor_matched": {
+      "type": "boolean"
+    },
+    "review_principal_authenticated": {
+      "const": false
+    },
+    "scope": {
+      "type": "object",
+      "properties": {
+        "snapshot_scope": {
+          "const": "bounded_source_and_configuration_not_full_repository"
+        },
+        "snapshot_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "policy_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "excluded_entries": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "global_absence_proven": {
+          "const": false
+        }
+      },
+      "required": [
+        "snapshot_scope",
+        "snapshot_sha256",
+        "policy_sha256",
+        "excluded_entries",
+        "global_absence_proven"
+      ],
+      "additionalProperties": false
+    },
+    "outcome": {
+      "enum": [
+        "incomplete_analysis",
+        "no_candidates_discovered",
+        "review_required",
+        "insufficient_evidence",
+        "unsupported_or_unresolved",
+        "useful_placements_identified",
+        "no_useful_placement"
+      ]
+    },
+    "discovery_outcome": {
+      "enum": [
+        "incomplete_analysis",
+        "no_candidates_discovered",
+        "deterministic_rejection",
+        "unsupported_or_unresolved",
+        "review_required"
+      ]
+    },
+    "coverage": {
+      "type": "object",
+      "properties": {
+        "analysis_complete_within_policy": {
+          "type": "boolean"
+        },
+        "expected_file_reviews": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "received_file_reviews": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "expected_seam_reviews": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "received_seam_reviews": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "unresolved_pattern_reviews": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 260000
+        },
+        "complete_anchored_review": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "analysis_complete_within_policy",
+        "expected_file_reviews",
+        "received_file_reviews",
+        "expected_seam_reviews",
+        "received_seam_reviews",
+        "unresolved_pattern_reviews",
+        "complete_anchored_review"
+      ],
+      "additionalProperties": false
+    },
+    "pending": {
+      "type": "object",
+      "properties": {
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "maxItems": 10000
+        },
+        "seams": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "maxItems": 10000
+        },
+        "opinions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "target_kind": {
+                "enum": [
+                  "file",
+                  "seam"
+                ]
+              },
+              "target": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1024
+              },
+              "pattern": {
+                "enum": [
+                  "A",
+                  "B",
+                  "C",
+                  "D",
+                  "E",
+                  "F",
+                  "G",
+                  "H",
+                  "I",
+                  "J",
+                  "K",
+                  "L",
+                  "M"
+                ]
+              }
+            },
+            "required": [
+              "target_kind",
+              "target",
+              "pattern"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 260000
+        }
+      },
+      "required": [
+        "files",
+        "seams",
+        "opinions"
+      ],
+      "additionalProperties": false
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "target_kind": {
+            "enum": [
+              "file",
+              "seam"
+            ]
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "pattern": {
+            "enum": [
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "G",
+              "H",
+              "I",
+              "J",
+              "K",
+              "L",
+              "M"
+            ]
+          },
+          "implementation_support": {
+            "enum": [
+              "not_established",
+              "preflight_only",
+              "unsupported_or_unresolved"
+            ]
+          }
+        },
+        "required": [
+          "target_kind",
+          "target",
+          "pattern",
+          "implementation_support"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 260000
+    },
+    "next_actions": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "resolve_coverage_limitations_and_rescan",
+          "confirm_source_scope_and_supported_file_types",
+          "obtain_source_bound_file_and_seam_reviews",
+          "complete_unresolved_review_schedule",
+          "supply_independently_retained_review_digest",
+          "obtain_separate_semantic_candidate_and_binding_decisions",
+          "retain_scoped_review_without_claiming_global_absence_or_benefit"
+        ]
+      },
+      "maxItems": 4
+    },
+    "binding_review": {
+      "const": "not_performed"
+    },
+    "implementation_verified": {
+      "const": false
+    },
+    "benefit": {
+      "type": "null"
+    },
+    "authorization": {
+      "type": "object",
+      "properties": {
+        "execution": {
+          "const": false
+        },
+        "mutation": {
+          "const": false
+        },
+        "egress": {
+          "const": false
+        },
+        "activation": {
+          "const": false
+        }
+      },
+      "required": [
+        "execution",
+        "mutation",
+        "egress",
+        "activation"
+      ],
+      "additionalProperties": false
+    },
+    "conclusion_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "schema_version",
+    "contract",
+    "report_sha256",
+    "conclusion_engine_sha256",
+    "settings_sha256",
+    "objective_sha256",
+    "review_sha256",
+    "reviewer_claim",
+    "review_anchor_matched",
+    "review_principal_authenticated",
+    "scope",
+    "outcome",
+    "discovery_outcome",
+    "coverage",
+    "pending",
+    "findings",
+    "next_actions",
+    "binding_review",
+    "implementation_verified",
+    "benefit",
+    "authorization",
+    "conclusion_sha256"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "outcome": {
+            "const": "no_useful_placement"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "review_anchor_matched": {
+            "const": true
+          },
+          "review_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "reviewer_claim": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "\\S"
+          },
+          "coverage": {
+            "properties": {
+              "analysis_complete_within_policy": {
+                "const": true
+              },
+              "complete_anchored_review": {
+                "const": true
+              },
+              "expected_file_reviews": {
+                "minimum": 1
+              },
+              "unresolved_pattern_reviews": {
+                "const": 0
+              }
+            }
+          },
+          "pending": {
+            "properties": {
+              "files": {
+                "maxItems": 0
+              },
+              "seams": {
+                "maxItems": 0
+              },
+              "opinions": {
+                "maxItems": 0
+              }
+            }
+          },
+          "findings": {
+            "maxItems": 0
+          }
+        }
+      }
+    }
+  ]
+}

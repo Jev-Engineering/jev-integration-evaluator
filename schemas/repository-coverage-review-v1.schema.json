@@ -1,0 +1,791 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:jev-integration-evaluator:repository-coverage-review-v1",
+  "title": "repository-coverage-review-v1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "contract": {
+      "const": "repository-coverage-review-v1"
+    },
+    "report_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "conclusion_engine_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "settings_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "objective_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "reviewer": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "\\S"
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "file_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "mode": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4095
+          },
+          "start_line": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4194304
+          },
+          "end_line": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4194304
+          },
+          "patterns": {
+            "type": "object",
+            "properties": {
+              "A": {
+                "type": "object",
+                "properties": {
+                  "disposition": {
+                    "enum": [
+                      "not_useful",
+                      "potentially_useful",
+                      "unresolved"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "disposition",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              "B": {
+                "type": "object",
+                "properties": {
+                  "disposition": {
+                    "enum": [
+                      "not_useful",
+                      "potentially_useful",
+                      "unresolved"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "disposition",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              "C": {
+                "type": "object",
+                "properties": {
+                  "disposition": {
+                    "enum": [
+                      "not_useful",
+                      "potentially_useful",
+                      "unresolved"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "disposition",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              "D": {
+                "type": "object",
+                "properties": {
+                  "disposition": {
+                    "enum": [
+                      "not_useful",
+                      "potentially_useful",
+                      "unresolved"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "disposition",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              "E": {
+                "type": "object",
+                "properties": {
+                  "disposition": {
+                    "enum": [
+                      "not_useful",
+                      "potentially_useful",
+                      "unresolved"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "disposition",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              "F": {
+                "type": "object",
+                "properties": {
+                  "disposition": {
+                    "enum": [
+                      "not_useful",
+                      "potentially_useful",
+                      "unresolved"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "disposition",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              "G": {
+                "type": "object",
+                "properties": {
+                  "disposition": {
+                    "enum": [
+                      "not_useful",
+                      "potentially_useful",
+                      "unresolved"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "disposition",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              "H": {
+                "type": "object",
+                "properties": {
+                  "disposition": {
+                    "enum": [
+                      "not_useful",
+                      "potentially_useful",
+                      "unresolved"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "disposition",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              "I": {
+                "type": "object",
+                "properties": {
+                  "disposition": {
+                    "enum": [
+                      "not_useful",
+                      "potentially_useful",
+                      "unresolved"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "disposition",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              "J": {
+                "type": "object",
+                "properties": {
+                  "disposition": {
+                    "enum": [
+                      "not_useful",
+                      "potentially_useful",
+                      "unresolved"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "disposition",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              "K": {
+                "type": "object",
+                "properties": {
+                  "disposition": {
+                    "enum": [
+                      "not_useful",
+                      "potentially_useful",
+                      "unresolved"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "disposition",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              "L": {
+                "type": "object",
+                "properties": {
+                  "disposition": {
+                    "enum": [
+                      "not_useful",
+                      "potentially_useful",
+                      "unresolved"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "disposition",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              "M": {
+                "type": "object",
+                "properties": {
+                  "disposition": {
+                    "enum": [
+                      "not_useful",
+                      "potentially_useful",
+                      "unresolved"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "disposition",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "G",
+              "H",
+              "I",
+              "J",
+              "K",
+              "L",
+              "M"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "file",
+          "file_sha256",
+          "mode",
+          "start_line",
+          "end_line",
+          "patterns"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 10000
+    },
+    "seams": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "seam_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "source": {
+            "type": "object",
+            "properties": {
+              "file": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1024
+              },
+              "qualified_symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1024
+              },
+              "start_line": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000000
+              },
+              "end_line": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000000
+              },
+              "file_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "ast_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "required": [
+              "file",
+              "qualified_symbol",
+              "start_line",
+              "end_line",
+              "file_sha256",
+              "ast_sha256"
+            ],
+            "additionalProperties": false
+          },
+          "patterns": {
+            "type": "object",
+            "properties": {
+              "A": {
+                "type": "object",
+                "properties": {
+                  "disposition": {
+                    "enum": [
+                      "not_useful",
+                      "potentially_useful",
+                      "unresolved"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "disposition",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              "B": {
+                "type": "object",
+                "properties": {
+                  "disposition": {
+                    "enum": [
+                      "not_useful",
+                      "potentially_useful",
+                      "unresolved"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "disposition",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              "C": {
+                "type": "object",
+                "properties": {
+                  "disposition": {
+                    "enum": [
+                      "not_useful",
+                      "potentially_useful",
+                      "unresolved"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "disposition",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              "D": {
+                "type": "object",
+                "properties": {
+                  "disposition": {
+                    "enum": [
+                      "not_useful",
+                      "potentially_useful",
+                      "unresolved"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "disposition",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              "E": {
+                "type": "object",
+                "properties": {
+                  "disposition": {
+                    "enum": [
+                      "not_useful",
+                      "potentially_useful",
+                      "unresolved"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "disposition",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              "F": {
+                "type": "object",
+                "properties": {
+                  "disposition": {
+                    "enum": [
+                      "not_useful",
+                      "potentially_useful",
+                      "unresolved"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "disposition",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              "G": {
+                "type": "object",
+                "properties": {
+                  "disposition": {
+                    "enum": [
+                      "not_useful",
+                      "potentially_useful",
+                      "unresolved"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "disposition",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              "H": {
+                "type": "object",
+                "properties": {
+                  "disposition": {
+                    "enum": [
+                      "not_useful",
+                      "potentially_useful",
+                      "unresolved"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "disposition",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              "I": {
+                "type": "object",
+                "properties": {
+                  "disposition": {
+                    "enum": [
+                      "not_useful",
+                      "potentially_useful",
+                      "unresolved"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "disposition",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              "J": {
+                "type": "object",
+                "properties": {
+                  "disposition": {
+                    "enum": [
+                      "not_useful",
+                      "potentially_useful",
+                      "unresolved"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "disposition",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              "K": {
+                "type": "object",
+                "properties": {
+                  "disposition": {
+                    "enum": [
+                      "not_useful",
+                      "potentially_useful",
+                      "unresolved"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "disposition",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              "L": {
+                "type": "object",
+                "properties": {
+                  "disposition": {
+                    "enum": [
+                      "not_useful",
+                      "potentially_useful",
+                      "unresolved"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "disposition",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              "M": {
+                "type": "object",
+                "properties": {
+                  "disposition": {
+                    "enum": [
+                      "not_useful",
+                      "potentially_useful",
+                      "unresolved"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "disposition",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "G",
+              "H",
+              "I",
+              "J",
+              "K",
+              "L",
+              "M"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "seam_id",
+          "source",
+          "patterns"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 10000
+    }
+  },
+  "required": [
+    "schema_version",
+    "contract",
+    "report_sha256",
+    "conclusion_engine_sha256",
+    "settings_sha256",
+    "objective_sha256",
+    "reviewer",
+    "files",
+    "seams"
+  ],
+  "additionalProperties": false
+}
