@@ -5,7 +5,8 @@ import pytest
 
 from jev_integration_evaluator.config import load_config
 from jev_integration_evaluator.contracts import seal
-from jev_integration_evaluator.io import InputError, digest, read_json
+from jev_integration_evaluator.io import InputError, digest, read_json, write_json
+from jev_integration_evaluator.cli import main as cli_main
 from jev_integration_evaluator.study import freeze_study
 from jev_integration_evaluator.integrations.lifecycle import plan_implementation, apply_implementation
 from jev_integration_evaluator.integrations.verification import verify_implementation
@@ -141,6 +142,38 @@ def test_observed_study_cannot_use_synthetic_offline_adapter(tmp_path, cfg):
         trusted_implementation_receipt_sha256=receipt)
     assert report['status'] == 'incomplete_egress_scope'
     assert report['host_adapter_calls'] == 0 and report['collected_pairs'] == 0
+
+
+def test_observed_cli_runs_exact_offline_link_collection_and_evaluation(tmp_path, cfg):
+    root, bundle, receipt, study, placement, _, fixtures, labels, _ = linked(tmp_path, cfg)
+    inputs = {'study': study, 'placement': placement, 'fixtures': fixtures, 'labels': labels}
+    paths = {}
+    for name, value in inputs.items():
+        paths[name] = tmp_path / f'{name}.json'
+        write_json(paths[name], value)
+    link_path, request_path, collection_path, evaluation_path = (
+        tmp_path / name for name in ('link.json', 'request.json', 'collection.json', 'evaluation.json'))
+    base = ['--repo', str(root), '--bundle', str(bundle), '--study', str(paths['study']),
+            '--placement-set', str(paths['placement']), '--receipt-sha256', receipt]
+    assert cli_main(['observed-link', *base, '--study-digest', study['contract_digest'],
+                     '--placement-digest', placement['contract_digest'], '--out', str(link_path)]) == 0
+    link = read_json(link_path)
+    request = {'schema_version': '1.0', 'link_digest': link['contract_digest'],
+               'fixture_sha256': digest(fixtures), 'labels_sha256': digest(labels),
+               'max_pairs': 2, 'max_total_calls': 4, 'max_total_cost': 1.0,
+               'stop_after_failures': 2, 'egress': False}
+    write_json(request_path, request)
+    linked_args = [*base, '--link', str(link_path), '--link-digest', link['contract_digest']]
+    assert cli_main(['observed-collect-offline', *linked_args,
+                     '--request', str(request_path), '--fixtures', str(paths['fixtures']),
+                     '--labels', str(paths['labels']), '--approve-request', digest(request),
+                     '--out', str(collection_path)]) == 0
+    collection = read_json(collection_path)
+    assert collection['status'] == 'synthetic_complete'
+    assert cli_main(['observed-evaluate', *linked_args, '--collection', str(collection_path),
+                     '--collection-digest', collection['contract_digest'],
+                     '--out', str(evaluation_path)]) == 0
+    assert read_json(evaluation_path)['activation_eligible'] is False
 
 
 def test_timeout_kept_and_unreviewed_identity_rejected(tmp_path, cfg):
