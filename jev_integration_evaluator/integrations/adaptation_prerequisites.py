@@ -309,7 +309,7 @@ def apply_prerequisites(root, plan, approved_digest, *, inventory, context, prop
     write_json(safe_child(bundle, 'recovery-plan.json'), archive_plan)
     os.chmod(safe_child(bundle, 'recovery-plan.json'), 0o600)
     _sync_dir(preimages); _sync_dir(bundle)
-    with _lock(bundle):
+    with _lock(bundle, root):
         _record(bundle, archive_plan, 'apply_started')
         def progress(event, change):
             if event == 'write_completed': _sync_dir(safe_child(root, change['file']).parent)
@@ -403,7 +403,7 @@ def rollback_prerequisites(root, recovery_bundle, approved_digest, rollback_appr
     if rollback_approval != prerequisite_rollback_digest(
             approved_digest, plan['binding']['owned_sha256']):
         raise InputError('Separate exact prerequisite rollback approval required')
-    with _lock(bundle):
+    with _lock(bundle, root):
         state = prerequisite_status(root, bundle, approved_digest)
         if state['status'] == 'rolled_back':
             return {'status':'rolled_back', 'idempotent':True}

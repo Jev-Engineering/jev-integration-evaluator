@@ -209,7 +209,7 @@ def verify_implementation(root, bundle, phase, *, approve_execution=False, basel
         raise InputError('Missing scope: target execution; planning and status never run host code')
     if phase not in ('baseline','modified'): raise InputError('Verification phase must be baseline or modified')
     root,bundle,plan,spec,_,_ = _load(root,bundle,current_engine=True)
-    with _lock(bundle):
+    with _lock(bundle, root):
         state = 'baseline' if phase=='baseline' else 'applied'
         if any(_inspect_file(root,r)!=state for r in plan['owned_files']):
             raise InputError('Verification files differ from the requested phase')

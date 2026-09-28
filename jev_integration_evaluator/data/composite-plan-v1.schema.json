@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "root_identity", "engine_version", "engine_identity", "selected_set_digest", "inventory_sha256", "specs_sha256", "patch_digest", "candidate_ids", "owned_files", "discovery_files", "artifacts", "contract_digest"],
+  "properties": {
+    "schema_version": {"const": "composite-implementation-v1"},
+    "root_identity": {"type": "object", "required": ["path_sha256", "device", "inode"], "additionalProperties": false, "properties": {"path_sha256": {"$ref": "#/$defs/hash"}, "device": {"type": "integer", "minimum": 0}, "inode": {"type": "integer", "minimum": 0}}},
+    "engine_version": {"type": "string", "minLength": 1},
+    "engine_identity": {"$ref": "#/$defs/hash"},
+    "selected_set_digest": {"$ref": "#/$defs/hash"},
+    "inventory_sha256": {"$ref": "#/$defs/hash"},
+    "specs_sha256": {"$ref": "#/$defs/hash"},
+    "patch_digest": {"$ref": "#/$defs/hash"},
+    "candidate_ids": {"type": "array", "minItems": 2, "maxItems": 4, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "owned_files": {"type": "array", "minItems": 3, "maxItems": 24, "items": {"type": "object", "required": ["file", "old_sha256", "new_sha256", "old_mode", "new_mode", "preimage"], "additionalProperties": false, "properties": {
+      "file": {"type": "string", "minLength": 1}, "old_sha256": {"anyOf": [{"$ref": "#/$defs/hash"}, {"type": "null"}]}, "new_sha256": {"$ref": "#/$defs/hash"}, "old_mode": {"anyOf": [{"type": "integer", "minimum": 0, "maximum": 4095}, {"type": "null"}]}, "new_mode": {"type": "integer", "minimum": 0, "maximum": 4095}, "preimage": {"anyOf": [{"type": "string", "minLength": 1}, {"type": "null"}]}
+    }}},
+    "discovery_files": {"type": "object", "additionalProperties": {"type": "object", "required": ["sha256", "mode"], "additionalProperties": false, "properties": {"sha256": {"$ref": "#/$defs/hash"}, "mode": {"type": "integer", "minimum": 0, "maximum": 4095}}}},
+    "artifacts": {"type": "object", "minProperties": 5, "additionalProperties": {"$ref": "#/$defs/hash"}},
+    "contract_digest": {"$ref": "#/$defs/hash"}
+  },
+  "$defs": {"hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+}

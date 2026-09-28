@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "bundle_digest", "selected_set_digest", "engine_identity", "generation_sha256", "phase", "status", "file_hashes", "scheduled_cases", "completed_cases", "results", "member_commands", "combined_check", "baseline_receipt_sha256", "classification", "activation_authorized", "contract_digest"],
+  "properties": {
+    "schema_version": {"const": "composite-receipt-v1"},
+    "bundle_digest": {"$ref": "#/$defs/hash"},
+    "selected_set_digest": {"$ref": "#/$defs/hash"},
+    "engine_identity": {"$ref": "#/$defs/hash"},
+    "generation_sha256": {"$ref": "#/$defs/hash"},
+    "phase": {"enum": ["baseline", "modified"]},
+    "status": {"enum": ["passed", "failed"]},
+    "file_hashes": {"type": "object", "additionalProperties": {"anyOf": [{"$ref": "#/$defs/hash"}, {"type": "null"}]}},
+    "scheduled_cases": {"type": "integer", "minimum": 1},
+    "completed_cases": {"type": "integer", "minimum": 0},
+    "results": {"type": "array", "minItems": 1, "maxItems": 128, "items": {"type": "object", "required": ["candidate_id", "case_id", "mode", "status", "observation", "assertions"], "additionalProperties": false, "properties": {
+      "candidate_id": {"type": "string"}, "case_id": {"type": "string"}, "mode": {"enum": ["baseline", "off", "shadow", "active"]}, "status": {"enum": ["passed", "failed", "timeout", "not_run"]}, "observation": {"anyOf": [{"type": "object"}, {"type": "null"}]}, "assertions": {"type": "array", "items": {"type": "string"}}
+    }}},
+    "member_commands": {"type": "array", "maxItems": 4, "items": {"type": "object", "required": ["candidate_id", "command_sha256", "status"], "additionalProperties": false, "properties": {"candidate_id": {"type": "string"}, "command_sha256": {"$ref": "#/$defs/hash"}, "status": {"enum": ["passed", "failed", "timeout", "not_run"]}}}},
+    "combined_check": {"anyOf": [{"type": "null"}, {"type": "object", "required": ["command_sha256", "stdout_sha256", "status", "shared_budget_valid"], "additionalProperties": false, "properties": {"command_sha256": {"$ref": "#/$defs/hash"}, "stdout_sha256": {"$ref": "#/$defs/hash"}, "status": {"enum": ["passed", "failed", "timeout", "not_run"]}, "shared_budget_valid": {"type": "boolean"}}}]},
+    "baseline_receipt_sha256": {"anyOf": [{"$ref": "#/$defs/hash"}, {"type": "null"}]},
+    "classification": {"const": "synthetic"},
+    "activation_authorized": {"const": false},
+    "contract_digest": {"$ref": "#/$defs/hash"}
+  },
+  "$defs": {"hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+}

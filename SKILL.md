@@ -39,6 +39,13 @@ Use the dev2 host-effect boundary: do not interpret an executor/finisher excepti
 
 For a source-matched, semantically reviewed opportunity, consult `implementation-recipes --json` and `references/executable-integrations.md`. Use `implement-plan` with a strict existing-symbol binding specification to generate a complete private bundle **outside the target**, including actual AST-selected host edits and scheduled verification assertions. Do not author replacement functions in `changes.json` for shapes covered by a recipe; do not silently fall back to keyword patching for unsupported shapes. Keep a valid no-useful-placement result.
 
+For two to four compatible reviewed placements in one unchanged source snapshot,
+use the separate `implement-composite-*` transaction described in
+`references/composite-transactions-v1.md`. Its exact selected graph, final edits,
+shared runtime limits, worktree lock and generation-bound receipts are distinct
+from the legacy single-placement plan. A synthetic combined host command still
+requires independently authored expectations and explicit execution authority.
+
 Capture the separately authorized baseline, retain its digest in a trusted channel, review the complete bundle/diff, and obtain exact bundle-digest approval before `implement-apply`. Run authorized modified-host checks, then distinguish fresh tool-observed synthetic verification from later unanchored status. `implement-status` never executes code and cannot trust a success-shaped JSON claim; certified recorded status requires an externally authenticated receipt digest. Use `implement-rollback` only for matching owned bytes and retain the recovery journal/preimages until recovery is complete. Never overwrite unrelated work.
 
 All thirteen Python recipes currently support only the documented top-level, synchronous, single-tail-call shape and explicit static registries. Existing functions supply runtime ownership, legal actions, permission/state checks, locking, baseline behavior and independent observations. The generated feature flag is off. The synthetic probe injects a test runtime; it is not a live provider integration or approval to activate. Preserve shared coordinator/task identity, strict runtime receipts and semantic label mappings. `/prune` and `/compact` remain separate explicit choices. A separate native JavaScript/TypeScript recipe C backend supports only the flat ESM/CommonJS/TypeScript async shapes in `references/javascript-typescript-backend-v1.md`; all other A–M patterns remain unsupported. Do not promote its synthetic qualification to live benefit or activation.

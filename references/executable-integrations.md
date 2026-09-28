@@ -105,6 +105,14 @@ Host return values and original exceptions are preserved on supported default-of
 
 ## Bundles, integrity, recovery and evidence
 
+For two to four reviewed placements selected from one unchanged inventory,
+`implement-composite-plan` builds a separate versioned transaction with one
+final patch and an exact selected-set digest. See
+[`composite-transactions-v1.md`](composite-transactions-v1.md) for compatible
+same-file composition, worktree locking, combined verification, and recovery.
+Do not sequentially apply independent single-placement plans: the first edit
+invalidates the other's complete source snapshot.
+
 An external private bundle contains `implementation-spec.json`, `reviewed-inventory.json`, `verification-cases.json`, `implementation-plan.json`, the existing exact `patch-plan.json`, `implementation.diff`, a strictly validated implementation manifest, owned-file preimages, a bounded fsynced journal and execution receipts. Full original and applied hashes are separate; original discovery evidence is never overwritten. The engine identity covers installed Python code and JSON contracts. Schema copies, hashes and cross-artifact bindings are checked before writes.
 
 Apply and rollback reuse the protected-path/exact-digest/source-drift/atomic-write engine. An OS-held bundle lock prevents overlapping operations on that bundle. Journaled writes plus preimages handle ordinary exceptions and actual process termination differently. A fresh status inspects bytes and modes; interrupted work is `blocked_recovery`, not “verified.” Recovery rechecks every owned path, restores only matching integration-owned bytes, and refuses concurrent edits. It never runs `git reset`, `git clean`, or overwrites unrelated files. Keep the bundle until rollback and review are complete. A different engine may read it for safe recovery, but new apply/verification require a current matching engine.
