@@ -1,6 +1,7 @@
 """Synthetic native repository contract checks; no target launch or mutation."""
 from __future__ import annotations
 import copy
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -124,7 +125,16 @@ def test_native_session_executes_edited_host_with_anchored_private_proofs(tmp_pa
     root, output, state, plan, planned_result = planned(tmp_path)
     contract, scope = contract_for(tmp_path, root, state, plan, planned_result)
     baseline = session.run_repository(root, output, scope=scope, native_contract=contract)
-    assert baseline['status'] == 'baseline_passed', baseline
+    if baseline['status'] != 'baseline_passed':
+        import base64
+        retained = baseline['retained_schedules'][-1]
+        receipt = json.loads((output / retained['file']).read_text())
+        archive = json.loads((output / retained['private_output_file']).read_text())
+        captured = [(case['case_id'],
+                     base64.b64decode(case['stdout_b64']).decode(errors='replace') if case['stdout_b64'] else '',
+                     base64.b64decode(case['stderr_b64']).decode(errors='replace') if case['stderr_b64'] else '')
+                    for case in archive['cases']]
+        pytest.fail(str((baseline['status'], receipt['cases'], captured)))
     assert baseline['attempts']['baseline'] == 1 and baseline['attempts']['apply'] == 0
     assert baseline['receipt_references']['baseline']['backend'] == 'isolated'
     baseline_ref = baseline['receipt_references']['baseline']
@@ -156,3 +166,48 @@ def test_native_session_executes_edited_host_with_anchored_private_proofs(tmp_pa
     scope['grants'] = session.ZERO_GRANTS.copy()
     resumed = session.run_repository(root, output, scope=scope, native_contract=contract)
     assert resumed['status'] == 'verified' and resumed['attempts'] == verified['attempts']
+
+
+@pytest.mark.skipif(sys.platform != 'linux' or os.geteuid() != 0,
+                    reason='requires disposable privileged Linux runner')
+@pytest.mark.parametrize('archive_change', ['intact', 'missing', 'tampered'])
+def test_native_pending_recovery_requires_external_output_anchor_and_never_replays(
+        tmp_path, monkeypatch, archive_change):
+    root, output, state, plan, planned_result = planned(tmp_path)
+    contract, scope = contract_for(tmp_path, root, state, plan, planned_result)
+    original_complete = session._complete
+    original_run = session.run_schedule
+    launches = []
+    def count_run(*args, **kwargs):
+        launches.append(1)
+        return original_run(*args, **kwargs)
+    def crash_before_completion(*args, **kwargs):
+        raise RuntimeError('synthetic crash after fsynced native archives')
+    monkeypatch.setattr(session, 'run_schedule', count_run)
+    monkeypatch.setattr(session, '_complete', crash_before_completion)
+    with pytest.raises(RuntimeError, match='synthetic crash'):
+        session.run_repository(root, output, scope=scope, native_contract=contract)
+    monkeypatch.setattr(session, '_complete', original_complete)
+    pending = json.loads((output / 'journal.jsonl').read_text().splitlines()[-1])
+    assert pending['state']['pending']['operation'] == 'baseline'
+    receipts = list(output.glob('receipt-baseline-1-*.json'))
+    outputs = list(output.glob('native-output-baseline-1-*.json'))
+    assert len(receipts) == len(outputs) == 1
+    receipt_hash = hashlib.sha256(receipts[0].read_bytes()).hexdigest()
+    output_hash = hashlib.sha256(outputs[0].read_bytes()).hexdigest()
+    scope['trusted_session_head'] = pending['record_sha256']
+    scope['trusted_baseline_receipt'] = receipt_hash
+    scope['trusted_baseline_private_output'] = output_hash
+    if archive_change == 'missing':
+        outputs[0].unlink()
+    elif archive_change == 'tampered':
+        outputs[0].write_bytes(outputs[0].read_bytes() + b' ')
+    recovered = session.run_repository(root, output, scope=scope, native_contract=contract)
+    assert len(launches) == 1
+    if archive_change == 'intact':
+        assert recovered['attempts']['baseline'] == 1
+        assert recovered['receipt_references']['baseline']['provenance'] == 'externally_retained_recovery_anchor'
+        assert recovered['status'] == 'missing_scope'  # apply has no grant
+    else:
+        assert recovered['status'] == 'blocked_recovery'
+        assert recovered['pending_operation']['operation'] == 'baseline'
