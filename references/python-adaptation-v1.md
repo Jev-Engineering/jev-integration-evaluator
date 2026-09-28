@@ -31,9 +31,32 @@ cannot authenticate each other.
 The synthetic structural tests execute the original and proposed method or
 async function with an inert local adapter. They check receiver state, effect
 order, return/exception behavior, await count and cancellation. These tests
-exercise the shape edit; they do not qualify active JEV routing, the generated
-adapter, patch application, native isolation or a real host integration.
+exercise the shape edit; they do not qualify active JEV routing, a generated
+adapter or a real host integration. The separate native lifecycle tests below
+exercise patch application and isolation with an inert synthetic adapter.
 `host.invoke_bound` is synchronous and cannot safely run an async executor;
 the async strategy must get a distinct independently verified runtime before
 it can be promoted to an executable recipe. Preparatory prerequisites also
 need a fresh source scan and candidate/binding reviews after their changes.
+
+## Native one-source lifecycle
+
+`plan_adaptation` writes a private, versioned exact-byte bundle outside the
+target. It owns only the selected source file and retains its UTF-8 preimage.
+`apply_adaptation` requires externally approved exact plan identity and an
+externally anchored native baseline receipt with independent pre-edit
+postconditions. It refuses source or adapter drift, then writes through the
+guarded patch engine and fsynced journal. `verify_adaptation` requires the
+separately anchored modified receipt and an independent baseline/off/shadow
+oracle bound to repository, review context and bundle. It reports fresh
+verification only after actual edited-host execution; a later read-only status
+returns `applied_unverified` because local journal entries do not authenticate
+private output bytes. An interrupted apply returns `blocked_recovery`; exact
+owned-byte rollback remains available. These calls do not run the target,
+allocate execution authority or confer deployment/activation approval.
+
+The privileged hosted synthetic tests run both method and async edited hosts
+inside the native isolated Python runner. Their inert adapter exercises call
+and await semantics, including off/shadow parity. Separate tests check async
+cancellation and exception propagation. This is a bounded adaptation path,
+not arbitrary Python rewriting or a JEV provider activation claim.
