@@ -46,6 +46,8 @@ need a fresh source scan and candidate/binding reviews after their changes.
 
 `plan_adaptation` writes a private, versioned exact-byte bundle outside the
 target. It owns only the selected source file and retains its UTF-8 preimage.
+The plan binds both source and existing adapter modes as well as their bytes;
+native baseline and modified manifests must match those modes.
 `apply_adaptation` requires externally approved exact plan identity and an
 externally anchored native baseline receipt with independent pre-edit
 postconditions. It refuses source or adapter drift, then writes through the

@@ -1,6 +1,7 @@
 """Synthetic local state tests; native receipt security is tested by runner suites."""
 import ast
 import hashlib
+import stat
 from pathlib import Path
 
 import pytest
@@ -65,8 +66,10 @@ def _fixture(tmp_path):
 def _native(root, source_sha, adapter_sha):
     identity = life._root_identity(root)
     return {'source_identity': {'device': identity['device'], 'inode': identity['inode']},
-            'files': [{'path': 'host.py', 'sha256': source_sha},
-                      {'path': 'adapter.py', 'sha256': adapter_sha}]}
+            'files': [{'path': 'host.py', 'sha256': source_sha,
+                       'mode': stat.S_IMODE((root/'host.py').stat().st_mode)},
+                      {'path': 'adapter.py', 'sha256': adapter_sha,
+                       'mode': stat.S_IMODE((root/'adapter.py').stat().st_mode)}]}
 
 
 def _apply(root, bundle, plan, oracle, adapter_sha, monkeypatch):
@@ -142,3 +145,14 @@ def test_old_engine_bundle_allows_inspection_and_exact_rollback_only(tmp_path, m
             baseline_receipt={}, baseline_outputs={}, oracle=oracle,
             trusted_oracle_sha256='0'*64, trusted_baseline_receipt_sha256='1'*64)
     assert life.rollback_adaptation(root, bundle, plan['contract_digest'])['status'] == 'rolled_back'
+
+
+def test_native_manifest_mode_mismatch_blocks_before_mutation(tmp_path):
+    root, bundle, plan, oracle, adapter_sha = _fixture(tmp_path)
+    baseline = _native(root, plan['source_sha256'], adapter_sha)
+    baseline['files'][1]['mode'] ^= 0o100
+    with pytest.raises(InputError, match='exact adaptation source'):
+        life.apply_adaptation(root, bundle, plan['contract_digest'], baseline_spec=baseline,
+            baseline_receipt={}, baseline_outputs={}, oracle=oracle,
+            trusted_oracle_sha256='0'*64, trusted_baseline_receipt_sha256='1'*64)
+    assert (root/'host.py').read_bytes() == HOST.encode()

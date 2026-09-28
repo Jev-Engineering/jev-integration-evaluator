@@ -20,18 +20,18 @@ from .lifecycle import (_bundle_dir, _inspect_file, _journal, _lock, _record,
                         _root_identity, _sync_dir, engine_identity)
 
 
-def _proof_file(spec, relative, expected):
+def _proof_file(spec, relative, expected, mode=None):
     rows = [row for row in spec['files'] if row['path'] == relative]
-    if len(rows) != 1 or rows[0]['sha256'] != expected:
+    if len(rows) != 1 or rows[0]['sha256'] != expected or (mode is not None and rows[0]['mode'] != mode):
         raise InputError('Native proof omits exact adaptation source')
 
 
-def _check_native(spec, root, row, adapter_file, adapter_sha):
+def _check_native(spec, root, row, adapter_file, adapter_sha, adapter_mode):
     actual = _root_identity(root)
     if any(spec['source_identity'].get(k) != actual[k] for k in ('device', 'inode')):
         raise InputError('Native proof belongs to another source root')
-    _proof_file(spec, row['file'], row['sha256'])
-    _proof_file(spec, adapter_file, adapter_sha)
+    _proof_file(spec, row['file'], row['sha256'], row['mode'])
+    _proof_file(spec, adapter_file, adapter_sha, adapter_mode)
 
 
 def _load(root, bundle, *, current_engine=False):
@@ -47,7 +47,7 @@ def _load(root, bundle, *, current_engine=False):
     if (plan.get('kind') != 'adaptation-plan-v1' or plan.get('schema_version') != '1.0'
             or set(plan) != {'kind', 'schema_version', 'root_identity', 'engine_identity',
                              'request_sha256', 'inventory_sha256', 'patch_sha256', 'owned_file',
-                             'adapter_file', 'adapter_sha256', 'contract_digest'}
+                             'adapter_file', 'adapter_sha256', 'adapter_mode', 'contract_digest'}
             or digest({k:v for k,v in plan.items() if k != 'contract_digest'}) != plan['contract_digest']
             or plan['root_identity'] != _root_identity(root)
             or (current_engine and plan['engine_identity'] != engine_identity())
@@ -66,7 +66,8 @@ def _load(root, bundle, *, current_engine=False):
             or hashlib.sha256(preimage.read_bytes()).hexdigest() != plan['owned_file']['old_sha256']):
         raise InputError('Adaptation preimage mismatch')
     adapter = safe_child(root, plan['adapter_file'])
-    if not adapter.is_file() or file_hash(adapter) != plan['adapter_sha256']:
+    if (not adapter.is_file() or file_hash(adapter) != plan['adapter_sha256']
+            or stat.S_IMODE(adapter.stat().st_mode) != plan['adapter_mode']):
         raise InputError('Reviewed adapter changed')
     for entry in inventory.get('files', []) + inventory.get('configuration_evidence', []):
         if entry['file'] == plan['owned_file']['file']:
@@ -108,7 +109,8 @@ def plan_adaptation(root, inventory, request, bundle):
             'request_sha256': digest(request), 'inventory_sha256': digest(inventory),
             'patch_sha256': digest(patch), 'owned_file': owned,
             'adapter_file': request['binding_review']['adapter_file'],
-            'adapter_sha256': request['binding_review']['adapter_sha256']}
+            'adapter_sha256': request['binding_review']['adapter_sha256'],
+            'adapter_mode': stat.S_IMODE(safe_child(root, request['binding_review']['adapter_file']).stat().st_mode)}
     plan = {**body, 'contract_digest': digest(body)}
     validate_contract(plan, 'adaptation-plan-v1')
     preimage = source.read_bytes()
@@ -141,8 +143,9 @@ def apply_adaptation(root, bundle, approved_plan_sha256, *, baseline_spec, basel
         if _journal(bundle, plan):
             raise InputError('Adaptation apply already started; inspect recovery state')
         _oracle_identity(root, plan, oracle)
-        _check_native(baseline_spec, root, {'file': row['file'], 'sha256': row['old_sha256']},
-                      plan['adapter_file'], plan['adapter_sha256'])
+        _check_native(baseline_spec, root, {'file': row['file'], 'sha256': row['old_sha256'],
+                      'mode': row['old_mode']}, plan['adapter_file'], plan['adapter_sha256'],
+                      plan['adapter_mode'])
         try:
             inspect_receipt(baseline_spec, baseline_receipt,
                             trusted_receipt_sha256=trusted_baseline_receipt_sha256)
@@ -181,10 +184,12 @@ def verify_adaptation(root, bundle, *, baseline_spec, baseline_receipt, baseline
         if not events or events[-1] != 'applied_unverified' or _inspect_file(root, row) != 'applied':
             raise InputError('Adaptation is not in a complete applied state')
         _oracle_identity(root, plan, oracle)
-        _check_native(baseline_spec, root, {'file': row['file'], 'sha256': row['old_sha256']},
-                      plan['adapter_file'], plan['adapter_sha256'])
-        _check_native(modified_spec, root, {'file': row['file'], 'sha256': row['new_sha256']},
-                      plan['adapter_file'], plan['adapter_sha256'])
+        _check_native(baseline_spec, root, {'file': row['file'], 'sha256': row['old_sha256'],
+                      'mode': row['old_mode']}, plan['adapter_file'], plan['adapter_sha256'],
+                      plan['adapter_mode'])
+        _check_native(modified_spec, root, {'file': row['file'], 'sha256': row['new_sha256'],
+                      'mode': row['new_mode']}, plan['adapter_file'], plan['adapter_sha256'],
+                      plan['adapter_mode'])
         try:
             report = inspect_lifecycle_postconditions(
                 oracle, trusted_oracle_sha256=trusted_oracle_sha256,
