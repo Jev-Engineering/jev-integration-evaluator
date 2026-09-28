@@ -124,7 +124,7 @@ def _module_bindings(tree: ast.Module) -> dict[str, list[ast.AST]]:
 def _function(tree, found, name, arity, resolver=None, module=None):
     nodes = found.get(name, [])
     if len(nodes) > 1:
-        raise AmbiguousBinding('Ambiguous top-level function binding: ' + name)
+        raise AmbiguousBinding('ambiguous top-level function binding: ' + name)
     if len(nodes) != 1:
         raise MissingBinding('Missing top-level function binding: ' + name)
     f = nodes[0]
