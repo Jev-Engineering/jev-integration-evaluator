@@ -2,6 +2,7 @@
 
 import importlib.util
 import sys
+from asyncio import CancelledError
 from pathlib import Path
 
 import pytest
@@ -54,6 +55,48 @@ def test_revision_changed_during_assessment_cannot_merge():
             return "same"
 
     assert reconcile(RacingClassifier(), graph, left, right, True, 0) is None
+    assert graph.merges == []
+
+
+@pytest.mark.parametrize("failure", [TimeoutError, ConnectionError, CancelledError])
+def test_classifier_failure_abstains_without_mutation(failure):
+    left, right = pair()
+    graph = InMemoryGraph(left, right)
+
+    class FailingClassifier:
+        def classify(self, _left, _right):
+            raise failure("injected")
+
+    assert reconcile(FailingClassifier(), graph, left, right, True, 0) is None
+    assert graph.revision == 0
+    assert graph.merges == []
+
+
+def test_unhashable_malformed_assessment_abstains_and_is_counted():
+    runner = load_runner()
+    cases, labels, _assessments, _study = runner.load_frozen()
+    case = next(case for case in cases if case["id"] == "h01")
+    result = runner.run_case(case, labels["h01"], {"jev": []}, "jev")
+    assert result["assessment"] == "uncertain"
+    assert result["injected_failure"] == "malformed"
+    assert result["missed_eligible_true_merge"] is True
+    assert result["merged"] is False
+    assert runner.summarize([result])["injected_failures"] == 1
+
+
+def test_audit_failure_occurs_before_mutation():
+    left, right = pair()
+    graph = InMemoryGraph(left, right)
+    seen = []
+
+    def failing_audit(receipt):
+        seen.append(receipt.copy())
+        raise OSError("audit unavailable")
+
+    assert reconcile(Answer("same"), graph, left, right, True, 0,
+                     audit=failing_audit) is None
+    assert len(seen) == 1
+    assert graph.revision == 0
     assert graph.merges == []
 
 

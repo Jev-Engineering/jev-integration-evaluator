@@ -1,6 +1,7 @@
 """Offline graph identity fixture. Assessments never confer merge authority."""
 
 from dataclasses import dataclass
+from asyncio import CancelledError
 from threading import RLock
 
 
@@ -24,8 +25,8 @@ class InMemoryGraph:
         self.revision = revision
         self.merges: list[dict] = []
 
-    def merge_if_current(self, left: Entity, right: Entity, expected_revision: int):
-        """Recheck revision and record both sources under one lock."""
+    def merge_if_current(self, left: Entity, right: Entity, expected_revision: int, audit=None):
+        """Recheck revision and run any pre-merge audit before mutation, under one lock."""
         with self._lock:
             if self.revision != expected_revision:
                 return None
@@ -39,14 +40,22 @@ class InMemoryGraph:
                 "revision_before": self.revision,
                 "revision_after": self.revision + 1,
             }
+            if audit is not None:
+                try:
+                    audit(receipt)
+                except (Exception, CancelledError):
+                    return None
             self.merges.append(receipt)
             self.revision += 1
             return receipt
 
 
-def reconcile(classifier, graph, left, right, approval, expected_revision):
+def reconcile(classifier, graph, left, right, approval, expected_revision, *, audit=None):
     """Only an approved, current, exact `same` assessment may reach the adapter."""
-    hypothesis = classifier.classify(left, right)
-    if hypothesis != "same" or approval is not True:
+    try:
+        hypothesis = classifier.classify(left, right)
+    except (Exception, CancelledError):
         return None
-    return graph.merge_if_current(left, right, expected_revision)
+    if type(hypothesis) is not str or hypothesis != "same" or approval is not True:
+        return None
+    return graph.merge_if_current(left, right, expected_revision, audit=audit)

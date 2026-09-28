@@ -44,6 +44,10 @@ class FixedClassifier:
         self.answer = answer
 
     def classify(self, _left, _right):
+        if type(self.answer) is str and self.answer == "timeout":
+            raise TimeoutError("injected assessment timeout")
+        if type(self.answer) is str and self.answer == "malformed":
+            raise ValueError("injected malformed assessment")
         return self.answer
 
 
@@ -59,10 +63,11 @@ def run_case(case, truth, recorded, arm):
     left, right = Entity(**case["left"]), Entity(**case["right"])
     graph = InMemoryGraph(left, right, case["initial_revision"])
     raw = deterministic(left, right) if arm == "deterministic" else recorded[arm]
-    failure = raw in {"timeout", "malformed"}
-    assessment = raw if raw in LABELS else "uncertain"
+    valid = type(raw) is str and raw in LABELS
+    failure = not valid
+    assessment = raw if valid else "uncertain"
     started = perf_counter_ns()
-    receipt = reconcile(FixedClassifier(assessment), graph, left, right,
+    receipt = reconcile(FixedClassifier(raw), graph, left, right,
                         case["approval"], case["expected_revision"])
     elapsed_ms = (perf_counter_ns() - started) / 1_000_000
     eligible = case["approval"] is True and case["initial_revision"] == case["expected_revision"]
@@ -76,7 +81,8 @@ def run_case(case, truth, recorded, arm):
         raise AssertionError(f"provenance mismatch: {case['id']} {arm}")
     return {
         "case_id": case["id"], "truth": truth["label"], "assessment": assessment,
-        "injected_failure": raw if failure else None, "approval": case["approval"],
+        "injected_failure": raw if type(raw) is str and raw in ("timeout", "malformed") else
+                            ("malformed" if failure else None), "approval": case["approval"],
         "revision_current": case["initial_revision"] == case["expected_revision"],
         "eligible": eligible, "merged": bool(receipt),
         "wrong_merge": bool(receipt) and truth["label"] != "same",

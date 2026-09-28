@@ -3,8 +3,13 @@
 `entities.py` is a deliberately small in-memory graph fixture. Its atomic
 `merge_if_current` method rechecks the expected revision, checks the exact
 candidate objects, increments the revision, and records both source names under
-one lock. `reconcile` accepts only the exact `same` label and explicit host
-approval. The classifier cannot approve, revise, or write. This is a transaction
+one lock. An optional host audit callback runs inside that lock **before** the
+fixture appends a merge receipt or increments the revision. An audit exception
+leaves the graph unmodified. The fixture has no durable external audit service;
+the callback contract does not establish atomicity with such a service.
+`reconcile` accepts only the exact `same` label and explicit host approval.
+Classifier timeout, cancellation, provider exception, and malformed output
+fail closed without a merge. The classifier cannot approve, revise, or write. This is a transaction
 analogue for the fixture, not a connected database transaction or production
 identity policy. The original source candidate was `JEV-76A14AC85B1C`, symbol
 SHA-256 `85f8600662bd618ae47cc88401d8c77a926361e2bd3c039d09ea48cb37d408f3`.
@@ -27,8 +32,8 @@ The current arm replays a recorded injected classifier. The deterministic arm
 uses equal nonempty registration IDs in the same jurisdiction for `same`,
 conflicting IDs or jurisdictions for `different`, and otherwise abstains. The
 JEV arm replays recorded bounded `same / related / different / uncertain`
-answers. Injected timeout and malformed responses map to `uncertain` and count
-as failures. All three arms pass through the same host approval and revision
+answers. Injected timeout and malformed responses raise fixture exceptions,
+map to `uncertain`, and count as failures. All three arms pass through the same host approval and revision
 gate. The inputs, rules, thresholds, resource model, and stop rule are in
 `study.v1.json`. The runner checks frozen SHA-256 digests before scoring.
 
