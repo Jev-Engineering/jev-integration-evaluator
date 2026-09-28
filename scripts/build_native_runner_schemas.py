@@ -56,6 +56,12 @@ spec11=json.loads(json.dumps(spec))
 spec11['properties']['schema_version']=const('1.1')
 spec11['properties']['target_environment']=target_environment
 spec11['required'].append('target_environment')
+spec11['properties']['isolation_capabilities']=const({
+    'platform':'linux-x86_64','filesystem':'read_only_copied_snapshot',
+    'network':'denied','process_creation':'denied','threads':'denied',
+    'exec':'denied','target_interpreter':'same_inode_trusted_worker',
+    'dependencies':'declared_pure_python_snapshot'})
+spec11['required'].append('isolation_capabilities')
 spec={'oneOf':[spec,spec11]}
 outcomes=['exited_zero','execution_failed','timeout','output_limit','setup_failed',
     'cleanup_failed','copied_source_drift','schedule_deadline','environment_drift',

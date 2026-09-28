@@ -25,6 +25,16 @@ import uuid
 from typing import Any, Mapping
 
 BACKEND = 'linux-chroot-seccomp-python-ro-v1'
+ISOLATION_CAPABILITIES = {
+    'platform': 'linux-x86_64',
+    'filesystem': 'read_only_copied_snapshot',
+    'network': 'denied',
+    'process_creation': 'denied',
+    'threads': 'denied',
+    'exec': 'denied',
+    'target_interpreter': 'same_inode_trusted_worker',
+    'dependencies': 'declared_pure_python_snapshot',
+}
 MAX_FILE_BYTES = 2 * 1024 * 1024
 MAX_SOURCE_BYTES = 16 * 1024 * 1024
 MAX_CONTRACT_BYTES = 512 * 1024
@@ -198,6 +208,7 @@ def validate_spec(spec: Any) -> None:
                 'environment', 'schedule', 'limits'}
     if version == '1.1':
         expected.add('target_environment')
+        expected.add('isolation_capabilities')
     _keys(spec, expected, 'invalid_spec_fields')
     if version not in ('1.0', '1.1') or spec['backend'] != BACKEND:
         raise RunnerError('unsupported_contract_or_backend')
@@ -235,6 +246,8 @@ def validate_spec(spec: Any) -> None:
     if total > MAX_SOURCE_BYTES:
         raise RunnerError('source_byte_limit')
     if version == '1.1':
+        if spec['isolation_capabilities'] != ISOLATION_CAPABILITIES:
+            raise RunnerError('unsupported_isolation_capabilities')
         target = spec['target_environment']
         _keys(target, {'interpreter_path', 'interpreter_sha256', 'dependency_root',
                        'dependency_identity', 'files', 'distributions'}, 'invalid_target_environment')
@@ -378,6 +391,7 @@ def prepare_spec(root: str | Path, paths: list[str], schedule: list[dict[str, An
                     or f"Version: {distribution['version']}" not in headers):
                 raise RunnerError('invalid_dependency_provenance')
         spec['schema_version'] = '1.1'
+        spec['isolation_capabilities'] = dict(ISOLATION_CAPABILITIES)
         spec['target_environment'] = {'interpreter_path': str(selected),
             'interpreter_sha256': _plain_hash(selected), 'dependency_root': str(dep_root),
             'dependency_identity': dep_identity, 'files': dep_rows,

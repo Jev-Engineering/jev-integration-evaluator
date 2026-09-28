@@ -21,6 +21,7 @@ def contract():
     file = {'path': 'entry.py', 'sha256': zero, 'bytes': 0, 'mode': 0o644}
     return {
         'schema_version': '1.1', 'backend': runner.BACKEND,
+        'isolation_capabilities': dict(runner.ISOLATION_CAPABILITIES),
         'source_identity': {'device': 1, 'inode': 1}, 'files': [file],
         'environment_identity': identity, 'environment': {},
         'schedule': [{'case_id': 'off', 'entry': 'entry.py', 'argv': []}],
@@ -60,4 +61,11 @@ def test_unproven_dependency_module_rejected_without_target_execution():
     spec = contract()
     spec['target_environment']['files'][0]['path'] = 'other_package/__init__.py'
     with pytest.raises(runner.RunnerError, match='unproven_dependency_module'):
+        runner.validate_spec(spec)
+
+
+def test_isolation_capabilities_are_code_owned():
+    spec = contract()
+    spec['isolation_capabilities']['network'] = 'allowed'
+    with pytest.raises(runner.RunnerError, match='unsupported_isolation_capabilities'):
         runner.validate_spec(spec)

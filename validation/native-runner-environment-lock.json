@@ -7,6 +7,6 @@
   "python_sha256": "9cf89c50189de85411dd34b0f0ec5daaab41bf6cd447628572defe3b3ffd0a04",
   "python_version": "3.13.5",
   "runtime_dependencies_sha256": "6e66d8c7f1d3671da3ac5269b8e1eef9f32c59bc3b69d76a17a7e97d064d4811",
-  "supervisor_sha256": "b8f15943c613e253853613ee9db1c585f1ae604f0db80133d63996cc96ffd76a",
+  "supervisor_sha256": "9f1ed486de32b0589d9f4a35a173146bf94b96c5f0989ff1c4d861e96fce1650",
   "worker_sha256": "024e60f495b49b4bb5b2e7604f3dba129e2556642f3b6ae45576fb6ae2346cd9"
 }

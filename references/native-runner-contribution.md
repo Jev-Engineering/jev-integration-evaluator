@@ -12,6 +12,10 @@ hash, dependency root identity, package metadata, and file hashes are bound to
 the `1.1` request and receipt. Missing, changed, or incompatible interpreters
 and dependencies fail without falling back. Binary extensions, `.pth` files,
 other interpreter builds, and unlisted packages are unsupported.
+The `1.1` specification also carries exact code-owned isolation capabilities:
+Linux x86-64, read-only copied files, denied network/process/thread/exec
+syscalls, same-inode interpreter, and declared pure-Python dependencies.
+Changing any capability field fails contract validation.
 The dedicated ephemeral CI job compares the full kernel, architecture,
 interpreter, libseccomp, worker, supervisor, and runtime-closure identity to
 `validation/native-runner-environment-lock.json` before executing required

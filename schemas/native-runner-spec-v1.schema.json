@@ -363,6 +363,18 @@
           "type": "array",
           "uniqueItems": true
         },
+        "isolation_capabilities": {
+          "const": {
+            "dependencies": "declared_pure_python_snapshot",
+            "exec": "denied",
+            "filesystem": "read_only_copied_snapshot",
+            "network": "denied",
+            "platform": "linux-x86_64",
+            "process_creation": "denied",
+            "target_interpreter": "same_inode_trusted_worker",
+            "threads": "denied"
+          }
+        },
         "limits": {
           "additionalProperties": false,
           "properties": {
@@ -594,7 +606,8 @@
         "environment",
         "schedule",
         "limits",
-        "target_environment"
+        "target_environment",
+        "isolation_capabilities"
       ],
       "type": "object"
     }
