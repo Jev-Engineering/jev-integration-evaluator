@@ -37,6 +37,7 @@ test('parser rejects dynamic import, callback reassignment, collision and unsupp
   for (const source of [
     base + "async function late() { return import('./plugin.mjs'); }\n",
     base + 'original = async () => 1;\n',
+    base + 'original ||= async () => 1;\n',
     base + 'const jevAdapter = 1;\n',
     base.replace('return await original(request)', 'return await original(other)')]) {
     const result = run(request('host.mjs', source));

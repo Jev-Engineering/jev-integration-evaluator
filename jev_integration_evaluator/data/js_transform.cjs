@@ -83,7 +83,8 @@ function transform(input) {
         ts.isNewExpression(node) && nameOf(node.expression) === 'Function' ||
         ts.isIdentifier(node) && node.text === input.adapter_alias ||
         ts.isBinaryExpression(node) &&
-          [ts.SyntaxKind.EqualsToken, ts.SyntaxKind.PlusEqualsToken, ts.SyntaxKind.MinusEqualsToken].includes(node.operatorToken.kind) &&
+          node.operatorToken.kind >= ts.SyntaxKind.FirstAssignment &&
+          node.operatorToken.kind <= ts.SyntaxKind.LastAssignment &&
           [input.symbol, input.original].includes(nameOf(node.left)) ||
         ts.isPrefixUnaryExpression(node) && [input.symbol, input.original].includes(nameOf(node.operand)) ||
         ts.isPostfixUnaryExpression(node) && [input.symbol, input.original].includes(nameOf(node.operand)))
