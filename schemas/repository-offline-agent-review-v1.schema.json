@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:repository-offline-agent-review-v1:1.0",
+  "type": "object",
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "repository-offline-agent-review-v1"},
+    "candidate_id": {"type": "string", "minLength": 1, "maxLength": 256},
+    "capabilities": {"type": "object"},
+    "inventory": {"type": "object"},
+    "proposal": {"type": "object"},
+    "verification": {"type": "object"},
+    "related_files": {"type": "array", "maxItems": 24,
+      "items": {"type": "object", "properties": {
+        "file": {"type": "string", "minLength": 1, "maxLength": 1024},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "role": {"enum": ["caller", "callbacks", "registries", "tests", "host_policy"]}
+      }, "required": ["file", "sha256", "role"], "additionalProperties": false}}
+  },
+  "required": ["schema_version", "kind", "candidate_id", "capabilities", "inventory",
+               "proposal", "verification", "related_files"],
+  "additionalProperties": false
+}

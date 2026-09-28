@@ -27,6 +27,7 @@ import uuid
 from . import capabilities as cap
 from .integrations import lifecycle as engine
 from .integrations.contracts import validate_spec, validate_inventory
+from .agent_review import RecordedReviewAdapter, retrieve_context, draft_reviewed_spec
 from .integrations.verification import verify_implementation
 from .integrations.errors import AmbiguousBinding, MissingBinding, UnsupportedShape
 from .runners.isolated_python import (ExecutionGrant, RunnerError, canonical as native_canonical,
@@ -212,6 +213,47 @@ def _prepared(value: Any) -> dict:
     return value
 
 
+def _offline_agent_review(root: Path, state: dict, value: dict) -> tuple[dict | None, dict]:
+    """Convert an offline source-matched opinion to the existing strict v2 input.
+
+    This step is read-only. The current session snapshot and a fresh capability
+    scan bind every source byte before any preparation scope is considered.
+    """
+    cap._schema("repository-offline-agent-review-v1", value)
+    if state["context"]["adapter"] != BOUND_ADAPTER:
+        raise SessionError("offline_review_requires_bound_session_adapter")
+    report = value["capabilities"]
+    try:
+        matches_snapshot = (report.get("report_sha256") == state["initial_report_sha256"]
+                            and report.get("repository_identity") == state["repository_identity"]
+                            and report.get("policy") == state["context"]["policy"]
+                            and _file_map(report) == state["source_files"])
+    except (KeyError, TypeError, ValueError):
+        matches_snapshot = False
+    if not matches_snapshot:
+        raise SessionError("agent_review_session_snapshot_mismatch")
+    try:
+        context = retrieve_context(root, value["inventory"], value["candidate_id"],
+                                   related_files=value["related_files"], capability_report=report,
+                                   discovery_excludes=tuple(report["policy"]["exclude"]))
+        result = draft_reviewed_spec(root, value["inventory"], context,
+                                     RecordedReviewAdapter(value["proposal"]),
+                                     saved_answers=state["context"]["saved_answers"],
+                                     trusted_verification=value["verification"],
+                                     related_files=value["related_files"], capability_report=report,
+                                     discovery_excludes=tuple(report["policy"]["exclude"]))
+    except (InputError, cap.CapabilityError, OSError, ValueError, KeyError, TypeError, RecursionError):
+        raise SessionError("invalid_or_stale_offline_agent_review") from None
+    if result["status"] != "reviewed_specification":
+        return None, result
+    request = _agent_request(state["run_id"], state["repository_identity"],
+                             state["initial_report_sha256"], state["context"], state["source_files"])
+    prepared = _prepared(dict(schema_version="1.0", adapter=BOUND_ADAPTER,
+                              request_sha256=cap._digest(request),
+                              inventory=value["inventory"], spec=result["spec"]))
+    return prepared, result
+
+
 def _scope(value: Any, state: dict, head: str | None, existing: bool) -> dict | None:
     if value is None:
         return None
@@ -266,7 +308,7 @@ def _validate_state(state: dict) -> None:
 
 
 def _selection_archive(journal: "Journal", entry: dict) -> dict:
-    """Store caller review inputs privately before recording their session anchor."""
+    """Store caller selection inputs privately before recording their session anchor."""
     raw = cap._json(entry)
     if len(raw) > 16_000_000:
         raise SessionError("repository_selection_byte_limit")
@@ -452,6 +494,8 @@ class Journal:
                 for field in ("failures", "receipt_history", "authorization_references"):
                     if row["state"][field][:len(before[field])] != before[field]:
                         raise SessionError("session_" + field + "_changed")
+                if row["state"].get("agent_review_history", [])[:len(before.get("agent_review_history", []))] != before.get("agent_review_history", []):
+                    raise SessionError("session_agent_review_history_changed")
             rows.append(row)
             previous = saved
         if rows and len(rows) > rows[-1]["state"]["context"]["bounds"]["max_events"]:
@@ -564,6 +608,12 @@ def _summary(journal: Journal, status: str, next_action: str, **extra: Any) -> d
                 replan_history=copy.deepcopy(state.get("replan_history", [])),
                 replan_limit=state["context"]["bounds"]["max_attempts"] - 1,
                 selection_record=copy.deepcopy(state.get("selection_record")),
+                agent_review_record=({key: copy.deepcopy(state["agent_review_history"][-1][key])
+                                      for key in ("candidate_sha256", "input_sha256", "proposal_sha256",
+                                                  "context_sha256", "status", "draft_sha256")}
+                                     if state.get("agent_review_history") else None),
+                agent_review_content_retention=("caller_external_only"
+                                                if state.get("agent_review_history") else None),
                 snapshot_scope="bounded_source_and_configuration_not_full_repository",
                 classification="synthetic_wiring_only", runtime_activation_authorized=False,
                 benefit_demonstrated=False, provider_connectivity="not_tested", **extra)
@@ -1107,7 +1157,8 @@ def _run_native_lifecycle(journal: Journal, root: Path, bundle: Path, plan: dict
 
 
 def run_repository(repo: str | Path, session: str | Path, *, context: dict | None = None,
-                   prepared: dict | None = None, bundle: str | Path | None = None,
+                   prepared: dict | None = None, agent_review_input: dict | None = None,
+                   bundle: str | Path | None = None,
                    selection: dict | None = None, approved_selection_sha256: str | None = None,
                    scope: dict | None = None, native_contract: dict | None = None,
                    cancel: bool = False, retry: bool = False,
@@ -1125,10 +1176,13 @@ def run_repository(repo: str | Path, session: str | Path, *, context: dict | Non
         raise SessionError("incompatible_replan_control")
     if stop_after is not None and stop_after not in OPERATIONS:
         raise SessionError("invalid_stop_stage")
+    if prepared is not None and agent_review_input is not None:
+        raise SessionError("prepared_and_agent_review_are_mutually_exclusive")
     root, fd, _ = cap._secure_root(repo)
     os.close(fd)
     supplied = _validate_context(context) if context is not None else None
     proposal = _prepared(prepared) if prepared is not None else None
+    review_data = _freeze(agent_review_input) if agent_review_input is not None else None
     with _journal(Path(session), root) as journal:
         existing = journal.state is not None
         native_input = _freeze(native_contract) if native_contract is not None else None
@@ -1142,7 +1196,8 @@ def run_repository(repo: str | Path, session: str | Path, *, context: dict | Non
                          bundle=None, planned_output=None, prepared_sha256=None, receipts=dict(baseline=None, modified=None),
                          attempts={op: 0 for op in OPERATIONS}, failures=[], receipt_history=[],
                          authorization_references=[], cancelled=False,
-                         decision_epoch=0, replan_history=[], selection_record=None)
+                         decision_epoch=0, replan_history=[], selection_record=None,
+                         agent_review_history=[])
             checked_scope = _scope(scope, state, None, False)
             journal.append(state, "run_created")
             if not report["coverage"]["complete_within_policy"]:
@@ -1167,6 +1222,50 @@ def run_repository(repo: str | Path, session: str | Path, *, context: dict | Non
             return _summary(journal, "cancelled", "retain_owned_bundle_for_explicit_recovery")
         if journal.state["cancelled"] and not recover:
             return _summary(journal, "cancelled", "retain_owned_bundle_for_explicit_recovery")
+        previous_reviews = journal.state.get("agent_review_history", [])
+        if (review_data is None and previous_reviews and journal.state["bundle"] is None
+                and not cancel and not recover):
+            return _summary(journal, "insufficient_evidence", "resupply_exact_offline_agent_review")
+        if review_data is not None:
+            if journal.state["attempts"]["apply"] or journal.state["receipts"]["baseline"]:
+                raise SessionError("agent_review_after_effect_forbidden")
+            if journal.state["bundle"] is not None and (
+                    not previous_reviews or cap._digest(review_data) != previous_reviews[-1]["input_sha256"]):
+                raise SessionError("agent_review_changed_after_planning")
+            proposal, review_result = _offline_agent_review(root, journal.state, review_data)
+            record = dict(input_sha256=cap._digest(review_data),
+                          candidate_sha256=cap._digest(review_data["candidate_id"]),
+                          reviewer_sha256=cap._digest(review_data["proposal"]["reviewer"]),
+                          proposal_sha256=cap._digest(review_data["proposal"]),
+                          reason_sha256=cap._digest(review_data["proposal"]["reason"]),
+                          evidence_sha256=cap._digest(review_data["proposal"]["evidence"]),
+                          evidence_refs=[dict(file_sha256=row["sha256"],
+                                              symbol_sha256=cap._digest(row["symbol"]))
+                                         for row in review_data["proposal"]["evidence"]],
+                          context_sha256=review_result["context_sha256"],
+                          status=review_result["status"],
+                          draft_sha256=cap._digest(proposal) if proposal is not None else None)
+            if not previous_reviews or previous_reviews[-1] != record:
+                if journal.state["prepared_sha256"] is not None and not replan:
+                    raise SessionError("agent_review_changed_fresh_replan_required")
+                state = copy.deepcopy(journal.state)
+                state.setdefault("agent_review_history", []).append(record)
+                journal.append(state, "source_bound_agent_review_recorded")
+                if proposal is None:
+                    action = ("supply_indispensable_host_policy_or_verification"
+                              if review_result["status"] == "unresolved" else "resolve_offline_agent_review_facts")
+                    return _summary(journal, "insufficient_evidence", action)
+                return _summary(journal, "reviewed_specification_ready",
+                                "obtain_private_bundle_preparation_scope",
+                                prepared_sha256=cap._digest(proposal),
+                                review_principal_authenticated=False)
+            if proposal is None:
+                action = ("supply_indispensable_host_policy_or_verification"
+                          if review_result["status"] == "unresolved" else "resolve_offline_agent_review_facts")
+                return _summary(journal, "insufficient_evidence", action)
+            if (checked_scope is not None and checked_scope["grants"]["prepare"]
+                    and checked_scope.get("prepared_sha256") != cap._digest(proposal)):
+                raise SessionError("agent_review_preparation_scope_must_bind_exact_draft")
         if approved_selection_sha256 is not None and selection is None and journal.state.get("selection_record") is None:
             raise SessionError("selection_input_required_for_approval")
         if selection is not None or journal.state.get("selection_record") is not None:
@@ -1473,6 +1572,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--review-sha256")
     parser.add_argument("--conclusion-config", type=Path)
     parser.add_argument("--prepared", type=Path)
+    parser.add_argument("--agent-review", type=Path)
     parser.add_argument("--selection", type=Path)
     parser.add_argument("--approved-selection-sha256")
     parser.add_argument("--bundle", type=Path)
@@ -1487,7 +1587,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         context = _external(args.context, args.repo) if args.context else None
         if args.session is None:
-            if any((args.prepared, args.selection, args.approved_selection_sha256,
+            if any((args.prepared, args.agent_review, args.selection, args.approved_selection_sha256,
                     args.bundle, args.scope, args.native_contract, args.cancel,
                     args.retry, args.recover, args.replan, args.stop_after)):
                 raise SessionError("explicit_external_session_required")
@@ -1501,6 +1601,7 @@ def main(argv: list[str] | None = None) -> int:
                 raise SessionError("conclusion_inputs_are_path_only")
             result = run_repository(args.repo, args.session, context=context,
                 prepared=_external(args.prepared, args.repo) if args.prepared else None,
+                agent_review_input=_external(args.agent_review, args.repo) if args.agent_review else None,
                 selection=_external(args.selection, args.repo) if args.selection else None,
                 approved_selection_sha256=args.approved_selection_sha256,
                 bundle=args.bundle, scope=_external(args.scope, args.repo) if args.scope else None,

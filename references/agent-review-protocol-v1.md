@@ -1,6 +1,21 @@
 # Offline source-matched review drafting v1
 
 `jev_integration_evaluator.agent_review` is a read-only preparation boundary.
+
+## Repository session dispatch
+
+The repository command accepts this recorded review through `--agent-review`
+when the saved session context selects `recorded-reviewed-input-v2`. The mirrored
+`repository-offline-agent-review-v1` envelope supplies the exact capability
+report, reviewed inventory, proposal, caller-owned verification and optional
+independently discovered related-file rows. The session must already contain
+the host policy and runtime ownership answers. The command rechecks discovery
+and every source hash, records digest commitments without archiving proposal
+text, and returns the draft digest before any bundle is planned. The caller
+retains the full envelope and resupplies it on the next pre-plan invocation
+with an external preparation scope bound to that digest and journal head.
+This path has no live provider connection or implicit execution authority. See
+`references/repository-session-command.md` for the exact command contract.
 `retrieve_context(root, reviewed_inventory, candidate_id)` reads files named
 by the inventory and checks their hashes before returning bounded source,
 symbols and role hints. Related callers, tests and host policy files require
