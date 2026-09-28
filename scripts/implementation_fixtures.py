@@ -34,7 +34,8 @@ def fixture(root: Path, pattern='C', *, tag=None, crlf=False, layout='flat', nat
     if pattern=='H': records=[dict(id='pinned',text='never discard this constraint',pinned=True),
                               dict(id='work',text='current work'),dict(id='old',text='obsolete')]
     source = ['# -*- coding: utf-8 -*-', '"""Synthetic café host; no live model, service or database."""',
-              'from __future__ import annotations', 'from threading import RLock',
+              'from __future__ import annotations',
+              'def RLock(): return None' if native_probe else 'from threading import RLock',
               ('class HostGate:\n    def __init__(self, actions, **kwargs):\n        self.actions = actions'
                if native_probe else 'from jev_integration_evaluator.runtime import HostGate'), 'LOCK = RLock()',
               'STATE = '+repr(state), 'RECORDS = '+repr(records)]

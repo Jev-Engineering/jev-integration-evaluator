@@ -166,6 +166,11 @@ def test_native_session_executes_edited_host_with_anchored_private_proofs(tmp_pa
     scope['grants'] = session.ZERO_GRANTS.copy()
     resumed = session.run_repository(root, output, scope=scope, native_contract=contract)
     assert resumed['status'] == 'verified' and resumed['attempts'] == verified['attempts']
+    archive = output / verified['retained_schedules'][-1]['private_output_file']
+    archive.write_bytes(archive.read_bytes() + b' ')
+    blocked = session.run_repository(root, output, scope=scope, native_contract=contract)
+    assert blocked['status'] == 'blocked_recovery'
+    assert blocked['attempts'] == verified['attempts']
 
 
 @pytest.mark.skipif(sys.platform != 'linux' or os.geteuid() != 0,

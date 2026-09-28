@@ -311,7 +311,16 @@ class Journal:
             self.rows = self._read()
             self.state = copy.deepcopy(self.rows[-1]["state"]) if self.rows else None
             self.head = self.rows[-1]["record_sha256"] if self.rows else None
-            self.check_receipt_history()
+            self.native_archive_invalid = False
+            try:
+                self.check_receipt_history()
+            except (SessionError, OSError):
+                # A completed native session remains inspectable when its
+                # private archive disappears or changes. Never replay it.
+                if not self.state or not any(
+                        row.get("backend") == "isolated" for row in self.state["receipt_history"]):
+                    raise
+                self.native_archive_invalid = True
         except BaseException:
             self.close()
             raise
@@ -1076,6 +1085,8 @@ def run_repository(repo: str | Path, session: str | Path, *, context: dict | Non
             os.close(identity_fd)
             if cap._digest([str(root), identity.st_dev, identity.st_ino]) != state["repository_identity"]:
                 raise SessionError("repository_identity_changed")
+        if journal.native_archive_invalid:
+            return _summary(journal, "blocked_recovery", "inspect_native_contract_and_private_archive")
         if proposal is not None:
             if proposal["adapter"] != journal.state["context"]["adapter"]:
                 raise SessionError("prepared_adapter_mismatch")
