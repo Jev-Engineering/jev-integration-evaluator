@@ -22,9 +22,10 @@ pytestmark = pytest.mark.skipif(sys.platform != 'linux',
                                 reason='requires secure native Linux discovery')
 
 HOST = b'''import adapter
+import helper_a
 class Worker:
     def baseline(self, request):
-        return request + 1
+        return helper_a.add_one(request)
     def run(self, request):
         return self.baseline(request)
 '''
