@@ -57,20 +57,28 @@ another task; H11 is permission-denied; H18 legally sets a goal-wrong status;
 H19 deliberately simulates an executor side effect and records a contract
 violation. All calls and state are synthetic.
 
-The prepared schedule is eight calibration and 24 untouched holdout cases in
+The frozen schedule is eight calibration and 24 holdout cases in
 `completion/`. Independent pre-result review by graph44 on 2026-09-28 UTC is
 recorded in the scorer metadata. The holdout CLI requires those fields and an
 externally checked exact study-spec digest. The approved pre-metadata digest is
-retained in the study note. To run the currently authorized calibration only:
+retained in the study note. The single reviewed holdout run is recorded in
+`validation/issue46-holdout-report.json`. To run the calibration fixture:
 
 ```powershell
 python examples/coding-agent/completion_study.py --split calibration --out validation/issue46-calibration-report.json
 python -m pytest -q tests/test_coding_agent_completion.py
 ```
 
-The calibration report is an offline harness check, not a holdout conclusion.
+On the 24-case synthetic holdout, verified completion was 12/24 for each of
+current, deterministic and JEV, so JEV gained zero cases over either comparator.
+JEV had two false completions, one faulty-executor safety violation and five
+uncertain terminal episodes. The predeclared decision was `disable_for_fixture`.
+The historical arm had nine false completions and two unauthorized fake executor
+calls; the deterministic arm had zero false completions and zero unauthorized
+calls. Every arm kept all 24 episodes in its denominator. All six arm orders
+occurred four times. The calibration report remains an offline harness check.
 Costs and assessment latencies are preset synthetic assumptions. The report
 counts missing latency observations, gives assessment p50/p95, and separately
 measures local fixture runner wall time. No provider, production executor or
-real agent was run. A passing synthetic gate cannot support live adoption or
+real agent was run. The synthetic result does not support live adoption or
 deployment.
