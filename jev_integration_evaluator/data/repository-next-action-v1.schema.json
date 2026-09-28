@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:repository-next-action-v1:1.0",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "repository-next-action-v1"
+    },
+    "code": {
+      "enum": [
+        "approve_exact_owned_rollback_digest",
+        "inspect_bundle_receipts_and_owned_source",
+        "inspect_stale_or_changed_verification_receipt",
+        "no_further_placement_action",
+        "obtain_exact_bundle_apply_scope",
+        "obtain_exact_bundle_baseline_scope",
+        "obtain_exact_bundle_modified_scope",
+        "obtain_private_bundle_preparation_scope",
+        "prepare_fresh_source_review_and_bundle_for_new_run",
+        "preserve_concurrent_edits_and_review_owned_bytes",
+        "reconcile_existing_bundle_before_any_retry",
+        "resolve_ambiguous_host_binding",
+        "resolve_host_prerequisite",
+        "resolve_scan_coverage_before_implementation",
+        "resume_with_externally_retained_session_head",
+        "retain_historical_receipts_and_prepare_fresh_review_for_reapplication",
+        "retain_owned_bundle_for_explicit_recovery",
+        "review_exact_bundle_and_obtain_execution_mutation_scope",
+        "review_invalid_preparation_inputs",
+        "review_prepared_bindings_and_source_shape",
+        "review_preserved_output_and_explicitly_request_bounded_retry",
+        "review_repository_conclusion_and_missing_opinions",
+        "review_retained_failure_and_explicitly_request_bounded_retry",
+        "review_retained_schedule_and_independent_assertions",
+        "review_unsupported_source_shape",
+        "select_supported_source_shape",
+        "software_wiring_only_no_activation",
+        "supply_exact_owned_rollback_scope",
+        "supply_external_receipt_anchor_or_owned_rollback_scope",
+        "supply_externally_retained_session_head",
+        "supply_missing_host_binding",
+        "supply_recorded_source_reviewed_inventory_and_spec",
+        "supply_source_reviewed_inputs"
+      ]
+    },
+    "required_inputs": {
+      "type": "array",
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z_]+$"
+      }
+    },
+    "authorization": {
+      "enum": [
+        "none",
+        "exact_scope",
+        "external_receipt_or_rollback",
+        "new_review"
+      ]
+    },
+    "effect": {
+      "enum": [
+        "none",
+        "read_only",
+        "private_preparation",
+        "trusted_host_execution",
+        "owned_mutation"
+      ]
+    },
+    "resume_same_run": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "schema_version",
+    "kind",
+    "code",
+    "required_inputs",
+    "authorization",
+    "effect",
+    "resume_same_run"
+  ],
+  "additionalProperties": false
+}

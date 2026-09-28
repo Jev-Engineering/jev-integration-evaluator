@@ -28,10 +28,15 @@ from . import capabilities as cap
 from .integrations import lifecycle as engine
 from .integrations.contracts import validate_spec, validate_inventory
 from .integrations.verification import verify_implementation
+from .integrations.errors import AmbiguousBinding, MissingBinding, UnsupportedShape
 from .io import InputError, digest as engine_digest, read_json
+from .repository_actions import next_action_contract
+from .repository_conclusion import conclude_repository, DEFAULT_OBJECTIVE
+from .config import load_config
 
 FORMAT = "repository-session-v1"
 ADAPTER = "recorded-reviewed-input-v1"
+BOUND_ADAPTER = "recorded-reviewed-input-v2"
 MAX_JOURNAL_BYTES = 64_000_000
 MAX_RECORD_BYTES = 1_000_000
 MAX_INPUT_BYTES = 8_000_000
@@ -65,7 +70,7 @@ def _sha(value: Any, code: str) -> None:
 
 def request_context(*, objective: str | None = None, saved_answers: dict | None = None,
                     policy: cap.DiscoveryPolicy | None = None,
-                    bounds: dict | None = None) -> dict:
+                    bounds: dict | None = None, adapter: str = ADAPTER) -> dict:
     """Caller-owned constraints. None means omitted, not an instruction to clear."""
     if objective is not None and (type(objective) is not str or not objective.strip() or len(objective) > 4000):
         raise SessionError("invalid_objective")
@@ -83,39 +88,114 @@ def request_context(*, objective: str | None = None, saved_answers: dict | None 
             raise SessionError("invalid_session_bounds")
     if limits["max_events"] < 16:
         raise SessionError("session_event_bound_too_small")
+    if adapter not in (ADAPTER, BOUND_ADAPTER):
+        raise SessionError("unsupported_agent_adapter")
     return _freeze(dict(objective=objective, saved_answers=answers,
-                        policy=asdict(selected), bounds=limits, adapter=ADAPTER))
+                        policy=asdict(selected), bounds=limits, adapter=adapter))
 
 
 def _file_map(report: dict) -> dict:
     return {row["file"]: dict(sha256=row["sha256"], mode=row["mode"]) for row in report["files"]}
 
 
-def inspect_repository(repo: str | Path, *, context: dict | None = None) -> dict:
+def _agent_request(run_id: str | None, repository_identity: str, report_sha256: str,
+                   context: dict, source_files: dict) -> dict:
+    """Source-bound data to hand to an offline reviewer, never authority."""
+    request = dict(schema_version="1.0", kind="repository-agent-request-v1",
+                   run_id=run_id, repository_identity=repository_identity,
+                   report_sha256=report_sha256, context_sha256=cap._digest(context),
+                   objective=context["objective"], saved_answers=copy.deepcopy(context["saved_answers"]),
+                   source_files=copy.deepcopy(source_files), adapter=context["adapter"],
+                   response_contract=("repository-recorded-reviewed-response-v2"
+                                     if context["adapter"] == BOUND_ADAPTER
+                                     else "repository-recorded-reviewed-response-v1"),
+                   authorization=dict(execution=False, mutation=False, egress=False,
+                                      installation=False, publication=False, activation=False))
+    cap._schema("repository-agent-request-v1", request)
+    return request
+
+
+def inspect_repository(repo: str | Path, *, context: dict | None = None,
+                       capabilities: dict | None = None, coverage_review: dict | None = None,
+                       review_sha256: str | None = None, conclusion_config: dict | None = None) -> dict:
     """Path-only entry: no session, bundle, target import, or target mutation."""
     context = request_context() if context is None else _validate_context(context)
     report = cap.discover_repository(repo, cap.DiscoveryPolicy.from_json(context["policy"]))
+    supplied_conclusion = any(value is not None for value in
+                              (capabilities, coverage_review, review_sha256, conclusion_config))
+    if supplied_conclusion:
+        if capabilities is None or coverage_review is None or review_sha256 is None:
+            raise SessionError("complete_conclusion_inputs_required")
+        conclusion = conclude_repository(
+            repo, capabilities, load_config() if conclusion_config is None else conclusion_config,
+            objective=context["objective"] or DEFAULT_OBJECTIVE,
+            review=coverage_review, expected_review_sha256=review_sha256,
+            policy=cap.DiscoveryPolicy.from_json(context["policy"]))
+        if conclusion["outcome"] == "no_useful_placement":
+            status = "no_useful_placement"
+            action = "no_further_placement_action"
+        elif conclusion["outcome"] == "unsupported_or_unresolved":
+            status = ("unsupported" if conclusion["coverage"]["complete_anchored_review"]
+                      and conclusion["findings"]
+                      and all(row["implementation_support"] == "unsupported"
+                              for row in conclusion["findings"])
+                      else "insufficient_evidence")
+            action = ("review_unsupported_source_shape" if status == "unsupported"
+                      else "review_repository_conclusion_and_missing_opinions")
+        else:
+            status = conclusion["outcome"]
+            action = "review_repository_conclusion_and_missing_opinions"
+        return dict(schema_version="1.0", kind="repository-run-inspection-v1",
+                    status=status, context_sha256=cap._digest(context),
+                    report=report, conclusion=conclusion, next_action=action,
+                    next_action_contract=next_action_contract(action),
+                    agent_request=None,
+                    agent_request_sha256=None,
+                    review_principal_authenticated=False,
+                    target_executed=False, target_modified=False,
+                    runtime_activation_authorized=False, benefit_demonstrated=False)
+    if not report["coverage"]["complete_within_policy"]:
+        status, action = "incomplete_analysis", "resolve_scan_coverage_before_implementation"
+    elif report["discovery_outcome"] == "unsupported_or_unresolved":
+        status, action = "insufficient_evidence", "review_repository_conclusion_and_missing_opinions"
+    else:
+        status, action = report["discovery_outcome"], "supply_source_reviewed_inputs"
+    agent_request = (_agent_request(None, report["repository_identity"],
+                     report["report_sha256"], context, _file_map(report))
+                     if action == "supply_source_reviewed_inputs" else None)
     return dict(schema_version="1.0", kind="repository-run-inspection-v1",
-                status=report["discovery_outcome"], context_sha256=cap._digest(context),
-                report=report, next_action="supply_source_reviewed_inputs",
+                status=status, context_sha256=cap._digest(context),
+                report=report, next_action=action,
+                next_action_contract=next_action_contract(action),
+                agent_request=agent_request,
+                agent_request_sha256=cap._digest(agent_request) if agent_request else None,
                 target_executed=False, target_modified=False,
                 runtime_activation_authorized=False, benefit_demonstrated=False)
 
 
 def _validate_context(context: dict) -> dict:
     _exact(context, {"objective", "saved_answers", "policy", "bounds", "adapter"}, "invalid_session_context")
-    if context["adapter"] != ADAPTER:
+    if context["adapter"] not in (ADAPTER, BOUND_ADAPTER):
         raise SessionError("unsupported_agent_adapter")
     return request_context(objective=context["objective"], saved_answers=context["saved_answers"],
-                           policy=cap.DiscoveryPolicy.from_json(context["policy"]), bounds=context["bounds"])
+                           policy=cap.DiscoveryPolicy.from_json(context["policy"]), bounds=context["bounds"],
+                           adapter=context["adapter"])
 
 
 def _prepared(value: Any) -> dict:
     """Adapter responses are strict data; all bindings still pass engine validation."""
     value = _freeze(value)
-    _exact(value, {"schema_version", "adapter", "inventory", "spec"}, "invalid_prepared_response")
-    if value["schema_version"] != "1.0" or value["adapter"] != ADAPTER:
+    if type(value) is not dict:
+        raise SessionError("invalid_prepared_response")
+    if value.get("adapter") == BOUND_ADAPTER:
+        _exact(value, {"schema_version", "adapter", "request_sha256", "inventory", "spec"}, "invalid_prepared_response")
+        contract = "repository-recorded-reviewed-response-v2"
+    else:
+        _exact(value, {"schema_version", "adapter", "inventory", "spec"}, "invalid_prepared_response")
+        contract = "repository-recorded-reviewed-response-v1"
+    if value["schema_version"] != "1.0" or value["adapter"] not in (ADAPTER, BOUND_ADAPTER):
         raise SessionError("unsupported_agent_adapter")
+    cap._schema(contract, value)
     try:
         value["spec"] = validate_spec(value["spec"])
     except (InputError, KeyError, TypeError, ValueError, RecursionError):
@@ -158,6 +238,10 @@ def _validate_state(state: dict) -> None:
     _validate_context(state["context"])
     if len(state["failures"]) > sum(state["attempts"].values()):
         raise SessionError("invalid_session_failure_history")
+    if state.get("decision_epoch", 0) != len(state.get("replan_history", [])):
+        raise SessionError("invalid_replan_history")
+    if len(state.get("replan_history", [])) > state["context"]["bounds"]["max_attempts"] - 1:
+        raise SessionError("invalid_replan_history")
 
 
 class Journal:
@@ -336,14 +420,23 @@ def _journal(path: Path, root: Path) -> Iterator[Journal]:
 
 def _summary(journal: Journal, status: str, next_action: str, **extra: Any) -> dict:
     state = journal.state
+    agent_request = (_agent_request(state["run_id"], state["repository_identity"],
+                     state["initial_report_sha256"], state["context"], state["source_files"])
+                     if next_action == "supply_recorded_source_reviewed_inventory_and_spec" else None)
     return dict(schema_version="1.0", kind="repository-run-result-v1", status=status,
                 run_id=state["run_id"], session_head_sha256=journal.head,
                 context_sha256=state["context_sha256"], repository_identity=state["repository_identity"],
                 stage=state["stage"], pending_operation=state["pending"], next_action=next_action,
+                next_action_contract=next_action_contract(next_action),
+                agent_request=agent_request,
+                agent_request_sha256=cap._digest(agent_request) if agent_request else None,
                 bundle_digest=state["bundle"]["digest"] if state["bundle"] else None,
                 receipt_references=copy.deepcopy(state["receipts"]), attempts=copy.deepcopy(state["attempts"]),
                 failed_attempts=len(state["failures"]),
                 retained_schedules=copy.deepcopy(state["receipt_history"]), constraints_retained=True,
+                decision_epoch=state.get("decision_epoch", 0),
+                replan_history=copy.deepcopy(state.get("replan_history", [])),
+                replan_limit=state["context"]["bounds"]["max_attempts"] - 1,
                 snapshot_scope="bounded_source_and_configuration_not_full_repository",
                 classification="synthetic_wiring_only", runtime_activation_authorized=False,
                 benefit_demonstrated=False, provider_connectivity="not_tested", **extra)
@@ -475,7 +568,13 @@ def _reconcile(journal: Journal, root: Path, scope: dict | None) -> bool:
         try:
             prepared_bundle = Path(state["planned_output"])
             _, _, plan, spec, inventory, _ = engine._load(root, prepared_bundle, current_engine=True)
-            expected = dict(schema_version="1.0", adapter=ADAPTER, inventory=inventory, spec=spec)
+            adapter = state["context"]["adapter"]
+            expected = dict(schema_version="1.0", adapter=adapter, inventory=inventory, spec=spec)
+            if adapter == BOUND_ADAPTER:
+                request = _agent_request(state["run_id"], state["repository_identity"],
+                                         state["initial_report_sha256"], state["context"],
+                                         state["source_files"])
+                expected["request_sha256"] = cap._digest(request)
             if cap._digest(expected) != state["prepared_sha256"]:
                 return False
             events = engine._journal(prepared_bundle, plan)
@@ -530,15 +629,18 @@ def _reconcile(journal: Journal, root: Path, scope: dict | None) -> bool:
 def run_repository(repo: str | Path, session: str | Path, *, context: dict | None = None,
                    prepared: dict | None = None, bundle: str | Path | None = None,
                    scope: dict | None = None, cancel: bool = False, retry: bool = False,
-                   recover: bool = False, stop_after: str | None = None) -> dict:
+                   recover: bool = False, replan: bool = False,
+                   stop_after: str | None = None) -> dict:
     """Connect planning, baseline, apply, verification, status and owned rollback.
 
     A supplied context must exactly match an existing run. Omitting it reuses the
     saved answers and constraints; it never clears them. A fresh scope is checked
     for every invocation. A stored grant is provenance, not reusable authority.
     """
-    if any(type(value) is not bool for value in (cancel, retry, recover)):
+    if any(type(value) is not bool for value in (cancel, retry, recover, replan)):
         raise SessionError("invalid_control_flag")
+    if replan and (cancel or recover or bundle is not None or retry):
+        raise SessionError("incompatible_replan_control")
     if stop_after is not None and stop_after not in OPERATIONS:
         raise SessionError("invalid_stop_stage")
     root, fd, _ = cap._secure_root(repo)
@@ -556,7 +658,8 @@ def run_repository(repo: str | Path, session: str | Path, *, context: dict | Non
                          initial_report_sha256=report["report_sha256"], stage="prepared", pending=None,
                          bundle=None, planned_output=None, prepared_sha256=None, receipts=dict(baseline=None, modified=None),
                          attempts={op: 0 for op in OPERATIONS}, failures=[], receipt_history=[],
-                         authorization_references=[], cancelled=False)
+                         authorization_references=[], cancelled=False,
+                         decision_epoch=0, replan_history=[])
             checked_scope = _scope(scope, state, None, False)
             journal.append(state, "run_created")
             if not report["coverage"]["complete_within_policy"]:
@@ -572,6 +675,16 @@ def run_repository(repo: str | Path, session: str | Path, *, context: dict | Non
             os.close(identity_fd)
             if cap._digest([str(root), identity.st_dev, identity.st_ino]) != state["repository_identity"]:
                 raise SessionError("repository_identity_changed")
+        if proposal is not None:
+            if proposal["adapter"] != journal.state["context"]["adapter"]:
+                raise SessionError("prepared_adapter_mismatch")
+            if proposal["adapter"] == BOUND_ADAPTER:
+                expected_request = _agent_request(
+                    journal.state["run_id"], journal.state["repository_identity"],
+                    journal.state["initial_report_sha256"], journal.state["context"],
+                    journal.state["source_files"])
+                if proposal["request_sha256"] != cap._digest(expected_request):
+                    raise SessionError("prepared_request_mismatch")
         if cancel:
             state = copy.deepcopy(journal.state)
             state["cancelled"] = True
@@ -579,6 +692,34 @@ def run_repository(repo: str | Path, session: str | Path, *, context: dict | Non
             return _summary(journal, "cancelled", "retain_owned_bundle_for_explicit_recovery")
         if journal.state["cancelled"] and not recover:
             return _summary(journal, "cancelled", "retain_owned_bundle_for_explicit_recovery")
+        if replan:
+            state = copy.deepcopy(journal.state)
+            if (not existing or proposal is None or state["prepared_sha256"] is None
+                    or cap._digest(proposal) == state["prepared_sha256"]):
+                raise SessionError("replan_requires_changed_reviewed_response")
+            if (state["pending"] is not None or state["cancelled"]
+                    or any(state["attempts"][op] for op in ("baseline", "apply", "modified", "rollback"))
+                    or any(state["receipts"].values())):
+                raise SessionError("replan_after_effect_forbidden")
+            if (not _allowed(checked_scope, "plan", state)
+                    or state["attempts"]["plan"] >= state["context"]["bounds"]["max_attempts"]
+                    or len(state.get("replan_history", [])) >= state["context"]["bounds"]["max_attempts"] - 1):
+                raise SessionError("replan_scope_or_limit_unavailable")
+            if checked_scope.get("prepared_sha256") != cap._digest(proposal):
+                raise SessionError("replan_scope_must_bind_exact_prepared_response")
+            _snapshot(root, state, None, applied=False)
+            try:
+                validate_inventory(root, proposal["inventory"], proposal["spec"])
+            except (InputError, KeyError, TypeError, ValueError, OSError):
+                raise SessionError("replan_review_or_source_invalid") from None
+            state.setdefault("replan_history", []).append(dict(
+                epoch=state.get("decision_epoch", 0), stage=state["stage"],
+                prepared_sha256=state["prepared_sha256"],
+                planned_output=state["planned_output"], bundle=copy.deepcopy(state["bundle"]),
+                scope_reference=checked_scope["reference"], scope_sha256=cap._digest(checked_scope)))
+            state["decision_epoch"] = state.get("decision_epoch", 0) + 1
+            state["stage"], state["bundle"], state["planned_output"], state["prepared_sha256"] = "prepared", None, None, None
+            journal.append(state, "reviewed_pre_effect_replan_requested")
         if journal.state["pending"] and not recover:
             if not _reconcile(journal, root, checked_scope):
                 if (journal.state["pending"]["operation"] == "plan" and retry and proposal is not None
@@ -627,9 +768,21 @@ def run_repository(repo: str | Path, session: str | Path, *, context: dict | Non
             state = _begin(journal, "plan", checked_scope)
             try:
                 result = engine.plan_implementation(root, proposal["inventory"], proposal["spec"]["candidate_id"], proposal["spec"], out)
-            except (InputError, OSError, ValueError, KeyError, TypeError):
-                _complete(journal, state, "plan", "plan_failed", "planning_failed_no_target_mutation")
-                return _summary(journal, "unsupported_or_missing_prerequisite", "review_prepared_bindings_and_source_shape")
+            except MissingBinding:
+                _complete(journal, state, "plan", "plan_failed", "missing_host_binding")
+                return _summary(journal, "missing_prerequisite", "supply_missing_host_binding")
+            except AmbiguousBinding:
+                _complete(journal, state, "plan", "plan_failed", "ambiguous_host_binding")
+                return _summary(journal, "insufficient_evidence", "resolve_ambiguous_host_binding")
+            except UnsupportedShape:
+                _complete(journal, state, "plan", "plan_failed", "unsupported_source_shape")
+                return _summary(journal, "unsupported", "select_supported_source_shape")
+            except OSError:
+                _complete(journal, state, "plan", "plan_failed", "host_prerequisite_unavailable")
+                return _summary(journal, "missing_prerequisite", "resolve_host_prerequisite")
+            except (InputError, ValueError, KeyError, TypeError):
+                _complete(journal, state, "plan", "plan_failed", "planning_input_invalid")
+                return _summary(journal, "insufficient_evidence", "review_invalid_preparation_inputs")
             state["bundle"] = dict(path=str(out), digest=result["bundle_digest"])
             _complete(journal, state, "plan", "planned")
             if stop_after == "plan":
@@ -730,25 +883,37 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("repo", type=Path)
     parser.add_argument("--session", type=Path)
     parser.add_argument("--context", type=Path)
+    parser.add_argument("--capabilities", type=Path)
+    parser.add_argument("--coverage-review", type=Path)
+    parser.add_argument("--review-sha256")
+    parser.add_argument("--conclusion-config", type=Path)
     parser.add_argument("--prepared", type=Path)
     parser.add_argument("--bundle", type=Path)
     parser.add_argument("--scope", type=Path)
     parser.add_argument("--cancel", action="store_true")
     parser.add_argument("--retry", action="store_true")
     parser.add_argument("--recover", action="store_true")
+    parser.add_argument("--replan", action="store_true")
     parser.add_argument("--stop-after", choices=OPERATIONS)
     args = parser.parse_args(argv)
     try:
         context = _external(args.context, args.repo) if args.context else None
         if args.session is None:
-            if any((args.prepared, args.bundle, args.scope, args.cancel, args.retry, args.recover, args.stop_after)):
+            if any((args.prepared, args.bundle, args.scope, args.cancel, args.retry, args.recover, args.replan, args.stop_after)):
                 raise SessionError("explicit_external_session_required")
-            result = inspect_repository(args.repo, context=context)
+            result = inspect_repository(args.repo, context=context,
+                capabilities=_external(args.capabilities, args.repo) if args.capabilities else None,
+                coverage_review=_external(args.coverage_review, args.repo) if args.coverage_review else None,
+                review_sha256=args.review_sha256,
+                conclusion_config=_external(args.conclusion_config, args.repo) if args.conclusion_config else None)
         else:
+            if any((args.capabilities, args.coverage_review, args.review_sha256, args.conclusion_config)):
+                raise SessionError("conclusion_inputs_are_path_only")
             result = run_repository(args.repo, args.session, context=context,
                 prepared=_external(args.prepared, args.repo) if args.prepared else None,
                 bundle=args.bundle, scope=_external(args.scope, args.repo) if args.scope else None,
-                cancel=args.cancel, retry=args.retry, recover=args.recover, stop_after=args.stop_after)
+                cancel=args.cancel, retry=args.retry, recover=args.recover,
+                replan=args.replan, stop_after=args.stop_after)
         print(json.dumps(result, ensure_ascii=True, allow_nan=False))
         return 3 if result["status"] in ("verification_failed", "blocked_recovery") else 0
     except SessionError as exc:

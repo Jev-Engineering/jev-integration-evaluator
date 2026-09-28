@@ -19,8 +19,60 @@ jev-integration-evaluator repository-run /absolute/target
 It uses the existing bounded static discovery implementation. It imports no target
 module, runs no target commands, creates no session or bundle, and grants no scope.
 It reports the discovery classification rather than interpreting an empty scan as
-proof of no useful placement. A fully source-reviewed negative conclusion is not
-wired into this contribution.
+proof of no useful placement.
+
+Every inspection and session result also contains `next_action_contract`, a
+`repository-next-action-v1` record. Its `code` repeats the existing
+`next_action` string for older callers. `required_inputs` names the missing
+caller-supplied evidence, `authorization` classifies the external authority
+needed, `effect` describes the possible next operation, and `resume_same_run`
+states whether the current session can continue. The record itself grants no
+capability. Unknown codes fail closed. Incomplete path-only coverage asks for
+coverage review rather than source-reviewed implementation inputs.
+
+A path-only invocation can also consume a separately reviewed, complete source
+opinion using `--capabilities`, `--coverage-review`, and independently retained
+`--review-sha256`. Optional `--conclusion-config` and the context's objective and
+discovery policy must match those used to prepare the review. The command calls
+the existing repository conclusion verifier, which re-reads the source and
+rejects drift or an unanchored review. Only its complete negative outcome yields
+`no_useful_placement`; all other outcomes retain the conclusion and request
+review of missing opinions. This path executes no target and creates no session.
+The returned `review_principal_authenticated: false` remains explicit; digest
+equality alone cannot authenticate who supplied the review.
+
+When reviewed implementation inputs are needed, `agent_request` is a strict
+`repository-agent-request-v1` record with run ID (null for path-only inspection),
+repository and report identities, bounded source file hashes and modes, the
+preserved objective and saved answers, and the required response contract. Its
+six capability flags are all false. The compatible recorded adapter response is
+now also described by the mirrored `repository-recorded-reviewed-response-v1`
+schema. The opt-in `recorded-reviewed-input-v2` adapter requires a
+`request_sha256` equal to the emitted `agent_request_sha256`, computed over the
+complete emitted request, including run ID,
+source report, context, objective and answers. Its separate mirrored response
+schema requires this field. Replaying a response under a different run or
+context fails before planning; source drift remains independently rejected.
+The v1 four-field response stays available for existing saved reviews and
+bundles. Both adapters still undergo the existing source, semantic and recipe
+checks before planning. A schema-valid response cannot grant execution, egress,
+installation, publication or activation.
+
+Preparation failures are classified from explicit engine error types:
+`MissingBinding` or an unavailable host prerequisite yields
+`missing_prerequisite`; a duplicate top-level binding produces typed
+`AmbiguousBinding` and `insufficient_evidence`; `UnsupportedShape` yields
+`unsupported`; other invalid
+planning input yields `insufficient_evidence`. Each attempted plan keeps a
+distinct failure code in the journal. A repository conclusion's current
+`unsupported_or_unresolved` finding does not distinguish a proven unsupported
+shape from an unestablished preflight, so the command conservatively surfaces
+`insufficient_evidence` for that finding. A future explicit `unsupported`
+support code would surface `unsupported` only with complete anchored review.
+Unresolved or unanchored opinions also remain `insufficient_evidence`. The underlying
+conclusion is included unchanged, and a reviewed negative explicitly reports
+`review_principal_authenticated: false` at both levels. These labels do not
+authenticate a reviewer or authorize a retry, effect, or deployment.
 
 The same command accepts a caller-selected private session directory outside the
 target, an optional context, recorded reviewed inputs, and a separate scope:
@@ -35,14 +87,16 @@ python -m jev_integration_evaluator.repository_run /absolute/target \
 ```
 
 The context contains an optional objective, saved answers, explicit resource
-bounds, discovery policy, and the fixed `recorded-reviewed-input-v1` adapter.
+bounds, discovery policy, and either the compatible `recorded-reviewed-input-v1`
+or request-bound `recorded-reviewed-input-v2` adapter.
 The JSON examples deliberately grant nothing. Zero hashes and the example
 reference are not authorization. Keep secrets out of inputs: use credential
 references, not credentials. The caller-controlled session parent must not be
 writable by an untrusted target or another untrusted principal.
 
-Recorded responses have exactly `schema_version`, `adapter`, `inventory`, and
-`spec` fields. The existing deterministic implementation-spec, inventory, recipe,
+V1 recorded responses have exactly `schema_version`, `adapter`, `inventory`, and
+`spec` fields; V2 additionally requires the exact `request_sha256`. The existing
+deterministic implementation-spec, inventory, recipe,
 source, finite-label, runtime-off, and observation validators retain authority.
 The adapter does not evaluate Python, commands, module identifiers or expressions
 from a response. It does not implement autonomous review or draft policy and
@@ -69,7 +123,18 @@ still does not gain authority from a success-shaped file inside that bundle.
 continuations use the same command and preserve the context when it is omitted.
 A changed supplied objective, answer, bound, adapter or scan policy is rejected,
 not silently substituted. To change the review context or accepted source, use a
-new reviewed run; automated semantic replanning is not implemented here.
+new reviewed run. `--replan` accepts a changed, separately reviewed prepared
+response only before any baseline, apply, modified-verification or rollback
+attempt. It requires a fresh exact-head preparation scope whose optional
+`prepared_sha256` field exactly names the revised response, retains the prior
+decision and bundle in append-only history, and uses a distinct private output
+directory. Plan attempts remain under `max_attempts`; the maximum number of
+in-run replans is one less than that bound. Interrupted replans reconcile a
+finished engine plan without repeating it; incomplete private output is kept
+and needs explicit bounded retry. Replanning after an effect attempt, while an
+effect is pending, after cancellation, or after source/context drift is refused.
+No prior bundle grant authorizes a new bundle. This is caller-reviewed replanning,
+not automatic semantic drafting or a model-issued approval.
 
 ## Authorization and receipts
 
@@ -156,14 +221,41 @@ Source-byte, mode, added-source and removed-source drift invalidate the decision
 Unsupported language/parser paths remain explicit. Complete arbitrary-repository
 snapshotting and native environment contracts still require the remaining roadmap.
 
+The scan includes the extensions `.py`, `.pyi`, `.js`, `.jsx`, `.mjs`, `.cjs`,
+`.ts`, `.tsx`, `.go`, `.rs`, `.java`, `.cs`, `.c`, `.h`, `.cpp`, `.hpp`, `.rb`,
+`.lua`, `.luau`, `.kt`, `.swift`, `.php`, `.sh`, `.ps1`, and `.sql`; recognized
+configuration names (`pyproject.toml`, `setup.py`, `setup.cfg`,
+`requirements.txt`, `package.json`, `package-lock.json`, `yarn.lock`,
+`pnpm-lock.yaml`, `tsconfig.json`, `pytest.ini`, `tox.ini`, `conftest.py`,
+`Dockerfile`, `docker-compose.yml`, `compose.yaml`, `Cargo.toml`, `go.mod`,
+`AGENTS.md`, `README.md`, `SETUP_PROMPT.md`); and `.github/workflows/*`.
+The bounded report records each included file's bytes hash and mode. The
+session re-enumerates the same policy before stages and rejects included-file
+additions, removals, byte changes and mode changes. The report's policy and
+coverage limitations are part of the decision context.
+
+Ignored directories include `.git`, `.hg`, `.svn`, `node_modules`, virtual
+environments, caches, build outputs, `vendor`, `target`, and `.next`;
+sensitive-name matches and caller policy excludes are also omitted. Other file
+extensions, external dependencies, interpreter installation and generated
+runtime state are outside this snapshot. Exclusion means **unknown dependency
+state**, not proof that the selected host behavior ignores it. A nondependent
+excluded text file is tested not to create a false drift stop; if a selected
+host actually reads excluded data, this session alone cannot certify its
+stability. Such a dependency needs a separately reviewed and observed bound
+before claiming an environment-equivalent result.
+
 Execution is **trusted-host synthetic verification** only. Requesting an isolated
 backend fails with `independent_isolation_backend_unsupported`, without silently
 executing on the host. The current core probe injects its fixture runtime; this
-does not prove actual application bootstrap or provider connectivity. No existing
-Python recipe is generalized, and no methods, async seams, package rewriting,
-JS/TS runtime, distributed budget, production activation or benefit is advertised.
+does not prove actual application bootstrap or provider connectivity. The
+existing Python recipe engine now accepts separately declared regular, `src/`,
+and explicit namespace package bindings with bounded static package-local
+re-export chains, as described in `references/executable-integrations.md`.
+This session still does not support methods, async seams, arbitrary package
+rewriting, JS/TS runtime, distributed budgets, production activation or benefit.
 
-Local session qualification targets Linux/Python 3.13. Other interpreters,
+Local session qualification in this branch targets WSL Linux/CPython 3.12.3. Other interpreters,
 filesystems, Windows/macOS and hosted jobs must be qualified separately. The
 session filesystem implementation explicitly rejects non-POSIX execution.
 

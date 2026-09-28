@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:repository-agent-request-v1:1.0",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "repository-agent-request-v1"
+    },
+    "run_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "repository_identity": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "report_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "context_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "objective": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "saved_answers": {
+      "type": "object"
+    },
+    "source_files": {
+      "type": "object",
+      "maxProperties": 10000,
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "mode": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4095
+          }
+        },
+        "required": [
+          "sha256",
+          "mode"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "adapter": {
+      "enum": [
+        "recorded-reviewed-input-v1",
+        "recorded-reviewed-input-v2"
+      ]
+    },
+    "response_contract": {
+      "enum": [
+        "repository-recorded-reviewed-response-v1",
+        "repository-recorded-reviewed-response-v2"
+      ]
+    },
+    "authorization": {
+      "type": "object",
+      "properties": {
+        "execution": {
+          "const": false
+        },
+        "mutation": {
+          "const": false
+        },
+        "egress": {
+          "const": false
+        },
+        "installation": {
+          "const": false
+        },
+        "publication": {
+          "const": false
+        },
+        "activation": {
+          "const": false
+        }
+      },
+      "required": [
+        "execution",
+        "mutation",
+        "egress",
+        "installation",
+        "publication",
+        "activation"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schema_version",
+    "kind",
+    "run_id",
+    "repository_identity",
+    "report_sha256",
+    "context_sha256",
+    "objective",
+    "saved_answers",
+    "source_files",
+    "adapter",
+    "response_contract",
+    "authorization"
+  ],
+  "additionalProperties": false
+}

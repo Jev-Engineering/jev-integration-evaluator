@@ -13,7 +13,7 @@ import sys
 
 from ..io import InputError, canonical, digest, safe_child
 from ..implementation import FORBIDDEN
-from .errors import UnsupportedShape, MissingBinding
+from .errors import UnsupportedShape, MissingBinding, AmbiguousBinding
 from .package_bindings import StaticBindings, module_layout
 
 COMMON = dict(runtime=1, evidence=1, baseline_action=1, registry=1, gate=2, validate=2, blocked=2, guard=1)
@@ -123,8 +123,10 @@ def _module_bindings(tree: ast.Module) -> dict[str, list[ast.AST]]:
 
 def _function(tree, found, name, arity, resolver=None, module=None):
     nodes = found.get(name, [])
+    if len(nodes) > 1:
+        raise AmbiguousBinding('ambiguous top-level function binding: ' + name)
     if len(nodes) != 1:
-        raise MissingBinding('Missing or ambiguous top-level function binding: ' + name)
+        raise MissingBinding('Missing top-level function binding: ' + name)
     f = nodes[0]
     if isinstance(f, ast.ImportFrom) and resolver is not None:
         _, _, f = resolver.resolve_from(module or resolver.module, name)

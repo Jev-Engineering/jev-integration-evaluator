@@ -75,7 +75,10 @@
           "additionalProperties": false
         },
         "adapter": {
-          "const": "recorded-reviewed-input-v1"
+          "enum": [
+            "recorded-reviewed-input-v1",
+            "recorded-reviewed-input-v2"
+          ]
         }
       },
       "required": [
@@ -452,6 +455,114 @@
     },
     "cancelled": {
       "type": "boolean"
+    },
+    "decision_epoch": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2
+    },
+    "replan_history": {
+      "type": "array",
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "properties": {
+          "epoch": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2
+          },
+          "stage": {
+            "enum": [
+              "prepared",
+              "planned",
+              "baseline_passed",
+              "applied_unverified",
+              "verified",
+              "rolled_back",
+              "blocked_recovery",
+              "plan_pending",
+              "baseline_pending",
+              "apply_pending",
+              "modified_pending",
+              "rollback_pending",
+              "plan_failed",
+              "baseline_failed",
+              "apply_failed",
+              "modified_failed",
+              "rollback_failed"
+            ]
+          },
+          "prepared_sha256": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "planned_output": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 8192
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "bundle": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 8192
+                  },
+                  "digest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "path",
+                  "digest"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scope_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "scope_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "epoch",
+          "stage",
+          "prepared_sha256",
+          "planned_output",
+          "bundle",
+          "scope_reference",
+          "scope_sha256"
+        ],
+        "additionalProperties": false
+      }
     }
   },
   "required": [
