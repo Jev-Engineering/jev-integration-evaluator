@@ -97,7 +97,7 @@ def test_scoped_prerequisites_require_external_approval_then_rescan(tmp_path, mo
 
 @pytest.mark.parametrize('attack', ['authority','old_body','scope','policy','review','new_validation',
                                     'import_time_default','global_shadow','source_review',
-                                    'always_true_stub','entry_mode'])
+                                    'always_true_stub','entry_mode','guard_shadow'])
 def test_prerequisite_authority_and_drift_fail_without_mutation(tmp_path, monkeypatch, attack):
     items = list(_fixture(tmp_path, monkeypatch))
     original = {name:(tmp_path / name).read_bytes() for name in items[-1]}
@@ -130,6 +130,10 @@ def test_prerequisite_authority_and_drift_fail_without_mutation(tmp_path, monkey
         items[4] = copy.deepcopy(items[4])
         items[4]['cases'][0]['entry_mode'] = 0o777
         items[5] = {**items[5], 'validation_sha256':digest(items[4])}
+    elif attack == 'guard_shadow':
+        items[2] = copy.deepcopy(items[2])
+        items[2]['changes'][0]['new_content'] += '\ndef type(value):\n    return value\n'
+        items[5] = {**items[5], 'proposal_sha256':digest(items[2])}
     else:
         items[4] = copy.deepcopy(items[4])
         items[4]['cases'][0]['observation']['result'] = 'weaker'

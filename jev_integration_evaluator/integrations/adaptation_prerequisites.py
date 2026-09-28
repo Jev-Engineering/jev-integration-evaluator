@@ -90,6 +90,7 @@ def _safe_additions(old: bytes, new: str) -> None:
     for node in after.body[len(before.body):]:
         if (not isinstance(node, ast.FunctionDef)
                 or node.decorator_list or node.name in existing or node.name in added
+                or node.name in ('type','int','TypeError')
                 or node.name.startswith('_') or AUTHORITY.search(node.name)
                 or node.returns is not None or getattr(node, 'type_params', ())
                 or node.args.defaults or any(x is not None for x in node.args.kw_defaults)
