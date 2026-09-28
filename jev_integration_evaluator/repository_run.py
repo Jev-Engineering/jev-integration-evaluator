@@ -41,6 +41,7 @@ from .io import InputError, digest as engine_digest, read_json
 from .repository_actions import next_action_contract
 from .repository_conclusion import conclude_repository, DEFAULT_OBJECTIVE
 from .config import load_config
+from .repository_selection import assess_selection
 
 FORMAT = "repository-session-v1"
 ADAPTER = "recorded-reviewed-input-v1"
@@ -264,6 +265,56 @@ def _validate_state(state: dict) -> None:
         raise SessionError("invalid_replan_history")
 
 
+def _selection_archive(journal: "Journal", entry: dict) -> dict:
+    """Store caller review inputs privately before recording their session anchor."""
+    raw = cap._json(entry)
+    if len(raw) > 16_000_000:
+        raise SessionError("repository_selection_byte_limit")
+    sha = hashlib.sha256(raw).hexdigest()
+    name = "selection-" + sha + ".json"
+    journal._identity()
+    try:
+        fd = os.open(name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
+                     0o600, dir_fd=journal.dirfd)
+    except FileExistsError:
+        return _selection_read(journal, {"file": name, "sha256": sha})[1]
+    try:
+        os.fchmod(fd, 0o600)
+        written = 0
+        while written < len(raw):
+            count = os.write(fd, raw[written:])
+            if count <= 0:
+                raise SessionError("selection_archive_write_failed")
+            written += count
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+    os.fsync(journal.dirfd)
+    return {"file": name, "sha256": sha}
+
+
+def _selection_read(journal: "Journal", anchor: dict) -> tuple[dict, dict]:
+    journal._identity()
+    fd = os.open(anchor["file"], os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK,
+                 dir_fd=journal.dirfd)
+    try:
+        info = os.fstat(fd)
+        if (not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_uid != os.getuid()
+                or stat.S_IMODE(info.st_mode) != 0o600 or info.st_size > 16_000_000):
+            raise SessionError("unsafe_selection_archive")
+        raw = bytearray()
+        while len(raw) <= 16_000_000:
+            block = os.read(fd, min(65536, 16_000_001 - len(raw)))
+            if not block:
+                break
+            raw.extend(block)
+        if len(raw) != info.st_size or hashlib.sha256(raw).hexdigest() != anchor["sha256"]:
+            raise SessionError("selection_archive_integrity_mismatch")
+        return json.loads(raw), {"file": anchor["file"], "sha256": anchor["sha256"]}
+    finally:
+        os.close(fd)
+
+
 class Journal:
     """Lock + append-only WAL. A torn record is preserved, never auto-truncated."""
     def __init__(self, directory: Path, target: Path):
@@ -323,6 +374,8 @@ class Journal:
                         row.get("backend") == "isolated" for row in self.state["receipt_history"]):
                     raise
                 self.native_archive_invalid = True
+            if self.state and self.state.get("selection_record"):
+                _selection_read(self, self.state["selection_record"])
         except BaseException:
             self.close()
             raise
@@ -378,6 +431,22 @@ class Journal:
                 if (before.get("execution_backend") is not None and
                         row["state"].get("execution_backend") != before["execution_backend"]):
                     raise SessionError("session_execution_backend_changed")
+                old_selection = before.get("selection_record")
+                new_selection = row["state"].get("selection_record")
+                if old_selection is not None and new_selection != old_selection:
+                    promoted = (type(new_selection) is dict
+                        and row["event"] == "selection_review_promoted"
+                        and old_selection["path"] == new_selection["path"] == "inventory"
+                        and old_selection["status"] == "selection_review_required"
+                        and old_selection["approved_request_sha256"] is None
+                        and new_selection["status"] == "experimental_selected"
+                        and new_selection["approved_request_sha256"] == old_selection["request_sha256"]
+                        and all(new_selection[k] == old_selection[k]
+                                for k in ("file", "sha256", "path", "request_sha256"))
+                        and not any(before["attempts"].values())
+                        and before["stage"] == "prepared")
+                    if not promoted:
+                        raise SessionError("session_selection_history_changed")
                 if any(row["state"]["attempts"][op] < before["attempts"][op] for op in OPERATIONS):
                     raise SessionError("session_attempt_history_rewound")
                 for field in ("failures", "receipt_history", "authorization_references"):
@@ -494,6 +563,7 @@ def _summary(journal: Journal, status: str, next_action: str, **extra: Any) -> d
                 decision_epoch=state.get("decision_epoch", 0),
                 replan_history=copy.deepcopy(state.get("replan_history", [])),
                 replan_limit=state["context"]["bounds"]["max_attempts"] - 1,
+                selection_record=copy.deepcopy(state.get("selection_record")),
                 snapshot_scope="bounded_source_and_configuration_not_full_repository",
                 classification="synthetic_wiring_only", runtime_activation_authorized=False,
                 benefit_demonstrated=False, provider_connectivity="not_tested", **extra)
@@ -1038,6 +1108,7 @@ def _run_native_lifecycle(journal: Journal, root: Path, bundle: Path, plan: dict
 
 def run_repository(repo: str | Path, session: str | Path, *, context: dict | None = None,
                    prepared: dict | None = None, bundle: str | Path | None = None,
+                   selection: dict | None = None, approved_selection_sha256: str | None = None,
                    scope: dict | None = None, native_contract: dict | None = None,
                    cancel: bool = False, retry: bool = False,
                    recover: bool = False, replan: bool = False,
@@ -1071,7 +1142,7 @@ def run_repository(repo: str | Path, session: str | Path, *, context: dict | Non
                          bundle=None, planned_output=None, prepared_sha256=None, receipts=dict(baseline=None, modified=None),
                          attempts={op: 0 for op in OPERATIONS}, failures=[], receipt_history=[],
                          authorization_references=[], cancelled=False,
-                         decision_epoch=0, replan_history=[])
+                         decision_epoch=0, replan_history=[], selection_record=None)
             checked_scope = _scope(scope, state, None, False)
             journal.append(state, "run_created")
             if not report["coverage"]["complete_within_policy"]:
@@ -1089,6 +1160,93 @@ def run_repository(repo: str | Path, session: str | Path, *, context: dict | Non
                 raise SessionError("repository_identity_changed")
         if journal.native_archive_invalid and not (recover or cancel):
             return _summary(journal, "blocked_recovery", "inspect_native_contract_and_private_archive")
+        if cancel:
+            state = copy.deepcopy(journal.state)
+            state["cancelled"] = True
+            journal.append(state, "cancel_requested")
+            return _summary(journal, "cancelled", "retain_owned_bundle_for_explicit_recovery")
+        if journal.state["cancelled"] and not recover:
+            return _summary(journal, "cancelled", "retain_owned_bundle_for_explicit_recovery")
+        if approved_selection_sha256 is not None and selection is None and journal.state.get("selection_record") is None:
+            raise SessionError("selection_input_required_for_approval")
+        if selection is not None or journal.state.get("selection_record") is not None:
+            current = journal.state.get("selection_record")
+            post_effect = bool(current and journal.state["attempts"]["apply"])
+            if post_effect and proposal is not None:
+                raise SessionError("reviewed_prepared_input_after_apply_forbidden")
+            if approved_selection_sha256 is not None:
+                _sha(approved_selection_sha256, "invalid_external_selection_approval")
+            promotion = False
+            if current is not None:
+                if (approved_selection_sha256 is not None
+                        and approved_selection_sha256 != current["approved_request_sha256"]):
+                    promotion = (current["path"] == "inventory"
+                        and current["status"] == "selection_review_required"
+                        and current["approved_request_sha256"] is None
+                        and approved_selection_sha256 == current["request_sha256"]
+                        and not any(journal.state["attempts"].values())
+                        and journal.state["stage"] == "prepared")
+                    if not promotion:
+                        raise SessionError("selection_approval_changed_fresh_run_required")
+                if not promotion:
+                    approved_selection_sha256 = current["approved_request_sha256"]
+            if selection is None:
+                selection, _ = _selection_read(journal, current)
+            else:
+                selection = _freeze(selection)
+                if current is not None and hashlib.sha256(cap._json(selection)).hexdigest() != current["sha256"]:
+                    raise SessionError("selection_changed_fresh_run_required")
+            if post_effect:
+                # Apply intentionally changes selected source. The owned bundle,
+                # receipts and recovery journal govern this phase; re-reading
+                # the pre-effect selection would misclassify that change.
+                assessment = {"status": current["status"],
+                              "selection_sha256": current["selection_sha256"],
+                              "path": current["path"]}
+            else:
+                try:
+                    assessment = assess_selection(root, selection,
+                        policy=cap.DiscoveryPolicy.from_json(journal.state["context"]["policy"]),
+                        approved_request_sha256=approved_selection_sha256)
+                except (cap.CapabilityError, InputError, KeyError, TypeError, ValueError):
+                    if current is None:
+                        raise SessionError("invalid_or_stale_new_selection") from None
+                    return _summary(journal, "stale_selection", "refresh_source_review_and_selection")
+            if current is None:
+                anchor = _selection_archive(journal, selection)
+                state = copy.deepcopy(journal.state)
+                state["selection_record"] = {**anchor, "status": assessment["status"],
+                                             "selection_sha256": assessment["selection_sha256"],
+                                             "path": assessment["path"],
+                                             "request_sha256": assessment["request_sha256"],
+                                             "approved_request_sha256": approved_selection_sha256}
+                journal.append(state, "source_bound_selection_recorded")
+            elif promotion:
+                if assessment["status"] != "experimental_selected":
+                    raise SessionError("selection_review_did_not_select_candidate")
+                state = copy.deepcopy(journal.state)
+                state["selection_record"] = {
+                    **current, "status": assessment["status"],
+                    "selection_sha256": assessment["selection_sha256"],
+                    "approved_request_sha256": approved_selection_sha256}
+                journal.append(state, "selection_review_promoted")
+            elif (assessment["status"] != current["status"]
+                  or assessment["selection_sha256"] != current["selection_sha256"]):
+                return _summary(journal, "stale_selection", "refresh_source_review_and_selection")
+            if assessment["status"] not in ("experimental_selected", "experimental_selection"):
+                return _summary(journal, assessment["status"], "review_selection_outcome")
+            if not post_effect and not assessment["selected_candidate_ids"]:
+                return _summary(journal, "no_candidate_selected", "review_selection_outcome")
+            if (not post_effect and assessment["path"] == "source"
+                    and assessment["selection"]["requires_composite_transaction"]):
+                return _summary(journal, "unsupported", "qualify_composite_transaction")
+            if proposal is not None:
+                if (engine_digest(proposal["inventory"]) != assessment["inventory_sha256"]
+                        or proposal["spec"]["candidate_id"] not in assessment["selected_candidate_ids"]):
+                    raise SessionError("prepared_input_does_not_match_reviewed_selection")
+                bound_spec = assessment["implementation_spec_sha256"]
+                if bound_spec is not None and engine_digest(proposal["spec"]) != bound_spec:
+                    raise SessionError("prepared_specification_does_not_match_selection")
         if proposal is not None:
             if proposal["adapter"] != journal.state["context"]["adapter"]:
                 raise SessionError("prepared_adapter_mismatch")
@@ -1099,13 +1257,6 @@ def run_repository(repo: str | Path, session: str | Path, *, context: dict | Non
                     journal.state["source_files"])
                 if proposal["request_sha256"] != cap._digest(expected_request):
                     raise SessionError("prepared_request_mismatch")
-        if cancel:
-            state = copy.deepcopy(journal.state)
-            state["cancelled"] = True
-            journal.append(state, "cancel_requested")
-            return _summary(journal, "cancelled", "retain_owned_bundle_for_explicit_recovery")
-        if journal.state["cancelled"] and not recover:
-            return _summary(journal, "cancelled", "retain_owned_bundle_for_explicit_recovery")
         if replan:
             state = copy.deepcopy(journal.state)
             if (not existing or proposal is None or state["prepared_sha256"] is None
@@ -1315,6 +1466,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--review-sha256")
     parser.add_argument("--conclusion-config", type=Path)
     parser.add_argument("--prepared", type=Path)
+    parser.add_argument("--selection", type=Path)
+    parser.add_argument("--approved-selection-sha256")
     parser.add_argument("--bundle", type=Path)
     parser.add_argument("--scope", type=Path)
     parser.add_argument("--native-contract", type=Path)
@@ -1327,7 +1480,9 @@ def main(argv: list[str] | None = None) -> int:
     try:
         context = _external(args.context, args.repo) if args.context else None
         if args.session is None:
-            if any((args.prepared, args.bundle, args.scope, args.native_contract, args.cancel, args.retry, args.recover, args.replan, args.stop_after)):
+            if any((args.prepared, args.selection, args.approved_selection_sha256,
+                    args.bundle, args.scope, args.native_contract, args.cancel,
+                    args.retry, args.recover, args.replan, args.stop_after)):
                 raise SessionError("explicit_external_session_required")
             result = inspect_repository(args.repo, context=context,
                 capabilities=_external(args.capabilities, args.repo) if args.capabilities else None,
@@ -1339,6 +1494,8 @@ def main(argv: list[str] | None = None) -> int:
                 raise SessionError("conclusion_inputs_are_path_only")
             result = run_repository(args.repo, args.session, context=context,
                 prepared=_external(args.prepared, args.repo) if args.prepared else None,
+                selection=_external(args.selection, args.repo) if args.selection else None,
+                approved_selection_sha256=args.approved_selection_sha256,
                 bundle=args.bundle, scope=_external(args.scope, args.repo) if args.scope else None,
                 native_contract=_external(args.native_contract, args.repo) if args.native_contract else None,
                 cancel=args.cancel, retry=args.retry, recover=args.recover,
