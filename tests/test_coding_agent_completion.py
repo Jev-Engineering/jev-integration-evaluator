@@ -161,6 +161,23 @@ def test_assessment_resource_schedule_cannot_be_repriced():
         study.run_case(case, "jev", study.load("policy"), responses)
 
 
+def test_missing_assessment_latency_is_preserved_for_counting():
+    case, _ = calibration("c01")
+    responses = study.load("assessments")
+    responses["responses"]["c01-s1"]["latency_ms"] = None
+    outcome = study.run_case(case, "jev", study.load("policy"), responses)
+    assert outcome["assessments"][0]["synthetic_latency_ms"] is None
+    assert outcome["assessments"][0]["synthetic_cost_units"] == 0.002
+
+
+def test_seeded_holdout_arm_orders_are_exactly_counterbalanced():
+    ids = [f"h{number:02d}" for number in range(1, 25)]
+    schedule = study.counterbalanced_arm_schedule(ids, 460149)
+    assert schedule == study.counterbalanced_arm_schedule(reversed(ids), 460149)
+    assert len(set(schedule.values())) == 6
+    assert all(list(schedule.values()).count(order) == 4 for order in set(schedule.values()))
+
+
 def test_prepared_holdout_roles_are_static_only():
     cases = {case["id"]: case for case in study.load("cases")["cases"]}
     assert cases["h10"]["steps"][0]["expected_rejection"] == "wrong_task"
@@ -179,5 +196,11 @@ def test_calibration_report_schema_and_holdout_gate():
     validate(report, schema)
     assert len(report["rows"]) == 8
     assert all(summary["denominator"] == 8 for summary in report["summary"].values())
+    assert sum(report["arm_order_counts"].values()) == 8
+    assert all(sorted(row["arm_order"]) == ["current", "deterministic", "jev"] for row in report["rows"])
+    assert report["summary"]["jev"]["synthetic_p50_latency_ms"] is not None
+    assert report["summary"]["jev"]["synthetic_p95_latency_ms"] is not None
+    assert report["summary"]["jev"]["missing_latency_observations"] == 0
+    assert report["local_fixture_wall_time_ms"] > 0
     with pytest.raises(ValueError, match="holdout requires independent review"):
         study.evaluate("holdout")

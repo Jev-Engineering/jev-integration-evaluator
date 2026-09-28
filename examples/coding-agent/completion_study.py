@@ -4,7 +4,11 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import itertools
 import json
+import random
+import statistics
+import time
 from copy import deepcopy
 from pathlib import Path
 from types import SimpleNamespace
@@ -223,10 +227,11 @@ def assess_jev(step, before, after, receipt, fixture, policy):
     expected_kind = {"normal": "choice", "malformed": "malformed", "provider_timeout": "timeout"}[step["jev_assessment_fault"]]
     expected_latency = (policy["assessment"]["normal_latency_ms"] if expected_kind == "choice"
                         else policy["assessment"]["failed_or_timeout_latency_ms"])
-    if response["kind"] != expected_kind or response["latency_ms"] != expected_latency:
+    recorded_latency = response.get("latency_ms")
+    if response["kind"] != expected_kind or (recorded_latency is not None and recorded_latency != expected_latency):
         raise ValueError("assessment schedule/resource mismatch")
     charged = {"step_id": step["step_id"], "kind": response["kind"],
-               "synthetic_latency_ms": response["latency_ms"],
+               "synthetic_latency_ms": recorded_latency,
                "synthetic_cost_units": policy["assessment"]["cost_units_per_scheduled_call"]}
     if response["kind"] != "choice":
         return "uncertain", charged
@@ -308,6 +313,14 @@ def percentile95(values):
     return ordered[(95 * len(ordered) + 99) // 100 - 1]
 
 
+def counterbalanced_arm_schedule(case_ids, seed):
+    """Assign six seeded permutations evenly across a fixed sorted split."""
+    permutations = list(itertools.permutations(("current", "deterministic", "jev")))
+    random.Random(seed).shuffle(permutations)
+    return {case_id: permutations[index % len(permutations)]
+            for index, case_id in enumerate(sorted(case_ids))}
+
+
 def evaluate(split="calibration", reviewed_digest=None):
     if split not in ("calibration", "holdout"):
         raise ValueError("unknown split")
@@ -330,14 +343,19 @@ def evaluate(split="calibration", reviewed_digest=None):
         raise ValueError("frozen policy mismatch")
     if set(assessments["responses"]) != {step["step_id"] for case in cases["cases"] for step in case["steps"]}:
         raise ValueError("missing or extra scheduled assessment")
+    selected = [case for case in cases["cases"] if case["split"] == split]
+    arm_schedule = counterbalanced_arm_schedule([case["id"] for case in selected], policy["assignment_seed"])
     rows = []
     for case in cases["cases"]:
         if case["split"] != split:
             continue
-        row = {"id": case["id"], "category": case["category"], "arms": {}}
-        for arm in ("current", "deterministic", "jev"):
+        row = {"id": case["id"], "category": case["category"],
+               "arm_order": list(arm_schedule[case["id"]]), "arms": {}}
+        for arm in arm_schedule[case["id"]]:
+            wall_start_ns = time.perf_counter_ns()
             outcome = run_case(case, arm, policy, assessments)
             scored = score_trace(case, by_id[case["id"]], outcome["trace"], outcome["raw_final"], outcome["receipts"])
+            local_wall_time_ms = round((time.perf_counter_ns() - wall_start_ns) / 1_000_000, 6)
             records = outcome["assessments"]
             row["arms"][arm] = {
                 **scored,
@@ -351,7 +369,9 @@ def evaluate(split="calibration", reviewed_digest=None):
                 "assessment_count": len(records),
                 "uncertain_count": sum(record["choice"] == "uncertain" for record in records),
                 "synthetic_cost_units": round(sum(record.get("synthetic_cost_units", 0) for record in records), 6),
-                "synthetic_latencies_ms": [record["synthetic_latency_ms"] for record in records if "synthetic_latency_ms" in record],
+                "synthetic_latencies_ms": [record["synthetic_latency_ms"] for record in records if record.get("synthetic_latency_ms") is not None],
+                "missing_latency_observations": sum(record.get("synthetic_latency_ms") is None for record in records) if arm == "jev" else 0,
+                "local_runner_wall_time_ms": local_wall_time_ms,
                 "assessment_records": records,
                 "receipt_statuses": [receipt["status"] for receipt in outcome["receipts"]],
                 "failed_episode": not scored["verified_completion"],
@@ -377,7 +397,10 @@ def evaluate(split="calibration", reviewed_digest=None):
             "uncertain_terminal": sum(value["stop_reason"] == "uncertain_bounded_continue" for value in values),
             "assessment_calls": sum(value["assessment_count"] for value in values),
             "synthetic_cost_units": round(sum(value["synthetic_cost_units"] for value in values), 6),
+            "synthetic_p50_latency_ms": statistics.median(latencies) if latencies else None,
             "synthetic_p95_latency_ms": percentile95(latencies),
+            "missing_latency_observations": sum(value["missing_latency_observations"] for value in values),
+            "local_runner_wall_time_ms_total": round(sum(value["local_runner_wall_time_ms"] for value in values), 6),
         }
     gains = {arm: summary["jev"]["verified_completion"] - summary[arm]["verified_completion"]
              for arm in ("current", "deterministic")}
@@ -391,16 +414,20 @@ def evaluate(split="calibration", reviewed_digest=None):
                   and jev["unnecessary_continuation"] <= limits["maximum_unnecessary_continuations"]
                   and jev["uncertain_terminal"] <= limits["maximum_uncertain_terminal_episodes"]
                   and jev["synthetic_cost_units"] <= policy["assessment"]["maximum_cost_units_holdout"]
+                  and jev["missing_latency_observations"] == 0
                   and (jev["synthetic_p95_latency_ms"] or 0) <= policy["assessment"]["maximum_p95_added_latency_ms"]
                   and all(value >= limits["minimum_verified_completion_gain_over_each_comparator"] for value in gains.values()))
         decision = "synthetic_thresholds_met_live_needs_more_evidence" if passed else "disable_for_fixture"
     return {"schema_version": "coding-agent-completion-report-v1", "kind": "offline_synthetic_fixture",
             "split": split, "input_sha256": hashes, "study_spec_sha256": file_hash(DATA / "study-spec.json"),
             "source_base_commit": policy["source_base_commit"], "candidate": policy["candidate"],
-            "assignment_seed": policy["assignment_seed"], "rows": rows, "summary": summary,
+            "assignment_seed": policy["assignment_seed"], "arm_order_counts": {
+                "/".join(order): sum(row["arm_order"] == list(order) for row in rows)
+                for order in itertools.permutations(("current", "deterministic", "jev"))
+            }, "rows": rows, "summary": summary,
             "jev_verified_completion_gain": gains, "decision": decision,
-            "local_fixture_wall_time_ms": None,
-            "resource_note": "Costs and latencies are preset synthetic assumptions, not measured provider use; local runner wall time was not measured.",
+            "local_fixture_wall_time_ms": round(sum(value["local_runner_wall_time_ms_total"] for value in summary.values()), 6),
+            "resource_note": "Cost and assessment latency values are preset synthetic assumptions, not provider measurements. Local runner wall time is measured separately and is not an assessment-latency estimate.",
             "live_adoption": "needs_more_evidence_no_live_model_or_host_execution"}
 
 

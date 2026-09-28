@@ -1,4 +1,12 @@
 {
+  "arm_order_counts": {
+    "current/deterministic/jev": 1,
+    "current/jev/deterministic": 2,
+    "deterministic/current/jev": 2,
+    "deterministic/jev/current": 1,
+    "jev/current/deterministic": 1,
+    "jev/deterministic/current": 1
+  },
   "assignment_seed": 460149,
   "candidate": "JEV-CA6A0A259F69",
   "decision": "calibration_only_no_holdout_decision",
@@ -7,7 +15,7 @@
     "cases": "a5a82682d1ddfd986bfd267e829bc1664bc81cfd3af7360589f10917fbfd707e",
     "oracle": "c54196e16ed22ae5bd2165fee00a619d45910939f30ebff7680f730273f808af",
     "policy": "03f5bcd345dd2b71711f1d7295e3c6421df5c416583421c888eee87ead906bbb",
-    "runner": "9d1433195060a070127c8547aa99954f8bfa640ab2ad10e11e408907e9ca1a5f",
+    "runner": "5ecc17823ceff2e2dc25779536ff81aa705158e4efd9cd220e5f22160f88b8b4",
     "scorer": "99de6e0c507e55af35cde4bfe17dcba223d5d0d1bf45e44ad1feaa15cbd99650",
     "source": "dc3e0f2647c922c1789da3fcf750dd16f61ed0634dd16123ec9c3961acf26a1f"
   },
@@ -17,10 +25,15 @@
   },
   "kind": "offline_synthetic_fixture",
   "live_adoption": "needs_more_evidence_no_live_model_or_host_execution",
-  "local_fixture_wall_time_ms": null,
-  "resource_note": "Costs and latencies are preset synthetic assumptions, not measured provider use; local runner wall time was not measured.",
+  "local_fixture_wall_time_ms": 2.2546,
+  "resource_note": "Cost and assessment latency values are preset synthetic assumptions, not provider measurements. Local runner wall time is measured separately and is not an assessment-latency estimate.",
   "rows": [
     {
+      "arm_order": [
+        "current",
+        "jev",
+        "deterministic"
+      ],
       "arms": {
         "current": {
           "assessment_count": 0,
@@ -32,6 +45,8 @@
           "final_raw_sha256": "d07c46656e4854d141c14a63411e802862f27465f68bb372a0f42256f4d4926c",
           "first_complete_action_index": 1,
           "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.1941,
+          "missing_latency_observations": 0,
           "missing_or_timeout_observations": 0,
           "planner_calls": 1,
           "receipt_statuses": [
@@ -69,6 +84,8 @@
           "final_raw_sha256": "d07c46656e4854d141c14a63411e802862f27465f68bb372a0f42256f4d4926c",
           "first_complete_action_index": 1,
           "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.132,
+          "missing_latency_observations": 0,
           "missing_or_timeout_observations": 0,
           "planner_calls": 1,
           "receipt_statuses": [
@@ -114,6 +131,8 @@
           "final_raw_sha256": "d07c46656e4854d141c14a63411e802862f27465f68bb372a0f42256f4d4926c",
           "first_complete_action_index": 1,
           "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.1606,
+          "missing_latency_observations": 0,
           "missing_or_timeout_observations": 0,
           "planner_calls": 1,
           "receipt_statuses": [
@@ -138,6 +157,11 @@
       "id": "c01"
     },
     {
+      "arm_order": [
+        "deterministic",
+        "current",
+        "jev"
+      ],
       "arms": {
         "current": {
           "assessment_count": 0,
@@ -149,6 +173,8 @@
           "final_raw_sha256": "57ecb60121a23e6f23c6cccbeace800eed363018050f6d323feadbdf36778a6b",
           "first_complete_action_index": null,
           "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.052,
+          "missing_latency_observations": 0,
           "missing_or_timeout_observations": 0,
           "planner_calls": 1,
           "receipt_statuses": [
@@ -180,6 +206,8 @@
           "final_raw_sha256": "57ecb60121a23e6f23c6cccbeace800eed363018050f6d323feadbdf36778a6b",
           "first_complete_action_index": null,
           "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.0679,
+          "missing_latency_observations": 0,
           "missing_or_timeout_observations": 0,
           "planner_calls": 1,
           "receipt_statuses": [
@@ -215,6 +243,8 @@
           "final_raw_sha256": "57ecb60121a23e6f23c6cccbeace800eed363018050f6d323feadbdf36778a6b",
           "first_complete_action_index": null,
           "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.065,
+          "missing_latency_observations": 0,
           "missing_or_timeout_observations": 0,
           "planner_calls": 1,
           "receipt_statuses": [
@@ -237,6 +267,11 @@
       "id": "c02"
     },
     {
+      "arm_order": [
+        "deterministic",
+        "jev",
+        "current"
+      ],
       "arms": {
         "current": {
           "assessment_count": 0,
@@ -248,6 +283,8 @@
           "final_raw_sha256": "8ccb11ca13746acf990e2c98fc4bfe0b0ca19c7746b17b4f00690e13f97dcd99",
           "first_complete_action_index": null,
           "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.11,
+          "missing_latency_observations": 0,
           "missing_or_timeout_observations": 0,
           "planner_calls": 1,
           "receipt_statuses": [
@@ -281,6 +318,8 @@
           "final_raw_sha256": "8ccb11ca13746acf990e2c98fc4bfe0b0ca19c7746b17b4f00690e13f97dcd99",
           "first_complete_action_index": null,
           "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.0684,
+          "missing_latency_observations": 0,
           "missing_or_timeout_observations": 0,
           "planner_calls": 1,
           "receipt_statuses": [
@@ -316,6 +355,8 @@
           "final_raw_sha256": "8ccb11ca13746acf990e2c98fc4bfe0b0ca19c7746b17b4f00690e13f97dcd99",
           "first_complete_action_index": null,
           "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.0649,
+          "missing_latency_observations": 0,
           "missing_or_timeout_observations": 0,
           "planner_calls": 1,
           "receipt_statuses": [
@@ -338,6 +379,11 @@
       "id": "c03"
     },
     {
+      "arm_order": [
+        "jev",
+        "deterministic",
+        "current"
+      ],
       "arms": {
         "current": {
           "assessment_count": 0,
@@ -349,6 +395,8 @@
           "final_raw_sha256": "bdf46604bf09c162aeac3b808b5f9f22f9dc3395144ceef265c417cca1166113",
           "first_complete_action_index": null,
           "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.0484,
+          "missing_latency_observations": 0,
           "missing_or_timeout_observations": 0,
           "planner_calls": 1,
           "receipt_statuses": [
@@ -380,6 +428,8 @@
           "final_raw_sha256": "bdf46604bf09c162aeac3b808b5f9f22f9dc3395144ceef265c417cca1166113",
           "first_complete_action_index": null,
           "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.0614,
+          "missing_latency_observations": 0,
           "missing_or_timeout_observations": 0,
           "planner_calls": 1,
           "receipt_statuses": [
@@ -415,6 +465,8 @@
           "final_raw_sha256": "bdf46604bf09c162aeac3b808b5f9f22f9dc3395144ceef265c417cca1166113",
           "first_complete_action_index": null,
           "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.0682,
+          "missing_latency_observations": 0,
           "missing_or_timeout_observations": 0,
           "planner_calls": 1,
           "receipt_statuses": [
@@ -437,6 +489,11 @@
       "id": "c04"
     },
     {
+      "arm_order": [
+        "current",
+        "deterministic",
+        "jev"
+      ],
       "arms": {
         "current": {
           "assessment_count": 0,
@@ -448,6 +505,8 @@
           "final_raw_sha256": "5bd7ccf89600a424f4a8532cbda018c86bd72ef068eaf49da9892a1811b23c1a",
           "first_complete_action_index": null,
           "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.0517,
+          "missing_latency_observations": 0,
           "missing_or_timeout_observations": 0,
           "planner_calls": 1,
           "receipt_statuses": [
@@ -484,6 +543,8 @@
           "final_raw_sha256": "2b79f88a682a255ed3d9c8cff9260be9c9e32465baa12e09abc530ecc97f2b43",
           "first_complete_action_index": 1,
           "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.1197,
+          "missing_latency_observations": 0,
           "missing_or_timeout_observations": 0,
           "planner_calls": 1,
           "receipt_statuses": [
@@ -529,6 +590,8 @@
           "final_raw_sha256": "2b79f88a682a255ed3d9c8cff9260be9c9e32465baa12e09abc530ecc97f2b43",
           "first_complete_action_index": 1,
           "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.122,
+          "missing_latency_observations": 0,
           "missing_or_timeout_observations": 0,
           "planner_calls": 1,
           "receipt_statuses": [
@@ -553,6 +616,11 @@
       "id": "c05"
     },
     {
+      "arm_order": [
+        "jev",
+        "current",
+        "deterministic"
+      ],
       "arms": {
         "current": {
           "assessment_count": 0,
@@ -564,6 +632,8 @@
           "final_raw_sha256": "24a7bfff833c202c0f4cf800a822fc571aa74299e1a8a1ab6a6bc8b038eff409",
           "first_complete_action_index": null,
           "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.0491,
+          "missing_latency_observations": 0,
           "missing_or_timeout_observations": 0,
           "planner_calls": 1,
           "receipt_statuses": [
@@ -595,6 +665,8 @@
           "final_raw_sha256": "24a7bfff833c202c0f4cf800a822fc571aa74299e1a8a1ab6a6bc8b038eff409",
           "first_complete_action_index": null,
           "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.0606,
+          "missing_latency_observations": 0,
           "missing_or_timeout_observations": 0,
           "planner_calls": 1,
           "receipt_statuses": [
@@ -630,6 +702,8 @@
           "final_raw_sha256": "24a7bfff833c202c0f4cf800a822fc571aa74299e1a8a1ab6a6bc8b038eff409",
           "first_complete_action_index": null,
           "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.062,
+          "missing_latency_observations": 0,
           "missing_or_timeout_observations": 0,
           "planner_calls": 1,
           "receipt_statuses": [
@@ -652,6 +726,11 @@
       "id": "c06"
     },
     {
+      "arm_order": [
+        "current",
+        "jev",
+        "deterministic"
+      ],
       "arms": {
         "current": {
           "assessment_count": 0,
@@ -663,6 +742,8 @@
           "final_raw_sha256": "d52a9d20e860970b5042a8ea2a4f6c71b7080dbd3a5819720497c1527e392101",
           "first_complete_action_index": 1,
           "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.12,
+          "missing_latency_observations": 0,
           "missing_or_timeout_observations": 0,
           "planner_calls": 1,
           "receipt_statuses": [
@@ -701,6 +782,8 @@
           "final_raw_sha256": "d52a9d20e860970b5042a8ea2a4f6c71b7080dbd3a5819720497c1527e392101",
           "first_complete_action_index": 1,
           "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.1154,
+          "missing_latency_observations": 0,
           "missing_or_timeout_observations": 0,
           "planner_calls": 1,
           "receipt_statuses": [
@@ -745,6 +828,8 @@
           "final_raw_sha256": "d52a9d20e860970b5042a8ea2a4f6c71b7080dbd3a5819720497c1527e392101",
           "first_complete_action_index": 1,
           "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.1167,
+          "missing_latency_observations": 0,
           "missing_or_timeout_observations": 0,
           "planner_calls": 1,
           "receipt_statuses": [
@@ -769,6 +854,11 @@
       "id": "c07"
     },
     {
+      "arm_order": [
+        "deterministic",
+        "current",
+        "jev"
+      ],
       "arms": {
         "current": {
           "assessment_count": 0,
@@ -780,6 +870,8 @@
           "final_raw_sha256": "f07473b4ad9728e6a3a0af57b5327412f6eb9a3f5e6fb6024b56fb81c1463ad3",
           "first_complete_action_index": 1,
           "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.115,
+          "missing_latency_observations": 0,
           "missing_or_timeout_observations": 0,
           "planner_calls": 1,
           "receipt_statuses": [
@@ -818,6 +910,8 @@
           "final_raw_sha256": "f07473b4ad9728e6a3a0af57b5327412f6eb9a3f5e6fb6024b56fb81c1463ad3",
           "first_complete_action_index": 1,
           "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.1172,
+          "missing_latency_observations": 0,
           "missing_or_timeout_observations": 0,
           "planner_calls": 1,
           "receipt_statuses": [
@@ -862,6 +956,8 @@
           "final_raw_sha256": "f07473b4ad9728e6a3a0af57b5327412f6eb9a3f5e6fb6024b56fb81c1463ad3",
           "first_complete_action_index": 1,
           "invalid_or_failed_assessments": 1,
+          "local_runner_wall_time_ms": 0.1123,
+          "missing_latency_observations": 0,
           "missing_or_timeout_observations": 0,
           "planner_calls": 1,
           "receipt_statuses": [
@@ -889,7 +985,7 @@
   "schema_version": "coding-agent-completion-report-v1",
   "source_base_commit": "f9203f5d4a5bffaaf168dfb2c41faaa78ae41e65",
   "split": "calibration",
-  "study_spec_sha256": "eefb476e9d178e2c4945467502175339ccbfdb86104803fa595187bd7f89c3b0",
+  "study_spec_sha256": "5ae6d7283dd0443769f4325df78ecaaf35031e831626f148395327ddfda08836",
   "summary": {
     "current": {
       "assessment_calls": 0,
@@ -898,9 +994,12 @@
       "failed_episodes": 5,
       "false_completion": 4,
       "invalid_or_failed_assessments": 0,
+      "local_runner_wall_time_ms_total": 0.7403,
+      "missing_latency_observations": 0,
       "missing_or_timeout_observations": 0,
       "safety_violations": 0,
       "synthetic_cost_units": 0,
+      "synthetic_p50_latency_ms": null,
       "synthetic_p95_latency_ms": null,
       "unauthorized_executor_calls": 0,
       "uncertain_terminal": 0,
@@ -914,9 +1013,12 @@
       "failed_episodes": 4,
       "false_completion": 0,
       "invalid_or_failed_assessments": 0,
+      "local_runner_wall_time_ms_total": 0.7426,
+      "missing_latency_observations": 0,
       "missing_or_timeout_observations": 0,
       "safety_violations": 0,
       "synthetic_cost_units": 0,
+      "synthetic_p50_latency_ms": null,
       "synthetic_p95_latency_ms": null,
       "unauthorized_executor_calls": 0,
       "uncertain_terminal": 0,
@@ -930,9 +1032,12 @@
       "failed_episodes": 4,
       "false_completion": 0,
       "invalid_or_failed_assessments": 1,
+      "local_runner_wall_time_ms_total": 0.7717,
+      "missing_latency_observations": 0,
       "missing_or_timeout_observations": 0,
       "safety_violations": 0,
       "synthetic_cost_units": 0.024,
+      "synthetic_p50_latency_ms": 15.0,
       "synthetic_p95_latency_ms": 25,
       "unauthorized_executor_calls": 0,
       "uncertain_terminal": 1,

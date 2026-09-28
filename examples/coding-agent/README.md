@@ -69,6 +69,8 @@ python -m pytest -q tests/test_coding_agent_completion.py
 ```
 
 The calibration report is an offline harness check, not a holdout conclusion.
-Costs and latencies are preset synthetic assumptions; no provider, production
-executor or real agent was run. A passing synthetic gate cannot support live
-adoption or deployment.
+Costs and assessment latencies are preset synthetic assumptions. The report
+counts missing latency observations, gives assessment p50/p95, and separately
+measures local fixture runner wall time. No provider, production executor or
+real agent was run. A passing synthetic gate cannot support live adoption or
+deployment.
