@@ -75,7 +75,10 @@
           "additionalProperties": false
         },
         "adapter": {
-          "const": "recorded-reviewed-input-v1"
+          "enum": [
+            "recorded-reviewed-input-v1",
+            "recorded-reviewed-input-v2"
+          ]
         }
       },
       "required": [

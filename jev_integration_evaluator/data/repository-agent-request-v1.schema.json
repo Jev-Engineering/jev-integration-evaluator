@@ -71,10 +71,16 @@
       }
     },
     "adapter": {
-      "const": "recorded-reviewed-input-v1"
+      "enum": [
+        "recorded-reviewed-input-v1",
+        "recorded-reviewed-input-v2"
+      ]
     },
     "response_contract": {
-      "const": "repository-recorded-reviewed-response-v1"
+      "enum": [
+        "repository-recorded-reviewed-response-v1",
+        "repository-recorded-reviewed-response-v2"
+      ]
     },
     "authorization": {
       "type": "object",

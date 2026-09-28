@@ -47,9 +47,16 @@ repository and report identities, bounded source file hashes and modes, the
 preserved objective and saved answers, and the required response contract. Its
 six capability flags are all false. The compatible recorded adapter response is
 now also described by the mirrored `repository-recorded-reviewed-response-v1`
-schema; its inventory and spec still undergo the existing source, semantic and
-recipe checks before planning. A schema-valid response cannot grant execution,
-egress, installation, publication or activation.
+schema. The opt-in `recorded-reviewed-input-v2` adapter requires a
+`request_sha256` equal to the emitted `agent_request_sha256`, computed over the
+complete emitted request, including run ID,
+source report, context, objective and answers. Its separate mirrored response
+schema requires this field. Replaying a response under a different run or
+context fails before planning; source drift remains independently rejected.
+The v1 four-field response stays available for existing saved reviews and
+bundles. Both adapters still undergo the existing source, semantic and recipe
+checks before planning. A schema-valid response cannot grant execution, egress,
+installation, publication or activation.
 
 The same command accepts a caller-selected private session directory outside the
 target, an optional context, recorded reviewed inputs, and a separate scope:
@@ -64,7 +71,8 @@ python -m jev_integration_evaluator.repository_run /absolute/target \
 ```
 
 The context contains an optional objective, saved answers, explicit resource
-bounds, discovery policy, and the fixed `recorded-reviewed-input-v1` adapter.
+bounds, discovery policy, and either the compatible `recorded-reviewed-input-v1`
+or request-bound `recorded-reviewed-input-v2` adapter.
 The JSON examples deliberately grant nothing. Zero hashes and the example
 reference are not authorization. Keep secrets out of inputs: use credential
 references, not credentials. The caller-controlled session parent must not be
@@ -184,6 +192,30 @@ repository byte, arbitrary asset, external dependency or installed environment.
 Source-byte, mode, added-source and removed-source drift invalidate the decision.
 Unsupported language/parser paths remain explicit. Complete arbitrary-repository
 snapshotting and native environment contracts still require the remaining roadmap.
+
+The scan includes the extensions `.py`, `.pyi`, `.js`, `.jsx`, `.mjs`, `.cjs`,
+`.ts`, `.tsx`, `.go`, `.rs`, `.java`, `.cs`, `.c`, `.h`, `.cpp`, `.hpp`, `.rb`,
+`.lua`, `.luau`, `.kt`, `.swift`, `.php`, `.sh`, `.ps1`, and `.sql`; recognized
+configuration names (`pyproject.toml`, `setup.py`, `setup.cfg`,
+`requirements.txt`, `package.json`, `package-lock.json`, `yarn.lock`,
+`pnpm-lock.yaml`, `tsconfig.json`, `pytest.ini`, `tox.ini`, `conftest.py`,
+`Dockerfile`, `docker-compose.yml`, `compose.yaml`, `Cargo.toml`, `go.mod`,
+`AGENTS.md`, `README.md`, `SETUP_PROMPT.md`); and `.github/workflows/*`.
+The bounded report records each included file's bytes hash and mode. The
+session re-enumerates the same policy before stages and rejects included-file
+additions, removals, byte changes and mode changes. The report's policy and
+coverage limitations are part of the decision context.
+
+Ignored directories include `.git`, `.hg`, `.svn`, `node_modules`, virtual
+environments, caches, build outputs, `vendor`, `target`, and `.next`;
+sensitive-name matches and caller policy excludes are also omitted. Other file
+extensions, external dependencies, interpreter installation and generated
+runtime state are outside this snapshot. Exclusion means **unknown dependency
+state**, not proof that the selected host behavior ignores it. A nondependent
+excluded text file is tested not to create a false drift stop; if a selected
+host actually reads excluded data, this session alone cannot certify its
+stability. Such a dependency needs a separately reviewed and observed bound
+before claiming an environment-equivalent result.
 
 Execution is **trusted-host synthetic verification** only. Requesting an isolated
 backend fails with `independent_isolation_backend_unsupported`, without silently

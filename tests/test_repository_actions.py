@@ -15,12 +15,14 @@ from jev_integration_evaluator import capabilities as cap
 from jev_integration_evaluator.config import DEFAULT
 from jev_integration_evaluator.nomination_inventory import discover_repository_capabilities
 from jev_integration_evaluator.repository_conclusion import coverage_review_schedule
+from scripts.implementation_fixtures import fixture
 
 
 def test_every_action_is_schema_valid_and_mirrored():
     root = Path(__file__).resolve().parents[1]
     for name in ("repository-next-action-v1.schema.json", "repository-agent-request-v1.schema.json",
-                 "repository-recorded-reviewed-response-v1.schema.json"):
+                 "repository-recorded-reviewed-response-v1.schema.json",
+                 "repository-recorded-reviewed-response-v2.schema.json"):
         assert (root / "schemas" / name).read_bytes() == (root / "jev_integration_evaluator" / "data" / name).read_bytes()
         assert json.loads((root / "schemas" / name).read_text())["additionalProperties"] is False
     name = "repository-next-action-v1.schema.json"
@@ -50,6 +52,7 @@ def test_path_only_structured_action_exposes_coverage_and_no_authority(tmp_path)
     assert request["report_sha256"] == result["report"]["report_sha256"]
     assert request["source_files"]["module.py"]["sha256"]
     assert request["response_contract"] == "repository-recorded-reviewed-response-v1"
+    assert result["agent_request_sha256"] == cap._digest(request)
     assert not any(request["authorization"].values())
     assert sorted(path.name for path in tmp_path.iterdir()) == ["target"]
 
@@ -72,6 +75,46 @@ def test_session_request_keeps_run_identity_without_grant(tmp_path):
     assert result["agent_request"]["run_id"] == result["run_id"]
     assert result["agent_request"]["context_sha256"] == result["context_sha256"]
     assert not any(result["agent_request"]["authorization"].values())
+
+
+def test_bound_response_rejects_replay_to_another_run(tmp_path):
+    if os.name != "posix":
+        pytest.skip("repository sessions require a POSIX secure filesystem")
+    target = tmp_path / "target"
+    inventory, spec = fixture(target, "C")
+    context = run.request_context(adapter=run.BOUND_ADAPTER, saved_answers={"preserve": "choice"})
+    first = run.run_repository(target, tmp_path / "session-1", context=context)
+    request = first["agent_request"]
+    assert request["adapter"] == run.BOUND_ADAPTER
+    assert request["response_contract"] == "repository-recorded-reviewed-response-v2"
+    prepared = dict(schema_version="1.0", adapter=run.BOUND_ADAPTER,
+                    request_sha256=first["agent_request_sha256"], inventory=inventory, spec=spec)
+    assert run.run_repository(target, tmp_path / "session-1", prepared=prepared)["status"] == "missing_scope"
+    scope = dict(schema_version="1.0", kind="repository-run-scope-v1",
+                 reference="synthetic-reviewed-preparation", repository_identity=first["repository_identity"],
+                 context_sha256=first["context_sha256"], bundle_digest=None,
+                 trusted_session_head=first["session_head_sha256"], trusted_baseline_receipt=None,
+                 trusted_modified_receipt=None, rollback_digest=None,
+                 execution_environment="trusted_host", grants={**run.ZERO_GRANTS, "prepare": True})
+    planned = run.run_repository(target, tmp_path / "session-1", prepared=prepared,
+                                 scope=scope, stop_after="plan")
+    assert planned["status"] == "planned"
+    second = run.run_repository(target, tmp_path / "session-2", context=context)
+    assert second["agent_request"]["run_id"] != request["run_id"]
+    with pytest.raises(CapabilityError, match="prepared_request_mismatch"):
+        run.run_repository(target, tmp_path / "session-2", prepared=prepared)
+    with pytest.raises(CapabilityError, match="prepared_adapter_mismatch"):
+        run.run_repository(target, tmp_path / "session-1", prepared={
+            "schema_version": "1.0", "adapter": run.ADAPTER, "inventory": inventory, "spec": spec})
+    # This fixture's selected Python seam never reads this text file. It is
+    # outside the declared snapshot and cannot manufacture a source-drift stop.
+    (target / "unrelated-notes.txt").write_text("no input to the selected seam\n")
+    execution_scope = {**scope, "bundle_digest": planned["bundle_digest"],
+                       "trusted_session_head": planned["session_head_sha256"],
+                       "grants": {**run.ZERO_GRANTS, "baseline": True,
+                                  "apply": True, "modified": True}}
+    verified = run.run_repository(target, tmp_path / "session-1", scope=execution_scope)
+    assert verified["status"] == "verified"
 
 
 def test_read_only_reviewed_negative_requires_fresh_anchored_complete_review(tmp_path, capsys):

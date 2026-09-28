@@ -35,6 +35,7 @@ from .config import load_config
 
 FORMAT = "repository-session-v1"
 ADAPTER = "recorded-reviewed-input-v1"
+BOUND_ADAPTER = "recorded-reviewed-input-v2"
 MAX_JOURNAL_BYTES = 64_000_000
 MAX_RECORD_BYTES = 1_000_000
 MAX_INPUT_BYTES = 8_000_000
@@ -68,7 +69,7 @@ def _sha(value: Any, code: str) -> None:
 
 def request_context(*, objective: str | None = None, saved_answers: dict | None = None,
                     policy: cap.DiscoveryPolicy | None = None,
-                    bounds: dict | None = None) -> dict:
+                    bounds: dict | None = None, adapter: str = ADAPTER) -> dict:
     """Caller-owned constraints. None means omitted, not an instruction to clear."""
     if objective is not None and (type(objective) is not str or not objective.strip() or len(objective) > 4000):
         raise SessionError("invalid_objective")
@@ -86,8 +87,10 @@ def request_context(*, objective: str | None = None, saved_answers: dict | None 
             raise SessionError("invalid_session_bounds")
     if limits["max_events"] < 16:
         raise SessionError("session_event_bound_too_small")
+    if adapter not in (ADAPTER, BOUND_ADAPTER):
+        raise SessionError("unsupported_agent_adapter")
     return _freeze(dict(objective=objective, saved_answers=answers,
-                        policy=asdict(selected), bounds=limits, adapter=ADAPTER))
+                        policy=asdict(selected), bounds=limits, adapter=adapter))
 
 
 def _file_map(report: dict) -> dict:
@@ -101,8 +104,10 @@ def _agent_request(run_id: str | None, repository_identity: str, report_sha256: 
                    run_id=run_id, repository_identity=repository_identity,
                    report_sha256=report_sha256, context_sha256=cap._digest(context),
                    objective=context["objective"], saved_answers=copy.deepcopy(context["saved_answers"]),
-                   source_files=copy.deepcopy(source_files), adapter=ADAPTER,
-                   response_contract="repository-recorded-reviewed-response-v1",
+                   source_files=copy.deepcopy(source_files), adapter=context["adapter"],
+                   response_contract=("repository-recorded-reviewed-response-v2"
+                                     if context["adapter"] == BOUND_ADAPTER
+                                     else "repository-recorded-reviewed-response-v1"),
                    authorization=dict(execution=False, mutation=False, egress=False,
                                       installation=False, publication=False, activation=False))
     cap._schema("repository-agent-request-v1", request)
@@ -134,37 +139,48 @@ def inspect_repository(repo: str | Path, *, context: dict | None = None,
                     report=report, conclusion=conclusion, next_action=action,
                     next_action_contract=next_action_contract(action),
                     agent_request=None,
+                    agent_request_sha256=None,
                     target_executed=False, target_modified=False,
                     runtime_activation_authorized=False, benefit_demonstrated=False)
     action = ("resolve_scan_coverage_before_implementation"
               if not report["coverage"]["complete_within_policy"]
               else "supply_source_reviewed_inputs")
+    agent_request = (_agent_request(None, report["repository_identity"],
+                     report["report_sha256"], context, _file_map(report))
+                     if action == "supply_source_reviewed_inputs" else None)
     return dict(schema_version="1.0", kind="repository-run-inspection-v1",
                 status=report["discovery_outcome"], context_sha256=cap._digest(context),
                 report=report, next_action=action,
                 next_action_contract=next_action_contract(action),
-                agent_request=(_agent_request(None, report["repository_identity"],
-                    report["report_sha256"], context, _file_map(report))
-                    if action == "supply_source_reviewed_inputs" else None),
+                agent_request=agent_request,
+                agent_request_sha256=cap._digest(agent_request) if agent_request else None,
                 target_executed=False, target_modified=False,
                 runtime_activation_authorized=False, benefit_demonstrated=False)
 
 
 def _validate_context(context: dict) -> dict:
     _exact(context, {"objective", "saved_answers", "policy", "bounds", "adapter"}, "invalid_session_context")
-    if context["adapter"] != ADAPTER:
+    if context["adapter"] not in (ADAPTER, BOUND_ADAPTER):
         raise SessionError("unsupported_agent_adapter")
     return request_context(objective=context["objective"], saved_answers=context["saved_answers"],
-                           policy=cap.DiscoveryPolicy.from_json(context["policy"]), bounds=context["bounds"])
+                           policy=cap.DiscoveryPolicy.from_json(context["policy"]), bounds=context["bounds"],
+                           adapter=context["adapter"])
 
 
 def _prepared(value: Any) -> dict:
     """Adapter responses are strict data; all bindings still pass engine validation."""
     value = _freeze(value)
-    _exact(value, {"schema_version", "adapter", "inventory", "spec"}, "invalid_prepared_response")
-    if value["schema_version"] != "1.0" or value["adapter"] != ADAPTER:
+    if type(value) is not dict:
+        raise SessionError("invalid_prepared_response")
+    if value.get("adapter") == BOUND_ADAPTER:
+        _exact(value, {"schema_version", "adapter", "request_sha256", "inventory", "spec"}, "invalid_prepared_response")
+        contract = "repository-recorded-reviewed-response-v2"
+    else:
+        _exact(value, {"schema_version", "adapter", "inventory", "spec"}, "invalid_prepared_response")
+        contract = "repository-recorded-reviewed-response-v1"
+    if value["schema_version"] != "1.0" or value["adapter"] not in (ADAPTER, BOUND_ADAPTER):
         raise SessionError("unsupported_agent_adapter")
-    cap._schema("repository-recorded-reviewed-response-v1", value)
+    cap._schema(contract, value)
     try:
         value["spec"] = validate_spec(value["spec"])
     except (InputError, KeyError, TypeError, ValueError, RecursionError):
@@ -385,14 +401,16 @@ def _journal(path: Path, root: Path) -> Iterator[Journal]:
 
 def _summary(journal: Journal, status: str, next_action: str, **extra: Any) -> dict:
     state = journal.state
+    agent_request = (_agent_request(state["run_id"], state["repository_identity"],
+                     state["initial_report_sha256"], state["context"], state["source_files"])
+                     if next_action == "supply_recorded_source_reviewed_inventory_and_spec" else None)
     return dict(schema_version="1.0", kind="repository-run-result-v1", status=status,
                 run_id=state["run_id"], session_head_sha256=journal.head,
                 context_sha256=state["context_sha256"], repository_identity=state["repository_identity"],
                 stage=state["stage"], pending_operation=state["pending"], next_action=next_action,
                 next_action_contract=next_action_contract(next_action),
-                agent_request=(_agent_request(state["run_id"], state["repository_identity"],
-                    state["initial_report_sha256"], state["context"], state["source_files"])
-                    if next_action == "supply_recorded_source_reviewed_inventory_and_spec" else None),
+                agent_request=agent_request,
+                agent_request_sha256=cap._digest(agent_request) if agent_request else None,
                 bundle_digest=state["bundle"]["digest"] if state["bundle"] else None,
                 receipt_references=copy.deepcopy(state["receipts"]), attempts=copy.deepcopy(state["attempts"]),
                 failed_attempts=len(state["failures"]),
@@ -625,6 +643,16 @@ def run_repository(repo: str | Path, session: str | Path, *, context: dict | Non
             os.close(identity_fd)
             if cap._digest([str(root), identity.st_dev, identity.st_ino]) != state["repository_identity"]:
                 raise SessionError("repository_identity_changed")
+        if proposal is not None:
+            if proposal["adapter"] != journal.state["context"]["adapter"]:
+                raise SessionError("prepared_adapter_mismatch")
+            if proposal["adapter"] == BOUND_ADAPTER:
+                expected_request = _agent_request(
+                    journal.state["run_id"], journal.state["repository_identity"],
+                    journal.state["initial_report_sha256"], journal.state["context"],
+                    journal.state["source_files"])
+                if proposal["request_sha256"] != cap._digest(expected_request):
+                    raise SessionError("prepared_request_mismatch")
         if cancel:
             state = copy.deepcopy(journal.state)
             state["cancelled"] = True
