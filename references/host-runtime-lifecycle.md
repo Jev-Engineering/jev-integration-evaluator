@@ -15,6 +15,10 @@ The supported `module-startup-v1` shape is a flat Python host with a local
 top-level runtime binding and at least one reviewed lock/configuration file.
 Generated startup requires the exact post-apply paths and SHA-256 hashes from
 those reviewed files; a self-consistent substitute dependency plan is refused.
+The offline implementation verifier still checks host outcomes, effects and
+ordinary global state against baseline. Its parity comparison ignores only the
+two generated lifecycle bookkeeping globals while they retain their neutral
+pre-start values; a changed value fails parity.
 
 ```python
 # Edited application's startup path, using the reviewed generated function.

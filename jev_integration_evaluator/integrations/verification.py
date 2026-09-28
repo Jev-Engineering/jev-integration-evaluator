@@ -15,7 +15,7 @@ from ..implementation import run_authorized_tests
 from ..io import InputError, digest, file_hash, read_json, safe_child, write_json
 from .lifecycle import (_load, _lock, _check_discovery, _inspect_file, _receipt, _record,
                         implementation_status)
-from .recipes import RECIPES
+from .recipes import RECIPES, host_lifecycle_marker
 from .observations import validate_observation
 
 
@@ -78,7 +78,19 @@ def _effects(observation, spec):
 
 
 def _observable(observation, spec):
-    return {'outcome':observation['outcome'],'globals':observation['globals'],'effects':_effects(observation,spec)}
+    globals_observed = observation['globals']
+    if 'host_lifecycle' in spec:
+        marker = host_lifecycle_marker(spec['host_lifecycle'], spec['bindings']['runtime'],
+                                       spec['candidate_id'])
+        # The edited module adds neutral bookkeeping globals before application
+        # startup. Ignore only their exact neutral values for baseline parity;
+        # any activation or mutation remains observable and fails parity.
+        if (globals_observed.get(marker) is None and
+                globals_observed.get(marker + '_started') is False and
+                marker in globals_observed):
+            globals_observed = {k: v for k, v in globals_observed.items()
+                                if k not in (marker, marker + '_started')}
+    return {'outcome':observation['outcome'],'globals':globals_observed,'effects':_effects(observation,spec)}
 
 
 def _probe(root, bundle, plan, spec, case, mode):

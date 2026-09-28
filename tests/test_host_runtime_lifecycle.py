@@ -25,6 +25,8 @@ from jev_integration_evaluator.integrations.lifecycle import (
     plan_implementation, apply_implementation, rollback_implementation,
 )
 from jev_integration_evaluator.integrations.verification import verify_implementation
+from jev_integration_evaluator.integrations.verification import _observable
+from jev_integration_evaluator.integrations.recipes import host_lifecycle_marker
 from jev_integration_evaluator.integrations.recipes import transform
 from jev_integration_evaluator.integrations.probe import SyntheticClient, SyntheticAudit
 from scripts.implementation_fixtures import fixture
@@ -428,13 +430,26 @@ def test_generated_host_lifecycle_rejects_collision_and_keyword(tmp_path):
     with pytest.raises(Exception, match='Unsupported host lifecycle'):
         transform(root, spec)
     spec['host_lifecycle']['startup'] = 'start_jev_runtime'
-    marker = '_jev_host_' + digest((spec['host_lifecycle'], spec['bindings']['runtime'],
-                                   spec['candidate_id']))[:16]
+    marker = host_lifecycle_marker(spec['host_lifecycle'], spec['bindings']['runtime'], spec['candidate_id'])
     source = root / spec['source']['file']
     source.write_text(source.read_text(encoding='utf-8') + '\n' + marker + '_started = False\n',
                       encoding='utf-8')
     with pytest.raises(Exception, match='Unsupported host lifecycle'):
         transform(root, spec)
+
+
+def test_neutral_generated_globals_only_are_excluded_from_parity(tmp_path):
+    root = tmp_path / 'target'
+    _, spec = fixture(root, 'C', tag='lifecycle_parity')
+    spec['host_lifecycle'] = {'kind': 'module-startup-v1', 'startup': 'start_jev_runtime',
+                              'shutdown': 'stop_jev_runtime', 'complete_task': 'finish_jev_task'}
+    marker = host_lifecycle_marker(spec['host_lifecycle'], spec['bindings']['runtime'], spec['candidate_id'])
+    base = {'outcome': {'result': 'first'}, 'globals': {'STATE': {'effects': []}}, 'calls': {}}
+    modified = copy.deepcopy(base)
+    modified['globals'].update({marker: None, marker + '_started': False})
+    assert _observable(base, spec) == _observable(modified, spec)
+    modified['globals'][marker + '_started'] = True
+    assert _observable(base, spec) != _observable(modified, spec)
 
 
 def test_reviewed_lock_and_config_edits_are_owned_and_rollback(tmp_path):

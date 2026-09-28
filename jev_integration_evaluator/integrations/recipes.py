@@ -20,6 +20,10 @@ from .package_bindings import StaticBindings, module_layout
 COMMON = dict(runtime=1, evidence=1, baseline_action=1, registry=1, gate=2, validate=2, blocked=2, guard=1)
 
 
+def host_lifecycle_marker(names, binding, candidate_id):
+    return '_jev_host_' + digest((names, binding, candidate_id))[:16]
+
+
 @dataclass(frozen=True)
 class Recipe:
     id: str
@@ -268,7 +272,7 @@ def transform(root: Path, spec: dict) -> dict:
     lifecycle = spec.get('host_lifecycle')
     if lifecycle is not None:
         names = [lifecycle[k] for k in ('startup', 'shutdown', 'complete_task')]
-        marker = '_jev_host_' + digest((lifecycle, spec['bindings']['runtime'], spec['candidate_id']))[:16]
+        marker = host_lifecycle_marker(lifecycle, spec['bindings']['runtime'], spec['candidate_id'])
         if (lifecycle['kind'] != 'module-startup-v1' or len(set(names)) != 3
                 or any(keyword.iskeyword(name) or len(name) > 128 for name in names)
                 or any(name in found or name in spec['bindings'].values() for name in names)
@@ -425,7 +429,7 @@ def transform(root: Path, spec: dict) -> dict:
 
 
 def _host_lifecycle(names, binding, adapter_alias, candidate_id, runtime_files):
-    marker = '_jev_host_' + digest((names, binding, candidate_id))[:16]
+    marker = host_lifecycle_marker(names, binding, candidate_id)
     expected = {row['file']: hashlib.sha256(row['new_content'].encode('utf-8')).hexdigest()
                 for row in runtime_files}
     return f'''
