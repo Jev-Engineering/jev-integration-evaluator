@@ -11,6 +11,11 @@ router for each decision. All placements share one `BudgetCoordinator` and one
 canary scope. A forked process cannot reuse the object. The exact generated
 adapter specification is hashed at startup and checked before each callback.
 
+The supported `module-startup-v1` shape is a flat Python host with a local
+top-level runtime binding and at least one reviewed lock/configuration file.
+Generated startup requires the exact post-apply paths and SHA-256 hashes from
+those reviewed files; a self-consistent substitute dependency plan is refused.
+
 ```python
 # Edited application's startup path, using the reviewed generated function.
 runtime = host_module.start_jev_runtime(

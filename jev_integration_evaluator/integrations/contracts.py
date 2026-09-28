@@ -44,6 +44,8 @@ def validate_spec(spec: dict) -> dict:
     adapter_path = ((Path(spec['source']['file']).parent / (spec['output']['module'] + '.py')).as_posix()
                     if 'package_binding' in spec else spec['output']['module'] + '.py')
     runtime_files = spec.get('runtime_files', [])
+    if 'host_lifecycle' in spec and (not runtime_files or 'package_binding' in spec):
+        raise InputError('Supported host lifecycle requires a flat host and reviewed runtime files')
     runtime_paths = [row['file'] for row in runtime_files]
     if (len(runtime_paths) != len(set(runtime_paths)) or
             set(spec['output']['permitted_edits']) !=

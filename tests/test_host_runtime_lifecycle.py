@@ -35,6 +35,24 @@ LIMITS = dict(max_calls_per_task=2, max_cost_per_task=2,
 AUDIT = SimpleNamespace(append=lambda event: None)
 
 
+def reviewed_host_lock(root, inventory, spec):
+    old = 'jev-integration-evaluator==1.3.0.dev1\n'
+    new = 'jev-integration-evaluator==1.3.0.dev11\n'
+    (root / 'requirements.lock').write_text(old, encoding='utf-8')
+    inventory['configuration_evidence'].append({
+        'file': 'requirements.lock', 'sha256': hashlib.sha256(old.encode()).hexdigest()})
+    inventory['analysis_identity']['configuration_digest'] = digest(inventory['configuration_evidence'])
+    inventory['scan_fingerprint'] = digest(inventory['analysis_identity'])
+    spec['inventory_sha256'] = digest(inventory)
+    spec['inventory_fingerprint'] = inventory['scan_fingerprint']
+    spec['runtime_files'] = [{'file': 'requirements.lock', 'kind': 'dependency_lock',
+                              'old_sha256': hashlib.sha256(old.encode()).hexdigest(),
+                              'new_content': new}]
+    spec['output']['permitted_edits'].append('requirements.lock')
+    return {'files': [{'path': str((root / 'requirements.lock').resolve()),
+                       'sha256': hashlib.sha256(new.encode()).hexdigest()}]}
+
+
 def adapter(name, scope='workflow'):
     config = load_config()['runtime']
     spec = {'candidate_id': name, 'runtime': {'configuration': config,
@@ -347,6 +365,7 @@ def test_synthetic_shadow_is_explicit_and_active_is_rejected(tmp_path):
 def test_actual_generated_host_uses_startup_router_without_probe_replacement(tmp_path, mode):
     root = tmp_path / 'target'
     inventory, spec = fixture(root, 'C', tag='lifecycle_' + mode)
+    plan = reviewed_host_lock(root, inventory, spec)
     spec['host_lifecycle'] = {'kind': 'module-startup-v1', 'startup': 'start_jev_runtime',
                               'shutdown': 'stop_jev_runtime', 'complete_task': 'finish_jev_task'}
     derived = transform(root, spec)
@@ -361,8 +380,12 @@ def test_actual_generated_host_uses_startup_router_without_probe_replacement(tmp
         sys.modules[source_name] = module
         loader.loader.exec_module(module)
         adapter_module = sys.modules[adapter_name]
-        _, plan = inputs(tmp_path / 'dependencies')
         client = SyntheticClient(spec['verification']['cases'][0]['assessment_label'])
+        wrong = copy.deepcopy(plan)
+        wrong['files'][0]['sha256'] = hashlib.sha256(b'wrong').hexdigest()
+        with pytest.raises(LifecycleError, match='reviewed_dependency_plan_mismatch'):
+            module.start_jev_runtime(budget_limits=LIMITS, audit_log=SyntheticAudit(),
+                                     dependency_plan=wrong, client=client)
         host = module.start_jev_runtime(budget_limits=LIMITS, audit_log=SyntheticAudit(),
                                         dependency_plan=plan, client=client, startup_mode=mode,
                                         enable_experiment=(mode == 'shadow'))
@@ -395,12 +418,21 @@ def test_actual_generated_host_uses_startup_router_without_probe_replacement(tmp
 
 def test_generated_host_lifecycle_rejects_collision_and_keyword(tmp_path):
     root = tmp_path / 'target'
-    _, spec = fixture(root, 'C', tag='lifecycle_reject')
+    inventory, spec = fixture(root, 'C', tag='lifecycle_reject')
+    reviewed_host_lock(root, inventory, spec)
     spec['host_lifecycle'] = {'kind': 'module-startup-v1', 'startup': spec['bindings']['runtime'],
                               'shutdown': 'stop_jev_runtime', 'complete_task': 'finish_jev_task'}
     with pytest.raises(Exception, match='Unsupported host lifecycle'):
         transform(root, spec)
     spec['host_lifecycle']['startup'] = 'class'
+    with pytest.raises(Exception, match='Unsupported host lifecycle'):
+        transform(root, spec)
+    spec['host_lifecycle']['startup'] = 'start_jev_runtime'
+    marker = '_jev_host_' + digest((spec['host_lifecycle'], spec['bindings']['runtime'],
+                                   spec['candidate_id']))[:16]
+    source = root / spec['source']['file']
+    source.write_text(source.read_text(encoding='utf-8') + '\n' + marker + '_started = False\n',
+                      encoding='utf-8')
     with pytest.raises(Exception, match='Unsupported host lifecycle'):
         transform(root, spec)
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 import ast
 import codecs
 import io
+import hashlib
 import tokenize
 from dataclasses import dataclass
 from pathlib import Path
@@ -267,9 +268,12 @@ def transform(root: Path, spec: dict) -> dict:
     lifecycle = spec.get('host_lifecycle')
     if lifecycle is not None:
         names = [lifecycle[k] for k in ('startup', 'shutdown', 'complete_task')]
+        marker = '_jev_host_' + digest((lifecycle, spec['bindings']['runtime'], spec['candidate_id']))[:16]
         if (lifecycle['kind'] != 'module-startup-v1' or len(set(names)) != 3
                 or any(keyword.iskeyword(name) or len(name) > 128 for name in names)
                 or any(name in found or name in spec['bindings'].values() for name in names)
+                or marker in found or marker + '_started' in found
+                or package_contract is not None or not spec.get('runtime_files')
                 or any(isinstance(node, ast.If) and isinstance(node.test, ast.Compare)
                        and isinstance(node.test.left, ast.Name) and node.test.left.id == '__name__'
                        for node in tree.body)):
@@ -396,7 +400,8 @@ def transform(root: Path, spec: dict) -> dict:
     changed = changed[:insertion] + import_line + changed[insertion:]
     host = changed.decode('utf-8')
     if lifecycle is not None:
-        host += _host_lifecycle(lifecycle, spec['bindings']['runtime'], adapter_alias, spec['candidate_id'])
+        host += _host_lifecycle(lifecycle, spec['bindings']['runtime'], adapter_alias,
+                                spec['candidate_id'], spec['runtime_files'])
     ast.parse(host, filename=rel)
     runtime_spec = {k: spec[k] for k in ('candidate_id', 'experiment_id', 'source', 'recipe', 'questions',
                                         'primary_question', 'evidence_question', 'label_actions', 'runtime', 'policy')}
@@ -419,8 +424,10 @@ def transform(root: Path, spec: dict) -> dict:
     return result
 
 
-def _host_lifecycle(names, binding, adapter_alias, candidate_id):
+def _host_lifecycle(names, binding, adapter_alias, candidate_id, runtime_files):
     marker = '_jev_host_' + digest((names, binding, candidate_id))[:16]
+    expected = {row['file']: hashlib.sha256(row['new_content'].encode('utf-8')).hexdigest()
+                for row in runtime_files}
     return f'''
 {marker} = None
 {marker}_started = False
@@ -429,11 +436,21 @@ def {names['startup']}(*, budget_limits, audit_log, dependency_plan, client=None
                        egress_grant=None, startup_mode='off', enable_experiment=False):
     """Construct this reviewed module's process-local runtime exactly once."""
     from jev_integration_evaluator.integrations.runtime_lifecycle import HostRuntimeLifecycle
+    from jev_integration_evaluator.integrations.runtime_lifecycle import LifecycleError
+    from pathlib import Path
     global {marker}, {marker}_started, {binding}
     if {marker}_started:
         raise RuntimeError('host_runtime_already_started')
     if type(enable_experiment) is not bool or (enable_experiment and startup_mode != 'shadow'):
         raise ValueError('synthetic_shadow_authority_required')
+    reviewed = {{str(Path(__file__).resolve().parent / rel): sha for rel, sha in {expected!r}.items()}}
+    if (type(dependency_plan) is not dict or set(dependency_plan) != {{'files'}}
+            or type(dependency_plan['files']) is not list
+            or len(dependency_plan['files']) != len(reviewed)
+            or any(type(row) is not dict or set(row) != {{'path', 'sha256'}}
+                   or reviewed.get(row['path']) != row['sha256']
+                   for row in dependency_plan['files'])):
+        raise LifecycleError('reviewed_dependency_plan_mismatch')
     runtime = HostRuntimeLifecycle({{{candidate_id!r}: {adapter_alias}}},
         budget_limits=budget_limits, audit_log=audit_log, dependency_plan=dependency_plan,
         client=client, egress_grant=egress_grant, startup_mode=startup_mode)
