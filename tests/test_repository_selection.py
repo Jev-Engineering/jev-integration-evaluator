@@ -1,5 +1,6 @@
 """Durable selection checks use only disposable synthetic host source."""
 import copy
+from dataclasses import replace
 import json
 from pathlib import Path
 import subprocess
@@ -188,7 +189,13 @@ def test_whole_source_review_negative_is_exposed_and_revalidated(tmp_path):
         'def b(x):\n    return x["operation"](x)\n\ndef q(x):\n    return b(x)\n', encoding="utf-8")
     cfg = copy.deepcopy(DEFAULT)
     cfg["repository"]["typescript_ast"] = False
-    report = bridge.discover_repository_capabilities(root, cfg)
+    defaults = cap.DiscoveryPolicy()
+    selected_policy = replace(
+        defaults,
+        max_files=min(defaults.max_files, cfg["repository"]["max_files"]),
+        max_file_bytes=min(defaults.max_file_bytes, cfg["repository"]["max_file_bytes"]),
+    )
+    report = bridge.discover_repository_capabilities(root, cfg, policy=selected_policy)
     seam = next(s for s in report["seams"] if s["source"]["qualified_symbol"] == "q")
     proposal = {"schema_version": "1.0", "discovery_version": cap.VERSION,
                 "report_sha256": report["report_sha256"], "seam_id": seam["seam_id"],
@@ -198,7 +205,8 @@ def test_whole_source_review_negative_is_exposed_and_revalidated(tmp_path):
                               "file_sha256": seam["source"]["file_sha256"],
                               "start_line": seam["source"]["start_line"],
                               "end_line": seam["source"]["end_line"]}]}
-    prepared = bridge.prepare_nominated_inventory(root, report, [proposal], cfg)
+    prepared = bridge.prepare_nominated_inventory(root, report, [proposal], cfg,
+                                                  policy=selected_policy)
     reviews = {c["candidate_id"]: {"source_sha256": c["source"]["source_sha256"],
                 "approved": False, "reviewer": "synthetic-reviewer",
                 "reason": "The finite deterministic alternative suffices in this fixture"}
@@ -222,7 +230,7 @@ def test_whole_source_review_negative_is_exposed_and_revalidated(tmp_path):
                  "report": report, "prepared": prepared, "semantic_review": semantic,
                  "settings": cfg, "scope_review": scope, "selection_review": None}
     from jev_integration_evaluator.repository_selection import assess_selection
-    selected_policy = cap.DiscoveryPolicy.from_json(report["policy"])
+    assert selected_policy == cap.DiscoveryPolicy.from_json(report["policy"])
     assert assess_selection(root, selection, policy=selected_policy)["status"] == "no_useful_placement"
     with pytest.raises(cap.CapabilityError, match="selection_policy_differs_from_session"):
         assess_selection(root, selection, policy=cap.DiscoveryPolicy())
