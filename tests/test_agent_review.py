@@ -18,6 +18,8 @@ from jev_integration_evaluator.nomination_inventory import (
     _settings, discover_repository_capabilities, prepare_nominated_inventory, review_nominated_inventory,
 )
 
+pytestmark = pytest.mark.skipif(sys.platform != 'linux', reason='Secure native POSIX discovery backend')
+
 
 BASE = Path(__file__).resolve().parents[1] / 'examples' / 'implementation' / 'e'
 
@@ -123,7 +125,7 @@ def test_ambiguous_callback_is_rejected():
 def test_source_drift_rejected(tmp_path):
     inventory, binding, context, answers, proposal = prepared()
     (tmp_path / 'host_example_e.py').write_bytes((BASE / 'target' / 'host_example_e.py').read_bytes() + b'\n# drift\n')
-    with pytest.raises(InputError, match='drift'):
+    with pytest.raises(InputError, match='Inventory source absent'):
         draft_reviewed_spec(tmp_path, inventory, context,
                             RecordedReviewAdapter(proposal), saved_answers=answers,
                             trusted_verification=binding['verification'])
@@ -217,8 +219,12 @@ def test_unreviewed_secret_and_ignored_directories_never_enter_context(tmp_path)
     malicious_inventory['files'].append(dict(file='secret.py',
                                              sha256=hashlib.sha256((tmp_path / 'secret.py').read_bytes()).hexdigest(),
                                              mode=0o644))
-    with pytest.raises(InputError, match='Excluded or sensitive'):
+    with pytest.raises(InputError, match='Inventory source absent'):
         retrieve_context(tmp_path, malicious_inventory, binding['candidate_id'])
+    forged_regular = copy.deepcopy(inventory)
+    forged_regular['files'].append(dict(file='extra.py', sha256='0' * 64, mode=0o644))
+    with pytest.raises(InputError, match='Inventory source absent'):
+        retrieve_context(tmp_path, forged_regular, binding['candidate_id'])
 
 
 @pytest.mark.skipif(sys.platform != 'linux', reason='Native POSIX discovery backend')
@@ -261,14 +267,14 @@ def test_discovery_to_reviewed_spec_on_opaque_host(tmp_path):
                              capability_report=report, related_files=(row,))
         malicious = copy.deepcopy(inventory)
         malicious['files'].append({k: row[k] for k in ('file', 'sha256')})
-        with pytest.raises(InputError, match='absent from bound capability report'):
+        with pytest.raises(InputError, match='Inventory source absent'):
             retrieve_context(tmp_path, malicious, candidate['candidate_id'], capability_report=report)
     with pytest.raises(InputError, match='Related source absent'):
         retrieve_context(tmp_path, inventory, candidate['candidate_id'], capability_report=report,
                          related_files=(dict(file='unlisted.txt', sha256='0' * 64, role='host_policy'),))
     forged = copy.deepcopy(inventory)
     forged['files'].append(dict(file='extra.py', sha256='0' * 64))
-    with pytest.raises(InputError, match='absent from bound capability report'):
+    with pytest.raises(InputError, match='Inventory source absent'):
         retrieve_context(tmp_path, forged, candidate['candidate_id'], capability_report=report)
     (tmp_path / 'extra.py').write_text('PRIVATE_SENTINEL = 3\n')
     with pytest.raises(InputError, match='changed since reviewed discovery'):

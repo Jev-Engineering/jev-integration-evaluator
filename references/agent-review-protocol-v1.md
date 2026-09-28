@@ -15,8 +15,10 @@ effective exclusions. If `discovery_excludes` is supplied, it must exactly match
 that report. A fresh read-only discovery must exactly match the retained report,
 and every inventory or related allowlisted file/hash must occur in it. Every parent prefix is checked.
 Legacy inventories can retrieve
-only their own files under default exclusions. The context records the effective
-list and report digest.
+only their own files under default exclusions after a fresh secure scanner run
+proves exact file/hash membership. They cannot add related files. The context
+records the effective list and report digest. Native Windows source retrieval is
+unsupported because the secure scanner backend requires POSIX descriptors.
 The default limits are 24 included files and 120,000 source bytes. It does not
 import a target module. Context contains source text and must
 remain in a private local artifact; it is not suitable for a public log or PR.
