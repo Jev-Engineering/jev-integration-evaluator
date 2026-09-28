@@ -25,13 +25,15 @@ assert Path(package.__file__).resolve().is_relative_to(Path(sys.argv[1]).resolve
 from jev_integration_evaluator.cli import main
 from jev_integration_evaluator.contracts import validate_contract
 from jev_integration_evaluator.observed_evidence import OfflineFixtureHost
+from jev_integration_evaluator.host_collection import collect_host_pairs, PairedHostAdapter
 assert OfflineFixtureHost.__module__.startswith('jev_integration_evaluator.')
+assert collect_host_pairs.__module__.startswith('jev_integration_evaluator.')
 for name in ('observed-link', 'observed-check', 'observed-collect-offline', 'observed-evaluate'):
     try:
         main([name, '--help'])
     except SystemExit as exc:
         assert exc.code == 0
-for name in ('observed-link', 'observed-placement-set', 'observed-collection-request', 'observed-collection', 'observed-evaluation'):
+for name in ('observed-link', 'observed-placement-set', 'observed-collection-request', 'observed-collection', 'observed-evaluation', 'observed-host-collection-request', 'observed-host-collection'):
     try:
         validate_contract({}, name)
     except Exception as exc:

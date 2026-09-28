@@ -133,7 +133,8 @@ def _budget(request: dict, scheduled: int) -> str:
     return 'ready'
 
 
-def _outcome_row(study: dict, schedule: dict, arm: str, outcome: dict, label: dict) -> dict:
+def _outcome_row(study: dict, schedule: dict, arm: str, outcome: dict, label: dict,
+                 *, evidence_type: str = 'synthetic') -> dict:
     if (type(outcome) is not dict or set(outcome) != {'run_status', 'output_label', 'metrics'}
             or outcome['run_status'] not in ('completed', 'failed', 'timeout', 'cancelled')
             or type(outcome['metrics']) is not dict
@@ -151,7 +152,7 @@ def _outcome_row(study: dict, schedule: dict, arm: str, outcome: dict, label: di
             'cluster_id': schedule['cluster_id'], 'seed': schedule.get('seed'),
             'dataset_id': spec['dataset_id'], 'experiment_id': spec['experiment_id'],
             'study_digest': study['contract_digest'], 'split': 'test',
-            'evaluation_scope': 'task_success', 'evidence_type': 'synthetic',
+            'evaluation_scope': 'task_success', 'evidence_type': evidence_type,
             'run_status': outcome['run_status'],
             'success': outcome['run_status'] == 'completed' and outcome['output_label'] == label['expected_label'],
             **outcome['metrics'],

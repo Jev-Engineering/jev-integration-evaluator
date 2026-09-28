@@ -13,6 +13,7 @@ from jev_integration_evaluator.integrations.verification import verify_implement
 from jev_integration_evaluator.observed_evidence import (
     expected_study_arm, freeze_link, check_link, collect_offline, evaluate_linked,
 )
+from jev_integration_evaluator.host_collection import collect_host_pairs
 from scripts.implementation_fixtures import fixture
 from scripts.v12_fixtures import monitor_fixture
 from jev_integration_evaluator.monitoring import freeze_monitor
@@ -283,3 +284,137 @@ def test_frozen_monitor_recomputes_complete_denominator_and_only_suspends(tmp_pa
     breached = copy.deepcopy(rows)
     breached[0]['unsafe_actions'] = 1
     assert evaluate(breached)['exposure_action'] == 'suspend'
+
+
+def test_host_owned_pair_adapter_is_invoked_only_under_exact_bounded_scope(tmp_path, cfg):
+    root, bundle, receipt, study, placement, link, fixtures, labels, _ = linked(tmp_path, cfg)
+    inputs = [{'task_id': r['task_id'], 'replicate': r['replicate'],
+               'task_hash': r['task_hash'], 'input_sha256': digest(r['task_id'])}
+              for r in study['specification']['schedule'] if r['split'] == 'test']
+    class SyntheticHost:
+        adapter_id = 'owned-synthetic-pair-host'
+        contract_digest = digest('reviewed-synthetic-adapter-code')
+        host_scope_digest = digest('finite-host-fixture-scope')
+        def __init__(self):
+            self.calls = []
+            self.fail = False
+            self.mode = None
+        def run_pair(self, **scope):
+            self.calls.append(scope)
+            if self.fail:
+                raise RuntimeError('host attempt unresolved')
+            fixture = next(row for row in fixtures if
+                           (row['task_id'], row['replicate']) ==
+                           (scope['task_id'], scope['replicate']))
+            if self.mode == 'malformed':
+                return {'baseline': fixture['baseline']}
+            if self.mode == 'over_cost':
+                fixture = copy.deepcopy(fixture)
+                fixture['jev']['metrics']['cost'] = .2
+            if self.mode == 'drift':
+                source = root / read_json(bundle / 'implementation-spec.json')['source']['file']
+                source.write_text(source.read_text(encoding='utf-8') + '\n# host drift\n',
+                                  encoding='utf-8')
+            return {'baseline': fixture['baseline'], 'jev': fixture['jev'],
+                    'receipt_sha256': digest(scope)}
+    host = SyntheticHost()
+    request = {'schema_version': '1.0', 'link_digest': link['contract_digest'],
+               'study_digest': study['contract_digest'],
+               'input_manifest_sha256': digest(inputs), 'labels_sha256': digest(labels),
+               'adapter_id': host.adapter_id, 'contract_digest': host.contract_digest,
+               'host_scope_digest': host.host_scope_digest, 'egress_grant_sha256': None,
+               'evidence_type': 'synthetic', 'max_pairs': 2, 'max_pair_calls': 2,
+               'max_pair_cost': .1, 'max_total_cost': .2, 'stop_after_failures': 1}
+    def collect(req=request, supplied_labels=labels, supplied_inputs=inputs, approved=None):
+        return collect_host_pairs(link, study, req, supplied_inputs, supplied_labels, host,
+            approved_request_sha256=approved or digest(req),
+            expected_link_digest=link['contract_digest'], root=root, bundle=bundle,
+            placement_set=placement, trusted_implementation_receipt_sha256=receipt)
+    with pytest.raises(InputError):
+        collect({**request, 'contract_digest': digest('wrong-adapter')})
+    assert host.calls == []
+    with pytest.raises(InputError):
+        collect({**request, 'input_manifest_sha256': digest(inputs + inputs[:1])},
+                supplied_inputs=inputs + inputs[:1])
+    with pytest.raises(InputError):
+        collect({**request, 'labels_sha256': digest(labels + labels[:1])},
+                supplied_labels=labels + labels[:1])
+    assert host.calls == []
+    insufficient = collect({**request, 'max_total_cost': .1})
+    assert insufficient['status'] == 'incomplete_bound_insufficient'
+    unknown = collect({**request, 'max_total_cost': None})
+    assert unknown['status'] == 'incomplete_unknown_budget'
+    assert insufficient['host_pair_calls'] == unknown['host_pair_calls'] == 0
+    assert host.calls == []
+    report = collect()
+    assert report['status'] == 'synthetic_complete'
+    assert report['host_pair_calls'] == report['collected_pairs'] == 2
+    assert len(report['receipt_hashes']) == 2
+    assert all(call['egress_grant_sha256'] is None and
+               call['link_digest'] == link['contract_digest'] for call in host.calls)
+    assert report['benefit_supported'] is False and report['activation_eligible'] is False
+    host.calls.clear()
+    missing = collect(supplied_labels=labels[:1],
+        req={**request, 'labels_sha256': digest(labels[:1])})
+    assert missing['status'] == 'incomplete_scheduled_outcomes'
+    assert missing['scheduled_pairs'] == 2 and len(missing['missing_pairs']) == 1
+    host.calls.clear()
+    host.fail = True
+    interrupted = collect()
+    assert interrupted['status'] == 'incomplete_unresolved_host_attempt'
+    assert interrupted['host_pair_calls'] == 1 and interrupted['recorded_cost'] is None
+    assert len(interrupted['missing_pairs']) == 2
+    host.fail = False
+    for mode in ('malformed', 'over_cost'):
+        host.calls.clear()
+        host.mode = mode
+        invalid = collect()
+        assert invalid['status'] == 'incomplete_unresolved_host_attempt'
+        assert invalid['host_pair_calls'] == len(host.calls) == 1
+        assert invalid['recorded_cost'] is None and len(invalid['missing_pairs']) == 2
+    host.calls.clear()
+    host.mode = 'drift'
+    with pytest.raises(InputError):
+        collect()
+    assert len(host.calls) == 1
+
+
+def test_host_observed_scope_requires_independent_exact_egress_grant(tmp_path, cfg):
+    root, bundle, spec, plan, receipt = prepared(tmp_path)
+    study, placement, _, labels = study_and_rows(root, bundle, spec, plan, cfg)
+    observed_spec = copy.deepcopy(study['specification'])
+    observed_spec['evidence_type'] = 'observed'
+    observed = freeze_study(observed_spec, cfg)
+    link = freeze_link(root, bundle, observed, placement,
+        expected_study_digest=observed['contract_digest'],
+        expected_placement_digest=placement['contract_digest'],
+        trusted_implementation_receipt_sha256=receipt)
+    inputs = [{'task_id': r['task_id'], 'replicate': r['replicate'],
+               'task_hash': r['task_hash'], 'input_sha256': digest(r['task_id'])}
+              for r in observed['specification']['schedule'] if r['split'] == 'test']
+    class NoCallHost:
+        adapter_id = 'never-call'
+        contract_digest = digest('adapter')
+        host_scope_digest = digest('scope')
+        def run_pair(self, **scope):
+            raise AssertionError('observed host must not be called without grant')
+    host = NoCallHost()
+    request = {'schema_version': '1.0', 'link_digest': link['contract_digest'],
+               'study_digest': observed['contract_digest'],
+               'input_manifest_sha256': digest(inputs), 'labels_sha256': digest(labels),
+               'adapter_id': host.adapter_id, 'contract_digest': host.contract_digest,
+               'host_scope_digest': host.host_scope_digest, 'egress_grant_sha256': digest('grant'),
+               'evidence_type': 'observed', 'max_pairs': 2, 'max_pair_calls': 2,
+               'max_pair_cost': .1, 'max_total_cost': .2, 'stop_after_failures': 1}
+    incomplete = collect_host_pairs(link, observed, request, inputs, labels, host,
+        approved_request_sha256=digest(request), expected_link_digest=link['contract_digest'],
+        root=root, bundle=bundle, placement_set=placement,
+        trusted_implementation_receipt_sha256=receipt)
+    assert incomplete['status'] == 'incomplete_egress_scope'
+    assert incomplete['host_pair_calls'] == 0 and incomplete['scheduled_pairs'] == 2
+    with pytest.raises(InputError, match='differs from approved scope'):
+        collect_host_pairs(link, observed, request, inputs, labels, host,
+            approved_request_sha256=digest(request), expected_link_digest=link['contract_digest'],
+            root=root, bundle=bundle, placement_set=placement,
+            trusted_implementation_receipt_sha256=receipt,
+            trusted_egress_grant_sha256=digest('wrong-grant'))
