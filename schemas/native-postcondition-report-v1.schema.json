@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Runner-only contribution. Cross-artifact semantic validation is mandatory.",
+  "properties": {
+    "activation_eligible": {
+      "const": false
+    },
+    "bundle_digest": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "cases": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "attempt": {
+            "maximum": 3,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "case_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,95}$",
+            "type": "string"
+          },
+          "execution_outcome": {
+            "type": "string"
+          },
+          "phase": {
+            "enum": [
+              "baseline",
+              "modified"
+            ]
+          },
+          "postcondition_matched": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "phase",
+          "attempt",
+          "case_id",
+          "execution_outcome",
+          "postcondition_matched"
+        ],
+        "type": "object"
+      },
+      "maxItems": 128,
+      "minItems": 1,
+      "type": "array"
+    },
+    "context_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "integration_verified": {
+      "const": false
+    },
+    "kind": {
+      "const": "native-postcondition-report-v1"
+    },
+    "oracle_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "parity_matched": {
+      "type": "boolean"
+    },
+    "postconditions_satisfied": {
+      "type": "boolean"
+    },
+    "recorded": {
+      "maximum": 128,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "repository_identity": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "scheduled": {
+      "maximum": 128,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "schema_version": {
+      "const": "1.0"
+    }
+  },
+  "required": [
+    "schema_version",
+    "kind",
+    "oracle_sha256",
+    "repository_identity",
+    "context_sha256",
+    "bundle_digest",
+    "scheduled",
+    "recorded",
+    "cases",
+    "parity_matched",
+    "postconditions_satisfied",
+    "integration_verified",
+    "activation_eligible"
+  ],
+  "title": "native-postcondition-report-v1",
+  "type": "object"
+}

@@ -1,0 +1,256 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Runner-only contribution. Cross-artifact semantic validation is mandatory.",
+  "properties": {
+    "adapter": {
+      "const": "json-state-v1"
+    },
+    "baseline": {
+      "additionalProperties": false,
+      "properties": {
+        "attempt": {
+          "maximum": 3,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "cases": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "case_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,95}$",
+                "type": "string"
+              },
+              "entry_sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "observation": {
+                "additionalProperties": false,
+                "properties": {
+                  "assessments": {
+                    "maximum": 32,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "dependency_origin": {
+                    "maxLength": 256,
+                    "type": "string"
+                  },
+                  "effects": {
+                    "items": {
+                      "maxLength": 128,
+                      "type": "string"
+                    },
+                    "maxItems": 32,
+                    "type": "array"
+                  },
+                  "reached": {
+                    "const": true
+                  },
+                  "result": {
+                    "maxLength": 256,
+                    "type": "string"
+                  },
+                  "state": {
+                    "additionalProperties": {
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "maxLength": 256,
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "maxProperties": 32,
+                    "propertyNames": {
+                      "maxLength": 64
+                    },
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "reached",
+                  "result",
+                  "effects",
+                  "state",
+                  "assessments",
+                  "dependency_origin"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "case_id",
+              "entry_sha256",
+              "observation"
+            ],
+            "type": "object"
+          },
+          "maxItems": 64,
+          "minItems": 1,
+          "type": "array"
+        },
+        "request_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "source_manifest_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_sha256",
+        "source_manifest_sha256",
+        "attempt",
+        "cases"
+      ],
+      "type": "object"
+    },
+    "bundle_digest": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "context_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "kind": {
+      "const": "native-postconditions-v1"
+    },
+    "modified": {
+      "additionalProperties": false,
+      "properties": {
+        "attempt": {
+          "maximum": 3,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "cases": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "case_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,95}$",
+                "type": "string"
+              },
+              "entry_sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "observation": {
+                "additionalProperties": false,
+                "properties": {
+                  "assessments": {
+                    "maximum": 32,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "dependency_origin": {
+                    "maxLength": 256,
+                    "type": "string"
+                  },
+                  "effects": {
+                    "items": {
+                      "maxLength": 128,
+                      "type": "string"
+                    },
+                    "maxItems": 32,
+                    "type": "array"
+                  },
+                  "reached": {
+                    "const": true
+                  },
+                  "result": {
+                    "maxLength": 256,
+                    "type": "string"
+                  },
+                  "state": {
+                    "additionalProperties": {
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "maxLength": 256,
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "maxProperties": 32,
+                    "propertyNames": {
+                      "maxLength": 64
+                    },
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "reached",
+                  "result",
+                  "effects",
+                  "state",
+                  "assessments",
+                  "dependency_origin"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "case_id",
+              "entry_sha256",
+              "observation"
+            ],
+            "type": "object"
+          },
+          "maxItems": 64,
+          "minItems": 1,
+          "type": "array"
+        },
+        "request_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "source_manifest_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_sha256",
+        "source_manifest_sha256",
+        "attempt",
+        "cases"
+      ],
+      "type": "object"
+    },
+    "repository_identity": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1.0"
+    }
+  },
+  "required": [
+    "schema_version",
+    "kind",
+    "repository_identity",
+    "context_sha256",
+    "bundle_digest",
+    "adapter",
+    "baseline",
+    "modified"
+  ],
+  "title": "native-postconditions-v1",
+  "type": "object"
+}

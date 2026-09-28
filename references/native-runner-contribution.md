@@ -118,6 +118,15 @@ bindings and exit-code consistency. An externally retained expected digest can
 anchor a record; a self-consistent digest cannot authenticate itself. In every
 case, `integration_verified` and `activation_eligible` remain false. Exit zero,
 synthetic wiring, connectivity, measured benefit and activation are distinct.
+`runners.observations.inspect_lifecycle_postconditions` consumes a separately
+frozen, externally anchored `native-postconditions-v1` oracle and externally
+anchored baseline/modified receipts. Its `json-state-v1` adapter checks actual
+entry reachability, result, effects, state, assessment count and dependency
+origin against exact source-bound expected values, then checks baseline/off/
+shadow parity. Every scheduled failure or unrun case remains a report row.
+The returned postcondition report still declares `integration_verified=false`:
+session dispatch must authenticate host oracle ownership, repository context,
+bundle, phase, attempt and anchors before promotion.
 
 The CLI creates an exclusive private receipt path and fsyncs a
 `started_uncompleted` marker before execution. It refuses to reuse or overwrite

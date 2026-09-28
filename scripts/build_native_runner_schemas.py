@@ -1,4 +1,4 @@
-"""Build the two new strict mirrored runner contracts deterministically.
+"""Build strict mirrored runner and observation contracts deterministically.
 
 This writes only these contribution-owned schemas. It does not rebuild the
 repository release manifest or imply full-repository validation.
@@ -88,16 +88,40 @@ receipt11['properties']['schema_version']=const('1.1')
 receipt11['properties']['target_environment_sha256']=HEX
 receipt11['required'].append('target_environment_sha256')
 receipt={'oneOf':[receipt,receipt11]}
+observed=obj({
+    'reached':const(True),'result':{'type':'string','maxLength':256},
+    'effects':{'type':'array','maxItems':32,'items':{'type':'string','maxLength':128}},
+    'state':{'type':'object','maxProperties':32,'propertyNames':{'maxLength':64},
+             'additionalProperties':{'anyOf':[{'type':'boolean'},{'type':'integer'},
+                                            {'type':'string','maxLength':256}]}},
+    'assessments':integer(0,32),'dependency_origin':{'type':'string','maxLength':256},
+})
+oracle_phase=obj({'request_sha256':HEX,'source_manifest_sha256':HEX,'attempt':integer(1,3),
+                  'cases':{'type':'array','minItems':1,'maxItems':64,'items':obj({
+                      'case_id':ID,'entry_sha256':HEX,'observation':observed})}})
+oracle=obj({'schema_version':const('1.0'),'kind':const('native-postconditions-v1'),
+            'repository_identity':HEX,'context_sha256':HEX,'bundle_digest':HEX,
+            'adapter':const('json-state-v1'),'baseline':oracle_phase,'modified':oracle_phase})
+observation_report=obj({'schema_version':const('1.0'),'kind':const('native-postcondition-report-v1'),
+    'oracle_sha256':HEX,'repository_identity':HEX,'context_sha256':HEX,'bundle_digest':HEX,
+    'scheduled':integer(1,128),'recorded':integer(1,128),
+    'cases':{'type':'array','minItems':1,'maxItems':128,'items':obj({
+        'phase':{'enum':['baseline','modified']},'attempt':integer(1,3),'case_id':ID,
+        'execution_outcome':{'type':'string'},'postcondition_matched':{'type':'boolean'}})},
+    'parity_matched':{'type':'boolean'},'postconditions_satisfied':{'type':'boolean'},
+    'integration_verified':const(False),'activation_eligible':const(False)})
 
 
 def main():
-    for name,value in [('native-runner-spec-v1',spec),('native-runner-receipt-v1',receipt)]:
+    for name,value in [('native-runner-spec-v1',spec),('native-runner-receipt-v1',receipt),
+                       ('native-postconditions-v1',oracle),
+                       ('native-postcondition-report-v1',observation_report)]:
         value={'$schema':'https://json-schema.org/draft/2020-12/schema',
                'title':name,'description':'Runner-only contribution. Cross-artifact semantic validation is mandatory.',**value}
         data=(json.dumps(value,sort_keys=True,indent=2)+'\n').encode()
         for folder in [ROOT/'schemas',ROOT/'jev_integration_evaluator'/'data']:
             folder.mkdir(parents=True,exist_ok=True)
             (folder/(name+'.schema.json')).write_bytes(data)
-    print('Wrote two mirrored native-runner contracts.')
+    print('Wrote four mirrored native-runner contracts.')
 
 if __name__=='__main__':main()

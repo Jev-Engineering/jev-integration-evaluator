@@ -18,6 +18,7 @@ import sys
 import time
 
 import pytest
+import jsonschema
 
 from jev_integration_evaluator.runners import isolated_python as runner
 from jev_integration_evaluator.runners.observations import inspect_lifecycle_postconditions
@@ -277,6 +278,8 @@ def bootstrap(): return Runtime()
                                     'observation': expected(1 if mode == 'shadow' else 0)}
                                    for mode in modes]}
     oracle_hash = hashlib.sha256(runner.canonical(oracle)).hexdigest()
+    jsonschema.validate(oracle, json.loads((Path(__file__).resolve().parents[1] /
+        'schemas/native-postconditions-v1.schema.json').read_text()))
     arguments = dict(trusted_oracle_sha256=oracle_hash,
                      baseline_spec=specs['baseline'], baseline_receipt=results['baseline'].receipt,
                      baseline_outputs=results['baseline'].private_outputs,
@@ -288,6 +291,8 @@ def bootstrap(): return Runtime()
     assert report['scheduled'] == report['recorded'] == 3
     assert report['postconditions_satisfied'] is True
     assert report['integration_verified'] is False
+    jsonschema.validate(report, json.loads((Path(__file__).resolve().parents[1] /
+        'schemas/native-postcondition-report-v1.schema.json').read_text()))
     tampered = copy.deepcopy(arguments)
     tampered['modified_outputs'] = dict(tampered['modified_outputs'])
     tampered['modified_outputs']['shadow'] = (b'{}\n', b'')
