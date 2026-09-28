@@ -155,6 +155,8 @@ def _load(root, bundle, *, current_engine=False):
         raise InputError('Package binding contract differs from the reviewed specification')
     if spec.get('package_binding') and spec['source']['file'] not in manifest.get('contributing_sources', {}):
         raise InputError('Package manifest omits the selected source dependency')
+    if spec.get('package_binding') and set(manifest.get('qualified_bindings', {})) != set(spec['bindings']):
+        raise InputError('Package manifest omits qualified role bindings')
     owned_sources = {row['file']: row for row in plan['owned_files']}
     for rel, expected in manifest.get('contributing_sources', {}).items():
         p = safe_child(root, rel)

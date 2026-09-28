@@ -36,7 +36,14 @@ def test_declared_namespace_requires_explicit_choice(tmp_path):
 def test_dynamic_package_initializer_fails_without_execution(tmp_path):
     write(tmp_path, 'pkg/__init__.py', 'raise AssertionError("must not execute")\n')
     write(tmp_path, 'pkg/host.py', 'def callback(request):\n    return request\n')
-    with pytest.raises(UnsupportedShape, match='Dynamic package initializer'):
+    with pytest.raises(UnsupportedShape, match='Dynamic or external package initializer'):
+        StaticBindings(tmp_path, 'pkg/host.py')
+
+
+def test_external_initializer_import_is_rejected_before_execution(tmp_path):
+    write(tmp_path, 'pkg/__init__.py', 'from external_hook import callback\n')
+    write(tmp_path, 'pkg/host.py', 'def callback(request):\n    return request\n')
+    with pytest.raises(UnsupportedShape, match='external package initializer'):
         StaticBindings(tmp_path, 'pkg/host.py')
 
 

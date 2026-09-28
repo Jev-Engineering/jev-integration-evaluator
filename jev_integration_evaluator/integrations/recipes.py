@@ -240,7 +240,8 @@ def transform(root: Path, spec: dict) -> dict:
         resolver = StaticBindings(root, rel, namespace=package_contract['namespace'])
         output = (Path(rel).parent / (spec['output']['module'] + '.py')).as_posix()
     reserved_modules = set(sys.stdlib_module_names) | {'jev_integration_evaluator','jsonschema','yaml'}
-    if Path(rel).stem in reserved_modules or spec['output']['module'] in reserved_modules:
+    if (Path(rel).stem in reserved_modules or module_name.split('.')[0] in reserved_modules
+            or spec['output']['module'] in reserved_modules):
         raise UnsupportedShape('Unsupported module import collision with trusted runtime/standard-library names')
     if keyword.iskeyword(spec['output']['module']) or FORBIDDEN.search(rel) or FORBIDDEN.search(output):
         raise InputError('Protected or invalid implementation output path')
@@ -295,6 +296,17 @@ def transform(root: Path, spec: dict) -> dict:
         if spec['bindings'][role] == f.name:
             raise InputError('A host binding cannot recursively invoke the selected seam')
     registered_actions = _validate_registry_contract(tree, found, spec, resolver)
+    qualified_bindings = None
+    if resolver is not None:
+        qualified_bindings = {}
+        observed_leaves = {}
+        for role, alias_name in spec['bindings'].items():
+            binding_rel, definition, _ = resolver.resolve(alias_name)
+            leaf = (binding_rel, definition)
+            if leaf in observed_leaves and observed_leaves[leaf] != alias_name:
+                raise UnsupportedShape('Multiple host aliases resolve to the same binding definition')
+            observed_leaves[leaf] = alias_name
+            qualified_bindings[role] = resolver.module_for(binding_rel) + ':' + definition
     # Bind effect observation to the parsed executable registry, not a caller-selected
     # irrelevant function whose zero calls could conceal an actual side effect.
     pattern = r.id.split('.')[-1]
@@ -375,6 +387,7 @@ def transform(root: Path, spec: dict) -> dict:
     if resolver is not None:
         result['package_binding'] = package_contract
         result['contributing_sources'] = resolver.dependencies
+        result['qualified_bindings'] = qualified_bindings
     return result
 
 

@@ -12,6 +12,8 @@ from jev_integration_evaluator.integrations.lifecycle import (
     apply_implementation, plan_implementation, rollback_implementation,
 )
 from jev_integration_evaluator.integrations.errors import UnsupportedShape
+from jev_integration_evaluator.integrations.probe import _check_target_import_origin
+from jev_integration_evaluator.integrations.recipes import transform
 from jev_integration_evaluator.integrations.verification import verify_implementation
 
 
@@ -53,6 +55,31 @@ def test_unsupported_package_contract_does_not_write(tmp_path):
     assert {p.relative_to(root):p.read_bytes() for p in root.rglob('*') if p.is_file()} == before
 
 
+def test_package_name_collision_is_rejected_before_import(tmp_path, monkeypatch):
+    reviewed, earlier = tmp_path / 'reviewed', tmp_path / 'earlier'
+    for root in (reviewed, earlier):
+        (root / 'collisionpkg').mkdir(parents=True)
+        (root / 'collisionpkg/__init__.py').write_text('', encoding='utf-8')
+    monkeypatch.syspath_prepend(str(reviewed))
+    monkeypatch.syspath_prepend(str(earlier))
+    with pytest.raises(ValueError, match='outside the copied reviewed source'):
+        _check_target_import_origin(reviewed, 'collisionpkg.host', False)
+
+
+def test_standard_library_package_name_is_rejected(tmp_path):
+    root = tmp_path / 'host'
+    _, spec = fixture(root, 'C', layout='package')
+    original = root / spec['source']['file']
+    relocated = root / 'json' / original.name
+    relocated.parent.mkdir()
+    relocated.write_bytes(original.read_bytes())
+    (relocated.parent / '__init__.py').write_text('', encoding='utf-8')
+    spec['source']['file'] = 'json/' + original.name
+    spec['package_binding']['module'] = 'json.' + original.stem
+    with pytest.raises(UnsupportedShape, match='collision'):
+        transform(root, spec)
+
+
 def test_imported_registry_is_source_bound_and_runs(tmp_path):
     root, bundle = tmp_path / 'host', tmp_path / 'bundle'
     inventory, spec = fixture(root, 'K', layout='package')
@@ -65,10 +92,10 @@ def test_imported_registry_is_source_bound_and_runs(tmp_path):
     assert block in source
     assert baseline_block in source
     source = source.replace(block, '').replace(baseline_block, '').replace('from __future__ import annotations',
-                                                f'from __future__ import annotations\nfrom .callbacks import {registry}, {baseline_action}')
+                                                f'from __future__ import annotations\nfrom .callbacks import {registry}, real_baseline as {baseline_action}')
     host.write_text(source, encoding='utf-8', newline='')
     callbacks = host.parent / 'callbacks.py'
-    callbacks.write_text("OPTIONS = {'base': 'inspect', 'accept': 'accept', 'changes': 'request_changes'}\n\n" + block + baseline_block,
+    callbacks.write_text("OPTIONS = {'base': 'inspect', 'accept': 'accept', 'changes': 'request_changes'}\n\n" + block + baseline_block.replace(baseline_action, 'real_baseline'),
                          encoding='utf-8', newline='')
     cfg = load_config(); cfg['repository']['typescript_ast'] = False
     inventory = scan_repo(root, cfg)
@@ -85,6 +112,7 @@ def test_imported_registry_is_source_bound_and_runs(tmp_path):
     plan = plan_implementation(root, inventory, spec['candidate_id'], spec, bundle)
     manifest = read_json(bundle / 'implementation-manifest.json')
     assert 'fixture_pkg/callbacks.py' in manifest['contributing_sources']
+    assert manifest['qualified_bindings']['baseline_action'] == 'fixture_pkg.callbacks:real_baseline'
     baseline = verify_implementation(root, bundle, 'baseline', approve_execution=True)
     assert baseline['status'] == 'baseline_passed'
     applied = apply_implementation(root, bundle, plan['bundle_digest'], baseline_sha256=baseline['receipt_sha256'])

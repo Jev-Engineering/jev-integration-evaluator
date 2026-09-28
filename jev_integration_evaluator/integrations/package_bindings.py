@@ -51,14 +51,31 @@ class StaticBindings:
         self.import_root, self.module, initializers = module_layout(self.root, source, namespace=namespace)
         self.namespace = namespace
         self.dependencies: dict[str, str] = {}
+        self._validated_initializers: set[str] = set()
         self._read(source)
-        for rel in initializers:
-            tree = self._read(rel)
-            for node in tree.body:
-                if isinstance(node, (ast.ImportFrom, ast.Pass)): continue
-                if isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
-                    continue
-                raise UnsupportedShape('Dynamic package initializer requires separate review: ' + rel)
+        for rel in initializers: self._validate_initializer(rel)
+
+    def _validate_initializer(self, rel: str) -> None:
+        if rel in self._validated_initializers: return
+        # Mark before following re-exports; _resolve detects symbol cycles.
+        self._validated_initializers.add(rel)
+        tree = self._read(rel)
+        package = self.module_for(rel)
+        for node in tree.body:
+            if isinstance(node, ast.Pass): continue
+            if isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
+                continue
+            if not isinstance(node, ast.ImportFrom) or node.level < 1 or not node.module:
+                raise UnsupportedShape('Dynamic or external package initializer: ' + rel)
+            package_parts = package.split('.')
+            if node.level > len(package_parts):
+                raise UnsupportedShape('Initializer import escapes declared package: ' + rel)
+            target = '.'.join((*package_parts[:len(package_parts)-node.level+1], *node.module.split('.')))
+            if target.split('.')[0] != self.module.split('.')[0]:
+                raise UnsupportedShape('Initializer import escapes declared package: ' + rel)
+            for alias in node.names:
+                if alias.name == '*': raise UnsupportedShape('Wildcard package initializer: ' + rel)
+                self._resolve(target, alias.name, ((package, alias.asname or alias.name),))
 
     def _rel(self, module: str) -> str:
         parts = module.split('.')
@@ -113,12 +130,7 @@ class StaticBindings:
             if not path.is_file():
                 if self.namespace: continue
                 raise UnsupportedShape('Missing regular package initializer: ' + init)
-            initializer = self._read(init)
-            for statement in initializer.body:
-                if isinstance(statement, (ast.ImportFrom, ast.Pass)): continue
-                if isinstance(statement, ast.Expr) and isinstance(statement.value, ast.Constant) and isinstance(statement.value.value, str):
-                    continue
-                raise UnsupportedShape('Dynamic package initializer requires separate review: ' + init)
+            self._validate_initializer(init)
         rel = self._rel(module)
         tree = self._read(rel)
         for statement in tree.body:

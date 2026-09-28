@@ -19,7 +19,7 @@ import sys
 from ..budget import BudgetCoordinator
 from ..io import digest, canonical, read_json, write_json
 from ..robustness import request_fingerprint
-from .package_bindings import module_layout
+from .package_bindings import StaticBindings, module_layout
 
 
 def _plain(value, depth=0):
@@ -69,6 +69,20 @@ def _fixture_receipt(router, spec):
             'runtime_contract_hash':router.runtime_contract_hash(questions,spec['primary_question'],spec['evidence_question'],label_actions=spec['label_actions'])}
 
 
+def _check_target_import_origin(import_root: Path, module_name: str, namespace: bool) -> None:
+    top = module_name.split('.')[0]
+    if top in sys.modules:
+        raise ValueError('Target package name is already loaded by the trusted runner')
+    top_spec = importlib.util.find_spec(top)
+    expected_init = (import_root / top / '__init__.py').resolve()
+    expected_namespace = (import_root / top).resolve()
+    if top_spec is None or (top_spec.origin is not None and Path(top_spec.origin).resolve() != expected_init):
+        raise ValueError('Target package resolves outside the copied reviewed source')
+    if top_spec.origin is None and (not namespace or
+            {Path(p).resolve() for p in top_spec.submodule_search_locations or []} != {expected_namespace}):
+        raise ValueError('Namespace package resolution differs from the copied reviewed source')
+
+
 def run(payload):
     spec, case, mode = payload['spec'], payload['case'], payload['mode']
     if spec['verification']['classification'] != 'synthetic':
@@ -89,7 +103,13 @@ def run(payload):
     source = root / spec['source']['file']
     if package_contract:
         _, module_name, _ = module_layout(root, spec['source']['file'], namespace=package_contract['namespace'])
+        if module_name != package_contract['module']:
+            raise ValueError('Declared target module differs from copied source path')
+        import_root = root / 'src' if spec['source']['file'].startswith('src/') else root
+        _check_target_import_origin(import_root, module_name, package_contract['namespace'])
         module = importlib.import_module(module_name)
+        if Path(module.__file__).resolve() != source.resolve():
+            raise ValueError('Target module import origin differs from the copied reviewed source')
     else:
         loader_spec = importlib.util.spec_from_file_location(source.stem, source)
         module = importlib.util.module_from_spec(loader_spec)
@@ -117,8 +137,16 @@ def run(payload):
     trace, trace_truncated = [], False
     roles = {name:role for role,name in spec['bindings'].items()}
     profile_sources = {str(source)}
+    profile_aliases = {}
     if package_contract:
         profile_sources.update(str(root / rel) for rel in payload.get('contributing_sources', {}))
+        static = StaticBindings(root, spec['source']['file'], namespace=package_contract['namespace'])
+        for alias in [*spec['bindings'].values(), *spec['verification']['effect_symbols']]:
+            rel, actual, _ = static.resolve(alias)
+            key = (str(root / rel), actual)
+            if key in profile_aliases and profile_aliases[key] != alias:
+                raise ValueError('Ambiguous imported observation aliases')
+            profile_aliases[key] = alias
     traced_roles = {'items','generate','retain','observe','postcondition','finish','gate','validate','risk','revision','reserve_retry','effect_state','ownership','verify_child','checks','verify_claims'}
     handler_name = '_action_' + spec['recipe']['id'].split('.')[-1].lower()
     host_runtime_path = str(Path(__file__).with_name('host.py'))
@@ -126,9 +154,10 @@ def run(payload):
         nonlocal adapter_calls, handler_calls, trace_truncated
         if event not in ('call','return'): return
         filename, name = frame.f_code.co_filename, frame.f_code.co_name
+        observed_name = profile_aliases.get((filename, name), name)
         if filename in profile_sources:
-            if event == 'call': calls[name] += 1
-            role = roles.get(name)
+            if event == 'call': calls[observed_name] += 1
+            role = roles.get(observed_name)
             if role in traced_roles:
                 entry = {'role':role,'event':event}
                 if event == 'call':
