@@ -18,7 +18,8 @@ baseline, apply and modified verification on an independent host. It checks
 the public CLI with externally supplied review and scope files through owned
 plan creation, plus off/shadow/active one-effect observations, policy/effect mutations,
 baseline and apply interruption/resume, dirty Git conflicts, post-apply
-conflicts and tampered on-disk receipt rejection. Its full case count and exact
+conflicts, tampered on-disk receipt rejection and forged external baseline
+receipt-anchor rejection during interrupted recovery. Its full case count and exact
 test hash are in the generated JSON.
 
 The separate corpus oracle supplies an independently anchored, complete A–M
@@ -27,8 +28,8 @@ negative source review for the deterministic arithmetic host. Its outcome is
 the plain path-inspection command still reports `insufficient_evidence` until
 that review is supplied. This is not a claim of global absence.
 
-The JSON `unrun` field still lists target-native verification, forged external
-receipt anchors, installed host lifecycle, hosted Python matrix, JavaScript/
+The JSON `unrun` field still lists target-native verification, installed host
+lifecycle, hosted Python matrix, JavaScript/
 TypeScript, live provider benefit and activation. The connected test uses the
 trusted-host synthetic verifier's injected runtime; it does not qualify
 application startup or production exposure. Independent review is required if

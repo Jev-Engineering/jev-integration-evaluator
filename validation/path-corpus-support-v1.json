@@ -88,10 +88,11 @@
       "dirty_git_conflict_preservation",
       "post_apply_conflict_preservation",
       "tampered_baseline_receipt_blocks_mutation",
+      "forged_external_receipt_anchor_blocks_recovery",
       "independent_policy_and_duplicate_effect_mutations"
     ],
     "execution_environment": "trusted_host_synthetic",
-    "passed_cases": 13,
+    "passed_cases": 14,
     "provider_connectivity": "not_tested",
     "source_sha256": {
       "host.py": "6778a185b4d789bbc314cf03c94832f82cf5d81fb9c1ec5399cb0e1afcc32bf3",
@@ -102,8 +103,8 @@
   },
   "evidence_type": "synthetic_offline",
   "oracle_sha256": {
-    "tests/path_corpus/generate_support.py": "fd9600450cd5fc25519da7398ab315c9ec9ee3828d3c8e0b54d3588a67aaef75",
-    "tests/test_path_corpus_connected.py": "aebd1d51c307350db858d52e00603cba85b64ca64ec02a1e07f2477c00b9f4b6",
+    "tests/path_corpus/generate_support.py": "11a211d463ec3cdee11cbae316621f92e87bb750795a4aa1f581f47e6e5f2682",
+    "tests/test_path_corpus_connected.py": "cc5696c228f12e3dde0a7cd79303f876dd85bb6e2ca05f25d96cf24e38b79b33",
     "tests/test_path_corpus_oracle.py": "90057a18255d65d7678ad503b397dfc9af00bbd59a33a3df81921a6773d4a304"
   },
   "platform": "linux",
@@ -112,7 +113,6 @@
   "schema_version": "1.0",
   "unrun": [
     "target_native_runner",
-    "forged_external_receipt_rejection",
     "installed_host_lifecycle",
     "hosted_python_matrix",
     "javascript_typescript_backend",

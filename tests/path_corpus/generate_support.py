@@ -16,7 +16,7 @@ CORPUS = Path(__file__).resolve().parent
 NAMES = ("opaque_host", "package_host", "supported_host", "missing_callbacks",
          "deterministic_only", "unsupported_language")
 CONNECTED_TEST = "tests/test_path_corpus_connected.py"
-CONNECTED_CASES = 13
+CONNECTED_CASES = 14
 
 
 def sha(path: Path) -> str:
@@ -77,11 +77,11 @@ def generate() -> dict:
                                                "dirty_git_conflict_preservation",
                                                "post_apply_conflict_preservation",
                                                "tampered_baseline_receipt_blocks_mutation",
+                                               "forged_external_receipt_anchor_blocks_recovery",
                                                "independent_policy_and_duplicate_effect_mutations"],
                                execution_environment="trusted_host_synthetic",
                                provider_connectivity="not_tested", activation_authorized=False),
-                unrun=["target_native_runner",
-                       "forged_external_receipt_rejection", "installed_host_lifecycle",
+                unrun=["target_native_runner", "installed_host_lifecycle",
                        "hosted_python_matrix", "javascript_typescript_backend",
                        "live_provider_benefit", "activation"])
 

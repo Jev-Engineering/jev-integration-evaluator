@@ -275,6 +275,41 @@ def test_forged_baseline_receipt_cannot_authorize_apply(tmp_path):
     assert state["receipts"]["modified"] is None
 
 
+def test_forged_external_receipt_anchor_blocks_interrupted_recovery(tmp_path, monkeypatch):
+    root, session, _, context, _, planned = planned_supported(tmp_path)
+    original = (root / "host.py").read_bytes()
+    complete = run._complete
+
+    def interrupt_after_receipt(journal, state, operation, *args, **kwargs):
+        if operation == "baseline":
+            raise KeyboardInterrupt()
+        return complete(journal, state, operation, *args, **kwargs)
+
+    monkeypatch.setattr(run, "_complete", interrupt_after_receipt)
+    with pytest.raises(KeyboardInterrupt):
+        run.run_repository(root, session,
+                           scope=scope_for(root, context, planned, baseline=True))
+    monkeypatch.setattr(run, "_complete", complete)
+    row = json.loads((session / "journal.jsonl").read_text().splitlines()[-1])
+    assert row["state"]["pending"]["operation"] == "baseline"
+    pending = {**planned, "session_head_sha256": row["record_sha256"]}
+    forged = scope_for(root, context, pending, baseline=True, apply=True, modified=True)
+    forged["trusted_baseline_receipt"] = "0" * 64
+    blocked = run.run_repository(root, session, scope=forged)
+    assert blocked["status"] == "blocked_recovery"
+    assert blocked["attempts"]["baseline"] == 1
+    assert blocked["attempts"]["apply"] == 0
+    assert (root / "host.py").read_bytes() == original
+
+    bundle = Path(row["state"]["bundle"]["path"])
+    correct = scope_for(root, context, pending, baseline=True, apply=True, modified=True)
+    correct["trusted_baseline_receipt"] = hashlib.sha256(
+        (bundle / "baseline-receipt.json").read_bytes()).hexdigest()
+    recovered = run.run_repository(root, session, scope=correct)
+    assert recovered["status"] == "verified"
+    assert recovered["attempts"]["baseline"] == 1
+
+
 def test_dirty_git_worktree_conflict_preserves_owner_edit(tmp_path):
     root, session = tmp_path / "host", tmp_path / "session"
     shutil.copytree(SOURCE, root)
