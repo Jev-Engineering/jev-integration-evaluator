@@ -13,8 +13,8 @@ import stat
 import threading
 from typing import Any
 
-from ..budget import BudgetCoordinator
-from ..client import TypeSafeHTTPClient
+from ..budget import BudgetCoordinator, BudgetDenied
+from ..client import TypeSafeHTTPClient, validate_response
 from ..io import InputError, digest
 from ..runtime import SafeRouter
 
@@ -65,7 +65,7 @@ class HostRuntimeLifecycle:
 
     def __init__(self, adapters: dict[str, Any], *, budget_limits: dict[str, Any],
                  audit_log: Any, dependency_plan: dict[str, Any],
-                 client: Any = None, egress_grant: dict[str, str] | None = None,
+                 client: Any = None, egress_grant: dict[str, Any] | None = None,
                  process_model: str = 'single_process', startup_mode: str = 'off'):
         if process_model != 'single_process':
             raise LifecycleError('distributed_coordinator_unsupported')
@@ -78,8 +78,11 @@ class HostRuntimeLifecycle:
             raise LifecycleError('invalid_runtime_startup')
         check_dependency_plan(dependency_plan)
         if client is None:
-            if (type(egress_grant) is not dict or set(egress_grant) != {'endpoint', 'credential_ref'}
-                    or egress_grant['credential_ref'] != 'env:TYPESAFE_API_KEY'):
+            if (type(egress_grant) is not dict or
+                    set(egress_grant) != {'endpoint', 'credential_ref', 'cost_upper_bound'}
+                    or egress_grant['credential_ref'] != 'env:TYPESAFE_API_KEY'
+                    or type(egress_grant['cost_upper_bound']) not in (int, float)
+                    or not 0 < egress_grant['cost_upper_bound'] <= 1):
                 raise LifecycleError('explicit_egress_authority_required')
             try:
                 client = TypeSafeHTTPClient(allow_network=True,
@@ -141,6 +144,10 @@ class HostRuntimeLifecycle:
         self._routers = routers
         self._task_fields = task_fields
         self._adapter_digests = adapter_digests
+        self._client = client
+        self._audit_log = audit_log
+        self._egress_grant = dict(egress_grant) if egress_grant is not None else None
+        self._probe_used = False
         self.coordinator = coordinator
 
     def router(self, placement: str, request: dict[str, Any]) -> SafeRouter:
@@ -174,6 +181,66 @@ class HostRuntimeLifecycle:
             self.coordinator.close_task(task_id)
             for router in self._routers.values():
                 router.release_task(task_id)
+
+    def connectivity_probe_plan(self) -> dict[str, Any]:
+        """Describe one fixed synthetic request; this performs no network I/O."""
+        with self._lock:
+            if self._closed or os.getpid() != self._pid or self._egress_grant is None:
+                raise LifecycleError('provider_probe_unavailable')
+            models = {router.config['model'] for router in self._routers.values()}
+            timeouts = {router.config['timeout_ms'] for router in self._routers.values()}
+            if len(models) != 1 or len(timeouts) != 1:
+                raise LifecycleError('provider_probe_configuration_mismatch')
+            return {'kind': 'synthetic-provider-connectivity-v1',
+                    'endpoint': self._egress_grant['endpoint'],
+                    'model': next(iter(models)), 'timeout_ms': next(iter(timeouts)),
+                    'cost_upper_bound': self._egress_grant['cost_upper_bound'],
+                    'state': {'jev_probe': 'synthetic_connectivity_only'},
+                    'questions': {'probe': {'type': 'choice',
+                        'instructions': 'Classify this synthetic connectivity marker only.',
+                        'criteria': {'marker': 'The synthetic marker is present.',
+                                     'other': 'The synthetic marker is absent.'}}}}
+
+    def probe_provider_connectivity(self, *, approved_request_sha256: str,
+                                    egress_grant: dict[str, Any]) -> dict[str, Any]:
+        """One explicitly approved synthetic egress attempt; never activates routers."""
+        with self._lock:
+            plan = self.connectivity_probe_plan()
+            if (self._probe_used or type(approved_request_sha256) is not str
+                    or approved_request_sha256 != digest(plan)
+                    or egress_grant != self._egress_grant):
+                raise LifecycleError('exact_provider_probe_authority_required')
+            try:
+                self._audit_log.append({'type': 'synthetic_provider_probe_intent',
+                                        'request_sha256': approved_request_sha256,
+                                        'activation_authorized': False})
+            except Exception:
+                raise LifecycleError('provider_probe_audit_unavailable') from None
+            self._probe_used = True
+        try:
+            reservation = self.coordinator.reserve('__jev_synthetic_connectivity_probe__',
+                                                   plan['cost_upper_bound'])
+        except BudgetDenied:
+            raise LifecycleError('provider_probe_budget_denied') from None
+        try:
+            response = self._client.evaluate(plan['state'], plan['questions'],
+                                             plan['model'], plan['timeout_ms'])
+            validate_response(response, plan['questions'], plan['model'])
+            status = 'synthetic_provider_reachable'
+        except Exception:
+            status = 'provider_probe_failed'
+        finally:
+            self.coordinator.settle(reservation)
+            self.coordinator.close_task('__jev_synthetic_connectivity_probe__')
+        try:
+            self._audit_log.append({'type': 'synthetic_provider_probe_result',
+                                    'request_sha256': digest(plan), 'status': status,
+                                    'activation_authorized': False})
+        except Exception:
+            raise LifecycleError('provider_probe_audit_unavailable') from None
+        return {'status': status, 'request_sha256': digest(plan),
+                'synthetic': True, 'activation_authorized': False,
+                'provider_benefit_demonstrated': False}
 
     def close(self) -> None:
         with self._lock:

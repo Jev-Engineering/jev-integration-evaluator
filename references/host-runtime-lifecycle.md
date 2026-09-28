@@ -43,9 +43,14 @@ The default startup mode is `off`. `shadow` is allowed only with an offline
 synthetic client; the generated adapter's own `ENABLED` switch remains off until
 the host deliberately selects its experimental path. Active and canary startup
 are unsupported here. A remote TypeSafe client is created only with an explicit
-exact endpoint and `env:TYPESAFE_API_KEY` credential reference; absent credential
-or bad endpoint fails with a fixed diagnostic. This does not grant active
-treatment. Do not put key values or raw requests in config or diagnostics.
+exact endpoint, `env:TYPESAFE_API_KEY` credential reference and bounded cost
+reservation; absent credential or bad endpoint fails with a fixed diagnostic.
+`connectivity_probe_plan()` describes a fixed synthetic marker request without
+egress. A separate exact digest and matching egress grant must be supplied to
+`probe_provider_connectivity()`. It makes at most one request per lifecycle,
+charges the shared coordinator even on transport failure or deadline, and
+returns only a redacted status. This does not grant active treatment or prove
+benefit. Do not put key values or raw target requests in config or diagnostics.
 
 This checkpoint tests a transformed synthetic host through its actual generated
 adapter and a startup-installed callback in both off and offline shadow mode.
@@ -56,5 +61,6 @@ dispatch into an independently reviewed application's startup; issue #6
 integration and independent review are required before claiming that condition.
 Multiprocess and distributed hosts require a separately qualified coordinator
 backend and are rejected. Process-local counters cannot cap deployment-wide
-provider spending. Provider connectivity, native target execution, observed
-benefit and activation remain untested.
+provider spending. Live provider connectivity, native target execution,
+observed benefit and activation remain untested. The connectivity path is
+exercised only with a mock client in tests.

@@ -16,6 +16,7 @@ from jev_integration_evaluator.config import load_config
 from jev_integration_evaluator.integrations.runtime_lifecycle import (
     HostRuntimeLifecycle, LifecycleError, check_dependency_plan,
 )
+from jev_integration_evaluator.integrations import runtime_lifecycle
 from jev_integration_evaluator.runtime import SafeRouter
 from jev_integration_evaluator.io import digest
 from jev_integration_evaluator.io import InputError
@@ -143,7 +144,8 @@ def test_missing_remote_credentials_are_redacted(tmp_path, monkeypatch):
         HostRuntimeLifecycle({'a': adapter('a')}, budget_limits=LIMITS,
             audit_log=AUDIT, dependency_plan=plan,
             egress_grant={'endpoint': 'https://api.typesafe.ai/v1/systemone',
-                          'credential_ref': 'env:TYPESAFE_API_KEY'})
+                          'credential_ref': 'env:TYPESAFE_API_KEY',
+                          'cost_upper_bound': 0.1})
     assert 'TYPESAFE_API_KEY' not in str(error.value)
 
 
@@ -165,6 +167,103 @@ def test_placements_share_limits_across_threads(tmp_path):
         assert outcomes.count('charged') == 2
         assert host.coordinator.snapshot()['calls'] == 2
         assert host.coordinator.snapshot()['reserved_cost'] == 2
+
+
+def test_provider_probe_needs_separate_exact_egress_and_never_activates(tmp_path, monkeypatch):
+    _, plan = inputs(tmp_path)
+    sent = []
+
+    class FakeRemote:
+        is_remote = True
+
+        def __init__(self, **kwargs):
+            assert kwargs['allow_network'] is True
+
+        def evaluate(self, state, questions, model, timeout_ms):
+            sent.append((state, questions, model, timeout_ms))
+            return {'model': model, 'answers': {'probe': {'type': 'choice',
+                    'choice': 'marker', 'confidence': 1.0,
+                    'probabilities': {'marker': 1.0, 'other': 0.0}}},
+                    'usage': {'input_tokens': 1, 'output_tokens': 1}}
+
+    monkeypatch.setattr(runtime_lifecycle, 'TypeSafeHTTPClient', FakeRemote)
+    grant = {'endpoint': 'https://api.typesafe.ai/v1/systemone',
+             'credential_ref': 'env:TYPESAFE_API_KEY', 'cost_upper_bound': 0.1}
+    with HostRuntimeLifecycle({'a': adapter('a')}, budget_limits=LIMITS,
+            audit_log=AUDIT, dependency_plan=plan, egress_grant=grant) as host:
+        approved = digest(host.connectivity_probe_plan())
+        with pytest.raises(LifecycleError, match='exact_provider_probe_authority_required'):
+            host.probe_provider_connectivity(approved_request_sha256='0' * 64,
+                                             egress_grant=grant)
+        assert not sent
+        # Rejected authority leaves the one permitted probe unused.
+        report = host.probe_provider_connectivity(approved_request_sha256=approved,
+                                                  egress_grant=grant)
+        assert report['status'] == 'synthetic_provider_reachable'
+        assert report['activation_authorized'] is False
+        assert sent[0][0] == {'jev_probe': 'synthetic_connectivity_only'}
+        assert host.coordinator.snapshot()['calls'] == 1
+        assert host.router('a', {'task_id': 'unrelated'}).config['mode'] == 'off'
+        with pytest.raises(LifecycleError, match='exact_provider_probe_authority_required'):
+            host.probe_provider_connectivity(approved_request_sha256=approved,
+                                             egress_grant=grant)
+
+
+@pytest.mark.parametrize('fault', [TimeoutError, RuntimeError])
+def test_provider_probe_failure_is_redacted_and_charged(tmp_path, monkeypatch, fault):
+    _, plan = inputs(tmp_path)
+
+    class FailingRemote:
+        is_remote = True
+
+        def __init__(self, **kwargs):
+            pass
+
+        def evaluate(self, state, questions, model, timeout_ms):
+            raise fault('sensitive provider diagnostic')
+
+    monkeypatch.setattr(runtime_lifecycle, 'TypeSafeHTTPClient', FailingRemote)
+    grant = {'endpoint': 'https://api.typesafe.ai/v1/systemone',
+             'credential_ref': 'env:TYPESAFE_API_KEY', 'cost_upper_bound': 0.1}
+    with HostRuntimeLifecycle({'a': adapter('a')}, budget_limits=LIMITS,
+            audit_log=AUDIT, dependency_plan=plan, egress_grant=grant) as host:
+        approved = digest(host.connectivity_probe_plan())
+        report = host.probe_provider_connectivity(approved_request_sha256=approved,
+                                                  egress_grant=grant)
+        assert report['status'] == 'provider_probe_failed'
+        assert 'sensitive' not in str(report)
+        assert host.coordinator.snapshot()['calls'] == 1
+        assert host.coordinator.snapshot()['closed_tasks'] == 1
+
+
+def test_probe_audit_failure_blocks_egress_before_request(tmp_path, monkeypatch):
+    _, plan = inputs(tmp_path)
+    sent = []
+
+    class Remote:
+        is_remote = True
+
+        def __init__(self, **kwargs):
+            pass
+
+        def evaluate(self, *args):
+            sent.append(args)
+            raise AssertionError('must not reach provider')
+
+    class BrokenAudit:
+        def append(self, event):
+            raise OSError('private audit path')
+
+    monkeypatch.setattr(runtime_lifecycle, 'TypeSafeHTTPClient', Remote)
+    grant = {'endpoint': 'https://api.typesafe.ai/v1/systemone',
+             'credential_ref': 'env:TYPESAFE_API_KEY', 'cost_upper_bound': 0.1}
+    with HostRuntimeLifecycle({'a': adapter('a')}, budget_limits=LIMITS,
+            audit_log=BrokenAudit(), dependency_plan=plan, egress_grant=grant) as host:
+        with pytest.raises(LifecycleError, match='provider_probe_audit_unavailable'):
+            host.probe_provider_connectivity(
+                approved_request_sha256=digest(host.connectivity_probe_plan()),
+                egress_grant=grant)
+        assert not sent and host.coordinator.snapshot()['calls'] == 0
 
 
 def test_synthetic_shadow_is_explicit_and_active_is_rejected(tmp_path):
