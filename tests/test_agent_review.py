@@ -202,11 +202,27 @@ def test_unreviewed_secret_and_ignored_directories_never_enter_context(tmp_path)
     context = retrieve_context(tmp_path, inventory, binding['candidate_id'])
     assert 'PRIVATE_SENTINEL' not in str(context)
     assert [row['file'] for row in context['sources']] == ['host_example_e.py']
+    with pytest.raises(InputError, match='allowlist'):
+        retrieve_context(tmp_path, inventory, binding['candidate_id'], related_files=(
+            dict(file='secret.py', sha256=hashlib.sha256((tmp_path / 'secret.py').read_bytes()).hexdigest(),
+                 role='caller'),))
     for path in ('vendor/test_private.py', '.tox/test_private.py', '.next/test_private.py',
                  'target/test_private.py'):
         with pytest.raises(InputError, match='allowlist'):
             retrieve_context(tmp_path, inventory, binding['candidate_id'], related_files=(
                 dict(file=path, sha256=hashlib.sha256((tmp_path / path).read_bytes()).hexdigest(), role='tests'),))
+    (tmp_path / 'private_policy.py').write_text('PRIVATE_SENTINEL = "secret"\n', encoding='utf-8')
+    with pytest.raises(InputError, match='allowlist'):
+        retrieve_context(tmp_path, inventory, binding['candidate_id'], related_files=(
+            dict(file='private_policy.py',
+                 sha256=hashlib.sha256((tmp_path / 'private_policy.py').read_bytes()).hexdigest(),
+                 role='host_policy'),), discovery_excludes=('private_*',))
+    malicious_inventory = copy.deepcopy(inventory)
+    malicious_inventory['files'].append(dict(file='secret.py',
+                                             sha256=hashlib.sha256((tmp_path / 'secret.py').read_bytes()).hexdigest(),
+                                             mode=0o644))
+    with pytest.raises(InputError, match='Excluded or sensitive'):
+        retrieve_context(tmp_path, malicious_inventory, binding['candidate_id'])
 
 
 @pytest.mark.skipif(sys.platform != 'linux', reason='Native POSIX discovery backend')

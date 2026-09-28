@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Protocol
 
 from . import capabilities as cap
+from .config import DEFAULT
 from .integrations.contracts import validate_inventory, validate_spec
 from .integrations.recipes import RECIPES, anchor_hash, transform
 from .integrations.errors import AmbiguousBinding, MissingBinding, UnsupportedShape
@@ -31,6 +32,7 @@ class RecordedReviewAdapter:
 
 def retrieve_context(root: Path, inventory: dict, candidate_id: str, *,
                      related_files: tuple[dict, ...] = (),
+                     discovery_excludes: tuple[str, ...] | None = None,
                      max_files: int = 24, max_bytes: int = 120_000) -> dict:
     """Read only source already named by the inventory, bounded by count/bytes."""
     root = Path(root)
@@ -39,6 +41,9 @@ def retrieve_context(root: Path, inventory: dict, candidate_id: str, *,
         raise InputError('Missing or ambiguous candidate')
     candidate = candidates[0]
     rows = inventory.get('files', []) + inventory.get('configuration_evidence', [])
+    excludes = tuple(DEFAULT['repository']['exclude']) if discovery_excludes is None else discovery_excludes
+    if type(excludes) is not tuple or any(type(x) is not str for x in excludes):
+        raise InputError('Invalid discovery exclusion policy')
     if type(related_files) not in (tuple, list):
         raise InputError('Invalid related source allowlist')
     excluded = {'.git', '.venv', 'venv', '__pycache__', 'node_modules',
@@ -50,6 +55,8 @@ def retrieve_context(root: Path, inventory: dict, candidate_id: str, *,
                 or type(item['role']) is not str or not cap._safe_rel(item['file'])
                 or item['role'] not in {'caller', 'callbacks', 'registries', 'tests', 'host_policy'}
                 or any(part in excluded or part.startswith('.') for part in Path(item['file']).parts)
+                or cap.SENSITIVE.search(Path(item['file']).name)
+                or cap._matches(item['file'], excludes)
                 or not cap.HEX.fullmatch(item['sha256'])):
             raise InputError('Invalid related source allowlist')
         extra.append(dict(file=item['file'], sha256=item['sha256'], role=item['role']))
@@ -62,6 +69,10 @@ def retrieve_context(root: Path, inventory: dict, candidate_id: str, *,
     total = 0
     for row in rows:
         rel = row['file']
+        if (type(rel) is not str or not cap._safe_rel(rel)
+                or cap.SENSITIVE.search(Path(rel).name) or cap._matches(rel, excludes)
+                or any(part in excluded or part.startswith('.') for part in Path(rel).parts)):
+            raise InputError('Excluded or sensitive review context file')
         path = safe_child(root, rel)
         if not path.is_file():
             raise InputError('Source drift from reviewed inventory')
@@ -112,13 +123,15 @@ def retrieve_context(root: Path, inventory: dict, candidate_id: str, *,
                 inventory_sha256=digest(inventory), candidate_id=candidate_id,
                 source_sha256=candidate['source']['source_sha256'],
                 search_coverage=dict(included_related=len(extra),
-                                     related_scope='exact_caller_owned_allowlist'),
+                                     related_scope='exact_caller_owned_allowlist',
+                                     discovery_excludes=list(excludes)),
                 sources=sources)
 
 
 def draft_reviewed_spec(root: Path, inventory: dict, context: dict, adapter: ReviewAdapter,
                         *, saved_answers: dict, trusted_verification: dict,
                         related_files: tuple[dict, ...] = (),
+                        discovery_excludes: tuple[str, ...] | None = None,
                         source_egress_grant: bool = False) -> dict:
     """Draft a spec using caller-owned policy and independent verification.
 
@@ -133,7 +146,8 @@ def draft_reviewed_spec(root: Path, inventory: dict, context: dict, adapter: Rev
         raise InputError('Offline review does not consume source-egress authority')
     if type(saved_answers) is not dict or type(trusted_verification) is not dict:
         raise InputError('Invalid saved answers or independent verification')
-    fresh = retrieve_context(root, inventory, context['candidate_id'], related_files=related_files)
+    fresh = retrieve_context(root, inventory, context['candidate_id'],
+                             related_files=related_files, discovery_excludes=discovery_excludes)
     if fresh != context:
         raise InputError('Source drift from agent review context')
     request = dict(context=copy.deepcopy(context), saved_answers=copy.deepcopy(saved_answers),
