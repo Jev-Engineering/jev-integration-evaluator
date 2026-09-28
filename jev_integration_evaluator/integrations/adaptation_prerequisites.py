@@ -58,6 +58,14 @@ def _exact_int_guard(statement, argument):
             and body.exc.args[0].value == 'pure numeric prerequisite requires int')
 
 
+def _magnitude_guard(statement, argument):
+    expected = ast.parse(
+        f'if {argument} < -1000000 or {argument} > 1000000:\n'
+        "    raise ValueError('pure numeric prerequisite input out of range')\n"
+    ).body[0]
+    return ast.dump(statement, include_attributes=False) == ast.dump(expected, include_attributes=False)
+
+
 def _safe_additions(old: bytes, new: str) -> None:
     """Permit only new plain top-level helpers; preserve all existing AST nodes."""
     try:
@@ -81,7 +89,7 @@ def _safe_additions(old: bytes, new: str) -> None:
             if any(alias.name == '*' for alias in node.names):
                 raise InputError('Prerequisite cannot append after wildcard imports')
             existing.update(alias.asname or alias.name.split('.')[0] for alias in node.names)
-    if any(name in existing for name in ('type','int','TypeError')):
+    if any(name in existing for name in ('type','int','TypeError','ValueError')):
         raise InputError('Prerequisite numeric guard builtins are shadowed')
     if any(isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
            and n.func.id in ('exec','eval','globals','locals','vars') for n in ast.walk(before)):
@@ -90,7 +98,7 @@ def _safe_additions(old: bytes, new: str) -> None:
     for node in after.body[len(before.body):]:
         if (not isinstance(node, ast.FunctionDef)
                 or node.decorator_list or node.name in existing or node.name in added
-                or node.name in ('type','int','TypeError')
+                or node.name in ('type','int','TypeError','ValueError')
                 or node.name.startswith('_') or AUTHORITY.search(node.name)
                 or node.returns is not None or getattr(node, 'type_params', ())
                 or node.args.defaults or any(x is not None for x in node.args.kw_defaults)
@@ -105,9 +113,11 @@ def _safe_additions(old: bytes, new: str) -> None:
         args = node.args
         positional = args.posonlyargs + args.args
         if (len(positional) != 1 or args.vararg or args.kwarg or args.kwonlyargs
-                or len(node.body) not in (1, 2) or not isinstance(node.body[-1], ast.Return)
+                or len(node.body) not in (1, 3) or not isinstance(node.body[-1], ast.Return)
                 or not _pure_numeric(node.body[-1].value, positional[0].arg)
-                or (len(node.body) == 2 and not _exact_int_guard(node.body[0], positional[0].arg))
+                or (len(node.body) == 3 and
+                    (not _exact_int_guard(node.body[0], positional[0].arg)
+                     or not _magnitude_guard(node.body[1], positional[0].arg)))
                 or (len(node.body) == 1 and not isinstance(node.body[0].value, ast.Name))):
             raise InputError('Prerequisite helper must be a guarded pure numeric expression')
         added.add(node.name)

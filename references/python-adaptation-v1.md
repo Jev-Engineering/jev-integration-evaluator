@@ -39,9 +39,17 @@ the caller supplies host policy and a separate source-matched binding review.
 The resulting request binds the review context, policy, proposal and binding
 review digests. The function refreshes context and source bytes and performs
 structural preparation without target execution or mutation. It cannot create
-missing authority callbacks. Until #6 is merged and the combined API is
-qualified, tests of this seam use a synthetic module with the frozen API and
-do not establish live agent-review integration.
+missing authority callbacks. Tests exercise both a synthetic frozen API seam
+and the merged #6 secure source review on a bounded native Linux host.
+The merged #6 path also requires its bounded context to include every Python
+file in the fresh discovery result under the exact exclusion policy. Its
+caller audit admits only direct constructor/module-qualified calls to the
+selected seam; aliases, receiver variables, reflective lookup, and unknown
+same-name callsites in that source scope fail preparation. The request binds
+the discovered caller rows. External callers and excluded files remain
+unknown and outside the qualified claim; native verification covers only its
+scheduled entrypoints. Source and caller review must be repeated after any
+prerequisite change.
 
 `draft_agent_prerequisites` accepts only the fixed #6 offline adapter and
 passes its proposal through `draft_prerequisite_plan`. This covers a narrower
@@ -51,7 +59,8 @@ helpers. Existing bytes must remain an exact prefix. Existing definitions,
 imports and assignments cannot be changed; new authority-named callbacks,
 obvious always-true stubs, decorators, evaluated defaults and annotations are
 rejected. A helper can only return its single argument unchanged or compute
-a bounded integer expression after an exact `int` guard. Calls, imports,
+a bounded integer expression after exact `int` and ±1,000,000 input guards.
+Arithmetic depth and literal magnitude are bounded; calls, imports,
 attribute access, subscripts, branches, loops and mutations are rejected.
 The #6 context
 must refresh against the actual source and retain an approved source-matched

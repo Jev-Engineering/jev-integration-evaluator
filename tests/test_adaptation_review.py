@@ -8,6 +8,7 @@ from types import ModuleType
 import pytest
 
 from jev_integration_evaluator.integrations.adaptation_review import draft_adaptation_request
+import jev_integration_evaluator.integrations.adaptation_review as reviewed
 from jev_integration_evaluator.io import InputError, digest
 
 
@@ -39,6 +40,11 @@ def _fixture(tmp_path, monkeypatch):
     module.RecordedReviewAdapter = RecordedReviewAdapter
     module.retrieve_context = lambda *args, **kwargs: copy.deepcopy(context)
     monkeypatch.setitem(sys.modules, module.__name__, module)
+    monkeypatch.setattr(reviewed, '_caller_scope', lambda *args: {
+        'kind':'bounded-python-caller-scope-v1','discovery_sha256':'b'*64,
+        'source_files_sha256':'c'*64,'selected_symbol':'Worker.run',
+        'calls':[{'file':'entry.py','line':2,'column':0}],
+        'unknown_external_callers':True})
     policy = {'existing_host_policy':'reviewed fixture'}
     request = {'context':context,'host_policy_sha256':digest(policy),
                'authority':{'mutation':False,'execution':False,'egress':False}}
@@ -65,6 +71,7 @@ def test_reviewed_proposal_requires_fresh_source_and_independent_binding(tmp_pat
     assert result['status'] == 'reviewed_adaptation_request'
     assert result['request']['source']['symbol'] == 'Worker.run'
     assert result['request']['agent_proposal_sha256'] == digest(adapter.response)
+    assert result['caller_scope']['unknown_external_callers'] is True
     assert result['target_modified'] is False and result['target_executed'] is False
     assert (tmp_path / 'worker.py').read_bytes().endswith(b'return self.baseline(request)\n')
     changed_policy = {'existing_host_policy':'changed'}
@@ -99,3 +106,32 @@ def test_reviewed_proposal_stale_or_unresolved_blocks(tmp_path, monkeypatch):
         draft_adaptation_request(tmp_path, inventory, context, adapter,
                                  saved_answers={'host_policy':policy},
                                  trusted_binding_review=binding)
+
+
+def test_bounded_caller_audit_refuses_ambiguous_receiver_and_reflection(tmp_path, monkeypatch):
+    source = {'file':'worker.py','symbol':'Worker.run'}
+    files = {
+        'worker.py':'class Worker:\n    def run(self, request):\n        return request\n',
+        'entry.py':'import worker\nresult = worker.Worker().run(1)\n',
+    }
+    report = {'report_sha256':'f'*64,
+              'files':[{'file':name,'sha256':hashlib.sha256(text.encode()).hexdigest()}
+                       for name,text in files.items()]}
+    monkeypatch.setattr(reviewed.cap, 'discover_repository', lambda *args: report)
+    context = {'search_coverage':{'discovery_excludes':[],
+                                  'capability_report_sha256':'f'*64},
+               'sources':[{'file':name,'sha256':hashlib.sha256(text.encode()).hexdigest(),
+                           'text':text} for name,text in files.items()]}
+    accepted = reviewed._caller_scope(tmp_path, context, source,
+                                      'instance-method-tail-call-v1')
+    assert accepted['calls'] == [{'file':'entry.py','line':2,'column':9}]
+    context['sources'][1]['text'] = 'import worker\nvalue = worker.Worker()\nresult = value.run(1)\n'
+    context['sources'][1]['sha256'] = hashlib.sha256(context['sources'][1]['text'].encode()).hexdigest()
+    report['files'][1]['sha256'] = context['sources'][1]['sha256']
+    with pytest.raises(InputError, match='Ambiguous'):
+        reviewed._caller_scope(tmp_path, context, source, 'instance-method-tail-call-v1')
+    context['sources'][1]['text'] = 'import worker\nresult = getattr(worker.Worker(), "run")(1)\n'
+    context['sources'][1]['sha256'] = hashlib.sha256(context['sources'][1]['text'].encode()).hexdigest()
+    report['files'][1]['sha256'] = context['sources'][1]['sha256']
+    with pytest.raises(InputError, match='Dynamic'):
+        reviewed._caller_scope(tmp_path, context, source, 'instance-method-tail-call-v1')

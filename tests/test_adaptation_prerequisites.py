@@ -97,7 +97,8 @@ def test_scoped_prerequisites_require_external_approval_then_rescan(tmp_path, mo
 
 @pytest.mark.parametrize('attack', ['authority','old_body','scope','policy','review','new_validation',
                                     'import_time_default','global_shadow','source_review',
-                                    'always_true_stub','entry_mode','guard_shadow'])
+                                    'always_true_stub','entry_mode','guard_shadow',
+                                    'range_guard_shadow'])
 def test_prerequisite_authority_and_drift_fail_without_mutation(tmp_path, monkeypatch, attack):
     items = list(_fixture(tmp_path, monkeypatch))
     original = {name:(tmp_path / name).read_bytes() for name in items[-1]}
@@ -134,6 +135,10 @@ def test_prerequisite_authority_and_drift_fail_without_mutation(tmp_path, monkey
         items[2] = copy.deepcopy(items[2])
         items[2]['changes'][0]['new_content'] += '\ndef type(value):\n    return value\n'
         items[5] = {**items[5], 'proposal_sha256':digest(items[2])}
+    elif attack == 'range_guard_shadow':
+        items[2] = copy.deepcopy(items[2])
+        items[2]['changes'][0]['new_content'] += '\ndef ValueError(value):\n    return value\n'
+        items[5] = {**items[5], 'proposal_sha256':digest(items[2])}
     else:
         items[4] = copy.deepcopy(items[4])
         items[4]['cases'][0]['observation']['result'] = 'weaker'
@@ -169,6 +174,7 @@ def test_self_consistent_local_plan_substitution_has_no_apply_authority(tmp_path
     '    return value[0]\n',
     '    print(value)\n    return value\n',
     '    return value + 1\n',
+    "    if type(value) is not int:\n        raise TypeError('pure numeric prerequisite requires int')\n    return value + 1\n",
     '    if value:\n        return 1\n    return 0\n',
 ])
 def test_effectful_or_unguarded_helper_body_refused(tmp_path, monkeypatch, body):
@@ -180,6 +186,30 @@ def test_effectful_or_unguarded_helper_body_refused(tmp_path, monkeypatch, body)
     with pytest.raises(InputError):
         _draft(tmp_path, items)
     assert (tmp_path / 'a.py').read_bytes() == original
+
+
+def test_guarded_numeric_helper_has_finite_input_range(tmp_path, monkeypatch):
+    items = list(_fixture(tmp_path, monkeypatch))
+    items[2] = copy.deepcopy(items[2])
+    source = ((tmp_path / 'a.py').read_text() + '\ndef helper_a(value):\n'
+              '    if type(value) is not int:\n'
+              "        raise TypeError('pure numeric prerequisite requires int')\n"
+              '    if value < -1000000 or value > 1000000:\n'
+              "        raise ValueError('pure numeric prerequisite input out of range')\n"
+              '    return value * 2 + 1\n')
+    items[2]['changes'][0]['new_content'] = source
+    items[5] = {**items[5], 'proposal_sha256':digest(items[2])}
+    assert _draft(tmp_path, items)['status'] == 'planned_prerequisites'
+    namespace = {}
+    exec(source, namespace)
+    assert namespace['helper_a'](-1000000) == -1999999
+    assert namespace['helper_a'](1000000) == 2000001
+    with pytest.raises(TypeError, match='requires int'):
+        namespace['helper_a'](True)
+    with pytest.raises(ValueError, match='out of range'):
+        namespace['helper_a'](1000001)
+    with pytest.raises(ValueError, match='out of range'):
+        namespace['helper_a'](-1000001)
 
 
 def test_interrupted_multifile_apply_blocks_replay_and_keeps_preimages(tmp_path, monkeypatch):

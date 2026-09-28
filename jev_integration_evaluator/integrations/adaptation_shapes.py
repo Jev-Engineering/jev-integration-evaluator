@@ -72,6 +72,22 @@ REVIEWED_REQUEST_SCHEMA = {
         'host_policy_sha256': {'type': 'string', 'pattern': '^[0-9a-f]{64}$'},
         'trusted_binding_review_sha256': {'type': 'string', 'pattern': '^[0-9a-f]{64}$'},
         'agent_proposal_sha256': {'type': 'string', 'pattern': '^[0-9a-f]{64}$'},
+        'caller_scope': {'type': 'object', 'additionalProperties': False,
+                         'required': ['kind','discovery_sha256','source_files_sha256',
+                                      'selected_symbol','calls','unknown_external_callers'],
+                         'properties': {
+                             'kind': {'const': 'bounded-python-caller-scope-v1'},
+                             'discovery_sha256': {'type':'string','pattern':'^[0-9a-f]{64}$'},
+                             'source_files_sha256': {'type':'string','pattern':'^[0-9a-f]{64}$'},
+                             'selected_symbol': {'type':'string','minLength':1},
+                             'calls': {'type':'array','minItems':1,'maxItems':256,
+                                       'items': {'type':'object','additionalProperties':False,
+                                                 'required':['file','line','column'],
+                                                 'properties': {
+                                                     'file': {'type':'string','minLength':1},
+                                                     'line': {'type':'integer','minimum':1},
+                                                     'column': {'type':'integer','minimum':0}}}},
+                             'unknown_external_callers': {'const': True}}},
     },
 }
 

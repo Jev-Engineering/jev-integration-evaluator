@@ -67,6 +67,8 @@ print(json.dumps({'reached':True,'result':f'{first}-{second}',
                     f'\ndef helper_{name[0]}(value):\n'
                     '    if type(value) is not int:\n'
                     "        raise TypeError('pure numeric prerequisite requires int')\n"
+                    '    if value < -1000000 or value > 1000000:\n'
+                    "        raise ValueError('pure numeric prerequisite input out of range')\n"
                     f"    return value {'+ 1' if name == 'a.py' else '* 2'}\n"}
                for name,raw in originals.items()]
     proposal = {'schema_version':'1.0','kind':'adaptation-prerequisites-v1',
