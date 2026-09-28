@@ -25,7 +25,11 @@ startup, target-native verification, JS/TS support or live benefit.
 
 For the issue #12 process-local host-owned runtime checkpoint, read
 `references/host-runtime-lifecycle.md`. It starts off, can exercise offline
-synthetic shadow, and requires separate authority for provider egress.
+synthetic shadow, and now exposes opt-in connected shadow/canary/active modes
+behind exact host-authenticated grants, raw observed gate recomputation and a
+durable single-process ledger. Connected fixtures are offline protocol tests;
+they do not qualify live provider use or measured benefit. A host must retain
+the ledger and independently authenticate all grants and receipts.
 
 For exact implementation-to-study linkage and bounded synthetic paired collection,
 read `references/observed-evidence-linkage.md`. Its offline adapter cannot establish
