@@ -33,6 +33,11 @@ def validate(check_manifest=False):
               'jev_integration_evaluator/integrations/adaptation_lifecycle.py',
               'jev_integration_evaluator/integrations/adaptation_review.py',
               'jev_integration_evaluator/integrations/adaptation_prerequisites.py',
+              'jev_integration_evaluator/integrations/composite.py',
+              'schemas/composite-selection-v1.schema.json','schemas/composite-plan-v1.schema.json',
+              'schemas/composite-receipt-v1.schema.json','references/composite-transactions-v1.md',
+              'examples/implementation/composite-selection.example.json',
+              'tests/test_composite_transaction.py',
               'schemas/offline-adaptation-proposal-v1.schema.json',
               'schemas/offline-adaptation-prerequisites-v1.schema.json',
               'schemas/adaptation-prerequisite-plan-v1.schema.json',
@@ -165,6 +170,8 @@ def validate(check_manifest=False):
         schema=read_json(path);jsonschema.Draft202012Validator.check_schema(schema)
         if schema!=read_json(ROOT/'jev_integration_evaluator/data'/path.name):raise InputError('Packaged schema mismatch: '+path.name)
         schemas[path.name.removesuffix('.schema.json')]=schema
+    jsonschema.validate(read_json(ROOT/'examples/implementation/composite-selection.example.json'),
+                        schemas['composite-selection-v1'])
     jsonschema.validate(read_json(ROOT/'examples/repository-session/context.example.json'),
                         schemas['repository-run-context-v1'])
     denied_scope=read_json(ROOT/'examples/repository-session/scope-denied.example.json')

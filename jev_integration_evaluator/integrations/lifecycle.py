@@ -9,6 +9,7 @@ import hashlib
 import os
 from pathlib import Path
 import stat
+import tempfile
 from contextlib import contextmanager
 
 from .. import __version__
@@ -58,7 +59,50 @@ def _write_bytes(path, data):
 
 
 @contextmanager
-def _lock(bundle):
+def _repository_lock(root):
+    """One OS-held lock for every implementation bundle targeting this worktree."""
+    identity = _root_identity(root)
+    directory = Path(tempfile.gettempdir()) / 'jev-implementation-root-locks'
+    directory.mkdir(mode=0o700, exist_ok=True)
+    if directory.is_symlink() or not directory.is_dir():
+        raise InputError('Repository lock directory is unsafe')
+    directory_stat = directory.stat()
+    if os.name == 'posix' and (directory_stat.st_uid != os.getuid()
+                               or stat.S_IMODE(directory_stat.st_mode) & 0o077):
+        raise InputError('Repository lock directory ownership or mode is unsafe')
+    name = digest(identity) + '.lock'
+    path = directory / name
+    if path.is_symlink(): raise InputError('Repository lock path may not be a symlink')
+    flags = os.O_CREAT | os.O_RDWR | getattr(os, 'O_NOFOLLOW', 0)
+    fd = os.open(path, flags, 0o600)
+    with os.fdopen(fd, 'a+b') as handle:
+        if not stat.S_ISREG(os.fstat(handle.fileno()).st_mode):
+            raise InputError('Repository lock is not a regular file')
+        if os.name == 'posix':
+            lock_stat = os.fstat(handle.fileno())
+            if lock_stat.st_uid != os.getuid() or stat.S_IMODE(lock_stat.st_mode) & 0o077:
+                raise InputError('Repository lock ownership or mode is unsafe')
+        try:
+            if os.name == 'nt':
+                import msvcrt
+                handle.seek(0)
+                if not handle.read(1): handle.write(b'0'); handle.flush()
+                handle.seek(0)
+                msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError:
+            raise InputError('Another implementation operation owns the worktree') from None
+        try: yield
+        finally:
+            if os.name == 'nt':
+                handle.seek(0); msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+            else: fcntl.flock(handle, fcntl.LOCK_UN)
+
+
+@contextmanager
+def _lock(bundle, root=None):
     p = safe_child(bundle, 'operation.lock')
     with p.open('a+b') as handle:
         handle.seek(0)
@@ -73,7 +117,10 @@ def _lock(bundle):
                 fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except OSError:
             raise InputError('Another implementation operation owns the bundle lock') from None
-        try: yield
+        try:
+            if root is None: yield
+            else:
+                with _repository_lock(root): yield
         finally:
             handle.seek(0)
             if os.name == 'nt': msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
@@ -336,7 +383,7 @@ def apply_implementation(root, bundle, approval, *, baseline_sha256):
     if not baseline_sha256: raise InputError('An externally retained baseline receipt digest is required')
     if any(row['old_sha256'] is None and row['new_mode'] == 0o644 for row in plan['owned_files']):
         raise InputError('Native bundle requires isolated baseline proof')
-    with _lock(bundle):
+    with _lock(bundle, root):
         receipt = _receipt(root, bundle, plan, spec, 'baseline', baseline_sha256)
         if receipt['status'] != 'passed': raise InputError('Baseline verification did not pass')
         return _apply_locked(root, bundle, plan, spec, inventory, patch)
@@ -357,7 +404,7 @@ def apply_native_implementation(root, bundle, approval, *, baseline_spec, baseli
     root, bundle, plan, spec, inventory, patch = _load(root, bundle, current_engine=True)
     if approval != plan['contract_digest']:
         raise InputError('Exact reviewed bundle digest approval is required')
-    with _lock(bundle):
+    with _lock(bundle, root):
         try:
             inspect_receipt(baseline_spec, baseline_receipt,
                             trusted_receipt_sha256=trusted_baseline_sha256)
@@ -425,7 +472,7 @@ def rollback_digest(plan):
 def rollback_implementation(root, bundle, approval):
     root, bundle, plan, _, _, _ = _load(root, bundle)
     if approval != rollback_digest(plan): raise InputError('Exact rollback digest approval is required')
-    with _lock(bundle):
+    with _lock(bundle, root):
         identities = {r['file']: _inspect_file(root, r) for r in plan['owned_files']}
         if 'drift' in identities.values(): raise InputError('Rollback refuses changed owned bytes or modes; concurrent work is preserved')
         if set(identities.values()) == {'baseline'}:

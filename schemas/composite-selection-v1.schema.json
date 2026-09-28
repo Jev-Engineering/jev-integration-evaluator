@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema_version", "candidate_ids", "dependencies", "conflicts", "shared_runtime", "combined_verification"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": "composite-selection-v1"},
+    "candidate_ids": {"type": "array", "minItems": 2, "maxItems": 4, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "dependencies": {"type": "array", "maxItems": 12, "items": {"type": "array", "prefixItems": [{"type": "string"}, {"type": "string"}], "minItems": 2, "maxItems": 2}},
+    "conflicts": {"type": "array", "maxItems": 12, "items": {"type": "array", "prefixItems": [{"type": "string"}, {"type": "string"}], "minItems": 2, "maxItems": 2}},
+    "combined_verification": {
+      "type": "object", "required": ["command", "shared_task_id", "expected_results"], "additionalProperties": false,
+      "properties": {
+        "command": {"type": "array", "minItems": 2, "maxItems": 16, "items": {"type": "string", "minLength": 1, "maxLength": 1024}},
+        "shared_task_id": {"type": "string", "minLength": 1},
+        "expected_results": {"type": "object", "minProperties": 2, "maxProperties": 4}
+      }
+    },
+    "shared_runtime": {
+      "type": "object", "required": ["task_field", "policy_version", "canary_scope", "max_calls_per_task", "max_cost_per_task"], "additionalProperties": false,
+      "properties": {
+        "task_field": {"type": "string", "minLength": 1},
+        "policy_version": {"type": "string", "minLength": 1},
+        "canary_scope": {"type": "string", "minLength": 1},
+        "max_calls_per_task": {"type": "integer", "minimum": 1},
+        "max_cost_per_task": {"type": "number", "minimum": 0}
+      }
+    }
+  }
+}

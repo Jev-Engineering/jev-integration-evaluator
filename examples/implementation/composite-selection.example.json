@@ -1,0 +1,21 @@
+{
+  "schema_version": "composite-selection-v1",
+  "candidate_ids": ["JEV-SYNTH-A", "JEV-SYNTH-B"],
+  "dependencies": [["JEV-SYNTH-B", "JEV-SYNTH-A"]],
+  "conflicts": [],
+  "shared_runtime": {
+    "task_field": "task_id",
+    "policy_version": "synthetic-review-v1",
+    "canary_scope": "synthetic-workflow",
+    "max_calls_per_task": 2,
+    "max_cost_per_task": 0.01
+  },
+  "combined_verification": {
+    "command": ["python3", "synthetic_combined_check.py"],
+    "shared_task_id": "synthetic-task",
+    "expected_results": {
+      "JEV-SYNTH-A": "first",
+      "JEV-SYNTH-B": "first"
+    }
+  }
+}

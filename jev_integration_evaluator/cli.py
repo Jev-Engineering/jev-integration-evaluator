@@ -160,6 +160,21 @@ def parser():
             s.add_argument("--monitor-rows");s.add_argument("--monitor-as-of")
     s=common("implementation-recipes", "List executable bounded Python recipes and unsupported shapes")
     s.add_argument("--json",action="store_true",help="Machine-readable catalog (also the default)")
+    s=common("implement-composite-plan", "Plan one reviewed multi-placement transaction")
+    s.add_argument("--repo",required=True); s.add_argument("--inventory",required=True)
+    s.add_argument("--selection",required=True); s.add_argument("--specs",required=True); s.add_argument("--out",required=True)
+    s=common("implement-composite-verify", "Execute authorized synthetic combined host checks")
+    s.add_argument("--phase",choices=["baseline","modified"],required=True)
+    s.add_argument("--repo",required=True); s.add_argument("--bundle",required=True)
+    s.add_argument("--approve-execution",action="store_true"); s.add_argument("--baseline-sha256")
+    s=common("implement-composite-apply", "Apply one exact reviewed composite bundle")
+    s.add_argument("--repo",required=True); s.add_argument("--bundle",required=True)
+    s.add_argument("--approve",required=True); s.add_argument("--baseline-sha256",required=True)
+    s=common("implement-composite-status", "Inspect composite owned bytes and anchored receipt")
+    s.add_argument("--repo",required=True); s.add_argument("--bundle",required=True)
+    s.add_argument("--trusted-receipt-sha256")
+    s=common("implement-composite-rollback", "Restore only exact composite owned bytes")
+    s.add_argument("--repo",required=True); s.add_argument("--bundle",required=True); s.add_argument("--approve",required=True)
     s=common("implement-plan", "Derive a reviewed, default-off host patch without executing or changing the target")
     s.add_argument("--repo",required=True); s.add_argument("--inventory",required=True)
     s.add_argument("--candidate",required=True); s.add_argument("--spec",required=True); s.add_argument("--out",required=True)
@@ -210,6 +225,22 @@ def execute(args):
     if cmd=="implementation-recipes":
         from .integrations.recipes import recipe_catalog
         return recipe_catalog()
+    if cmd=="implement-composite-plan":
+        from .integrations.composite import plan_composite
+        return plan_composite(args.repo,read_json(args.inventory),read_json(args.selection),read_json(args.specs),args.out)
+    if cmd=="implement-composite-verify":
+        from .integrations.composite import verify_composite
+        return verify_composite(args.repo,args.bundle,args.phase,approve_execution=args.approve_execution,
+                                baseline_sha256=args.baseline_sha256)
+    if cmd=="implement-composite-apply":
+        from .integrations.composite import apply_composite
+        return apply_composite(args.repo,args.bundle,args.approve,baseline_sha256=args.baseline_sha256)
+    if cmd=="implement-composite-status":
+        from .integrations.composite import status_composite
+        return status_composite(args.repo,args.bundle,trusted_receipt_sha256=args.trusted_receipt_sha256)
+    if cmd=="implement-composite-rollback":
+        from .integrations.composite import rollback_composite
+        return rollback_composite(args.repo,args.bundle,args.approve)
     if cmd=="implement-plan":
         from .integrations.lifecycle import plan_implementation
         return plan_implementation(args.repo,read_json(args.inventory),args.candidate,read_json(args.spec),args.out)
@@ -517,16 +548,16 @@ def main(argv=None):
             return capabilities_main(forwarded)
         result=execute(args)
         # Artifacts contain details; concise stdout remains useful in scripts.
-        if getattr(args,"out",None) and args.command not in ("scan","architecture","report","scaffold","implement-plan","implement-verify"):
+        if getattr(args,"out",None) and args.command not in ("scan","architecture","report","scaffold","implement-plan","implement-verify","implement-composite-plan"):
             display={"status":"written","output":args.out}
             if isinstance(result,dict):
                 for k in ("recommendation","pair_count","evidence_type","status"): 
                     if k in result: display[k]=result[k]
         else: display=result
         print(json.dumps(display,indent=2,allow_nan=False))
-        if args.command=="implement-verify" and result.get("status")=="verification_failed":
+        if args.command in ("implement-verify","implement-composite-verify") and result.get("status")=="verification_failed":
             return 3
-        if args.command=="implement-status" and result.get("status") in ("blocked_recovery","verification_failed"):
+        if args.command in ("implement-status","implement-composite-status") and result.get("status") in ("blocked_recovery","verification_failed"):
             return 3
         if getattr(args,"enforce",False):
             passed=(result.get("recommendation")=="keep" if args.command=="study-evaluate" else

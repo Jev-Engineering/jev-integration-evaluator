@@ -190,7 +190,7 @@ def apply_adaptation(root, bundle, approved_plan_sha256, *, baseline_spec, basel
     root, bundle, plan, patch, request, _ = _load(root, bundle, current_engine=True)
     if approved_plan_sha256 != plan['contract_digest']:
         raise InputError('Externally approved exact adaptation plan digest required')
-    with _lock(bundle):
+    with _lock(bundle, root):
         row = plan['owned_file']
         if _inspect_file(root, row) != 'baseline':
             raise InputError('Adaptation source changed before apply')
@@ -232,7 +232,7 @@ def verify_adaptation(root, bundle, *, baseline_spec, baseline_receipt, baseline
                       trusted_oracle_sha256, trusted_baseline_receipt_sha256,
                       trusted_modified_receipt_sha256):
     root, bundle, plan, _, _, _ = _load(root, bundle, current_engine=True)
-    with _lock(bundle):
+    with _lock(bundle, root):
         events = [row['event'] for row in _journal(bundle, plan)]
         row = plan['owned_file']
         if not events or events[-1] != 'applied_unverified' or _inspect_file(root, row) != 'applied':
@@ -287,7 +287,7 @@ def rollback_adaptation(root, bundle, approved_rollback_sha256):
     root, bundle, plan, _, request, _ = _load(root, bundle)
     if approved_rollback_sha256 != rollback_digest(plan['contract_digest']):
         raise InputError('Exact adaptation rollback approval required')
-    with _lock(bundle):
+    with _lock(bundle, root):
         row = plan['owned_file']
         state = _inspect_file(root, row)
         if state == 'drift':
