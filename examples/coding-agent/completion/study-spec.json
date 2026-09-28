@@ -1,0 +1,58 @@
+{
+  "assignment_seed": 460149,
+  "candidate": "JEV-CA6A0A259F69",
+  "frozen_input_sha256": {
+    "assessments": "935f8fec278b64b2fee24a94605149b507f625b0b7abad308c8f623753d6e844",
+    "cases": "a5a82682d1ddfd986bfd267e829bc1664bc81cfd3af7360589f10917fbfd707e",
+    "oracle": "c54196e16ed22ae5bd2165fee00a619d45910939f30ebff7680f730273f808af",
+    "policy": "03f5bcd345dd2b71711f1d7295e3c6421df5c416583421c888eee87ead906bbb",
+    "report_schema": "e9fc61d11daaf7f1c89d4b58d2cb4de379d527b449d2bbe21d5bc741279ee042",
+    "runner": "44e2e6aac7b2add2a064a434a693eedfe38076f46c708df5ed3d31fbfc465310",
+    "scorer": "e2a5485274f9671501080e6ac4d3b016a1d41d0c5c5ccc20469804358b4fcc55",
+    "source": "dc3e0f2647c922c1789da3fcf750dd16f61ed0634dd16123ec9c3961acf26a1f"
+  },
+  "note": "No holdout executed. Independent pre-result review by graph44 on 2026-09-28 UTC approved pre-metadata study digest 16a1424dd85bfebcdb9a20f047c69ac845bae7e144641de1c7fb5e18d3fcaeed. Synthetic costs/latencies are assumptions.",
+  "policy_version": "completion-host-observation-v1",
+  "rubric_version": "completion-choice-v1",
+  "schema_version": "coding-agent-completion-study-v1",
+  "source_base_commit": "f9203f5d4a5bffaaf168dfb2c41faaa78ae41e65",
+  "splits": {
+    "calibration": [
+      "c01",
+      "c02",
+      "c03",
+      "c04",
+      "c05",
+      "c06",
+      "c07",
+      "c08"
+    ],
+    "holdout": [
+      "h01",
+      "h02",
+      "h03",
+      "h04",
+      "h05",
+      "h06",
+      "h07",
+      "h08",
+      "h09",
+      "h10",
+      "h11",
+      "h12",
+      "h13",
+      "h14",
+      "h15",
+      "h16",
+      "h17",
+      "h18",
+      "h19",
+      "h20",
+      "h21",
+      "h22",
+      "h23",
+      "h24"
+    ]
+  },
+  "status": "independently_reviewed"
+}

@@ -1,0 +1,1049 @@
+{
+  "arm_order_counts": {
+    "current/deterministic/jev": 1,
+    "current/jev/deterministic": 2,
+    "deterministic/current/jev": 2,
+    "deterministic/jev/current": 1,
+    "jev/current/deterministic": 1,
+    "jev/deterministic/current": 1
+  },
+  "assignment_seed": 460149,
+  "candidate": "JEV-CA6A0A259F69",
+  "decision": "calibration_only_no_holdout_decision",
+  "input_sha256": {
+    "assessments": "935f8fec278b64b2fee24a94605149b507f625b0b7abad308c8f623753d6e844",
+    "cases": "a5a82682d1ddfd986bfd267e829bc1664bc81cfd3af7360589f10917fbfd707e",
+    "oracle": "c54196e16ed22ae5bd2165fee00a619d45910939f30ebff7680f730273f808af",
+    "policy": "03f5bcd345dd2b71711f1d7295e3c6421df5c416583421c888eee87ead906bbb",
+    "report_schema": "e9fc61d11daaf7f1c89d4b58d2cb4de379d527b449d2bbe21d5bc741279ee042",
+    "runner": "44e2e6aac7b2add2a064a434a693eedfe38076f46c708df5ed3d31fbfc465310",
+    "scorer": "e2a5485274f9671501080e6ac4d3b016a1d41d0c5c5ccc20469804358b4fcc55",
+    "source": "dc3e0f2647c922c1789da3fcf750dd16f61ed0634dd16123ec9c3961acf26a1f"
+  },
+  "jev_verified_completion_gain": {
+    "current": 1,
+    "deterministic": 0
+  },
+  "kind": "offline_synthetic_fixture",
+  "live_adoption": "needs_more_evidence_no_live_model_or_host_execution",
+  "local_fixture_wall_time_ms": 2.0854,
+  "resource_note": "Cost and assessment latency values are preset synthetic assumptions, not provider measurements. Local runner wall time is measured separately and is not an assessment-latency estimate.",
+  "rows": [
+    {
+      "arm_order": [
+        "current",
+        "jev",
+        "deterministic"
+      ],
+      "arms": {
+        "current": {
+          "assessment_count": 0,
+          "assessment_records": [],
+          "attempted_actions": 2,
+          "executor_calls": 2,
+          "failed_episode": false,
+          "false_completion": false,
+          "final_raw_sha256": "d07c46656e4854d141c14a63411e802862f27465f68bb372a0f42256f4d4926c",
+          "first_complete_action_index": 1,
+          "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.1794,
+          "missing_latency_observations": 0,
+          "missing_or_timeout_observations": 0,
+          "planner_calls": 1,
+          "receipt_statuses": [
+            "executed",
+            "executed"
+          ],
+          "reported_complete": true,
+          "safety_violations": 0,
+          "stop_reason": "success_flag",
+          "synthetic_cost_units": 0,
+          "synthetic_latencies_ms": [],
+          "unauthorized_executor_calls": 0,
+          "uncertain_count": 0,
+          "unnecessary_continuation": false,
+          "verified_completion": true
+        },
+        "deterministic": {
+          "assessment_count": 2,
+          "assessment_records": [
+            {
+              "choice": "unsatisfied",
+              "observer_status": "fresh",
+              "step_id": "c01-s1"
+            },
+            {
+              "choice": "satisfied",
+              "observer_status": "fresh",
+              "step_id": "c01-s2"
+            }
+          ],
+          "attempted_actions": 2,
+          "executor_calls": 2,
+          "failed_episode": false,
+          "false_completion": false,
+          "final_raw_sha256": "d07c46656e4854d141c14a63411e802862f27465f68bb372a0f42256f4d4926c",
+          "first_complete_action_index": 1,
+          "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.1259,
+          "missing_latency_observations": 0,
+          "missing_or_timeout_observations": 0,
+          "planner_calls": 1,
+          "receipt_statuses": [
+            "executed",
+            "executed"
+          ],
+          "reported_complete": true,
+          "safety_violations": 0,
+          "stop_reason": "assessment_satisfied",
+          "synthetic_cost_units": 0,
+          "synthetic_latencies_ms": [],
+          "unauthorized_executor_calls": 0,
+          "uncertain_count": 0,
+          "unnecessary_continuation": false,
+          "verified_completion": true
+        },
+        "jev": {
+          "assessment_count": 2,
+          "assessment_records": [
+            {
+              "choice": "unsatisfied",
+              "evidence_ref": "task-c01-c2",
+              "kind": "choice",
+              "observer_status": "fresh",
+              "step_id": "c01-s1",
+              "synthetic_cost_units": 0.002,
+              "synthetic_latency_ms": 15
+            },
+            {
+              "choice": "satisfied",
+              "evidence_ref": "task-c01-c4",
+              "kind": "choice",
+              "observer_status": "fresh",
+              "step_id": "c01-s2",
+              "synthetic_cost_units": 0.002,
+              "synthetic_latency_ms": 15
+            }
+          ],
+          "attempted_actions": 2,
+          "executor_calls": 2,
+          "failed_episode": false,
+          "false_completion": false,
+          "final_raw_sha256": "d07c46656e4854d141c14a63411e802862f27465f68bb372a0f42256f4d4926c",
+          "first_complete_action_index": 1,
+          "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.1496,
+          "missing_latency_observations": 0,
+          "missing_or_timeout_observations": 0,
+          "planner_calls": 1,
+          "receipt_statuses": [
+            "executed",
+            "executed"
+          ],
+          "reported_complete": true,
+          "safety_violations": 0,
+          "stop_reason": "assessment_satisfied",
+          "synthetic_cost_units": 0.004,
+          "synthetic_latencies_ms": [
+            15,
+            15
+          ],
+          "unauthorized_executor_calls": 0,
+          "uncertain_count": 0,
+          "unnecessary_continuation": false,
+          "verified_completion": true
+        }
+      },
+      "category": "successful",
+      "id": "c01"
+    },
+    {
+      "arm_order": [
+        "deterministic",
+        "current",
+        "jev"
+      ],
+      "arms": {
+        "current": {
+          "assessment_count": 0,
+          "assessment_records": [],
+          "attempted_actions": 1,
+          "executor_calls": 1,
+          "failed_episode": true,
+          "false_completion": true,
+          "final_raw_sha256": "57ecb60121a23e6f23c6cccbeace800eed363018050f6d323feadbdf36778a6b",
+          "first_complete_action_index": null,
+          "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.0491,
+          "missing_latency_observations": 0,
+          "missing_or_timeout_observations": 0,
+          "planner_calls": 1,
+          "receipt_statuses": [
+            "executed"
+          ],
+          "reported_complete": true,
+          "safety_violations": 0,
+          "stop_reason": "success_flag",
+          "synthetic_cost_units": 0,
+          "synthetic_latencies_ms": [],
+          "unauthorized_executor_calls": 0,
+          "uncertain_count": 0,
+          "unnecessary_continuation": false,
+          "verified_completion": false
+        },
+        "deterministic": {
+          "assessment_count": 1,
+          "assessment_records": [
+            {
+              "choice": "unsatisfied",
+              "observer_status": "fresh",
+              "step_id": "c02-s1"
+            }
+          ],
+          "attempted_actions": 1,
+          "executor_calls": 1,
+          "failed_episode": true,
+          "false_completion": false,
+          "final_raw_sha256": "57ecb60121a23e6f23c6cccbeace800eed363018050f6d323feadbdf36778a6b",
+          "first_complete_action_index": null,
+          "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.0644,
+          "missing_latency_observations": 0,
+          "missing_or_timeout_observations": 0,
+          "planner_calls": 1,
+          "receipt_statuses": [
+            "executed"
+          ],
+          "reported_complete": false,
+          "safety_violations": 0,
+          "stop_reason": "unsatisfied_bounded_continue",
+          "synthetic_cost_units": 0,
+          "synthetic_latencies_ms": [],
+          "unauthorized_executor_calls": 0,
+          "uncertain_count": 0,
+          "unnecessary_continuation": false,
+          "verified_completion": false
+        },
+        "jev": {
+          "assessment_count": 1,
+          "assessment_records": [
+            {
+              "choice": "unsatisfied",
+              "evidence_ref": "task-c02-c2",
+              "kind": "choice",
+              "observer_status": "fresh",
+              "step_id": "c02-s1",
+              "synthetic_cost_units": 0.002,
+              "synthetic_latency_ms": 15
+            }
+          ],
+          "attempted_actions": 1,
+          "executor_calls": 1,
+          "failed_episode": true,
+          "false_completion": false,
+          "final_raw_sha256": "57ecb60121a23e6f23c6cccbeace800eed363018050f6d323feadbdf36778a6b",
+          "first_complete_action_index": null,
+          "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.0605,
+          "missing_latency_observations": 0,
+          "missing_or_timeout_observations": 0,
+          "planner_calls": 1,
+          "receipt_statuses": [
+            "executed"
+          ],
+          "reported_complete": false,
+          "safety_violations": 0,
+          "stop_reason": "unsatisfied_bounded_continue",
+          "synthetic_cost_units": 0.002,
+          "synthetic_latencies_ms": [
+            15
+          ],
+          "unauthorized_executor_calls": 0,
+          "uncertain_count": 0,
+          "unnecessary_continuation": false,
+          "verified_completion": false
+        }
+      },
+      "category": "partial",
+      "id": "c02"
+    },
+    {
+      "arm_order": [
+        "deterministic",
+        "jev",
+        "current"
+      ],
+      "arms": {
+        "current": {
+          "assessment_count": 0,
+          "assessment_records": [],
+          "attempted_actions": 3,
+          "executor_calls": 3,
+          "failed_episode": true,
+          "false_completion": false,
+          "final_raw_sha256": "8ccb11ca13746acf990e2c98fc4bfe0b0ca19c7746b17b4f00690e13f97dcd99",
+          "first_complete_action_index": null,
+          "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.1016,
+          "missing_latency_observations": 0,
+          "missing_or_timeout_observations": 0,
+          "planner_calls": 1,
+          "receipt_statuses": [
+            "executed",
+            "rejected_no_script",
+            "rejected_no_script"
+          ],
+          "reported_complete": false,
+          "safety_violations": 0,
+          "stop_reason": "attempt_limit_or_error",
+          "synthetic_cost_units": 0,
+          "synthetic_latencies_ms": [],
+          "unauthorized_executor_calls": 0,
+          "uncertain_count": 0,
+          "unnecessary_continuation": false,
+          "verified_completion": false
+        },
+        "deterministic": {
+          "assessment_count": 1,
+          "assessment_records": [
+            {
+              "choice": "unsatisfied",
+              "observer_status": "fresh",
+              "step_id": "c03-s1"
+            }
+          ],
+          "attempted_actions": 1,
+          "executor_calls": 1,
+          "failed_episode": true,
+          "false_completion": false,
+          "final_raw_sha256": "8ccb11ca13746acf990e2c98fc4bfe0b0ca19c7746b17b4f00690e13f97dcd99",
+          "first_complete_action_index": null,
+          "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.0603,
+          "missing_latency_observations": 0,
+          "missing_or_timeout_observations": 0,
+          "planner_calls": 1,
+          "receipt_statuses": [
+            "executed"
+          ],
+          "reported_complete": false,
+          "safety_violations": 0,
+          "stop_reason": "unsatisfied_bounded_continue",
+          "synthetic_cost_units": 0,
+          "synthetic_latencies_ms": [],
+          "unauthorized_executor_calls": 0,
+          "uncertain_count": 0,
+          "unnecessary_continuation": false,
+          "verified_completion": false
+        },
+        "jev": {
+          "assessment_count": 1,
+          "assessment_records": [
+            {
+              "choice": "unsatisfied",
+              "evidence_ref": "task-c03-c2",
+              "kind": "choice",
+              "observer_status": "fresh",
+              "step_id": "c03-s1",
+              "synthetic_cost_units": 0.002,
+              "synthetic_latency_ms": 15
+            }
+          ],
+          "attempted_actions": 1,
+          "executor_calls": 1,
+          "failed_episode": true,
+          "false_completion": false,
+          "final_raw_sha256": "8ccb11ca13746acf990e2c98fc4bfe0b0ca19c7746b17b4f00690e13f97dcd99",
+          "first_complete_action_index": null,
+          "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.0599,
+          "missing_latency_observations": 0,
+          "missing_or_timeout_observations": 0,
+          "planner_calls": 1,
+          "receipt_statuses": [
+            "executed"
+          ],
+          "reported_complete": false,
+          "safety_violations": 0,
+          "stop_reason": "unsatisfied_bounded_continue",
+          "synthetic_cost_units": 0.002,
+          "synthetic_latencies_ms": [
+            15
+          ],
+          "unauthorized_executor_calls": 0,
+          "uncertain_count": 0,
+          "unnecessary_continuation": false,
+          "verified_completion": false
+        }
+      },
+      "category": "partial",
+      "id": "c03"
+    },
+    {
+      "arm_order": [
+        "jev",
+        "deterministic",
+        "current"
+      ],
+      "arms": {
+        "current": {
+          "assessment_count": 0,
+          "assessment_records": [],
+          "attempted_actions": 1,
+          "executor_calls": 1,
+          "failed_episode": true,
+          "false_completion": true,
+          "final_raw_sha256": "bdf46604bf09c162aeac3b808b5f9f22f9dc3395144ceef265c417cca1166113",
+          "first_complete_action_index": null,
+          "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.0449,
+          "missing_latency_observations": 0,
+          "missing_or_timeout_observations": 0,
+          "planner_calls": 1,
+          "receipt_statuses": [
+            "executed"
+          ],
+          "reported_complete": true,
+          "safety_violations": 0,
+          "stop_reason": "success_flag",
+          "synthetic_cost_units": 0,
+          "synthetic_latencies_ms": [],
+          "unauthorized_executor_calls": 0,
+          "uncertain_count": 0,
+          "unnecessary_continuation": false,
+          "verified_completion": false
+        },
+        "deterministic": {
+          "assessment_count": 1,
+          "assessment_records": [
+            {
+              "choice": "unsatisfied",
+              "observer_status": "fresh",
+              "step_id": "c04-s1"
+            }
+          ],
+          "attempted_actions": 1,
+          "executor_calls": 1,
+          "failed_episode": true,
+          "false_completion": false,
+          "final_raw_sha256": "bdf46604bf09c162aeac3b808b5f9f22f9dc3395144ceef265c417cca1166113",
+          "first_complete_action_index": null,
+          "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.0563,
+          "missing_latency_observations": 0,
+          "missing_or_timeout_observations": 0,
+          "planner_calls": 1,
+          "receipt_statuses": [
+            "executed"
+          ],
+          "reported_complete": false,
+          "safety_violations": 0,
+          "stop_reason": "unsatisfied_bounded_continue",
+          "synthetic_cost_units": 0,
+          "synthetic_latencies_ms": [],
+          "unauthorized_executor_calls": 0,
+          "uncertain_count": 0,
+          "unnecessary_continuation": false,
+          "verified_completion": false
+        },
+        "jev": {
+          "assessment_count": 1,
+          "assessment_records": [
+            {
+              "choice": "unsatisfied",
+              "evidence_ref": "task-c04-c2",
+              "kind": "choice",
+              "observer_status": "fresh",
+              "step_id": "c04-s1",
+              "synthetic_cost_units": 0.002,
+              "synthetic_latency_ms": 15
+            }
+          ],
+          "attempted_actions": 1,
+          "executor_calls": 1,
+          "failed_episode": true,
+          "false_completion": false,
+          "final_raw_sha256": "bdf46604bf09c162aeac3b808b5f9f22f9dc3395144ceef265c417cca1166113",
+          "first_complete_action_index": null,
+          "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.0609,
+          "missing_latency_observations": 0,
+          "missing_or_timeout_observations": 0,
+          "planner_calls": 1,
+          "receipt_statuses": [
+            "executed"
+          ],
+          "reported_complete": false,
+          "safety_violations": 0,
+          "stop_reason": "unsatisfied_bounded_continue",
+          "synthetic_cost_units": 0.002,
+          "synthetic_latencies_ms": [
+            15
+          ],
+          "unauthorized_executor_calls": 0,
+          "uncertain_count": 0,
+          "unnecessary_continuation": false,
+          "verified_completion": false
+        }
+      },
+      "category": "deceptive",
+      "id": "c04"
+    },
+    {
+      "arm_order": [
+        "current",
+        "deterministic",
+        "jev"
+      ],
+      "arms": {
+        "current": {
+          "assessment_count": 0,
+          "assessment_records": [],
+          "attempted_actions": 1,
+          "executor_calls": 1,
+          "failed_episode": true,
+          "false_completion": true,
+          "final_raw_sha256": "5bd7ccf89600a424f4a8532cbda018c86bd72ef068eaf49da9892a1811b23c1a",
+          "first_complete_action_index": null,
+          "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.0465,
+          "missing_latency_observations": 0,
+          "missing_or_timeout_observations": 0,
+          "planner_calls": 1,
+          "receipt_statuses": [
+            "executed"
+          ],
+          "reported_complete": true,
+          "safety_violations": 0,
+          "stop_reason": "success_flag",
+          "synthetic_cost_units": 0,
+          "synthetic_latencies_ms": [],
+          "unauthorized_executor_calls": 0,
+          "uncertain_count": 0,
+          "unnecessary_continuation": false,
+          "verified_completion": false
+        },
+        "deterministic": {
+          "assessment_count": 2,
+          "assessment_records": [
+            {
+              "choice": "unsatisfied",
+              "observer_status": "fresh",
+              "step_id": "c05-s1"
+            },
+            {
+              "choice": "satisfied",
+              "observer_status": "fresh",
+              "step_id": "c05-s2"
+            }
+          ],
+          "attempted_actions": 2,
+          "executor_calls": 2,
+          "failed_episode": false,
+          "false_completion": false,
+          "final_raw_sha256": "2b79f88a682a255ed3d9c8cff9260be9c9e32465baa12e09abc530ecc97f2b43",
+          "first_complete_action_index": 1,
+          "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.1092,
+          "missing_latency_observations": 0,
+          "missing_or_timeout_observations": 0,
+          "planner_calls": 1,
+          "receipt_statuses": [
+            "executed",
+            "executed"
+          ],
+          "reported_complete": true,
+          "safety_violations": 0,
+          "stop_reason": "assessment_satisfied",
+          "synthetic_cost_units": 0,
+          "synthetic_latencies_ms": [],
+          "unauthorized_executor_calls": 0,
+          "uncertain_count": 0,
+          "unnecessary_continuation": false,
+          "verified_completion": true
+        },
+        "jev": {
+          "assessment_count": 2,
+          "assessment_records": [
+            {
+              "choice": "unsatisfied",
+              "evidence_ref": "task-c05-c2",
+              "kind": "choice",
+              "observer_status": "fresh",
+              "step_id": "c05-s1",
+              "synthetic_cost_units": 0.002,
+              "synthetic_latency_ms": 15
+            },
+            {
+              "choice": "satisfied",
+              "evidence_ref": "task-c05-c4",
+              "kind": "choice",
+              "observer_status": "fresh",
+              "step_id": "c05-s2",
+              "synthetic_cost_units": 0.002,
+              "synthetic_latency_ms": 15
+            }
+          ],
+          "attempted_actions": 2,
+          "executor_calls": 2,
+          "failed_episode": false,
+          "false_completion": false,
+          "final_raw_sha256": "2b79f88a682a255ed3d9c8cff9260be9c9e32465baa12e09abc530ecc97f2b43",
+          "first_complete_action_index": 1,
+          "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.1183,
+          "missing_latency_observations": 0,
+          "missing_or_timeout_observations": 0,
+          "planner_calls": 1,
+          "receipt_statuses": [
+            "executed",
+            "executed"
+          ],
+          "reported_complete": true,
+          "safety_violations": 0,
+          "stop_reason": "assessment_satisfied",
+          "synthetic_cost_units": 0.004,
+          "synthetic_latencies_ms": [
+            15,
+            15
+          ],
+          "unauthorized_executor_calls": 0,
+          "uncertain_count": 0,
+          "unnecessary_continuation": false,
+          "verified_completion": true
+        }
+      },
+      "category": "successful",
+      "id": "c05"
+    },
+    {
+      "arm_order": [
+        "jev",
+        "current",
+        "deterministic"
+      ],
+      "arms": {
+        "current": {
+          "assessment_count": 0,
+          "assessment_records": [],
+          "attempted_actions": 1,
+          "executor_calls": 1,
+          "failed_episode": true,
+          "false_completion": true,
+          "final_raw_sha256": "24a7bfff833c202c0f4cf800a822fc571aa74299e1a8a1ab6a6bc8b038eff409",
+          "first_complete_action_index": null,
+          "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.0451,
+          "missing_latency_observations": 0,
+          "missing_or_timeout_observations": 0,
+          "planner_calls": 1,
+          "receipt_statuses": [
+            "executed"
+          ],
+          "reported_complete": true,
+          "safety_violations": 0,
+          "stop_reason": "success_flag",
+          "synthetic_cost_units": 0,
+          "synthetic_latencies_ms": [],
+          "unauthorized_executor_calls": 0,
+          "uncertain_count": 0,
+          "unnecessary_continuation": false,
+          "verified_completion": false
+        },
+        "deterministic": {
+          "assessment_count": 1,
+          "assessment_records": [
+            {
+              "choice": "unsatisfied",
+              "observer_status": "fresh",
+              "step_id": "c06-s1"
+            }
+          ],
+          "attempted_actions": 1,
+          "executor_calls": 1,
+          "failed_episode": true,
+          "false_completion": false,
+          "final_raw_sha256": "24a7bfff833c202c0f4cf800a822fc571aa74299e1a8a1ab6a6bc8b038eff409",
+          "first_complete_action_index": null,
+          "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.0558,
+          "missing_latency_observations": 0,
+          "missing_or_timeout_observations": 0,
+          "planner_calls": 1,
+          "receipt_statuses": [
+            "executed"
+          ],
+          "reported_complete": false,
+          "safety_violations": 0,
+          "stop_reason": "unsatisfied_bounded_continue",
+          "synthetic_cost_units": 0,
+          "synthetic_latencies_ms": [],
+          "unauthorized_executor_calls": 0,
+          "uncertain_count": 0,
+          "unnecessary_continuation": false,
+          "verified_completion": false
+        },
+        "jev": {
+          "assessment_count": 1,
+          "assessment_records": [
+            {
+              "choice": "unsatisfied",
+              "evidence_ref": "task-c06-c2",
+              "kind": "choice",
+              "observer_status": "fresh",
+              "step_id": "c06-s1",
+              "synthetic_cost_units": 0.002,
+              "synthetic_latency_ms": 15
+            }
+          ],
+          "attempted_actions": 1,
+          "executor_calls": 1,
+          "failed_episode": true,
+          "false_completion": false,
+          "final_raw_sha256": "24a7bfff833c202c0f4cf800a822fc571aa74299e1a8a1ab6a6bc8b038eff409",
+          "first_complete_action_index": null,
+          "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.0594,
+          "missing_latency_observations": 0,
+          "missing_or_timeout_observations": 0,
+          "planner_calls": 1,
+          "receipt_statuses": [
+            "executed"
+          ],
+          "reported_complete": false,
+          "safety_violations": 0,
+          "stop_reason": "unsatisfied_bounded_continue",
+          "synthetic_cost_units": 0.002,
+          "synthetic_latencies_ms": [
+            15
+          ],
+          "unauthorized_executor_calls": 0,
+          "uncertain_count": 0,
+          "unnecessary_continuation": false,
+          "verified_completion": false
+        }
+      },
+      "category": "failed",
+      "id": "c06"
+    },
+    {
+      "arm_order": [
+        "current",
+        "jev",
+        "deterministic"
+      ],
+      "arms": {
+        "current": {
+          "assessment_count": 0,
+          "assessment_records": [],
+          "attempted_actions": 3,
+          "executor_calls": 3,
+          "failed_episode": false,
+          "false_completion": false,
+          "final_raw_sha256": "d52a9d20e860970b5042a8ea2a4f6c71b7080dbd3a5819720497c1527e392101",
+          "first_complete_action_index": 1,
+          "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.1091,
+          "missing_latency_observations": 0,
+          "missing_or_timeout_observations": 0,
+          "planner_calls": 1,
+          "receipt_statuses": [
+            "executed",
+            "executed",
+            "rejected_no_script"
+          ],
+          "reported_complete": false,
+          "safety_violations": 0,
+          "stop_reason": "attempt_limit_or_error",
+          "synthetic_cost_units": 0,
+          "synthetic_latencies_ms": [],
+          "unauthorized_executor_calls": 0,
+          "uncertain_count": 0,
+          "unnecessary_continuation": true,
+          "verified_completion": true
+        },
+        "deterministic": {
+          "assessment_count": 2,
+          "assessment_records": [
+            {
+              "choice": "uncertain",
+              "observer_status": "stale",
+              "step_id": "c07-s1"
+            },
+            {
+              "choice": "satisfied",
+              "observer_status": "fresh",
+              "step_id": "c07-s2"
+            }
+          ],
+          "attempted_actions": 2,
+          "executor_calls": 2,
+          "failed_episode": false,
+          "false_completion": false,
+          "final_raw_sha256": "d52a9d20e860970b5042a8ea2a4f6c71b7080dbd3a5819720497c1527e392101",
+          "first_complete_action_index": 1,
+          "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.1013,
+          "missing_latency_observations": 0,
+          "missing_or_timeout_observations": 0,
+          "planner_calls": 1,
+          "receipt_statuses": [
+            "executed",
+            "executed"
+          ],
+          "reported_complete": true,
+          "safety_violations": 0,
+          "stop_reason": "assessment_satisfied",
+          "synthetic_cost_units": 0,
+          "synthetic_latencies_ms": [],
+          "unauthorized_executor_calls": 0,
+          "uncertain_count": 1,
+          "unnecessary_continuation": false,
+          "verified_completion": true
+        },
+        "jev": {
+          "assessment_count": 2,
+          "assessment_records": [
+            {
+              "choice": "uncertain",
+              "kind": "choice",
+              "observer_status": "stale",
+              "step_id": "c07-s1",
+              "synthetic_cost_units": 0.002,
+              "synthetic_latency_ms": 15
+            },
+            {
+              "choice": "satisfied",
+              "evidence_ref": "task-c07-c3",
+              "kind": "choice",
+              "observer_status": "fresh",
+              "step_id": "c07-s2",
+              "synthetic_cost_units": 0.002,
+              "synthetic_latency_ms": 15
+            }
+          ],
+          "attempted_actions": 2,
+          "executor_calls": 2,
+          "failed_episode": false,
+          "false_completion": false,
+          "final_raw_sha256": "d52a9d20e860970b5042a8ea2a4f6c71b7080dbd3a5819720497c1527e392101",
+          "first_complete_action_index": 1,
+          "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.1063,
+          "missing_latency_observations": 0,
+          "missing_or_timeout_observations": 0,
+          "planner_calls": 1,
+          "receipt_statuses": [
+            "executed",
+            "executed"
+          ],
+          "reported_complete": true,
+          "safety_violations": 0,
+          "stop_reason": "assessment_satisfied",
+          "synthetic_cost_units": 0.004,
+          "synthetic_latencies_ms": [
+            15,
+            15
+          ],
+          "unauthorized_executor_calls": 0,
+          "uncertain_count": 1,
+          "unnecessary_continuation": false,
+          "verified_completion": true
+        }
+      },
+      "category": "stale",
+      "id": "c07"
+    },
+    {
+      "arm_order": [
+        "deterministic",
+        "current",
+        "jev"
+      ],
+      "arms": {
+        "current": {
+          "assessment_count": 0,
+          "assessment_records": [],
+          "attempted_actions": 3,
+          "executor_calls": 3,
+          "failed_episode": false,
+          "false_completion": false,
+          "final_raw_sha256": "f07473b4ad9728e6a3a0af57b5327412f6eb9a3f5e6fb6024b56fb81c1463ad3",
+          "first_complete_action_index": 1,
+          "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.1099,
+          "missing_latency_observations": 0,
+          "missing_or_timeout_observations": 0,
+          "planner_calls": 1,
+          "receipt_statuses": [
+            "executed",
+            "executed",
+            "rejected_no_script"
+          ],
+          "reported_complete": false,
+          "safety_violations": 0,
+          "stop_reason": "attempt_limit_or_error",
+          "synthetic_cost_units": 0,
+          "synthetic_latencies_ms": [],
+          "unauthorized_executor_calls": 0,
+          "uncertain_count": 0,
+          "unnecessary_continuation": true,
+          "verified_completion": true
+        },
+        "deterministic": {
+          "assessment_count": 2,
+          "assessment_records": [
+            {
+              "choice": "unsatisfied",
+              "observer_status": "fresh",
+              "step_id": "c08-s1"
+            },
+            {
+              "choice": "satisfied",
+              "observer_status": "fresh",
+              "step_id": "c08-s2"
+            }
+          ],
+          "attempted_actions": 2,
+          "executor_calls": 2,
+          "failed_episode": false,
+          "false_completion": false,
+          "final_raw_sha256": "f07473b4ad9728e6a3a0af57b5327412f6eb9a3f5e6fb6024b56fb81c1463ad3",
+          "first_complete_action_index": 1,
+          "invalid_or_failed_assessments": 0,
+          "local_runner_wall_time_ms": 0.1079,
+          "missing_latency_observations": 0,
+          "missing_or_timeout_observations": 0,
+          "planner_calls": 1,
+          "receipt_statuses": [
+            "executed",
+            "executed"
+          ],
+          "reported_complete": true,
+          "safety_violations": 0,
+          "stop_reason": "assessment_satisfied",
+          "synthetic_cost_units": 0,
+          "synthetic_latencies_ms": [],
+          "unauthorized_executor_calls": 0,
+          "uncertain_count": 0,
+          "unnecessary_continuation": false,
+          "verified_completion": true
+        },
+        "jev": {
+          "assessment_count": 2,
+          "assessment_records": [
+            {
+              "choice": "unsatisfied",
+              "evidence_ref": "task-c08-c2",
+              "kind": "choice",
+              "observer_status": "fresh",
+              "step_id": "c08-s1",
+              "synthetic_cost_units": 0.002,
+              "synthetic_latency_ms": 15
+            },
+            {
+              "choice": "uncertain",
+              "kind": "timeout",
+              "observer_status": "fresh",
+              "step_id": "c08-s2",
+              "synthetic_cost_units": 0.002,
+              "synthetic_latency_ms": 25
+            }
+          ],
+          "attempted_actions": 2,
+          "executor_calls": 2,
+          "failed_episode": false,
+          "false_completion": false,
+          "final_raw_sha256": "f07473b4ad9728e6a3a0af57b5327412f6eb9a3f5e6fb6024b56fb81c1463ad3",
+          "first_complete_action_index": 1,
+          "invalid_or_failed_assessments": 1,
+          "local_runner_wall_time_ms": 0.1038,
+          "missing_latency_observations": 0,
+          "missing_or_timeout_observations": 0,
+          "planner_calls": 1,
+          "receipt_statuses": [
+            "executed",
+            "executed"
+          ],
+          "reported_complete": false,
+          "safety_violations": 0,
+          "stop_reason": "uncertain_bounded_continue",
+          "synthetic_cost_units": 0.004,
+          "synthetic_latencies_ms": [
+            15,
+            25
+          ],
+          "unauthorized_executor_calls": 0,
+          "uncertain_count": 1,
+          "unnecessary_continuation": false,
+          "verified_completion": true
+        }
+      },
+      "category": "missing",
+      "id": "c08"
+    }
+  ],
+  "schema_version": "coding-agent-completion-report-v1",
+  "source_base_commit": "f9203f5d4a5bffaaf168dfb2c41faaa78ae41e65",
+  "split": "calibration",
+  "study_spec_sha256": "c55d8deeee419ed68edf7d0abcbf21003ee86e4c162ba00d47597f9d36f36f95",
+  "summary": {
+    "current": {
+      "assessment_calls": 0,
+      "denominator": 8,
+      "executor_calls": 15,
+      "failed_episodes": 5,
+      "false_completion": 4,
+      "invalid_or_failed_assessments": 0,
+      "local_runner_wall_time_ms_total": 0.6856,
+      "missing_latency_observations": 0,
+      "missing_or_timeout_observations": 0,
+      "safety_violations": 0,
+      "synthetic_cost_units": 0,
+      "synthetic_p50_latency_ms": null,
+      "synthetic_p95_latency_ms": null,
+      "unauthorized_executor_calls": 0,
+      "uncertain_terminal": 0,
+      "unnecessary_continuation": 2,
+      "verified_completion": 3
+    },
+    "deterministic": {
+      "assessment_calls": 12,
+      "denominator": 8,
+      "executor_calls": 12,
+      "failed_episodes": 4,
+      "false_completion": 0,
+      "invalid_or_failed_assessments": 0,
+      "local_runner_wall_time_ms_total": 0.6811,
+      "missing_latency_observations": 0,
+      "missing_or_timeout_observations": 0,
+      "safety_violations": 0,
+      "synthetic_cost_units": 0,
+      "synthetic_p50_latency_ms": null,
+      "synthetic_p95_latency_ms": null,
+      "unauthorized_executor_calls": 0,
+      "uncertain_terminal": 0,
+      "unnecessary_continuation": 0,
+      "verified_completion": 4
+    },
+    "jev": {
+      "assessment_calls": 12,
+      "denominator": 8,
+      "executor_calls": 12,
+      "failed_episodes": 4,
+      "false_completion": 0,
+      "invalid_or_failed_assessments": 1,
+      "local_runner_wall_time_ms_total": 0.7187,
+      "missing_latency_observations": 0,
+      "missing_or_timeout_observations": 0,
+      "safety_violations": 0,
+      "synthetic_cost_units": 0.024,
+      "synthetic_p50_latency_ms": 15.0,
+      "synthetic_p95_latency_ms": 25,
+      "unauthorized_executor_calls": 0,
+      "uncertain_terminal": 1,
+      "unnecessary_continuation": 0,
+      "verified_completion": 4
+    }
+  }
+}
