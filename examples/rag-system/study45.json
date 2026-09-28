@@ -1,0 +1,22 @@
+{
+  "study_id": "rag-evidence-45-v1",
+  "seed": 4501,
+  "assignment_unit": "case",
+  "calibration_ids": ["C01", "C02"],
+  "holdout_ids": ["H01", "H02", "H03", "H04", "H05", "H06", "H07", "H08"],
+  "rubric": "relevant means directly answers the requested item; uncertain is retained; irrelevant is excluded; an explicit contradiction for a selected claim is retained by host policy",
+  "minimum_useful_effect": {"answer_success_gain_over_lexical": 0.15, "max_missing_outcomes": 0, "max_contradiction_omissions": 0, "max_assessor_calls_per_case": 1},
+  "stop_rule": "one fixed pass over all eight holdout cases and three arms; no early stop or tuning from holdout; synthetic evidence never authorizes adoption",
+  "cases": [
+    {"id":"C01","query":"What is Atlas status?","passages":[["a1","registry","1:1","Atlas status is open","atlas","supports"],["a2","blog","2:2","Atlas status is closed","atlas","contradicts"],["a3","news","3:3","Atlas launch is tomorrow","launch","supports"]],"gold":{"relevant":["a1","a2"],"expected":"conflicted","citation":"a1","conflict":"a2"},"assess":{"a1":"relevant","a2":"relevant","a3":"irrelevant"}},
+    {"id":"C02","query":"What is Beacon status?","passages":[["b1","news","1:1","Beacon event was popular","event","supports"],["b2","registry","2:2","The Beacon application remains pending","beacon","supports"]],"gold":{"relevant":["b2"],"expected":"supported","citation":"b2"},"assess":{"b1":"irrelevant","b2":"relevant"}},
+    {"id":"H01","query":"What is Cedar status?","passages":[["h1a","forum","1:1","Cedar popularity is high","popularity","supports"],["h1b","registry","4:4","The Cedar filing is approved","cedar","supports"]],"gold":{"relevant":["h1b"],"expected":"supported","citation":"h1b"},"assess":{"h1a":"irrelevant","h1b":"relevant"}},
+    {"id":"H02","query":"What is Delta status?","passages":[["h2a","registry","1:1","The Delta permit is active","delta","supports"],["h2b","audit","3:3","The permit was later revoked","delta","contradicts"],["h2c","blog","2:2","Delta sales rose","sales","supports"]],"gold":{"relevant":["h2a","h2b"],"expected":"conflicted","citation":"h2a","conflict":"h2b"},"assess":{"h2a":"relevant","h2b":"irrelevant","h2c":"irrelevant"}},
+    {"id":"H03","query":"What is Echo status?","passages":[["h3a","blog","1:1","Echo is a music effect","music","supports"],["h3b","archive","2:2","No record concerns the requested Echo filing","other","uncertain"]],"gold":{"relevant":[],"expected":"abstain"},"assess":{"h3a":"irrelevant","h3b":"irrelevant"}},
+    {"id":"H04","query":"What is Foxtrot status?","passages":[["h4a","forum","1:1","Foxtrot status is excellent","opinion","supports"],["h4b","registry","2:2","The Foxtrot application is denied","foxtrot","supports"]],"gold":{"relevant":["h4b"],"expected":"supported","citation":"h4b"},"assess":{"h4a":"irrelevant","h4b":"relevant"}},
+    {"id":"H05","query":"What is Grove status?","passages":[["h5a","registry","1:1","The Grove permit is pending","grove","supports"],["h5b","agency","2:2","The permit has since been issued","grove","contradicts"],["h5c","blog","3:3","Grove trees are tall","trees","supports"]],"gold":{"relevant":["h5a","h5b"],"expected":"conflicted","citation":"h5a","conflict":"h5b"},"assess":{"h5a":"relevant","h5b":"relevant","h5c":"irrelevant"}},
+    {"id":"H06","query":"What is Harbor status?","passages":[["h6a","blog","1:1","Harbor status update for weather","weather","supports"],["h6b","registry","2:2","No Harbor permit record was found","harbor","uncertain"]],"gold":{"relevant":["h6b"],"expected":"abstain"},"assess":{"h6a":"irrelevant","h6b":"uncertain"}},
+    {"id":"H07","query":"What is Iris status?","passages":[["h7a","registry","1:1","The Iris license is current","iris","supports"],["h7b","blog","2:2","Iris status in art is disputed","art","supports"]],"gold":{"relevant":["h7a"],"expected":"supported","citation":"h7a"},"assess":{"h7a":"relevant","h7b":"irrelevant"}},
+    {"id":"H08","query":"What is Juniper status?","passages":[["h8a","press","1:1","Juniper status remains open","juniper","supports"],["h8b","audit","2:2","Its application was closed yesterday","juniper","contradicts"],["h8c","blog","3:3","Juniper status is popular","popularity","supports"]],"gold":{"relevant":["h8a","h8b"],"expected":"conflicted","citation":"h8a","conflict":"h8b"},"assess":{"h8a":"relevant","h8b":"uncertain","h8c":"irrelevant"}}
+  ]
+}
