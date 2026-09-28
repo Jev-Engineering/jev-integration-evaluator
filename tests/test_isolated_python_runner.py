@@ -190,6 +190,14 @@ def test_private_output_archive_is_exclusive_anchored_and_phase_bound(tmp_path):
                                            trusted_receipt_sha256=result.receipt_sha256,
                                            trusted_archive_sha256=digest)
     assert restored == result.private_outputs
+    alias = private / 'archive-hardlink'
+    os.link(path, alias)
+    with pytest.raises(runner.RunnerError, match='unsafe_private_archive'):
+        read_private_output_archive(path, root, spec, result.receipt,
+                                    phase='baseline', attempt=1,
+                                    trusted_receipt_sha256=result.receipt_sha256,
+                                    trusted_archive_sha256=digest)
+    alias.unlink()
     with pytest.raises(runner.RunnerError, match='private_archive_exists_no_replay'):
         write_private_output_archive(path, root, spec, result.receipt,
                                      result.private_outputs, phase='baseline', attempt=1,
