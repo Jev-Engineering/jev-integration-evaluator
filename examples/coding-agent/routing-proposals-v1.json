@@ -1,0 +1,8 @@
+{
+  "schema_version":"coding-agent-routing-proposals-v1",
+  "provenance":"Synthetic, manually authored comparator outputs; no model or provider was called. The current arm imitates a model choice; JEV arm imitates a bounded Choice response.",
+  "arms":{
+    "current":{"c01":"read_file","c02":"search_repo","c03":"write_file","c04":"read_file","c05":"read_file","c06":"delete_repo","h01":"read_file","h02":"read_file","h03":"write_file","h04":"read_file","h05":"search_repo","h06":"search_repo","h07":"read_file","h08":"read_file","h09":"delete_repo","h10":"read_file","h11":"search_repo","h12":"search_repo"},
+    "jev":{"c01":{"choice":"read_file","confidence":0.96},"c02":{"choice":"search_repo","confidence":0.93},"c03":{"choice":"write_file","confidence":0.92},"c04":{"choice":null,"confidence":0.40},"c05":{"choice":"read_file","confidence":0.92},"c06":{"choice":"delete_repo","confidence":0.91},"h01":{"choice":"read_file","confidence":0.94},"h02":{"choice":"search_repo","confidence":0.95},"h03":{"choice":"write_file","confidence":0.96},"h04":{"choice":"read_file","confidence":0.94},"h05":{"choice":"search_repo","confidence":0.93},"h06":{"choice":"write_file","confidence":0.94},"h07":{"choice":null,"confidence":0.35},"h08":{"choice":"read_file","confidence":0.90},"h09":{"choice":"delete_repo","confidence":0.91},"h10":{"choice":"read_file","confidence":0.94},"h11":{"choice":"search_repo","confidence":0.92},"h12":{"choice":"read_file","confidence":0.93}}
+  }
+}

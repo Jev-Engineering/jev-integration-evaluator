@@ -1,0 +1,78 @@
+{
+  "schema_version": "coding-agent-routing-labels-v1",
+  "provenance": "Manually authored from the stated objective, available registered capability, exact argument schema, and permission before comparator predictions; labels are synthetic, not observed tool outcomes.",
+  "labels": {
+    "h03": {
+      "postcondition": "Write capability and authorized arguments",
+      "route": "write_file"
+    },
+    "c06": {
+      "postcondition": "No registered delete capability",
+      "route": null
+    },
+    "h01": {
+      "postcondition": "Read capability and authorized path",
+      "route": "read_file"
+    },
+    "h08": {
+      "postcondition": "Permission denied",
+      "route": null
+    },
+    "c03": {
+      "postcondition": "Write capability and authorized arguments",
+      "route": "write_file"
+    },
+    "h07": {
+      "postcondition": "Ambiguous requested action",
+      "route": null
+    },
+    "c04": {
+      "postcondition": "Ambiguous requested action",
+      "route": null
+    },
+    "h09": {
+      "postcondition": "Unregistered delete action",
+      "route": null
+    },
+    "c01": {
+      "postcondition": "Read capability and authorized path",
+      "route": "read_file"
+    },
+    "h06": {
+      "postcondition": "Write capability and authorized arguments",
+      "route": "write_file"
+    },
+    "h11": {
+      "postcondition": "Search capability and authorized query",
+      "route": "search_repo"
+    },
+    "h05": {
+      "postcondition": "Search capability and authorized query",
+      "route": "search_repo"
+    },
+    "c05": {
+      "postcondition": "Permission denied",
+      "route": null
+    },
+    "c02": {
+      "postcondition": "Search capability and authorized query",
+      "route": "search_repo"
+    },
+    "h12": {
+      "postcondition": "Read capability and authorized path",
+      "route": "read_file"
+    },
+    "h10": {
+      "postcondition": "Wrong argument type",
+      "route": null
+    },
+    "h02": {
+      "postcondition": "Search capability and authorized query",
+      "route": "search_repo"
+    },
+    "h04": {
+      "postcondition": "Read capability and authorized path",
+      "route": "read_file"
+    }
+  }
+}
