@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:host-runtime-connected:1.0",
+  "$comment": "Strict serialized shape. Python callbacks and trusted digest provenance are checked by HostRuntimeLifecycle, not by JSON Schema.",
+  "oneOf": [
+    {"$ref": "#/$defs/config"},
+    {"$ref": "#/$defs/authority"},
+    {"$ref": "#/$defs/status"},
+    {"$ref": "#/$defs/qualification"}
+  ],
+  "$defs": {
+    "sha": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "nonempty": {"type": "string", "minLength": 1},
+    "file": {
+      "type": "object", "properties": {
+        "path": {"$ref": "#/$defs/nonempty"}, "sha256": {"$ref": "#/$defs/sha"}},
+      "required": ["path", "sha256"], "additionalProperties": false
+    },
+    "plan": {
+      "type": "object", "properties": {
+        "files": {"type": "array", "minItems": 1, "maxItems": 64,
+          "items": {"$ref": "#/$defs/file"}}},
+      "required": ["files"], "additionalProperties": false
+    },
+    "source_binding": {
+      "type": "object", "properties": {
+        "reviewed_file_sha256": {"$ref": "#/$defs/sha"},
+        "applied_file_sha256": {"$ref": "#/$defs/sha"},
+        "adapter_path": {"$ref": "#/$defs/nonempty"},
+        "adapter_sha256": {"$ref": "#/$defs/sha"}},
+      "required": ["reviewed_file_sha256", "applied_file_sha256", "adapter_path", "adapter_sha256"],
+      "additionalProperties": false
+    },
+    "config": {
+      "type": "object", "properties": {
+        "endpoint": {"type": "string", "pattern": "^https://[^?#]+$"},
+        "credential_ref": {"const": "env:TYPESAFE_API_KEY"},
+        "model": {"const": "jev-1.13.0"},
+        "environment_digest": {"$ref": "#/$defs/sha"},
+        "source_root": {"$ref": "#/$defs/nonempty"},
+        "source_plan": {"$ref": "#/$defs/plan"},
+        "source_bindings": {"type": "object", "minProperties": 1,
+          "additionalProperties": {"$ref": "#/$defs/source_binding"}}
+      },
+      "required": ["endpoint", "credential_ref", "model", "environment_digest", "source_root", "source_plan", "source_bindings"],
+      "additionalProperties": false
+    },
+    "egress_grant": {
+      "type": "object", "properties": {
+        "endpoint": {"type": "string", "pattern": "^https://[^?#]+$"},
+        "credential_ref": {"const": "env:TYPESAFE_API_KEY"},
+        "model": {"const": "jev-1.13.0"},
+        "environment_digest": {"$ref": "#/$defs/sha"},
+        "source_digest": {"$ref": "#/$defs/sha"},
+        "dependency_digest": {"$ref": "#/$defs/sha"},
+        "budget_digest": {"$ref": "#/$defs/sha"},
+        "adapters_digest": {"$ref": "#/$defs/sha"},
+        "mode": {"enum": ["shadow", "canary", "active"]},
+        "issued_at": {"$ref": "#/$defs/nonempty"},
+        "expires_at": {"$ref": "#/$defs/nonempty"}
+      },
+      "required": ["endpoint", "credential_ref", "model", "environment_digest", "source_digest", "dependency_digest", "budget_digest", "adapters_digest", "mode", "issued_at", "expires_at"],
+      "additionalProperties": false
+    },
+    "receipt_entry": {
+      "type": "object", "properties": {
+        "receipt": {"type": "object", "minProperties": 1},
+        "runtime_contract_hash": {"$ref": "#/$defs/sha"}},
+      "required": ["receipt", "runtime_contract_hash"], "additionalProperties": false
+    },
+    "evidence": {
+      "type": "object", "properties": {
+        "study": {"type": "object", "minProperties": 1},
+        "baseline": {"type": "array", "minItems": 1},
+        "treatment": {"type": "array", "minItems": 1},
+        "gate_bundle": {"type": "object", "minProperties": 1},
+        "inventory": {"type": "object", "minProperties": 1},
+        "expected_study_digest": {"$ref": "#/$defs/sha"},
+        "deployment_grant": {
+          "type": "object", "properties": {
+            "study_digest": {"$ref": "#/$defs/sha"},
+            "gate_manifest_digest": {"$ref": "#/$defs/sha"},
+            "baseline_digest": {"$ref": "#/$defs/sha"},
+            "treatment_digest": {"$ref": "#/$defs/sha"},
+            "gate_bundle_digest": {"$ref": "#/$defs/sha"},
+            "inventory_digest": {"$ref": "#/$defs/sha"},
+            "mode": {"enum": ["canary", "active"]},
+            "deployment_id": {"$ref": "#/$defs/nonempty"},
+            "issued_at": {"$ref": "#/$defs/nonempty"},
+            "expires_at": {"$ref": "#/$defs/nonempty"}},
+          "required": ["study_digest", "gate_manifest_digest", "baseline_digest", "treatment_digest", "gate_bundle_digest", "inventory_digest", "mode", "deployment_id", "issued_at", "expires_at"],
+          "additionalProperties": false}
+      },
+      "required": ["study", "baseline", "treatment", "gate_bundle", "inventory", "expected_study_digest", "deployment_grant"],
+      "additionalProperties": false
+    },
+    "activation": {
+      "type": "object", "properties": {"evidence": {"$ref": "#/$defs/evidence"}},
+      "required": ["evidence"],
+      "patternProperties": {"^(?!evidence$)[A-Za-z0-9_.:-]+$": {"$ref": "#/$defs/receipt_entry"}},
+      "additionalProperties": false
+    },
+    "authority": {
+      "type": "object", "properties": {
+        "egress_grant": {"$ref": "#/$defs/egress_grant"},
+        "activation": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/activation"}]}},
+      "required": ["egress_grant", "activation"], "additionalProperties": false
+    },
+    "status": {
+      "type": "object", "properties": {
+        "requested_mode": {"enum": ["off", "shadow", "canary", "active"]},
+        "effective_mode": {"enum": ["off", "shadow", "canary", "active"]},
+        "rejection_reason": {"type": ["string", "null"]},
+        "connected": {"type": "boolean"},
+        "configuration_digest": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha"}]},
+        "placements": {"type": "array", "items": {"$ref": "#/$defs/nonempty"}},
+        "owner_pid": {"type": "integer", "minimum": 1},
+        "budget": {"type": "object", "minProperties": 1},
+        "secrets_exposed": {"const": false}},
+      "required": ["requested_mode", "effective_mode", "rejection_reason", "connected", "configuration_digest", "placements", "owner_pid", "budget", "secrets_exposed"],
+      "additionalProperties": false
+    },
+    "qualification": {
+      "type": "object", "properties": {
+        "kind": {"const": "host_runtime_connected_qualification_v1"},
+        "supported_modes": {"type": "array", "items": {"enum": ["off", "shadow", "canary", "active"]}},
+        "connected_config_fields": {"type": "array", "items": {"type": "string"}},
+        "authority_fields": {"type": "array", "items": {"type": "string"}},
+        "activation_evidence_fields": {"type": "array", "items": {"type": "string"}},
+        "required_host_inputs": {"type": "array", "items": {"type": "string"}},
+        "credential_reference": {"const": "env:TYPESAFE_API_KEY"},
+        "provider_connectivity": {"const": "not_tested"},
+        "observed_benefit": {"const": "not_established"},
+        "release_gate_complete": {"const": false}},
+      "required": ["kind", "supported_modes", "connected_config_fields", "authority_fields", "activation_evidence_fields", "required_host_inputs", "credential_reference", "provider_connectivity", "observed_benefit", "release_gate_complete"],
+      "additionalProperties": false
+    }
+  }
+}

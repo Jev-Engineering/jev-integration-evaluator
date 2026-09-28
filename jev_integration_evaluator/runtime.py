@@ -110,12 +110,16 @@ class SafeRouter:
         with self.lock:
             self.suspended=True
             self.cache.clear()
+            if callable(getattr(self.budget_coordinator, 'claim_effect', None)):
+                self.budget_coordinator.suspend()
 
     def revoke_activation(self):
         with self.lock:
             self.activation["revoked"]=True
             self.suspended=True
             self.cache.clear()
+            if callable(getattr(self.budget_coordinator, 'claim_effect', None)):
+                self.budget_coordinator.suspend()
 
     def release_task(self, task_id: str):
         """Host calls only when the whole task ends; premature release resets its budget."""
@@ -316,7 +320,12 @@ class SafeRouter:
                 budget["calls"]+=1; budget["reserved_cost"]+=cost_bound; self.stats["calls"]+=1
         started=time.monotonic()
         try:
+            egress_check = getattr(self, 'host_egress_check', None)
+            if egress_check is not None:
+                egress_check()
             response=cached or self.client.evaluate(copy.deepcopy(state),copy.deepcopy(questions),self.config["model"],self.config["timeout_ms"])
+            if egress_check is not None:
+                egress_check()
             validate_response(response,questions,self.config["model"])
             # Capture known usage even when the response arrived too late to use.
             in_price=self.config.get("input_usd_per_million"); out_price=self.config.get("output_usd_per_million")

@@ -1,6 +1,7 @@
 """Minimal TypeSafe HTTP adapter with explicit egress consent and strict response checking."""
 from __future__ import annotations
 import os
+import hmac
 import json
 import time
 import urllib.error
@@ -70,6 +71,11 @@ class TypeSafeHTTPClient:
         if not key: raise InputError("Set TYPESAFE_API_KEY in the process environment")
         self.endpoint=endpoint; self._key=key; self.max_request_bytes=max_request_bytes
         self.opener=urllib.request.build_opener(NoRedirect)
+
+    def credential_still_current(self) -> bool:
+        """Reject use after process key rotation; never disclose the key."""
+        current = os.environ.get('TYPESAFE_API_KEY')
+        return isinstance(current, str) and hmac.compare_digest(current, self._key)
 
     def evaluate(self,state,questions,model,timeout_ms):
         validate_questions(questions)

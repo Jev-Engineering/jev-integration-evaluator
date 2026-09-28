@@ -7,7 +7,7 @@ retain the original operation. No handler installs dependencies or grants approv
 from __future__ import annotations
 
 import copy
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 import math
 import threading
 import weakref
@@ -114,11 +114,79 @@ class Context:
         if not isinstance(self.baseline, str) or self.baseline not in self.options:
             raise PolicyBlock('baseline_is_not_a_registered_option')
 
-    def host_operation(self, function, *args):
+    def host_operation(self, function, *args, effect_operation=None):
         """Cross the host-effect boundary without converting host control flow."""
-        self.host_operation_started = True
+        ledger = self.router.budget_coordinator
         try:
-            return function(*args)
+            connected = callable(getattr(ledger, 'claim_effect', None))
+            if not connected:
+                self.host_operation_started = True
+            with (self.router.lock if connected else nullcontext()):
+                with (ledger.effect_boundary() if connected else nullcontext()):
+                    if connected:
+                        fallback = effect_operation in ('baseline', 'blocked')
+                        try:
+                            check = getattr(self.router, 'host_source_check', None)
+                            if check is not None:
+                                check()
+                            if ledger.task_closed(self.task_id) or self.router.closed:
+                                raise PolicyBlock('task_or_runtime_closed_before_effect')
+                        except PolicyBlock:
+                            raise
+                        except Exception:
+                            raise PolicyBlock('runtime_authority_unavailable_before_effect') from None
+                        if not fallback:
+                            check_egress = getattr(self.router, 'host_egress_check', None)
+                            if check_egress is not None:
+                                try:
+                                    check_egress()
+                                except Exception:
+                                    raise UseFallback('runtime_authority_unavailable_before_effect') from None
+                            if (self.router.suspended or not ledger.permits_result(self.task_id)
+                                    or not self.router._active_authorized(
+                                        self.spec['questions'], self.spec['primary_question'],
+                                        self.spec['evidence_question'], self.spec['label_actions'])):
+                                raise UseFallback('runtime_revoked_before_effect')
+                        # The reviewed registry supplies stable semantic IDs.
+                        # Aliases of one callable collapse to one effect; two
+                        # closures with the same qualname remain distinct.
+                        options = getattr(self, 'options', None)
+                        if isinstance(options, dict):
+                            executor = getattr(function, '__func__', function)
+                            effect_ids = ['registry:' + action for action, candidate in options.items()
+                                if getattr(candidate, '__func__', candidate) is executor]
+                            if function is getattr(self, 'original', None):
+                                effect_ids.append('registry:' + self.baseline)
+                            for role in ('blocked', 'generate', 'finish', 'retain', 'completed'):
+                                candidate = self.b.get(role)
+                                if callable(candidate) and getattr(candidate, '__func__', candidate) is executor:
+                                    effect_ids.append('binding:' + role)
+                            for step, candidate in getattr(self, '_reviewed_step_executors', {}).items():
+                                if getattr(candidate, '__func__', candidate) is executor:
+                                    effect_ids.append('step:' + step)
+                            if effect_ids:
+                                executor_identity = min(effect_ids)
+                            else:
+                                raise PolicyBlock('unreviewed_effect_executor_identity')
+                        else:
+                            executor = getattr(function, '__func__', function)
+                            executor_identity = (getattr(executor, '__module__', type(executor).__module__)
+                                                 + ':' + getattr(executor, '__qualname__',
+                                                                type(executor).__qualname__))
+                        try:
+                            key = ledger.claim_effect(self.task_id, self.request_hash,
+                                self.spec['candidate_id'], executor_identity)
+                        except InputError:
+                            self.host_operation_started = True
+                            raise PolicyBlock('runtime_effect_replay_or_journal_unavailable') from None
+                        self.host_operation_started = True
+                    result = function(*args)
+                    if connected:
+                        try:
+                            ledger.complete_effect(key)
+                        except InputError:
+                            raise PolicyBlock('runtime_effect_completion_unavailable') from None
+                    return result
         except (PolicyBlock, UseFallback) as exc:
             self.host_operation_exception = exc
             raise
@@ -159,6 +227,12 @@ class Context:
     def late(self, action, *, registry=None, expected=None, receipt=True):
         """Caller holds the EXISTING host lock across this check and the operation."""
         self.stable()
+        check_source = getattr(self.router, 'host_source_check', None)
+        if check_source is not None:
+            try:
+                check_source()
+            except Exception:
+                raise PolicyBlock('runtime_source_or_configuration_drift') from None
         current = _registry(_read(registry or self.b['registry'], self.request))
         if action not in current:
             raise PolicyBlock('action_no_longer_registered')
@@ -170,10 +244,22 @@ class Context:
         if (action not in gate.allowed_actions or gate.hard_block
                 or (gate.approval_required and not gate.approval_granted)):
             raise PolicyBlock('late_host_authorization_denied')
-        if receipt and (self.router.suspended or self.router.closed or not self.router.budget_coordinator.permits_result(self.task_id)
-                        or not self.router._active_authorized(self.spec['questions'], self.spec['primary_question'],
-                                                              self.spec['evidence_question'], self.spec['label_actions'])):
-            raise PolicyBlock('runtime_revoked_expired_or_exhausted_before_execution')
+        if (callable(getattr(self.router.budget_coordinator, 'claim_effect', None))
+                and self.router.budget_coordinator.task_closed(self.task_id)):
+            raise PolicyBlock('task_closed_before_execution')
+        if receipt:
+            check_egress = getattr(self.router, 'host_egress_check', None)
+            if check_egress is not None:
+                try:
+                    check_egress()
+                except Exception:
+                    raise UseFallback('runtime_authority_unavailable_before_execution') from None
+            if (self.router.suspended or self.router.closed
+                    or not self.router.budget_coordinator.permits_result(self.task_id)
+                    or not self.router._active_authorized(
+                        self.spec['questions'], self.spec['primary_question'],
+                        self.spec['evidence_question'], self.spec['label_actions'])):
+                raise UseFallback('runtime_revoked_expired_or_exhausted_before_execution')
         return current[action]
 
     def evidence(self, outcome=None):
@@ -207,11 +293,13 @@ class Context:
 
     def fallback(self, reason):
         if self.policy['fallback'] != 'baseline':
-            return self.host_operation(self.b['blocked'], self.request, reason)
+            return self.host_operation(self.b['blocked'], self.request, reason,
+                                       effect_operation='blocked')
         with self.guard():
             self.audit_intent(self.baseline)
             self.late(self.baseline, receipt=False)
-            return self.host_operation(self.original, self.request)
+            return self.host_operation(self.original, self.request,
+                                       effect_operation='baseline')
 
     def execute(self, action, extra=None):
         fn = self.options.get(action)
@@ -221,7 +309,8 @@ class Context:
             if extra is not None: extra()
             self.late(action, expected=fn)
             # There is deliberately no retry or fallback surrounding this call.
-            return self.host_operation(fn, self.request)
+            return self.host_operation(fn, self.request,
+                                       effect_operation='action:' + action)
 
 
 def _action_a(c):
@@ -284,7 +373,8 @@ def _action_d(c):
         if _items(c, provenance=True) != records: raise PolicyBlock('retrieved_evidence_changed')
         if c.late(action) != c.options[action]: raise PolicyBlock('evidence_selection_changed')
         # Relevance only selects supplied records. It never turns them into facts.
-        return c.host_operation(c.b['generate'], c.request, selected)
+        return c.host_operation(c.b['generate'], c.request, selected,
+                                effect_operation='generate:' + action)
 
 
 def _lookup(value, path):
@@ -319,10 +409,12 @@ def _action_e(c):
         c.audit_intent(c.baseline)
         c.late(c.baseline, receipt=False)
         before = copy.deepcopy(_read(c.b['observe'], c.request))
-        outcome = c.host_operation(c.original, c.request)
+        outcome = c.host_operation(c.original, c.request,
+                                   effect_operation='baseline')
         # A completed side effect is never described as rolled back by this handler.
         try: after = copy.deepcopy(_read(c.b['observe'], c.request))
-        except PolicyBlock: return c.host_operation(c.b['finish'], c.request, outcome, c.policy['failure_action'])
+        except PolicyBlock: return c.host_operation(c.b['finish'], c.request, outcome, c.policy['failure_action'],
+                                                    effect_operation='finish:failure')
     disposition = c.policy['failure_action']
     try:
         action = c.select({'host': c.evidence(copy.deepcopy(outcome)), 'before': before, 'after': after, 'outcome': outcome})
@@ -337,7 +429,8 @@ def _action_e(c):
             raise
         pass
     # The host's read-only finishing operation receives the REAL completed outcome.
-    return c.host_operation(c.b['finish'], c.request, outcome, disposition)
+    return c.host_operation(c.b['finish'], c.request, outcome, disposition,
+                            effect_operation='finish:' + disposition)
 
 
 def _transition_value(c, action, values):
@@ -373,6 +466,7 @@ def _action_g(c):
     steps = _registry(_read(c.b['step_registry'], c.request))
     if any(step not in steps or not callable(steps[step]) for step in plan):
         raise PolicyBlock('plan_contains_unregistered_steps')
+    c._reviewed_step_executors = steps
     results = []
     # Validate the plan option, then recheck legality for EACH actual step.
     with c.guard():
@@ -382,14 +476,16 @@ def _action_g(c):
             with c.guard():
                 c.audit_intent(step)
                 fn = c.late(step, registry=c.b['step_registry'], expected=steps[step])
-                results.append(c.host_operation(fn, c.request))
+                results.append(c.host_operation(fn, c.request,
+                                                effect_operation='step:' + step))
         except PolicyBlock as exc:
             if exc is c.host_operation_exception or exc is c.host_guard_exception:
                 raise
             if results:
                 raise PartialPlanError(results, step) from exc
             raise
-    return c.host_operation(c.b['finish'], c.request, results)
+    return c.host_operation(c.b['finish'], c.request, results,
+                            effect_operation='finish:plan')
 
 
 def _action_h(c):
@@ -402,7 +498,8 @@ def _action_h(c):
         c.audit_intent(action)
         if _items(c) != records: raise PolicyBlock('context_changed_after_assessment')
         if c.late(action) != c.options[action]: raise PolicyBlock('retention_option_changed')
-        return c.host_operation(c.b['retain'], c.request, selected)
+        return c.host_operation(c.b['retain'], c.request, selected,
+                                effect_operation='retain:' + action)
 
 
 def _action_i(c):
@@ -411,7 +508,8 @@ def _action_i(c):
         raise PolicyBlock('explicit_effect_state_required')
     if state.get('state') == 'completed':
         c.stable()
-        return c.host_operation(c.b['completed'], c.request)
+        return c.host_operation(c.b['completed'], c.request,
+                                effect_operation='completed_effect')
     if state.get('state') not in ('not_started', 'unknown') or (state['state'] == 'unknown' and not state['idempotent']):
         raise PolicyBlock('nonidempotent_effect_must_not_be_repeated')
     attempt = _read(c.b['attempt'], c.request)
@@ -452,7 +550,8 @@ def _action_j(c):
             valid = valid and _read(c.b['verify_child'], c.request, action, result) is True
         except PolicyBlock:
             valid = False  # The child already completed; retain its real outcome for inspection.
-        return c.host_operation(c.b['finish'], c.request, result, 'accept' if valid else 'inspect')
+        return c.host_operation(c.b['finish'], c.request, result, 'accept' if valid else 'inspect',
+                                effect_operation='finish:delegation')
     finally:
         slots.release()
 
