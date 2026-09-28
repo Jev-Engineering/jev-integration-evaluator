@@ -14,12 +14,13 @@
     "study_evaluation": {"anyOf": [{"type": "object"}, {"type": "null"}]},
     "monitor_status": {"type": "string", "minLength": 1},
     "monitor_recommendation": {"type": "string", "minLength": 1},
+    "monitor_report_digest": {"anyOf": [{"$ref": "#/$defs/hash"}, {"type": "null"}]},
     "exposure_action": {"enum": ["none", "suspend"]},
     "contract_digest": {"$ref": "#/$defs/hash"}
   },
   "required": ["schema_version", "link_digest", "collection_digest", "code_wiring",
     "provider_connectivity", "task_outcomes", "supported_benefit", "activation_eligible",
-    "study_evaluation", "monitor_status", "monitor_recommendation", "exposure_action", "contract_digest"],
+    "study_evaluation", "monitor_status", "monitor_recommendation", "monitor_report_digest", "exposure_action", "contract_digest"],
   "additionalProperties": false,
   "$defs": {"hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
 }

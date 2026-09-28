@@ -334,12 +334,14 @@ def evaluate_linked(link: dict, study: dict, collection: dict, *,
     if monitor_rows is not None and monitor_plan is None:
         raise InputError('Unfrozen monitor evidence is unsupported')
     monitor_status, monitor_recommendation, exposure_action = 'not_run', 'none', 'none'
+    monitor_report_digest = None
     if monitor_rows is not None:
         from .monitoring import evaluate_monitor
         monitor_report = evaluate_monitor(monitor_plan, monitor_rows,
             expected_digest=link['monitor_digest'], as_of=monitor_as_of)
         monitor_status = monitor_report['status']
         monitor_recommendation = monitor_report['recommendation']
+        monitor_report_digest = monitor_report['contract_digest']
         if monitor_recommendation == 'suspend':
             exposure_action = 'suspend'
     if collection['status'] != 'synthetic_complete':
@@ -351,7 +353,7 @@ def evaluate_linked(link: dict, study: dict, collection: dict, *,
             'task_outcomes': collection['status'], 'supported_benefit': False,
             'activation_eligible': False, 'study_evaluation': None,
             'monitor_status': monitor_status, 'monitor_recommendation': monitor_recommendation,
-            'exposure_action': exposure_action})
+            'monitor_report_digest': monitor_report_digest, 'exposure_action': exposure_action})
         validate_contract(result, 'observed-evaluation')
         return result
     report = evaluate_study(study, collection['baseline'], collection['jev'],
@@ -363,6 +365,6 @@ def evaluate_linked(link: dict, study: dict, collection: dict, *,
         'task_outcomes': 'synthetic_complete', 'supported_benefit': False,
         'activation_eligible': False, 'study_evaluation': report,
         'monitor_status': monitor_status, 'monitor_recommendation': monitor_recommendation,
-        'exposure_action': exposure_action})
+        'monitor_report_digest': monitor_report_digest, 'exposure_action': exposure_action})
     validate_contract(result, 'observed-evaluation')
     return result

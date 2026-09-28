@@ -273,10 +273,12 @@ def test_frozen_monitor_recomputes_complete_denominator_and_only_suspends(tmp_pa
             monitor_plan=monitor, monitor_rows=outcomes, monitor_as_of=as_of)
     healthy = evaluate(rows)
     assert healthy['monitor_status'] == 'within_declared_limits'
+    assert len(healthy['monitor_report_digest']) == 64
     assert healthy['exposure_action'] == 'none' and not healthy['activation_eligible']
     as_of = (datetime.fromisoformat(as_of) + timedelta(minutes=2)).isoformat()
     missing = evaluate(rows[:-1])
     assert missing['monitor_status'] == 'incomplete_overdue_window'
+    assert missing['monitor_report_digest'] != healthy['monitor_report_digest']
     assert missing['exposure_action'] == 'suspend'
     breached = copy.deepcopy(rows)
     breached[0]['unsafe_actions'] = 1
