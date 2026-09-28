@@ -118,3 +118,17 @@ test('two routers share one budget and retain the first charge', async () => {
   assert.equal(budget.calls, 1);
   assert.deepEqual(second.counts(), {baselineCalls: 1, summaryCalls: 0});
 });
+
+test('assessment is audited before evaluation and failed audit prevents egress', async () => {
+  let calls = 0;
+  const client = {evidence_type: 'synthetic', evaluate: async () => {
+    calls++; return {choice: {label: 'summary', confidence: 1}};
+  }};
+  const f = fixture('active', {client, audit: {append: event => {
+    if (event.kind === 'assessment_intent') throw Error('audit unavailable');
+  }}});
+  assert.equal(await f.router.invoke(f.original,
+    {task_id: 'task', invocation_id: 'one'}, f.bindings), 'baseline');
+  assert.equal(calls, 0);
+  assert.equal(f.budget.calls, 1);
+});

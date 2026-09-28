@@ -151,6 +151,9 @@ class NativeRouter {
     const state = bindings.evidence(request);
     if (!plain(state) || Buffer.byteLength(stable(state), 'utf8') > 96000) fail('invalid_evidence');
     this.budget.reserve(request.task_id, this.spec.runtime.cost_upper_bound);
+    await this.audit.append({kind: 'assessment_intent', task_sha256: digest(request.task_id),
+      model_sha256: digest(this.spec.runtime.model)});
+    if (signal?.aborted) fail('cancelled');
     const timeoutMs = this.spec.runtime.timeout_ms;
     let timer;
     let cancellation;
