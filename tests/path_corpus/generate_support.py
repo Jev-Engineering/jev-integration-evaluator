@@ -5,6 +5,7 @@ import argparse
 import hashlib
 import json
 import platform
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -12,8 +13,10 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[2]
 CORPUS = Path(__file__).resolve().parent
-NAMES = ("opaque_host", "package_host", "missing_callbacks",
+NAMES = ("opaque_host", "package_host", "supported_host", "missing_callbacks",
          "deterministic_only", "unsupported_language")
+CONNECTED_TEST = "tests/test_path_corpus_connected.py"
+CONNECTED_CASES = 13
 
 
 def sha(path: Path) -> str:
@@ -41,21 +44,44 @@ def generate() -> dict:
                          target_executed=result["target_executed"],
                          target_modified=result["target_modified"],
                          runtime_activation_authorized=result["runtime_activation_authorized"]))
+    connected = subprocess.run([sys.executable, "-m", "pytest", "-q", CONNECTED_TEST],
+                               cwd=ROOT, capture_output=True, text=True, timeout=180, check=False)
+    summary = re.search(r"\b(\d+) passed\b", connected.stdout)
+    passed_cases = int(summary.group(1)) if summary else 0
+    connected_status = ("passed" if connected.returncode == 0 and
+                        passed_cases == CONNECTED_CASES and "skipped" not in connected.stdout else "failed")
+    supported_source = json.loads((CORPUS / "supported_host" / "expected.json").read_text(
+        encoding="utf-8"))["source_sha256"]
     return dict(schema_version="1.0", evidence_type="synthetic_offline",
-                qualification_scope="public_path_inspection_only",
+                qualification_scope=("public_path_inspection_and_synthetic_connected_fixture"
+                                     if connected_status == "passed" else "public_path_inspection_only"),
                 python=platform.python_version(), platform=sys.platform,
                 architecture=platform.machine(),
                 command_sha256={rel: sha(ROOT / rel) for rel in
                                 ("jev_integration_evaluator/repository_run.py",
+                                 "jev_integration_evaluator/agent_review.py",
+                                 "jev_integration_evaluator/integrations/verification.py",
                                  "jev_integration_evaluator/cli.py")},
                 oracle_sha256={rel: sha(ROOT / rel) for rel in
                                ("tests/test_path_corpus_oracle.py",
+                                "tests/test_path_corpus_connected.py",
                                 "tests/path_corpus/generate_support.py")},
                 cases=rows,
-                unrun=["connected_reviewed_spec_preparation", "target_native_runner",
-                       "modified_host_verification", "interrupted_apply_resume",
-                       "forged_external_receipt_rejection", "dirty_tree_guard",
-                       "conflicting_edit_transaction", "installed_host_lifecycle",
+                connected=dict(test=CONNECTED_TEST, status=connected_status,
+                               passed_cases=passed_cases,
+                               source_sha256=supported_source,
+                               asserted_paths=["discovery_review_plan_baseline_apply_modified",
+                                               "external_cli_review_input_and_owned_plan",
+                                               "offline_off_shadow_active_once_each",
+                                               "baseline_and_apply_interruption_resume",
+                                               "dirty_git_conflict_preservation",
+                                               "post_apply_conflict_preservation",
+                                               "tampered_baseline_receipt_blocks_mutation",
+                                               "independent_policy_and_duplicate_effect_mutations"],
+                               execution_environment="trusted_host_synthetic",
+                               provider_connectivity="not_tested", activation_authorized=False),
+                unrun=["target_native_runner",
+                       "forged_external_receipt_rejection", "installed_host_lifecycle",
                        "hosted_python_matrix", "javascript_typescript_backend",
                        "live_provider_benefit", "activation"])
 

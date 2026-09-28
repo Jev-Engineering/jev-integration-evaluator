@@ -23,7 +23,7 @@ def test_opaque_host_source_binding():
     } == expected["source_sha256"]
 
 
-@pytest.mark.parametrize("host_name", ["opaque_host", "package_host", "missing_callbacks",
+@pytest.mark.parametrize("host_name", ["opaque_host", "package_host", "supported_host", "missing_callbacks",
                                        "deterministic_only", "unsupported_language"])
 def test_project_owned_corpus_source_binding(host_name):
     host = CORPUS / host_name
@@ -151,3 +151,34 @@ def test_public_path_reports_truncated_source_coverage(tmp_path):
     assert report["status"] == "incomplete_analysis"
     assert report["report"]["coverage"]["complete_within_policy"] is False
     assert report["target_executed"] is False and report["target_modified"] is False
+
+
+@pytest.mark.skipif(os.name != "posix", reason="repository discovery requires a POSIX filesystem")
+def test_deterministic_host_complete_negative_review_is_scoped():
+    from jev_integration_evaluator import capabilities as cap
+    from jev_integration_evaluator.config import DEFAULT
+    from jev_integration_evaluator.nomination_inventory import discover_repository_capabilities
+    from jev_integration_evaluator.repository_conclusion import (
+        REVIEW_CONTRACT, conclude_repository, coverage_review_schedule,
+    )
+
+    host = CORPUS / "deterministic_only"
+    report = discover_repository_capabilities(host, DEFAULT)
+    schedule = coverage_review_schedule(report, DEFAULT)
+    opinions = {letter: {"disposition": "not_useful",
+                         "reason": "Exact integer arithmetic is sufficient for this synthetic host."}
+                for letter in "ABCDEFGHIJKLM"}
+    review = {
+        "schema_version": "1.0", "contract": REVIEW_CONTRACT,
+        **{key: schedule[key] for key in (
+            "report_sha256", "conclusion_engine_sha256", "settings_sha256", "objective_sha256")},
+        "reviewer": "independent-corpus-reviewer",
+        "files": [{**row, "patterns": opinions} for row in schedule["files"]],
+        "seams": [{**row, "patterns": opinions} for row in schedule["seams"]],
+    }
+    outcome = conclude_repository(host, report, DEFAULT, review=review,
+                                  expected_review_sha256=cap._digest(review))
+    assert outcome["outcome"] == "no_useful_placement"
+    assert outcome["coverage"]["complete_anchored_review"] is True
+    assert outcome["scope"]["global_absence_proven"] is False
+    assert not any(outcome["authorization"].values())

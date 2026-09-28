@@ -17,6 +17,11 @@ provider connectivity, native isolation or production activation.
 An opt-in `--agent-review` session path accepts a recorded offline review with
 saved host policy and runtime ownership, then requires a separately anchored
 preparation scope before planning. See `references/agent-review-protocol-v1.md`.
+For independent synthetic path qualification, run
+`python tests/path_corpus/generate_support.py --out NEW_JSON` on Linux and read
+`validation/PATH-CORPUS-CURRENT-SUPPORT.md`. Its connected host test exercises
+the offline session lifecycle; it does not establish installed application
+startup, target-native verification, JS/TS support or live benefit.
 
 For the issue #12 process-local host-owned runtime checkpoint, read
 `references/host-runtime-lifecycle.md`. It starts off, can exercise offline

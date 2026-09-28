@@ -27,6 +27,18 @@
       "target_modified": false
     },
     {
+      "discovery_outcome": "review_required",
+      "host": "supported_host",
+      "runtime_activation_authorized": false,
+      "source_sha256": {
+        "host.py": "6778a185b4d789bbc314cf03c94832f82cf5d81fb9c1ec5399cb0e1afcc32bf3",
+        "main.py": "a6f53a22782b15e4ea8a08233b91f4c045262f6a67cc9bdc9a33cad400b3655e"
+      },
+      "status": "review_required",
+      "target_executed": false,
+      "target_modified": false
+    },
+    {
       "discovery_outcome": "deterministic_rejection",
       "host": "missing_callbacks",
       "runtime_activation_authorized": false,
@@ -61,26 +73,46 @@
     }
   ],
   "command_sha256": {
+    "jev_integration_evaluator/agent_review.py": "6779f2de98a71dba54341dcf756a5ad0513273ac34176c23889271ba58d04fb3",
     "jev_integration_evaluator/cli.py": "87edfec154961e82bfeb5c212919618743632ef87ce990076a8b982993c0616e",
-    "jev_integration_evaluator/repository_run.py": "18da14136ad822f110cf05228b490a9388c320bae53df8e3d66c36fa05d2d029"
+    "jev_integration_evaluator/integrations/verification.py": "417187f40f1fe73f36bc226674b1a02b2ccf851ae2fb733beb643ccbd0e70abb",
+    "jev_integration_evaluator/repository_run.py": "39b98bfc0fc5d338e14a60512b4c9c79be01129ddb72e893ce4da120d8830166"
+  },
+  "connected": {
+    "activation_authorized": false,
+    "asserted_paths": [
+      "discovery_review_plan_baseline_apply_modified",
+      "external_cli_review_input_and_owned_plan",
+      "offline_off_shadow_active_once_each",
+      "baseline_and_apply_interruption_resume",
+      "dirty_git_conflict_preservation",
+      "post_apply_conflict_preservation",
+      "tampered_baseline_receipt_blocks_mutation",
+      "independent_policy_and_duplicate_effect_mutations"
+    ],
+    "execution_environment": "trusted_host_synthetic",
+    "passed_cases": 13,
+    "provider_connectivity": "not_tested",
+    "source_sha256": {
+      "host.py": "6778a185b4d789bbc314cf03c94832f82cf5d81fb9c1ec5399cb0e1afcc32bf3",
+      "main.py": "a6f53a22782b15e4ea8a08233b91f4c045262f6a67cc9bdc9a33cad400b3655e"
+    },
+    "status": "passed",
+    "test": "tests/test_path_corpus_connected.py"
   },
   "evidence_type": "synthetic_offline",
   "oracle_sha256": {
-    "tests/path_corpus/generate_support.py": "9c3eeeeab42608d304f3fa64e12a14e69891e9e7d6b156d84a0c5503d47a7928",
-    "tests/test_path_corpus_oracle.py": "18e6534851829a74e5bdf00a4e13d1bee238464fe6935f6d194dcc4109103829"
+    "tests/path_corpus/generate_support.py": "fd9600450cd5fc25519da7398ab315c9ec9ee3828d3c8e0b54d3588a67aaef75",
+    "tests/test_path_corpus_connected.py": "aebd1d51c307350db858d52e00603cba85b64ca64ec02a1e07f2477c00b9f4b6",
+    "tests/test_path_corpus_oracle.py": "90057a18255d65d7678ad503b397dfc9af00bbd59a33a3df81921a6773d4a304"
   },
   "platform": "linux",
   "python": "3.12.3",
-  "qualification_scope": "public_path_inspection_only",
+  "qualification_scope": "public_path_inspection_and_synthetic_connected_fixture",
   "schema_version": "1.0",
   "unrun": [
-    "connected_reviewed_spec_preparation",
     "target_native_runner",
-    "modified_host_verification",
-    "interrupted_apply_resume",
     "forged_external_receipt_rejection",
-    "dirty_tree_guard",
-    "conflicting_edit_transaction",
     "installed_host_lifecycle",
     "hosted_python_matrix",
     "javascript_typescript_backend",

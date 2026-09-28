@@ -103,6 +103,15 @@ def validate(check_manifest=False):
                  'references/agent-review-protocol-v1.md',
                  'examples/repository-session/context.example.json',
                  'examples/repository-session/scope-denied.example.json']
+    required += ['tests/path_corpus/README.md', 'tests/path_corpus/generate_support.py',
+                 'tests/path_corpus/supported_host/host.py',
+                 'tests/path_corpus/supported_host/main.py',
+                 'tests/path_corpus/supported_host/expected.json',
+                 'tests/test_path_corpus_connected.py',
+                 'tests/test_path_corpus_oracle.py',
+                 'tests/test_path_corpus_mutations.py',
+                 'validation/path-corpus-support-v1.json',
+                 'validation/PATH-CORPUS-CURRENT-SUPPORT.md']
     required += [f'{directory}/{name}.schema.json'
                  for directory in ('schemas', 'jev_integration_evaluator/data')
                  for name in ('repository-run-context-v1', 'repository-run-scope-v1',

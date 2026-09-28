@@ -38,6 +38,10 @@ def release_validator(root, tmp_path):
     current_validation = json.loads((root / 'skill-package.json').read_text())['validation']
     (destination / current_validation).parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(root / current_validation, destination / current_validation)
+    for path in ('validation/path-corpus-support-v1.json',
+                 'validation/PATH-CORPUS-CURRENT-SUPPORT.md'):
+        (destination / path).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(root / path, destination / path)
     spec = importlib.util.spec_from_file_location('validate_test_copy', root / 'scripts/validate_package.py')
     module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
     module.ROOT = destination

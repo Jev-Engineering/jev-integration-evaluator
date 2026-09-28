@@ -5,6 +5,18 @@ These project-owned synthetic hosts are authored independently of
 qualification inputs, not measured application benefit. The oracle in
 `tests/test_path_corpus_oracle.py` states expected behavior directly.
 
+`supported_host/` is the independently authored flat Python host for the
+connected offline path. Its separate source and baseline oracle are pinned in
+`expected.json`. `tests/test_path_corpus_connected.py` takes only a copied host
+path, discovers and reviews its opaque `reviewed_boundary`, records an offline
+agent proposal and caller-owned policy, then exercises exact-scope plan,
+baseline, apply and modified verification. The test checks off/shadow/active
+receipts and exactly one completed effect, plus interruption/resume, dirty Git
+edits, post-apply conflict preservation, tampered receipt rejection and host
+mutation detection. The verifier injects a synthetic runtime in scratch probes;
+installed host startup remains unqualified until the separate host lifecycle
+path is reviewed and integrated.
+
 `opaque_host/` exercises an opaque callback name, exactly-once effect, denied
 action, and a caller that must preserve the callback result. Its policy is:
 permit only `read` and `summarize`; every other proposed action is denied
@@ -26,8 +38,7 @@ has a possible seam but no independent observation, policy, or runtime owner.
 fixture has source hashes frozen in its own `expected.json`; these oracles are
 separate from implementation fixture generation and from generated adapters.
 
-Dirty trees, truncated discovery, conflicting proposed edits, interrupted
-apply/resume, and forged external receipts require the connected command and
-target-native runner gates. The harness must exercise those cases on disposable
-copies with exact command/source identities. Their absence remains an open
-qualification gap; the present fixtures do not imply those cases passed.
+Truncated discovery is checked by the path-only oracle. Forged external receipt
+anchors and target-native runner behavior remain unrun; the trusted-host corpus
+does not qualify those isolated-backend gates. The generated support report
+records exact platform and source identities and keeps these limits explicit.
