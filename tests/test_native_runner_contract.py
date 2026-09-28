@@ -7,6 +7,7 @@ import jsonschema
 import pytest
 
 from jev_integration_evaluator.runners import isolated_python as runner
+from jev_integration_evaluator.runners.observations import _observation
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -69,3 +70,13 @@ def test_isolation_capabilities_are_code_owned():
     spec['isolation_capabilities']['network'] = 'allowed'
     with pytest.raises(runner.RunnerError, match='unsupported_isolation_capabilities'):
         runner.validate_spec(spec)
+
+
+@pytest.mark.parametrize('payload', [
+    b'{"reached":true,"reached":false}\n',
+    b'{"reached":NaN}\n',
+    b'{}\n{}\n',
+])
+def test_native_observation_rejects_ambiguous_or_malformed_json(payload):
+    with pytest.raises(runner.RunnerError, match='invalid_native_observation'):
+        _observation(payload)

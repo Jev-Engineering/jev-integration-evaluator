@@ -26,7 +26,15 @@ def _observation(data: bytes) -> dict[str, Any]:
     if len(data) > 4096 or not data.endswith(b'\n') or data.count(b'\n') != 1:
         raise RunnerError('invalid_native_observation')
     try:
-        value = json.loads(data)
+        def unique(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+            value = {}
+            for key, item in pairs:
+                if key in value:
+                    raise ValueError('duplicate key')
+                value[key] = item
+            return value
+        value = json.loads(data, object_pairs_hook=unique,
+                           parse_constant=lambda _: (_ for _ in ()).throw(ValueError('nonfinite')))
     except (ValueError, UnicodeError):
         raise RunnerError('invalid_native_observation') from None
     if (type(value) is not dict or set(value) != _STATE_KEYS
