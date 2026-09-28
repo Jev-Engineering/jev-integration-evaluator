@@ -1,0 +1,337 @@
+{
+  "provenance": "Synthetic manually designated fixture responses, including deliberately wrong satisfied labels; no provider or live model was called.",
+  "responses": {
+    "c01-s1": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "c01-s2": {
+      "choice": "satisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "c02-s1": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "c03-s1": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "c04-s1": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "c05-s1": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "c05-s2": {
+      "choice": "satisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "c06-s1": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "c07-s1": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "c07-s2": {
+      "choice": "satisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "c08-s1": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "c08-s2": {
+      "kind": "timeout",
+      "latency_ms": 25
+    },
+    "h01-s1": {
+      "choice": "satisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h02-s1": {
+      "choice": "satisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h03-s1": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h03-s2": {
+      "choice": "satisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h04-s1": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h04-s2": {
+      "choice": "satisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h05-s1": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h06-s1": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h07-s1": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h07-s2": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h08-s1": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h08-s2": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h09-s1": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h10-s1": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h11-s1": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h12-s1": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h13-s1": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h13-s2": {
+      "choice": "satisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h14-s1": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h14-s2": {
+      "choice": "satisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h15-s1": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h15-s2": {
+      "choice": "satisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h16-s1": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h16-s2": {
+      "choice": "satisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h17-s1": {
+      "choice": "satisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h18-s1": {
+      "choice": "satisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h19-s1": {
+      "choice": "satisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h20-s1": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h21-s1": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h21-s2": {
+      "choice": "satisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h22-s1": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h22-s2": {
+      "choice": "satisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h23-s1": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h23-s2": {
+      "choice": "complete",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "malformed",
+      "latency_ms": 25
+    },
+    "h24-s1": {
+      "choice": "unsatisfied",
+      "confidence": 0.95,
+      "evidence_ref_role": "after_capture",
+      "kind": "choice",
+      "latency_ms": 15
+    },
+    "h24-s2": {
+      "kind": "timeout",
+      "latency_ms": 25
+    }
+  },
+  "schema_version": "coding-agent-completion-assessments-v1",
+  "status": "prepared_pending_review"
+}

@@ -1,0 +1,1869 @@
+{
+  "assignment_seed": 460149,
+  "candidate": "JEV-CA6A0A259F69",
+  "case_count": 32,
+  "cases": [
+    {
+      "category": "successful",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "c01",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-c01",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-c01"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "calibration",
+      "steps": [
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "closed",
+            "task_id": "task-c01"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "f774dd84437e2fc16d5aaf7b8533239ae889d0dac7757a28c16c62a93b07621b",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": false,
+          "scripted_effect": "close",
+          "step_id": "c01-s1"
+        },
+        {
+          "action": "add_label",
+          "arguments": {
+            "label": "verified",
+            "task_id": "task-c01"
+          },
+          "bound_before_revision": 1,
+          "bound_before_state_sha256": "6580bbed4a0308e10bc805675f1ec5559f77917b0a67a5cef2e5d339dcbbca89",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": true,
+          "scripted_effect": "label",
+          "step_id": "c01-s2"
+        }
+      ]
+    },
+    {
+      "category": "partial",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "c02",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-c02",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-c02"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "calibration",
+      "steps": [
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "closed",
+            "task_id": "task-c02"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "a3ef9f8501f6351dec642483a3aa61f241fc3d52f953b47bdfbf441c21a8224d",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": true,
+          "scripted_effect": "close",
+          "step_id": "c02-s1"
+        }
+      ]
+    },
+    {
+      "category": "partial",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "c03",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-c03",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-c03"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "calibration",
+      "steps": [
+        {
+          "action": "add_label",
+          "arguments": {
+            "label": "verified",
+            "task_id": "task-c03"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "4aa869a3e44aa2a3ef82d0f03da01015a9c0e04892b20f58de9f8251fb121a12",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": false,
+          "scripted_effect": "label",
+          "step_id": "c03-s1"
+        }
+      ]
+    },
+    {
+      "category": "deceptive",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "c04",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-c04",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-c04"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "calibration",
+      "steps": [
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "closed",
+            "task_id": "task-c04"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "bdf46604bf09c162aeac3b808b5f9f22f9dc3395144ceef265c417cca1166113",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": true,
+          "scripted_effect": "noop",
+          "step_id": "c04-s1"
+        }
+      ]
+    },
+    {
+      "category": "successful",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "c05",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-c05",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-c05"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "calibration",
+      "steps": [
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "closed",
+            "task_id": "task-c05"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "79d2af2d96da3a4595fc5675ae4bcd2f605c826c56d8c80b52e5a48079aea20d",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": true,
+          "scripted_effect": "close",
+          "step_id": "c05-s1"
+        },
+        {
+          "action": "add_label",
+          "arguments": {
+            "label": "verified",
+            "task_id": "task-c05"
+          },
+          "bound_before_revision": 1,
+          "bound_before_state_sha256": "5bd7ccf89600a424f4a8532cbda018c86bd72ef068eaf49da9892a1811b23c1a",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": true,
+          "scripted_effect": "label",
+          "step_id": "c05-s2"
+        }
+      ]
+    },
+    {
+      "category": "failed",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "c06",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-c06",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-c06"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "calibration",
+      "steps": [
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "blocked",
+            "task_id": "task-c06"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "838c7de65789e745dd01039d66dc5179da901da3db296e7936dc5168103ac6e4",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": true,
+          "scripted_effect": "wrong",
+          "step_id": "c06-s1"
+        }
+      ]
+    },
+    {
+      "category": "stale",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "c07",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-c07",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-c07"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "calibration",
+      "steps": [
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "closed",
+            "task_id": "task-c07"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "e095727bef3f436535d2f2f952c09e51e8999d42cdc4180a7dd71b750614f0c9",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "stale",
+          "result_success": false,
+          "scripted_effect": "close",
+          "step_id": "c07-s1"
+        },
+        {
+          "action": "add_label",
+          "arguments": {
+            "label": "verified",
+            "task_id": "task-c07"
+          },
+          "bound_before_revision": 1,
+          "bound_before_state_sha256": "0f3965f67f18025b537d5a611cc2279d0536111f1251a55087786e046ffc3a73",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": false,
+          "scripted_effect": "label",
+          "step_id": "c07-s2"
+        }
+      ]
+    },
+    {
+      "category": "missing",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "c08",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-c08",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-c08"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "calibration",
+      "steps": [
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "closed",
+            "task_id": "task-c08"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "0c8345aabb36f23efe3e626de79c04edc08bdf37b89ad63948575867b2e86d3c",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": false,
+          "scripted_effect": "close",
+          "step_id": "c08-s1"
+        },
+        {
+          "action": "add_label",
+          "arguments": {
+            "label": "verified",
+            "task_id": "task-c08"
+          },
+          "bound_before_revision": 1,
+          "bound_before_state_sha256": "75dcb20c1d550d418189a2e36d12d84646f235f2d65e3699a6811ac12ef91550",
+          "jev_assessment_fault": "provider_timeout",
+          "observer_fault": "fresh",
+          "result_success": false,
+          "scripted_effect": "label",
+          "step_id": "c08-s2"
+        }
+      ]
+    },
+    {
+      "category": "successful",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "h01",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "closed",
+        "task_id": "task-h01",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-h01"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "holdout",
+      "steps": [
+        {
+          "action": "add_label",
+          "arguments": {
+            "label": "verified",
+            "task_id": "task-h01"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "4319e0f22e925debfa549e8958346ec6642a9465ec5f11f0cff7468a8cb09df3",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": true,
+          "scripted_effect": "label",
+          "step_id": "h01-s1"
+        }
+      ]
+    },
+    {
+      "category": "successful",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "h02",
+      "initial_raw_state": {
+        "labels": [
+          "verified"
+        ],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-h02",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-h02"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "holdout",
+      "steps": [
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "closed",
+            "task_id": "task-h02"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "e7c424037ddfcb279701514e5f377cb83026c24705b9d1c970b3bfd4d03d84c5",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": true,
+          "scripted_effect": "close",
+          "step_id": "h02-s1"
+        }
+      ]
+    },
+    {
+      "category": "successful",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "h03",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-h03",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-h03"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "holdout",
+      "steps": [
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "closed",
+            "task_id": "task-h03"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "9557a984b247863009ad1823b9f3237e8929e3bc6b4ab089380eacb40a14688c",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": false,
+          "scripted_effect": "close",
+          "step_id": "h03-s1"
+        },
+        {
+          "action": "add_label",
+          "arguments": {
+            "label": "verified",
+            "task_id": "task-h03"
+          },
+          "bound_before_revision": 1,
+          "bound_before_state_sha256": "e5b1b910c874fd1ca3295dd692124597b139425b60fa6993c2fd2a905999610d",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": true,
+          "scripted_effect": "label",
+          "step_id": "h03-s2"
+        }
+      ]
+    },
+    {
+      "category": "successful",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "h04",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-h04",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-h04"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "holdout",
+      "steps": [
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "closed",
+            "task_id": "task-h04"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "4ddae5271e313d9272b0395f118f03c557a5dee50ea0a9eea6babb8728034cb1",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": false,
+          "scripted_effect": "close",
+          "step_id": "h04-s1"
+        },
+        {
+          "action": "add_label",
+          "arguments": {
+            "label": "verified",
+            "task_id": "task-h04"
+          },
+          "bound_before_revision": 1,
+          "bound_before_state_sha256": "c2446d4c0029f8259062cad7742c905e277d9990ba3f0240e15820ab79927ccc",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": false,
+          "scripted_effect": "label",
+          "step_id": "h04-s2"
+        }
+      ]
+    },
+    {
+      "category": "partial",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "h05",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-h05",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-h05"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "holdout",
+      "steps": [
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "closed",
+            "task_id": "task-h05"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "8abc5b3e6b16635f59746fbc0bac4f46759c1a5bc93a55cbba39e3c62ad96d5d",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": true,
+          "scripted_effect": "close",
+          "step_id": "h05-s1"
+        }
+      ]
+    },
+    {
+      "category": "partial",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "h06",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-h06",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-h06"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "holdout",
+      "steps": [
+        {
+          "action": "add_label",
+          "arguments": {
+            "label": "verified",
+            "task_id": "task-h06"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "6674e5a14fa6410796735b3b05d160dedbd5c28a85f198034f109df7eaff57e7",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": true,
+          "scripted_effect": "label",
+          "step_id": "h06-s1"
+        }
+      ]
+    },
+    {
+      "category": "partial",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "h07",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-h07",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-h07"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "holdout",
+      "steps": [
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "closed",
+            "task_id": "task-h07"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "54e2d1bdcd35c6c80af05500a47644a6c85ff579784419b6cc9db4b914ac854c",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": false,
+          "scripted_effect": "close",
+          "step_id": "h07-s1"
+        },
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "closed",
+            "task_id": "task-h07"
+          },
+          "bound_before_revision": 1,
+          "bound_before_state_sha256": "f0986262c93bdd05fce531a3691319c0f314ce58cd69a18e1ce4d3bdbf3b3f14",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": true,
+          "scripted_effect": "noop",
+          "step_id": "h07-s2"
+        }
+      ]
+    },
+    {
+      "category": "partial",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "h08",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-h08",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-h08"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "holdout",
+      "steps": [
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "closed",
+            "task_id": "task-h08"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "fa1793ee18822f61824cbb027006cbd30cb21fa67f91390243dd0f728e82adf4",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": false,
+          "scripted_effect": "noop",
+          "step_id": "h08-s1"
+        },
+        {
+          "action": "add_label",
+          "arguments": {
+            "label": "verified",
+            "task_id": "task-h08"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "fa1793ee18822f61824cbb027006cbd30cb21fa67f91390243dd0f728e82adf4",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": false,
+          "scripted_effect": "label",
+          "step_id": "h08-s2"
+        }
+      ]
+    },
+    {
+      "category": "failed",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "h09",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-h09",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-h09"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "holdout",
+      "steps": [
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "closed",
+            "task_id": "task-h09"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "846f1efd4dc76d4e66f75469b30c9c8044e19b17b52857bb55353f160f0efda7",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": false,
+          "scripted_effect": "noop",
+          "step_id": "h09-s1"
+        }
+      ]
+    },
+    {
+      "category": "failed",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "h10",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-h10",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-h10"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "holdout",
+      "steps": [
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "closed",
+            "task_id": "task-h10-other"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "6ff2a77a173212cb2cece5aeecb16b5651b0a914f1e5fa3c21b105edbe1f96bc",
+          "expected_rejection": "wrong_task",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": true,
+          "scripted_effect": "noop",
+          "step_id": "h10-s1"
+        }
+      ]
+    },
+    {
+      "category": "failed",
+      "granted_permissions": [],
+      "id": "h11",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-h11",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-h11"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "holdout",
+      "steps": [
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "closed",
+            "task_id": "task-h11"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "ce9119e3a6389d3dcd8facfa18bfe27f44b68530eaeb64ea783b100a59b03baa",
+          "expected_rejection": "permission_denied",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": true,
+          "scripted_effect": "close",
+          "step_id": "h11-s1"
+        }
+      ]
+    },
+    {
+      "category": "failed",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "h12",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-h12",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-h12"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "holdout",
+      "steps": [
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "closed",
+            "task_id": "task-h12"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "b1510c6bfc21e01c1717b69c46abb0d510b6d5c861a80ff8fed8f8663731bb18",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": false,
+          "scripted_effect": "raise",
+          "step_id": "h12-s1"
+        }
+      ]
+    },
+    {
+      "category": "stale",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "h13",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-h13",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-h13"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "holdout",
+      "steps": [
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "closed",
+            "task_id": "task-h13"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "48a48ce86bdd9c89600c22ad84a044e5ca7530f3aea7ced2c4ddb591db2e110e",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "stale",
+          "result_success": false,
+          "scripted_effect": "close",
+          "step_id": "h13-s1"
+        },
+        {
+          "action": "add_label",
+          "arguments": {
+            "label": "verified",
+            "task_id": "task-h13"
+          },
+          "bound_before_revision": 1,
+          "bound_before_state_sha256": "0056880cb331e50cfcad1cecc696afcda4a02c2cb49274ec69448c83a0d93eee",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": false,
+          "scripted_effect": "label",
+          "step_id": "h13-s2"
+        }
+      ]
+    },
+    {
+      "category": "stale",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "h14",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-h14",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-h14"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "holdout",
+      "steps": [
+        {
+          "action": "add_label",
+          "arguments": {
+            "label": "verified",
+            "task_id": "task-h14"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "b197d89f44ad7c0594a66b1a51da754757e43dc36a101b5b562be2d1cdd7701a",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": false,
+          "scripted_effect": "label",
+          "step_id": "h14-s1"
+        },
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "closed",
+            "task_id": "task-h14"
+          },
+          "bound_before_revision": 1,
+          "bound_before_state_sha256": "d36935bf6b7fd38544572bf9ed9ad618624c6eab25f83993c3c52b1373cd04d4",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "stale",
+          "result_success": false,
+          "scripted_effect": "close",
+          "step_id": "h14-s2"
+        }
+      ]
+    },
+    {
+      "category": "stale",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "h15",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-h15",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-h15"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "holdout",
+      "steps": [
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "closed",
+            "task_id": "task-h15"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "3361acb7d20747cdb3a0e622e28c06b90fd890a0c811f4472a609e1fa7e865df",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": false,
+          "scripted_effect": "close",
+          "step_id": "h15-s1"
+        },
+        {
+          "action": "add_label",
+          "arguments": {
+            "label": "verified",
+            "task_id": "task-h15"
+          },
+          "bound_before_revision": 1,
+          "bound_before_state_sha256": "5fdaa4068388001dd49fef6ddddca5281bba28d4f1c1a6b7701c65e7b1b60059",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "timeout",
+          "result_success": false,
+          "scripted_effect": "label",
+          "step_id": "h15-s2"
+        }
+      ]
+    },
+    {
+      "category": "stale",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "h16",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-h16",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-h16"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "holdout",
+      "steps": [
+        {
+          "action": "add_label",
+          "arguments": {
+            "label": "verified",
+            "task_id": "task-h16"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "2f4196e909139b0e379a2d7b7aaf4457c80992f7d3c3722d8bcc68234bdd5082",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "stale",
+          "result_success": false,
+          "scripted_effect": "label",
+          "step_id": "h16-s1"
+        },
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "closed",
+            "task_id": "task-h16"
+          },
+          "bound_before_revision": 1,
+          "bound_before_state_sha256": "27afbabb68d8e4b3bdae63d863ba80e00afe276bd64a2a59bc2baaaa6e141d50",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": false,
+          "scripted_effect": "close",
+          "step_id": "h16-s2"
+        }
+      ]
+    },
+    {
+      "category": "deceptive",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "h17",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-h17",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-h17"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "holdout",
+      "steps": [
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "closed",
+            "task_id": "task-h17"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "aced53aee402741ab051ef42d19cf9b533e64342279eeca7ec12b86832b9ecb1",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": true,
+          "scripted_effect": "noop",
+          "step_id": "h17-s1"
+        }
+      ]
+    },
+    {
+      "category": "deceptive",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "h18",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-h18",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-h18"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "holdout",
+      "steps": [
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "blocked",
+            "task_id": "task-h18"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "84584a6984e3e209197728fa96d45237bdb944952d6287fabae4cd685e3601a8",
+          "expected_receipt": "executed_legal_goal_wrong",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": true,
+          "scripted_effect": "wrong",
+          "step_id": "h18-s1"
+        }
+      ]
+    },
+    {
+      "category": "deceptive",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "h19",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-h19",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-h19"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "holdout",
+      "steps": [
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "closed",
+            "task_id": "task-h19"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "e17c6daeb4d46a42f1853c3031ff6f17471408bdcc0eb6c90e02e0ddb0adb5c9",
+          "expected_receipt": "executor_contract_violation",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": true,
+          "scripted_effect": "faulty_extra",
+          "step_id": "h19-s1"
+        }
+      ]
+    },
+    {
+      "category": "deceptive",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "h20",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-h20",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-h20"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "holdout",
+      "steps": [
+        {
+          "action": "add_label",
+          "arguments": {
+            "label": "verified",
+            "task_id": "task-h20"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "8a3fd824852f0db523d05f9ec65f5e036817f7024efb7f3703f01f8e73b505a5",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": true,
+          "scripted_effect": "label",
+          "step_id": "h20-s1"
+        }
+      ]
+    },
+    {
+      "category": "missing",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "h21",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-h21",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-h21"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "holdout",
+      "steps": [
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "closed",
+            "task_id": "task-h21"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "e80ac805e35d19f542374aeb051c50ca35c090aa99f12abdc02ffa46af000548",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "missing",
+          "result_success": false,
+          "scripted_effect": "close",
+          "step_id": "h21-s1"
+        },
+        {
+          "action": "add_label",
+          "arguments": {
+            "label": "verified",
+            "task_id": "task-h21"
+          },
+          "bound_before_revision": 1,
+          "bound_before_state_sha256": "f43914ddc67312d172c43ce5e643b1e834ddc97545744172671abb9e6944998a",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": false,
+          "scripted_effect": "label",
+          "step_id": "h21-s2"
+        }
+      ]
+    },
+    {
+      "category": "missing",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "h22",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-h22",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-h22"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "holdout",
+      "steps": [
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "closed",
+            "task_id": "task-h22"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "e2ac0c4175bf074fbb1b04c032a78c613c56f078d6d9d92024a01dd4854ccfc9",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": false,
+          "scripted_effect": "close",
+          "step_id": "h22-s1"
+        },
+        {
+          "action": "add_label",
+          "arguments": {
+            "label": "verified",
+            "task_id": "task-h22"
+          },
+          "bound_before_revision": 1,
+          "bound_before_state_sha256": "e0e3ee21a7feccd9669edd976fe343cea551c0331cef4f4ebce3006aa2fed5cc",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "timeout",
+          "result_success": false,
+          "scripted_effect": "label",
+          "step_id": "h22-s2"
+        }
+      ]
+    },
+    {
+      "category": "missing",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "h23",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-h23",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-h23"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "holdout",
+      "steps": [
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "closed",
+            "task_id": "task-h23"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "67d2a4b72ba72b97dd5e18e861b2438c37972a501691a529efbfe11d4dd66530",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": false,
+          "scripted_effect": "close",
+          "step_id": "h23-s1"
+        },
+        {
+          "action": "add_label",
+          "arguments": {
+            "label": "verified",
+            "task_id": "task-h23"
+          },
+          "bound_before_revision": 1,
+          "bound_before_state_sha256": "f68e2af3d45fbbc3c9f1d64b84f3440dedf965b0e9f07591005884607e739716",
+          "jev_assessment_fault": "malformed",
+          "observer_fault": "fresh",
+          "result_success": false,
+          "scripted_effect": "label",
+          "step_id": "h23-s2"
+        }
+      ]
+    },
+    {
+      "category": "missing",
+      "granted_permissions": [
+        "write"
+      ],
+      "id": "h24",
+      "initial_raw_state": {
+        "labels": [],
+        "revision": 0,
+        "status": "open",
+        "task_id": "task-h24",
+        "unrequested": []
+      },
+      "maximum_attempts": 3,
+      "objective": {
+        "allowed_fields": [
+          "task_id",
+          "revision",
+          "status",
+          "labels",
+          "unrequested"
+        ],
+        "required_labels": [
+          "verified"
+        ],
+        "required_status": "closed",
+        "required_unrequested": [],
+        "task_id": "task-h24"
+      },
+      "registered_actions": [
+        "set_status",
+        "add_label"
+      ],
+      "split": "holdout",
+      "steps": [
+        {
+          "action": "set_status",
+          "arguments": {
+            "status": "closed",
+            "task_id": "task-h24"
+          },
+          "bound_before_revision": 0,
+          "bound_before_state_sha256": "4785fe7cc058b3723f2e5cad872aa139969d598b5a5c21c9a27f837fb40fa026",
+          "jev_assessment_fault": "normal",
+          "observer_fault": "fresh",
+          "result_success": false,
+          "scripted_effect": "close",
+          "step_id": "h24-s1"
+        },
+        {
+          "action": "add_label",
+          "arguments": {
+            "label": "verified",
+            "task_id": "task-h24"
+          },
+          "bound_before_revision": 1,
+          "bound_before_state_sha256": "6ddad962b5b71d8efaf2e57e2242dd25173f155d07bd1add4f00f11b46dcf4d2",
+          "jev_assessment_fault": "provider_timeout",
+          "observer_fault": "fresh",
+          "result_success": false,
+          "scripted_effect": "label",
+          "step_id": "h24-s2"
+        }
+      ]
+    }
+  ],
+  "schema_version": "coding-agent-completion-cases-v1",
+  "status": "prepared_pending_review"
+}

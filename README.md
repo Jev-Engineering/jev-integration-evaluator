@@ -101,6 +101,7 @@ Each stage rechecks source identity and requires its own explicit authorization 
 | Generate and apply a reviewed code change | [`references/executable-integrations.md`](references/executable-integrations.md) |
 | Modify JavaScript/TypeScript hosts | [`references/javascript-typescript-backend-v1.md`](references/javascript-typescript-backend-v1.md) |
 | Run rigorous before/after experiments | [`references/experimental-methodology.md`](references/experimental-methodology.md) · [`references/lifecycle-and-evidence.md`](references/lifecycle-and-evidence.md) |
+| Inspect the synthetic coding-agent completion study | [`examples/coding-agent/README.md`](examples/coding-agent/README.md) |
 | Operate multiple placements with budgets and canaries | [`references/operational-evidence-v1.2.md`](references/operational-evidence-v1.2.md) |
 | Connect to the live JEV API | [Live integration](#-going-live) below · [`references/security-and-privacy.md`](references/security-and-privacy.md) |
 | Coordinate template delivery through reviewed PRs and merge | [`references/template-delivery-orchestration-prompt.md`](references/template-delivery-orchestration-prompt.md) |

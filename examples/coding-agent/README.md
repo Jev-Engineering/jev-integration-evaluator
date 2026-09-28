@@ -36,3 +36,39 @@ study cannot establish live benefit or activation eligibility.
 The frozen holdout contains no scheduled timeout or provider failure; unit tests
 exercise fail-closed behavior for those failures. The runner verifies the
 isolated fake executor's recorded call name and full arguments for every arm.
+
+## Issue 46: independently observed completion
+
+`agent.py::run_steps` remains the historical success-flag comparator. The
+separate `completion_study.py` runs that function with its original one-argument
+`execute_tool(proposal)` call, then runs deterministic and bounded synthetic JEV
+completion arms on fresh in-memory store clones. The host registers only
+`set_status` and `add_label`, checks exact arguments, task identity, permission,
+legal transitions and a three-attempt cap, and binds every scripted effect to
+the action, arguments, before revision and raw-state digest. The JEV label is
+advisory; it cannot issue an action or grant permission.
+
+The host observer captures before and after snapshots independently of
+`result.success`. A second module, `completion_oracle.py`, reads raw checkpoints
+and receipts against a separate scorer-only file. It checks the exact final
+field set and labels, catches unrequested mutations, and counts continuation
+after a raw checkpoint already met the objective. H10 is rejected for targeting
+another task; H11 is permission-denied; H18 legally sets a goal-wrong status;
+H19 deliberately simulates an executor side effect and records a contract
+violation. All calls and state are synthetic.
+
+The prepared schedule is eight calibration and 24 untouched holdout cases in
+`completion/`. The scorer's `reviewer_id` and `review_date` are deliberately
+null until independent pre-result review. The holdout CLI requires those fields
+and an externally retained exact study-spec digest. Do not use the local digest
+as self-approval. To run the currently authorized calibration only:
+
+```powershell
+python examples/coding-agent/completion_study.py --split calibration --out validation/issue46-calibration-report.json
+python -m pytest -q tests/test_coding_agent_completion.py
+```
+
+The calibration report is an offline harness check, not a holdout conclusion.
+Costs and latencies are preset synthetic assumptions; no provider, production
+executor or real agent was run. A passing synthetic gate cannot support live
+adoption or deployment.
