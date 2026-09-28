@@ -12,12 +12,15 @@ from jev_integration_evaluator import repository_actions as actions
 from jev_integration_evaluator import repository_run as run
 from jev_integration_evaluator.capabilities import CapabilityError
 from jev_integration_evaluator import capabilities as cap
-from jev_integration_evaluator.config import DEFAULT
+from jev_integration_evaluator.config import DEFAULT, load_config
 from jev_integration_evaluator.nomination_inventory import discover_repository_capabilities
 from jev_integration_evaluator.repository_conclusion import coverage_review_schedule
 from jev_integration_evaluator.integrations import lifecycle as engine
 from jev_integration_evaluator.integrations.errors import MissingBinding, UnsupportedShape
 from jev_integration_evaluator.io import InputError
+from jev_integration_evaluator.io import digest as inventory_digest
+from jev_integration_evaluator.scanner import scan_repo
+from jev_integration_evaluator.scoring import apply_reviews
 from scripts.implementation_fixtures import fixture
 
 
@@ -185,6 +188,47 @@ def test_planning_outcomes_are_distinct_and_retain_failure(tmp_path, monkeypatch
     record = json.loads((tmp_path / "session" / "journal.jsonl").read_text().splitlines()[-1])
     assert record["state"]["failures"][-1]["code"] == history_code
     assert result["attempts"]["plan"] == 1
+
+
+def test_actual_ambiguous_host_binding_is_insufficient_evidence(tmp_path, capsys):
+    if os.name != "posix":
+        pytest.skip("repository sessions require a POSIX secure filesystem")
+    target = tmp_path / "target"
+    _, spec = fixture(target, "C")
+    source = target / spec["source"]["file"]
+    duplicate = spec["bindings"]["runtime"]
+    source.write_text(source.read_text() + f"\ndef {duplicate}(request):\n    return None\n")
+    cfg = load_config()
+    cfg["repository"]["typescript_ast"] = False
+    inventory = scan_repo(target, cfg)
+    candidate = next(c for c in inventory["candidates"] if c["source"]["symbol"] == spec["source"]["symbol"])
+    apply_reviews(inventory, {candidate["candidate_id"]: {
+        "source_sha256": candidate["source"]["source_sha256"], "approved": True,
+        "reviewer": "synthetic-fixture-reviewer", "reason": "Source-matched finite decision review."}}, cfg)
+    spec["inventory_sha256"] = inventory_digest(inventory)
+    spec["inventory_fingerprint"] = inventory["scan_fingerprint"]
+    spec["source"]["file_sha256"] = candidate["source"]["file_sha256"]
+    spec["source"]["source_sha256"] = candidate["source"]["source_sha256"]
+    spec["binding_review"]["source_sha256"] = candidate["source"]["source_sha256"]
+    prepared = dict(schema_version="1.0", adapter=run.ADAPTER, inventory=inventory, spec=spec)
+    context = run.request_context()
+    inspection = run.inspect_repository(target, context=context)
+    scope = dict(schema_version="1.0", kind="repository-run-scope-v1",
+                 reference="synthetic-reviewed-preparation", repository_identity=inspection["report"]["repository_identity"],
+                 context_sha256=inspection["context_sha256"], bundle_digest=None,
+                 trusted_session_head=None, trusted_baseline_receipt=None,
+                 trusted_modified_receipt=None, rollback_digest=None,
+                 execution_environment="trusted_host", grants={**run.ZERO_GRANTS, "prepare": True})
+    (tmp_path / "prepared.json").write_text(json.dumps(prepared))
+    (tmp_path / "scope.json").write_text(json.dumps(scope))
+    assert run.main([str(target), "--session", str(tmp_path / "session"),
+                     "--prepared", str(tmp_path / "prepared.json"),
+                     "--scope", str(tmp_path / "scope.json")]) == 0
+    result = json.loads(capsys.readouterr().out)
+    assert result["status"] == "insufficient_evidence"
+    assert result["next_action"] == "resolve_ambiguous_host_binding"
+    last = json.loads((tmp_path / "session" / "journal.jsonl").read_text().splitlines()[-1])
+    assert last["state"]["failures"][-1]["code"] == "ambiguous_host_binding"
 
 
 def test_read_only_reviewed_negative_requires_fresh_anchored_complete_review(tmp_path, capsys):

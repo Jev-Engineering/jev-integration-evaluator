@@ -20,6 +20,7 @@ _ACTIONS = {
     "review_preserved_output_and_explicitly_request_bounded_retry": (["retry_request", "prepare_scope", "trusted_session_head"], "exact_scope", "private_preparation", True),
     "review_prepared_bindings_and_source_shape": (["reviewed_inventory", "implementation_spec", "retry_request"], "new_review", "none", True),
     "supply_missing_host_binding": (["missing_host_binding_review"], "new_review", "none", False),
+    "resolve_ambiguous_host_binding": (["unambiguous_host_binding_review"], "new_review", "none", False),
     "select_supported_source_shape": (["supported_source_review"], "new_review", "none", False),
     "resolve_host_prerequisite": (["host_prerequisite"], "new_review", "none", True),
     "review_invalid_preparation_inputs": (["prepared_input_review"], "new_review", "none", True),

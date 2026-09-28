@@ -8,6 +8,7 @@ import os
 import pytest
 
 from jev_integration_evaluator import repository_run as run
+from jev_integration_evaluator import capabilities as cap
 from jev_integration_evaluator.integrations import lifecycle as engine
 from jev_integration_evaluator.integrations.errors import UnsupportedShape
 from scripts.implementation_fixtures import fixture
@@ -27,7 +28,7 @@ def _changed(data, timeout):
     return value
 
 
-def _scope(root, context, result=None, **grants):
+def _scope(root, context, result=None, *, reviewed_response=None, **grants):
     inspection = run.inspect_repository(root, context=context)
     return dict(schema_version="1.0", kind="repository-run-scope-v1",
                 reference="synthetic-separate-operator-review",
@@ -37,7 +38,8 @@ def _scope(root, context, result=None, **grants):
                 trusted_session_head=result["session_head_sha256"] if result else None,
                 trusted_baseline_receipt=None, trusted_modified_receipt=None,
                 rollback_digest=None, execution_environment="trusted_host",
-                grants={**run.ZERO_GRANTS, **grants})
+                grants={**run.ZERO_GRANTS, **grants},
+                prepared_sha256=cap._digest(reviewed_response) if reviewed_response else None)
 
 
 def _head(session):
@@ -55,8 +57,13 @@ def test_replan_before_effect_retains_old_bundle_and_cannot_replan_after_effect(
     revised = _changed(data, 21)
     with pytest.raises(run.SessionError, match="prepared_review_changed_fresh_replan_required"):
         run.run_repository(root, session, prepared=revised)
+    with pytest.raises(run.SessionError, match="replan_scope_must_bind_exact_prepared_response"):
+        run.run_repository(root, session, prepared=revised,
+                           scope=_scope(root, context, first,
+                                        reviewed_response=_changed(data, 22), prepare=True),
+                           replan=True)
     second = run.run_repository(root, session, prepared=revised,
-                                scope=_scope(root, context, first, prepare=True,
+                                scope=_scope(root, context, first, reviewed_response=revised, prepare=True,
                                              baseline=True, apply=True, modified=True),
                                 replan=True)
     assert second["status"] == "missing_scope"
@@ -72,14 +79,14 @@ def test_replan_before_effect_retains_old_bundle_and_cannot_replan_after_effect(
     assert (session / "implementation-bundle-2").is_dir()
     with pytest.raises(run.SessionError, match="replan_scope_or_limit_unavailable"):
         run.run_repository(root, session, prepared=_changed(data, 22),
-                           scope=_scope(root, context, second, prepare=True), replan=True)
+                           scope=_scope(root, context, second, reviewed_response=_changed(data, 22), prepare=True), replan=True)
     baseline = run.run_repository(root, session,
                                   scope=_scope(root, context, second, baseline=True),
                                   stop_after="baseline")
     assert baseline["status"] == "baseline_passed"
     with pytest.raises(run.SessionError, match="replan_after_effect_forbidden"):
         run.run_repository(root, session, prepared=_changed(data, 22),
-                           scope=_scope(root, context, baseline, prepare=True), replan=True)
+                           scope=_scope(root, context, baseline, reviewed_response=_changed(data, 22), prepare=True), replan=True)
 
 
 def test_completed_replan_is_adopted_after_crash_without_replanning(tmp_path, monkeypatch):
@@ -98,7 +105,7 @@ def test_completed_replan_is_adopted_after_crash_without_replanning(tmp_path, mo
     monkeypatch.setattr(engine, "plan_implementation", finish_then_interrupt)
     with pytest.raises(KeyboardInterrupt):
         run.run_repository(root, session, prepared=revised,
-                           scope=_scope(root, context, first, prepare=True), replan=True)
+                           scope=_scope(root, context, first, reviewed_response=revised, prepare=True), replan=True)
     monkeypatch.setattr(engine, "plan_implementation",
                         lambda *args, **kwargs: pytest.fail("completed replan repeated"))
     assert (session / "implementation-bundle-1").is_dir()
@@ -130,7 +137,7 @@ def test_incomplete_replan_preserves_output_and_needs_bounded_retry(tmp_path, mo
     monkeypatch.setattr(engine, "plan_implementation", interrupt_before_plan)
     with pytest.raises(KeyboardInterrupt):
         run.run_repository(root, session, prepared=revised,
-                           scope=_scope(root, context, first, prepare=True), replan=True)
+                           scope=_scope(root, context, first, reviewed_response=revised, prepare=True), replan=True)
     monkeypatch.setattr(engine, "plan_implementation", original)
     anchored = _scope(root, context, first, prepare=True)
     anchored["trusted_session_head"] = _head(session)
@@ -159,7 +166,7 @@ def test_failed_plan_can_replan_but_pending_effect_cannot(tmp_path, monkeypatch)
     monkeypatch.setattr(engine, "plan_implementation", original)
     revised = _changed(data, 21)
     replanned = run.run_repository(root, session, prepared=revised,
-                                   scope=_scope(root, context, failed, prepare=True),
+                                   scope=_scope(root, context, failed, reviewed_response=revised, prepare=True),
                                    replan=True, stop_after="plan")
     assert replanned["status"] == "planned"
     assert replanned["replan_history"][0]["stage"] == "plan_failed"
@@ -173,7 +180,7 @@ def test_failed_plan_can_replan_but_pending_effect_cannot(tmp_path, monkeypatch)
                            scope=_scope(root, context, replanned, baseline=True),
                            stop_after="baseline")
     monkeypatch.setattr(run, "verify_implementation", original_verify)
-    pending_scope = _scope(root, context, replanned, prepare=True)
+    pending_scope = _scope(root, context, replanned, reviewed_response=_changed(data, 22), prepare=True)
     pending_scope["trusted_session_head"] = _head(session)
     with pytest.raises(run.SessionError, match="replan_after_effect_forbidden"):
         run.run_repository(root, session, prepared=_changed(data, 22),
@@ -190,7 +197,7 @@ def test_replan_rejects_source_drift_without_changing_decision_epoch(tmp_path):
     source.write_text(source.read_text() + "# changed after review\n")
     with pytest.raises(run.SessionError, match="source_drift_decisions_invalidated"):
         run.run_repository(root, session, prepared=_changed(data, 21),
-                           scope=_scope(root, context, first, prepare=True), replan=True)
+                           scope=_scope(root, context, first, reviewed_response=_changed(data, 21), prepare=True), replan=True)
     journal_state = json.loads((session / "journal.jsonl").read_text().splitlines()[-1])["state"]
     assert journal_state["decision_epoch"] == 0
     assert journal_state["replan_history"] == []

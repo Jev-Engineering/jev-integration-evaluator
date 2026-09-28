@@ -60,7 +60,9 @@ installation, publication or activation.
 
 Preparation failures are classified from explicit engine error types:
 `MissingBinding` or an unavailable host prerequisite yields
-`missing_prerequisite`; `UnsupportedShape` yields `unsupported`; other invalid
+`missing_prerequisite`; a duplicate top-level binding produces typed
+`AmbiguousBinding` and `insufficient_evidence`; `UnsupportedShape` yields
+`unsupported`; other invalid
 planning input yields `insufficient_evidence`. Each attempted plan keeps a
 distinct failure code in the journal. A repository conclusion's current
 `unsupported_or_unresolved` finding does not distinguish a proven unsupported
@@ -123,7 +125,8 @@ A changed supplied objective, answer, bound, adapter or scan policy is rejected,
 not silently substituted. To change the review context or accepted source, use a
 new reviewed run. `--replan` accepts a changed, separately reviewed prepared
 response only before any baseline, apply, modified-verification or rollback
-attempt. It requires a fresh exact-head preparation scope, retains the prior
+attempt. It requires a fresh exact-head preparation scope whose optional
+`prepared_sha256` field exactly names the revised response, retains the prior
 decision and bundle in append-only history, and uses a distinct private output
 directory. Plan attempts remain under `max_attempts`; the maximum number of
 in-run replans is one less than that bound. Interrupted replans reconcile a

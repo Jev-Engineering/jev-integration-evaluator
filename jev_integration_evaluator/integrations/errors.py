@@ -8,3 +8,7 @@ class UnsupportedShape(InputError):
 
 class MissingBinding(InputError):
     implementation_status = 'blocked'
+
+
+class AmbiguousBinding(InputError):
+    implementation_status = 'blocked'

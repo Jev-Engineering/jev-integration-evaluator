@@ -28,7 +28,7 @@ from . import capabilities as cap
 from .integrations import lifecycle as engine
 from .integrations.contracts import validate_spec, validate_inventory
 from .integrations.verification import verify_implementation
-from .integrations.errors import MissingBinding, UnsupportedShape
+from .integrations.errors import AmbiguousBinding, MissingBinding, UnsupportedShape
 from .io import InputError, digest as engine_digest, read_json
 from .repository_actions import next_action_contract
 from .repository_conclusion import conclude_repository, DEFAULT_OBJECTIVE
@@ -705,6 +705,8 @@ def run_repository(repo: str | Path, session: str | Path, *, context: dict | Non
                     or state["attempts"]["plan"] >= state["context"]["bounds"]["max_attempts"]
                     or len(state.get("replan_history", [])) >= state["context"]["bounds"]["max_attempts"] - 1):
                 raise SessionError("replan_scope_or_limit_unavailable")
+            if checked_scope.get("prepared_sha256") != cap._digest(proposal):
+                raise SessionError("replan_scope_must_bind_exact_prepared_response")
             _snapshot(root, state, None, applied=False)
             try:
                 validate_inventory(root, proposal["inventory"], proposal["spec"])
@@ -769,6 +771,9 @@ def run_repository(repo: str | Path, session: str | Path, *, context: dict | Non
             except MissingBinding:
                 _complete(journal, state, "plan", "plan_failed", "missing_host_binding")
                 return _summary(journal, "missing_prerequisite", "supply_missing_host_binding")
+            except AmbiguousBinding:
+                _complete(journal, state, "plan", "plan_failed", "ambiguous_host_binding")
+                return _summary(journal, "insufficient_evidence", "resolve_ambiguous_host_binding")
             except UnsupportedShape:
                 _complete(journal, state, "plan", "plan_failed", "unsupported_source_shape")
                 return _summary(journal, "unsupported", "select_supported_source_shape")

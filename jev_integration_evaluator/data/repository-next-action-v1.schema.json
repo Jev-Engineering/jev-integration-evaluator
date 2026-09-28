@@ -22,6 +22,7 @@
         "prepare_fresh_source_review_and_bundle_for_new_run",
         "preserve_concurrent_edits_and_review_owned_bytes",
         "reconcile_existing_bundle_before_any_retry",
+        "resolve_ambiguous_host_binding",
         "resolve_host_prerequisite",
         "resolve_scan_coverage_before_implementation",
         "resume_with_externally_retained_session_head",
