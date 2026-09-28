@@ -25,7 +25,9 @@ python examples/rag-system/run_study45.py --out path/to/new-report.json
 python -m pytest -q tests/test_rag_evidence45.py
 ```
 
-The committed [study report](study45-report.json) is the frozen fixture run.
+The committed [v1 study report](study45-report.json) is the first frozen fixture
+run. It remains historical after review found that its resource limits and
+failure cohort were incomplete.
 `study45.json` fixes calibration cases C01–C02, untouched paired holdout cases
 H01–H08, independent passage and answer expectations, fixture assessor labels,
 rubric, seed, threshold, resource limits, and stop rule. The scorer alone reads
@@ -42,6 +44,33 @@ lexical, and 8/8 assessed runs. The assessed fixture made eight calls; the
 other arms made none. All arms retained every material contradiction in these
 cases. The assessor predictions were authored in the frozen study data and
 are not a calibrated model or evidence that a provider would reproduce them.
+
+The revised [v2 report](study45_v2_report.json) uses new, untouched holdout
+IDs and three separately frozen files: [passage sets](study45_v2_cases.json),
+[scorer-only labels](study45_v2_labels.json), and
+[assessor predictions and policy](study45_v2_predictions.json). The runner
+checks their reviewed SHA-256 digests before scoring. The labels are synthetic
+author adjudications from the described registry, audit, and archive text;
+they were reviewed before the run, but no independent human or real-world
+fact check is claimed. The assessor and generator receive neither labels nor
+the whole case record.
+
+Run v2 from the repository root:
+
+```shell
+python examples/rag-system/run_study45_v2.py --out path/to/new-v2-report.json
+python -m pytest -q tests/test_rag_evidence45_v2.py
+```
+
+The ten-case v2 holdout checked 7/10 current, 7/10 lexical, and 5/10 assessed
+synthetic answers. The assessed arm retained five failed or missing outcomes
+in its denominator, including scheduled missing, timeout, malformed reply,
+simulated latency excess, and simulated cost excess. One material
+contradiction was omitted after a timed-out assessment. It fails the preset
+synthetic threshold, so the report explicitly rejects this fixture treatment.
+Adoption is separately rejected because even a passing synthetic screen
+would need independent observed task and provider evidence. Simulated model
+cost and latency are separate from measured local Python elapsed time.
 
 `claim_check` remains the unchanged, disconnected seam for issue #47. No
 combined passage and claim benefit is measured here.
