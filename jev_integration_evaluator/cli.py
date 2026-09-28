@@ -160,6 +160,15 @@ def parser():
             s.add_argument("--monitor-rows");s.add_argument("--monitor-as-of")
     s=common("implementation-recipes", "List executable bounded Python recipes and unsupported shapes")
     s.add_argument("--json",action="store_true",help="Machine-readable catalog (also the default)")
+    s=sub.add_parser('template', help='Inspect and render packaged source-bound integration templates')
+    template_sub=s.add_subparsers(dest='template_action',required=True)
+    template_sub.add_parser('list',help='List packaged template versions').add_argument('--json',action='store_true')
+    s=template_sub.add_parser('inspect',help='Inspect the versioned manifest and lifecycle matrix')
+    s.add_argument('template_id'); s.add_argument('--version',default='1.0.0')
+    for action in ('validate','materialize'):
+        s=template_sub.add_parser(action,help='Validate current source and strict template parameters' if action=='validate' else 'Create exclusive external planner inputs without changing the host')
+        s.add_argument('--repo',required=True); s.add_argument('--request',required=True)
+        if action=='materialize': s.add_argument('--out',required=True)
     s=common("implement-composite-plan", "Plan one reviewed multi-placement transaction")
     s.add_argument("--repo",required=True); s.add_argument("--inventory",required=True)
     s.add_argument("--selection",required=True); s.add_argument("--specs",required=True); s.add_argument("--out",required=True)
@@ -222,6 +231,14 @@ def parser():
 
 def execute(args):
     cfg=load_config(getattr(args,"config",None)); cmd=args.command
+    if cmd=='template':
+        from .template_catalog import (list_templates, inspect_template,
+                                       validate_template_request, materialize_template)
+        if args.template_action=='list': return list_templates()
+        if args.template_action=='inspect': return inspect_template(args.template_id,args.version)
+        request=read_json(args.request)
+        if args.template_action=='validate': return validate_template_request(args.repo,request)
+        return materialize_template(args.repo,request,args.out)
     if cmd=="implementation-recipes":
         from .integrations.recipes import recipe_catalog
         return recipe_catalog()
@@ -548,7 +565,7 @@ def main(argv=None):
             return capabilities_main(forwarded)
         result=execute(args)
         # Artifacts contain details; concise stdout remains useful in scripts.
-        if getattr(args,"out",None) and args.command not in ("scan","architecture","report","scaffold","implement-plan","implement-verify","implement-composite-plan"):
+        if getattr(args,"out",None) and args.command not in ("scan","architecture","report","scaffold","implement-plan","implement-verify","implement-composite-plan","template"):
             display={"status":"written","output":args.out}
             if isinstance(result,dict):
                 for k in ("recommendation","pair_count","evidence_type","status"): 
@@ -567,6 +584,10 @@ def main(argv=None):
         return 0
     except (InputError,ValueError,KeyError,TypeError,OSError) as exc:
         # Input errors include only invariant names and paths, never request bodies or credentials.
+        if args.command=='template':
+            from .template_catalog import template_error
+            print(json.dumps(template_error(exc)),file=sys.stderr)
+            return 2
         error={"error":type(exc).__name__,"message":str(exc)}
         if args.command.startswith("implement-"):
             error["status"]=getattr(exc,"implementation_status","blocked")
