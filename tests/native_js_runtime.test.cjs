@@ -5,6 +5,7 @@ const {digest, SharedBudget, NativeRouter} = require('../jev_integration_evaluat
 
 function fixture(mode = 'off', overrides = {}) {
   const spec = {recipe_id: 'javascript.C', candidate_id: 'candidate', source_sha256: 'a'.repeat(64),
+    executed_source_sha256: 'b'.repeat(64),
     registered_action_ids: ['read', 'summarize'],
     questions: {choice: {type: 'choice', criteria: {read: 'Read', summary: 'Summarize', uncertain: 'Unclear'}}},
     primary_question: 'choice', label_actions: {read: 'read', summary: 'summarize', uncertain: null},
@@ -15,11 +16,12 @@ function fixture(mode = 'off', overrides = {}) {
   const client = overrides.client || {evidence_type: 'synthetic', evaluate: async () => ({choice: {label: 'summary', confidence: 1}})};
   const now = () => Date.parse('2026-09-28T00:00:00Z');
   const activation = {runtime_contract_sha256: digest({spec, budget_limits: budget.limits}),
-    source_sha256: spec.source_sha256, canary_scope: 'synthetic',
+    source_sha256: spec.executed_source_sha256, canary_scope: 'synthetic',
     issued_at: '2026-09-27T23:59:00Z', expires_at: '2026-09-28T00:01:00Z'};
   const router = new NativeRouter({spec, client, budget, audit, mode,
     activation: mode === 'active' ? activation : null,
-    trusted_activation_sha256: mode === 'active' ? digest(activation) : null, now});
+    trusted_activation_sha256: mode === 'active' ? digest(activation) : null,
+    sourceAttest: overrides.sourceAttest || (() => spec.executed_source_sha256), now});
   let baselineCalls = 0, summaryCalls = 0;
   const original = () => {baselineCalls++; events.push({kind: 'baseline_effect'}); return 'baseline';};
   const bindings = {registry: () => ({read: original, summarize: () => {
@@ -42,6 +44,18 @@ test('off retains one baseline effect and rejects invocation replay', async () =
   f.budget.closeTask('task');
   await assert.rejects(f.router.invoke(f.original,
     {task_id: 'task', invocation_id: 'two'}, f.bindings), /task_closed/);
+});
+
+test('source drift during awaited assessment blocks selected and baseline effects', async () => {
+  let current = 'b'.repeat(64);
+  const f = fixture('active', {sourceAttest: () => current,
+    client: {evaluate: async () => {
+      current = 'c'.repeat(64);
+      return {choice: {label: 'summary', confidence: 1}};
+    }}});
+  await assert.rejects(f.router.invoke(f.original,
+    {task_id: 'drift-task', invocation_id: 'one'}, f.bindings), /applied_host_source_changed/);
+  assert.deepEqual(f.counts(), {baselineCalls: 0, summaryCalls: 0});
 });
 
 test('shadow returns baseline and does not execute proposed action', async () => {
@@ -76,10 +90,11 @@ test('cancellation after request cannot trigger fallback effect', async () => {
 
 test('forged activation receipt and failed audit cannot authorize effects', async () => {
   const f = fixture('active');
-  const forged = {...f.router.activation, source_sha256: 'b'.repeat(64)};
+  const forged = {...f.router.activation, source_sha256: 'c'.repeat(64)};
   assert.throws(() => new NativeRouter({spec: f.spec, client: f.router.client,
     budget: f.budget, audit: f.router.audit, mode: 'active', activation: forged,
-    trusted_activation_sha256: digest(forged), now: f.router.now}), /exact_expiring_activation_required/);
+    trusted_activation_sha256: digest(forged), sourceAttest: f.router.sourceAttest,
+    now: f.router.now}), /exact_expiring_activation_required/);
   const events = [];
   const denied = fixture('active', {audit: {append: e => {
     events.push(e); if (e.kind === 'effect_intent') throw Error('audit unavailable');

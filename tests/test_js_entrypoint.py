@@ -56,6 +56,11 @@ def _build_host(tmp_path, format_name):
     shutil.copyfile(runtime, root / 'jev_runtime.cjs')
     spec = {'recipe_id': 'javascript.C', 'candidate_id': 'synthetic-candidate',
             'source_sha256': transformed['source_sha256'],
+            'applied_source_sha256': transformed['generated_sha256'],
+            'executed_source_sha256': (transformed['emitted_sha256'] if typed
+                                       else transformed['generated_sha256']),
+            'source_file': 'host' + suffix,
+            'executed_file': 'host.mjs' if typed else 'host' + suffix,
             'registered_action_ids': ['read', 'summarize'],
             'questions': {'choice': {'type': 'choice', 'criteria': {
                 'read': 'Read', 'summary': 'Summarize', 'uncertain': 'Unclear'}}},
@@ -94,7 +99,7 @@ const client = {evidence_type: 'synthetic', evaluate: async () => {
 }};
 const now = () => Date.parse('2026-09-28T00:00:00Z');
 const activation = {runtime_contract_sha256: runtime.digest({spec: adapter.SPEC, budget_limits: budget.limits}),
-  source_sha256: adapter.SPEC.source_sha256, canary_scope: 'synthetic',
+  source_sha256: adapter.SPEC.executed_source_sha256, canary_scope: 'synthetic',
   issued_at: '2026-09-27T23:59:00Z', expires_at: '2026-09-28T00:01:00Z'};
 adapter.initialize({mode: 'MODE', budget, audit, client, now,
   activation: 'MODE' === 'active' ? activation : null,
@@ -113,3 +118,31 @@ import('./host.mjs').then(async host => {
     assert observed['calls'] == 1
     assert observed['events'] == ([['read', 'x']] if mode == 'shadow' else [['summary', 'x']])
     assert ('effect_intent' in observed['audit']) is (mode == 'active')
+
+
+@pytest.mark.parametrize('format_name,drift_file', [
+    ('esm', 'host.mjs'), ('commonjs', 'host.cjs'),
+    ('typescript', 'host.ts'), ('typescript', 'host.mjs')])
+def test_generated_adapter_rechecks_applied_host_files_before_effect(tmp_path, format_name, drift_file):
+    root = _build_host(tmp_path, format_name)
+    load = "require('./host.cjs')" if format_name == 'commonjs' else "await import('./host.mjs')"
+    script = f'''
+const fs = require('node:fs');
+(async () => {{
+  const host = {load};
+  const adapter = require('./jev_adapter.cjs');
+  adapter.initialize();
+  fs.appendFileSync('{drift_file}', '\\n// synthetic drift\\n');
+  try {{
+    const entry = typeof host === 'function' ? host : host.seam;
+    await entry({{task_id:'drift',invocation_id:'one',item:'x',permit:true,intent:'read'}});
+    process.exitCode = 2;
+  }} catch (error) {{
+    console.log(JSON.stringify({{error:error.message, events:host.events}}));
+  }}
+}})();
+'''
+    run = subprocess.run([shutil.which('node'), '-e', script], cwd=root, text=True,
+                         capture_output=True, timeout=10, check=False)
+    assert run.returncode == 0, run.stderr
+    assert json.loads(run.stdout) == {'error': 'applied_host_source_changed', 'events': []}

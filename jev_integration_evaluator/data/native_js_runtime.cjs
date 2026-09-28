@@ -94,7 +94,7 @@ class SharedBudget {
 
 class NativeRouter {
   constructor({spec, client, audit, budget, mode = 'off', activation = null,
-               trusted_activation_sha256 = null, now = () => Date.now()}) {
+               trusted_activation_sha256 = null, sourceAttest = null, now = () => Date.now()}) {
     if (!plain(spec) || spec.recipe_id !== 'javascript.C' || !plain(spec.questions) ||
         !plain(spec.label_actions) || !plain(spec.runtime) ||
         !Array.isArray(spec.registered_action_ids) || !spec.registered_action_ids.length ||
@@ -113,17 +113,19 @@ class NativeRouter {
         !spec.runtime.model || /(latest|preview)$/.test(spec.runtime.model) ||
         typeof spec.candidate_id !== 'string' || !spec.candidate_id ||
         !/^[a-f0-9]{64}$/.test(spec.source_sha256) ||
+        !/^[a-f0-9]{64}$/.test(spec.executed_source_sha256) ||
         new Set(spec.registered_action_ids).size !== spec.registered_action_ids.length)
       fail('invalid_reviewed_runtime_spec');
     stable(spec);
     if (!(budget instanceof SharedBudget) || !audit || typeof audit.append !== 'function' ||
+        typeof sourceAttest !== 'function' || sourceAttest() !== spec.executed_source_sha256 ||
         !['off', 'shadow', 'active'].includes(mode) || typeof now !== 'function') fail('invalid_runtime_owner');
     if (mode !== 'off' && (!client || typeof client.evaluate !== 'function')) fail('evaluation_client_required');
     if (mode === 'shadow' && client.evidence_type !== 'synthetic') fail('synthetic_shadow_only');
     if (mode === 'active') {
       if (!plain(activation) || digest(activation) !== trusted_activation_sha256 ||
           activation.runtime_contract_sha256 !== digest({spec, budget_limits: budget.limits}) ||
-          activation.source_sha256 !== spec.source_sha256 ||
+          activation.source_sha256 !== spec.executed_source_sha256 ||
           activation.canary_scope !== spec.runtime.canary_scope ||
           typeof activation.issued_at !== 'string' || typeof activation.expires_at !== 'string' ||
           !Number.isFinite(Date.parse(activation.issued_at)) || !Number.isFinite(Date.parse(activation.expires_at)) ||
@@ -136,9 +138,12 @@ class NativeRouter {
     this.spec = frozenCopy(spec); this.client = client; this.audit = audit;
     this.budget = budget; this.mode = mode;
     this.activation = activation === null ? null : frozenCopy(activation);
-    this.now = now; this.closed = false;
+    this.sourceAttest = sourceAttest; this.now = now; this.closed = false;
   }
   close() { this.closed = true; this.budget.suspend(); }
+  _attest() {
+    if (this.sourceAttest() !== this.spec.executed_source_sha256) fail('applied_host_source_changed');
+  }
   _check(request, bindings, original) {
     if (this.closed || this.budget.suspended || !plain(request) ||
         typeof request.task_id !== 'string' || !request.task_id ||
@@ -161,6 +166,7 @@ class NativeRouter {
     }
     await this.audit.append({kind: 'baseline_intent', reason, task_sha256: digest(request.task_id)});
     if (signal?.aborted) fail('cancelled');
+    this._attest();
     return original(request);
   }
   async _assessment(request, bindings, signal) {
@@ -224,6 +230,7 @@ class NativeRouter {
       return this._fallback(original, request, bindings, 'host_policy_denied', signal);
     await this.audit.append({kind: 'effect_intent', action_sha256: digest(action), task_sha256: digest(request.task_id)});
     if (signal?.aborted) fail('cancelled');
+    this._attest();
     return registry[action](request); // Never retry after an effect or its rejection.
   }
 }

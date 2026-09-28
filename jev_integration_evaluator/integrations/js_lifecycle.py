@@ -70,8 +70,6 @@ def _check_spec(spec: dict) -> dict:
             or not 0 < settings['cost_upper_bound'] <= 1_000_000
             or re.search(r'(latest|preview)$', settings['model'])):
         raise InputError('Invalid reviewed finite JavaScript runtime contract')
-    render_js_adapter(dict(recipe_id='javascript.C', candidate_id=spec['candidate_id'],
-                           source_sha256=source['sha256'], **runtime))
     return spec
 
 
@@ -179,7 +177,13 @@ def _generated(root: Path, spec: dict, tooling_dir: Path) -> tuple[dict, dict]:
             transformed['format'] != FORMATS[source.suffix]):
         raise InputError('Trusted transform changed reviewed source identity')
     adapter_spec = dict(recipe_id='javascript.C', candidate_id=spec['candidate_id'],
-                        source_sha256=spec['source']['sha256'], **spec['runtime'])
+                        source_sha256=spec['source']['sha256'],
+                        applied_source_sha256=transformed['generated_sha256'],
+                        executed_source_sha256=(transformed['emitted_sha256']
+                            if transformed['format'] == 'typescript' else transformed['generated_sha256']),
+                        source_file=rel,
+                        executed_file=('host.mjs' if transformed['format'] == 'typescript' else rel),
+                        **spec['runtime'])
     changes = {rel: transformed['transformed_source'],
                'jev_adapter.cjs': render_js_adapter(adapter_spec),
                'jev_runtime.cjs': (DATA / 'native_js_runtime.cjs').read_text(encoding='utf-8')}

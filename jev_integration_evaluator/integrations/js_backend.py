@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 from importlib.resources import files
 from pathlib import Path
 import shutil
@@ -118,11 +119,16 @@ def transform_js_source(root: Path, source_file: str, *, symbol: str, original: 
 def render_js_adapter(spec: dict, *, runtime_path: str = './jev_runtime.cjs') -> str:
     """Render a default-off CJS adapter; host startup supplies all live owners."""
     if (type(spec) is not dict or set(spec) != {
-            'recipe_id', 'candidate_id', 'source_sha256', 'registered_action_ids',
+            'recipe_id', 'candidate_id', 'source_sha256', 'applied_source_sha256',
+            'executed_source_sha256', 'source_file', 'executed_file', 'registered_action_ids',
             'questions', 'primary_question', 'label_actions', 'runtime'}
             or spec['recipe_id'] != 'javascript.C' or type(spec['runtime']) is not dict
             or spec['runtime'].get('mode') != 'off'
-            or runtime_path != './jev_runtime.cjs'):
+            or runtime_path != './jev_runtime.cjs'
+            or any(not isinstance(spec.get(key), str) or not re.fullmatch(r'[A-Za-z_$][\w$-]*\.(?:mjs|cjs|ts)', spec[key])
+                   for key in ('source_file', 'executed_file'))
+            or any(not isinstance(spec.get(key), str) or not re.fullmatch('[a-f0-9]{64}', spec[key])
+                   for key in ('applied_source_sha256', 'executed_source_sha256'))):
         raise InputError('Invalid bounded JavaScript adapter specification')
     try:
         encoded = json.dumps(spec, sort_keys=True, separators=(',', ':'), ensure_ascii=False,
@@ -136,20 +142,33 @@ def render_js_adapter(spec: dict, *, runtime_path: str = './jev_runtime.cjs') ->
     return f'''// Generated reviewed recipe C adapter. Default mode is off.
 'use strict';
 const {{NativeRouter, SharedBudget}} = require({json.dumps(runtime_path)});
+const fs = require('node:fs');
+const path = require('node:path');
+const crypto = require('node:crypto');
 const SPEC = Object.freeze(JSON.parse({json.dumps(encoded, ensure_ascii=False)}));
 const SPEC_SHA256 = {json.dumps(hashlib.sha256(encoded.encode('utf-8')).hexdigest())};
 let owner = null;
+function attestSource() {{
+  for (const [file, expected] of [[SPEC.source_file, SPEC.applied_source_sha256],
+                                  [SPEC.executed_file, SPEC.executed_source_sha256]]) {{
+    const actual = crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname, file))).digest('hex');
+    if (actual !== expected) throw Error('applied_host_source_changed');
+  }}
+  return SPEC.executed_source_sha256;
+}}
 const defaultAudit = {{events: [], append(event) {{
   if (this.events.length >= 1024) throw Error('default_audit_full');
   this.events.push(event);
 }}}};
 function initialize(options = {{}}) {{
   if (owner !== null) throw Error('runtime_already_started');
+  attestSource();
   const budget = options.budget || new SharedBudget({{max_calls: 1, max_cost: 1}});
   owner = new NativeRouter({{spec: SPEC, budget, audit: options.audit || defaultAudit,
     client: options.client || null, mode: options.mode || 'off',
     activation: options.activation || null,
     trusted_activation_sha256: options.trusted_activation_sha256 || null,
+    sourceAttest: attestSource,
     now: options.now || (() => Date.now())}});
   return owner;
 }}

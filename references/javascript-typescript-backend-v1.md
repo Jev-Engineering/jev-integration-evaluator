@@ -37,6 +37,15 @@ Within that owner, invocation tombstones are shared across routers, so the
 same task/invocation/candidate cannot execute twice. Worker threads and
 multi-process hosts cannot share this in-memory owner and are outside the
 qualified shape; they need a separately reviewed durable coordinator.
+The generated adapter retains the reviewed preimage hash for provenance and
+separately binds the applied source and executed module hashes. It reads both
+files from its own directory at startup and immediately before every effect,
+including fallback. For TypeScript these are the reviewed edited `.ts` source
+and the emitted `host.mjs`. An active receipt must name the executed module
+hash; a preimage-only receipt cannot authorize active execution. The hash check
+does not sandbox a target module or prevent an external process from racing a
+write after the immediate check, so execution remains limited to the explicitly
+authorized synthetic fixture.
 The implemented recipe is bounded registered tool routing (`C`); other
 A–M recipes remain unsupported until their distinct contracts are qualified.
 Finite action IDs, stable task identity, exact source/spec/receipt binding,
