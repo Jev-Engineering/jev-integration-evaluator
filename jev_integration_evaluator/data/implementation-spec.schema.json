@@ -370,7 +370,7 @@
             "maxLength": 256
           },
           "minItems": 2,
-          "maxItems": 2
+          "maxItems": 6
         },
         "feature_flag_default": {
           "const": false
@@ -393,6 +393,21 @@
         "dependencies"
       ],
       "additionalProperties": false
+    },
+    "runtime_files": {
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "properties": {
+          "file": {"type": "string", "minLength": 1, "maxLength": 256},
+          "kind": {"enum": ["configuration", "dependency_lock"]},
+          "old_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "new_content": {"type": "string", "maxLength": 100000}
+        },
+        "required": ["file", "kind", "old_sha256", "new_content"],
+        "additionalProperties": false
+      }
     },
     "verification": {
       "type": "object",

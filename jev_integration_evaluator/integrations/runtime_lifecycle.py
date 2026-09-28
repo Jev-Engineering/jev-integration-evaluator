@@ -9,12 +9,13 @@ import hashlib
 import copy
 import os
 from pathlib import Path
+import stat
 import threading
 from typing import Any
 
 from ..budget import BudgetCoordinator
 from ..client import TypeSafeHTTPClient
-from ..io import InputError
+from ..io import InputError, digest
 from ..runtime import SafeRouter
 
 
@@ -46,7 +47,9 @@ def check_dependency_plan(plan: dict[str, Any]) -> None:
         seen.add(row['path'])
         path = Path(row['path'])
         try:
-            if not path.is_file() or path.is_symlink() or _sha(path) != row['sha256']:
+            if (any(component.is_symlink() for component in (path, *path.parents))
+                    or not path.is_file() or not stat.S_ISREG(path.stat().st_mode)
+                    or path.stat().st_size > 1_000_000 or _sha(path) != row['sha256']):
                 raise LifecycleError('dependency_plan_drift')
         except OSError:
             raise LifecycleError('dependency_plan_unavailable') from None
@@ -68,7 +71,8 @@ class HostRuntimeLifecycle:
             raise LifecycleError('distributed_coordinator_unsupported')
         if startup_mode not in ('off', 'shadow'):
             raise LifecycleError('activation_requires_separate_reviewed_runtime')
-        if type(adapters) is not dict or not adapters or len(adapters) > 32 or audit_log is None:
+        if (type(adapters) is not dict or not adapters or len(adapters) > 32
+                or audit_log is None or not callable(getattr(audit_log, 'append', None))):
             raise LifecycleError('invalid_runtime_startup')
         if any(type(name) is not str or not name for name in adapters):
             raise LifecycleError('invalid_runtime_startup')
@@ -86,7 +90,11 @@ class HostRuntimeLifecycle:
             raise LifecycleError('remote_client_requires_exact_egress_grant')
         elif egress_grant is not None:
             raise LifecycleError('egress_grant_without_remote_client')
-        if startup_mode == 'shadow' and getattr(client, 'is_remote', False):
+        if not callable(getattr(client, 'evaluate', None)) or type(getattr(client, 'is_remote', None)) is not bool:
+            raise LifecycleError('invalid_evaluation_client')
+        if (startup_mode == 'shadow' and
+                (getattr(client, 'is_remote', False)
+                 or getattr(client, 'evidence_type', None) != 'synthetic')):
             raise LifecycleError('synthetic_shadow_requires_offline_client')
         try:
             coordinator = BudgetCoordinator(**budget_limits)
@@ -94,6 +102,7 @@ class HostRuntimeLifecycle:
             raise LifecycleError('invalid_shared_budget') from None
         routers: dict[str, SafeRouter] = {}
         task_fields: dict[str, str] = {}
+        adapter_digests: dict[str, str] = {}
         scope = None
         try:
             for name, adapter in adapters.items():
@@ -116,6 +125,7 @@ class HostRuntimeLifecycle:
                     raise LifecycleError('invalid_adapter_router')
                 routers[name] = router
                 task_fields[name] = runtime['task_field']
+                adapter_digests[name] = digest(spec)
         except LifecycleError:
             for router in routers.values():
                 router.close()
@@ -130,6 +140,7 @@ class HostRuntimeLifecycle:
         self._adapters = dict(adapters)
         self._routers = routers
         self._task_fields = task_fields
+        self._adapter_digests = adapter_digests
         self.coordinator = coordinator
 
     def router(self, placement: str, request: dict[str, Any]) -> SafeRouter:
@@ -138,6 +149,11 @@ class HostRuntimeLifecycle:
                 raise LifecycleError('runtime_closed_or_forked')
             if placement not in self._routers:
                 raise LifecycleError('unregistered_placement')
+            try:
+                if digest(self._adapters[placement].SPEC) != self._adapter_digests[placement]:
+                    raise LifecycleError('adapter_contract_changed')
+            except (TypeError, ValueError, AttributeError):
+                raise LifecycleError('adapter_contract_changed') from None
             field = self._task_fields[placement]
             if type(request) is not dict or type(request.get(field)) is not str or not request[field]:
                 raise LifecycleError('stable_task_identity_required')

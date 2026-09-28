@@ -381,7 +381,9 @@ def transform(root: Path, spec: dict) -> dict:
     runtime_spec['registered_action_ids'] = registered_actions
     adapter = _adapter(runtime_spec)
     ast.parse(adapter, filename=output)
-    result = {'changes': [{'file': rel, 'new_content': host}, {'file': output, 'new_content': adapter}],
+    result = {'changes': [{'file': rel, 'new_content': host}, {'file': output, 'new_content': adapter}]
+            + [{'file': row['file'], 'new_content': row['new_content']}
+               for row in spec.get('runtime_files', [])],
             'entry_point': f'{module_name}:{f.name}', 'baseline_symbol': original,
             'adapter_symbol': f'{module_name.rpartition(".")[0] + "." if package_contract else ""}{spec["output"]["module"]}:invoke', 'binding_digest': digest(spec['bindings']),
             'source_shape': r.shape, 'recipe_contract': r.contract,

@@ -27,6 +27,8 @@ from jev_integration_evaluator.io import read_json
 from jev_integration_evaluator.integrations.lifecycle import plan_implementation,apply_implementation,rollback_implementation,implementation_status
 from jev_integration_evaluator.integrations.verification import verify_implementation
 from jev_integration_evaluator.integrations.recipes import recipe_catalog
+from jev_integration_evaluator.integrations.runtime_lifecycle import HostRuntimeLifecycle
+assert HostRuntimeLifecycle.__module__.startswith('jev_integration_evaluator.')
 assert len(recipe_catalog()['recipes'])==13
 work=Path(sys.argv[2]);repo=work/'host';bundle=work/'bundle';spec=read_json(work/'spec.json')
 p=plan_implementation(repo,read_json(work/'inventory.json'),spec['candidate_id'],spec,bundle)
