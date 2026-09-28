@@ -3,8 +3,10 @@
 `jev_integration_evaluator.agent_review` is a read-only preparation boundary.
 `retrieve_context(root, reviewed_inventory, candidate_id)` reads files named
 by the inventory and checks their hashes before returning bounded source,
-symbols and role hints. It also scans at most 5,000 nearby paths for relevant
-callers, tests and host policy files; included bytes have individual hashes.
+symbols and role hints. Related callers, tests and host policy files require
+an exact caller-owned `related_files` allowlist, with file, SHA-256 and role.
+No filesystem search adds source to the context. Ignored build/vendor directories
+and hidden paths are rejected even when named by the allowlist.
 The default limits are 24 included files and 120,000 source bytes. It does not
 import a target module. Context contains source text and must
 remain in a private local artifact; it is not suitable for a public log or PR.

@@ -179,13 +179,34 @@ def test_related_caller_test_and_host_policy_are_source_hashed(tmp_path):
     (tmp_path / 'caller.py').write_text(
         'def call(request):\n    return select_boundary_example_e(request)\n', encoding='utf-8')
     (tmp_path / 'policy.json').write_text('{"runtime_default":"off"}', encoding='utf-8')
-    context = retrieve_context(tmp_path, inventory, binding['candidate_id'])
+    related_allowlist = tuple(dict(file=name, sha256=hashlib.sha256((tmp_path / name).read_bytes()).hexdigest(), role=role)
+                              for name, role in [('test_host.py', 'tests'), ('caller.py', 'caller'),
+                                                 ('policy.json', 'host_policy')])
+    context = retrieve_context(tmp_path, inventory, binding['candidate_id'], related_files=related_allowlist)
     related = {row['file']: row for row in context['sources']}
     assert related['test_host.py']['roles'] == ['tests']
     assert related['caller.py']['roles'] == ['caller']
     assert related['policy.json']['roles'] == ['host_policy']
     assert all(len(related[name]['sha256']) == 64 for name in
                ('test_host.py', 'caller.py', 'policy.json'))
+
+
+def test_unreviewed_secret_and_ignored_directories_never_enter_context(tmp_path):
+    inventory, binding, _, _, _ = prepared()
+    (tmp_path / 'host_example_e.py').write_bytes((BASE / 'target' / 'host_example_e.py').read_bytes())
+    (tmp_path / 'secret.py').write_text('PRIVATE_SENTINEL = "secret"\n', encoding='utf-8')
+    for directory in ('vendor', '.tox', '.next', 'target'):
+        p = tmp_path / directory
+        p.mkdir()
+        (p / 'test_private.py').write_text('PRIVATE_SENTINEL = "secret"\n', encoding='utf-8')
+    context = retrieve_context(tmp_path, inventory, binding['candidate_id'])
+    assert 'PRIVATE_SENTINEL' not in str(context)
+    assert [row['file'] for row in context['sources']] == ['host_example_e.py']
+    for path in ('vendor/test_private.py', '.tox/test_private.py', '.next/test_private.py',
+                 'target/test_private.py'):
+        with pytest.raises(InputError, match='allowlist'):
+            retrieve_context(tmp_path, inventory, binding['candidate_id'], related_files=(
+                dict(file=path, sha256=hashlib.sha256((tmp_path / path).read_bytes()).hexdigest(), role='tests'),))
 
 
 @pytest.mark.skipif(sys.platform != 'linux', reason='Native POSIX discovery backend')
