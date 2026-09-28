@@ -7,10 +7,14 @@ symbols and role hints. Related callers, tests and host policy files require
 an exact caller-owned `related_files` allowlist, with file, SHA-256 and role.
 No filesystem search adds source to the context. Ignored build/vendor directories
 and hidden paths are rejected even when named by the allowlist. Sensitive
-basenames and the exact effective discovery exclusions are checked against both
-the inventory and the allowlist before any source read. The caller must pass
-custom `discovery_excludes` to retrieval and draft revalidation; the context
-records that list. The default uses the package's default repository exclusions.
+path components and the exact effective discovery exclusions are checked against
+both the inventory and the allowlist before any source read. A nominated inventory
+or any related file requires the source-hashed capability report, whose digest
+must match the reviewed inventory's bridge record. Its policy supplies the
+effective exclusions. If `discovery_excludes` is supplied, it must exactly match
+that report. Every parent prefix is checked. Legacy inventories can retrieve
+only their own files under default exclusions. The context records the effective
+list and report digest.
 The default limits are 24 included files and 120,000 source bytes. It does not
 import a target module. Context contains source text and must
 remain in a private local artifact; it is not suitable for a public log or PR.

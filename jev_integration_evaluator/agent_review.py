@@ -32,6 +32,7 @@ class RecordedReviewAdapter:
 
 def retrieve_context(root: Path, inventory: dict, candidate_id: str, *,
                      related_files: tuple[dict, ...] = (),
+                     capability_report: dict | None = None,
                      discovery_excludes: tuple[str, ...] | None = None,
                      max_files: int = 24, max_bytes: int = 120_000) -> dict:
     """Read only source already named by the inventory, bounded by count/bytes."""
@@ -41,7 +42,29 @@ def retrieve_context(root: Path, inventory: dict, candidate_id: str, *,
         raise InputError('Missing or ambiguous candidate')
     candidate = candidates[0]
     rows = inventory.get('files', []) + inventory.get('configuration_evidence', [])
-    excludes = tuple(DEFAULT['repository']['exclude']) if discovery_excludes is None else discovery_excludes
+    bridge = inventory.get('coverage', {}).get('nomination_bridge')
+    if capability_report is None:
+        if related_files or discovery_excludes is not None or bridge is not None:
+            raise InputError('Source review requires the bound capability report')
+        excludes = tuple(DEFAULT['repository']['exclude'])
+        policy_binding = 'legacy_inventory_default_scope'
+    else:
+        if type(capability_report) is not dict or type(bridge) is not dict:
+            raise InputError('Invalid capability report binding')
+        try:
+            cap._schema('repository-capabilities', capability_report)
+            expected = capability_report['report_sha256']
+            if (expected != cap._digest({k: v for k, v in capability_report.items()
+                                         if k != 'report_sha256'})
+                    or expected != bridge['report_sha256']):
+                raise InputError('Capability report differs from reviewed inventory')
+            policy = cap.DiscoveryPolicy.from_json(capability_report['policy'])
+        except (cap.CapabilityError, KeyError, TypeError):
+            raise InputError('Invalid capability report binding') from None
+        excludes = policy.exclude
+        if discovery_excludes is not None and discovery_excludes != excludes:
+            raise InputError('Discovery exclusion policy mismatch')
+        policy_binding = expected
     if type(excludes) is not tuple or any(type(x) is not str for x in excludes):
         raise InputError('Invalid discovery exclusion policy')
     if type(related_files) not in (tuple, list):
@@ -55,8 +78,9 @@ def retrieve_context(root: Path, inventory: dict, candidate_id: str, *,
                 or type(item['role']) is not str or not cap._safe_rel(item['file'])
                 or item['role'] not in {'caller', 'callbacks', 'registries', 'tests', 'host_policy'}
                 or any(part in excluded or part.startswith('.') for part in Path(item['file']).parts)
-                or cap.SENSITIVE.search(Path(item['file']).name)
-                or cap._matches(item['file'], excludes)
+                or any(cap.SENSITIVE.search(part) for part in Path(item['file']).parts)
+                or any(cap._matches('/'.join(Path(item['file']).parts[:i]), excludes)
+                       for i in range(1, len(Path(item['file']).parts) + 1))
                 or not cap.HEX.fullmatch(item['sha256'])):
             raise InputError('Invalid related source allowlist')
         extra.append(dict(file=item['file'], sha256=item['sha256'], role=item['role']))
@@ -70,7 +94,9 @@ def retrieve_context(root: Path, inventory: dict, candidate_id: str, *,
     for row in rows:
         rel = row['file']
         if (type(rel) is not str or not cap._safe_rel(rel)
-                or cap.SENSITIVE.search(Path(rel).name) or cap._matches(rel, excludes)
+                or any(cap.SENSITIVE.search(part) for part in Path(rel).parts)
+                or any(cap._matches('/'.join(Path(rel).parts[:i]), excludes)
+                       for i in range(1, len(Path(rel).parts) + 1))
                 or any(part in excluded or part.startswith('.') for part in Path(rel).parts)):
             raise InputError('Excluded or sensitive review context file')
         path = safe_child(root, rel)
@@ -124,13 +150,15 @@ def retrieve_context(root: Path, inventory: dict, candidate_id: str, *,
                 source_sha256=candidate['source']['source_sha256'],
                 search_coverage=dict(included_related=len(extra),
                                      related_scope='exact_caller_owned_allowlist',
-                                     discovery_excludes=list(excludes)),
+                                     discovery_excludes=list(excludes),
+                                     capability_report_sha256=policy_binding),
                 sources=sources)
 
 
 def draft_reviewed_spec(root: Path, inventory: dict, context: dict, adapter: ReviewAdapter,
                         *, saved_answers: dict, trusted_verification: dict,
                         related_files: tuple[dict, ...] = (),
+                        capability_report: dict | None = None,
                         discovery_excludes: tuple[str, ...] | None = None,
                         source_egress_grant: bool = False) -> dict:
     """Draft a spec using caller-owned policy and independent verification.
@@ -147,7 +175,8 @@ def draft_reviewed_spec(root: Path, inventory: dict, context: dict, adapter: Rev
     if type(saved_answers) is not dict or type(trusted_verification) is not dict:
         raise InputError('Invalid saved answers or independent verification')
     fresh = retrieve_context(root, inventory, context['candidate_id'],
-                             related_files=related_files, discovery_excludes=discovery_excludes)
+                             related_files=related_files, capability_report=capability_report,
+                             discovery_excludes=discovery_excludes)
     if fresh != context:
         raise InputError('Source drift from agent review context')
     request = dict(context=copy.deepcopy(context), saved_answers=copy.deepcopy(saved_answers),

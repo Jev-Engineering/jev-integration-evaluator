@@ -2,6 +2,7 @@
 import copy
 import hashlib
 import sys
+from dataclasses import replace
 import json
 from pathlib import Path
 
@@ -14,7 +15,7 @@ from jev_integration_evaluator.io import InputError, digest
 from jev_integration_evaluator import capabilities as cap
 from jev_integration_evaluator.config import DEFAULT
 from jev_integration_evaluator.nomination_inventory import (
-    discover_repository_capabilities, prepare_nominated_inventory, review_nominated_inventory,
+    _settings, discover_repository_capabilities, prepare_nominated_inventory, review_nominated_inventory,
 )
 
 
@@ -170,7 +171,7 @@ def test_opaque_name_host_offline_review(tmp_path):
     assert result['spec']['source']['symbol'] == 'select_boundary_q7'
 
 
-def test_related_caller_test_and_host_policy_are_source_hashed(tmp_path):
+def test_unbound_related_context_is_rejected(tmp_path):
     inventory, binding, _, _, _ = prepared()
     raw = (BASE / 'target' / 'host_example_e.py').read_bytes()
     (tmp_path / 'host_example_e.py').write_bytes(raw)
@@ -182,13 +183,8 @@ def test_related_caller_test_and_host_policy_are_source_hashed(tmp_path):
     related_allowlist = tuple(dict(file=name, sha256=hashlib.sha256((tmp_path / name).read_bytes()).hexdigest(), role=role)
                               for name, role in [('test_host.py', 'tests'), ('caller.py', 'caller'),
                                                  ('policy.json', 'host_policy')])
-    context = retrieve_context(tmp_path, inventory, binding['candidate_id'], related_files=related_allowlist)
-    related = {row['file']: row for row in context['sources']}
-    assert related['test_host.py']['roles'] == ['tests']
-    assert related['caller.py']['roles'] == ['caller']
-    assert related['policy.json']['roles'] == ['host_policy']
-    assert all(len(related[name]['sha256']) == 64 for name in
-               ('test_host.py', 'caller.py', 'policy.json'))
+    with pytest.raises(InputError, match='bound capability report'):
+        retrieve_context(tmp_path, inventory, binding['candidate_id'], related_files=related_allowlist)
 
 
 def test_unreviewed_secret_and_ignored_directories_never_enter_context(tmp_path):
@@ -202,17 +198,17 @@ def test_unreviewed_secret_and_ignored_directories_never_enter_context(tmp_path)
     context = retrieve_context(tmp_path, inventory, binding['candidate_id'])
     assert 'PRIVATE_SENTINEL' not in str(context)
     assert [row['file'] for row in context['sources']] == ['host_example_e.py']
-    with pytest.raises(InputError, match='allowlist'):
+    with pytest.raises(InputError, match='bound capability report'):
         retrieve_context(tmp_path, inventory, binding['candidate_id'], related_files=(
             dict(file='secret.py', sha256=hashlib.sha256((tmp_path / 'secret.py').read_bytes()).hexdigest(),
                  role='caller'),))
     for path in ('vendor/test_private.py', '.tox/test_private.py', '.next/test_private.py',
                  'target/test_private.py'):
-        with pytest.raises(InputError, match='allowlist'):
+        with pytest.raises(InputError, match='bound capability report'):
             retrieve_context(tmp_path, inventory, binding['candidate_id'], related_files=(
                 dict(file=path, sha256=hashlib.sha256((tmp_path / path).read_bytes()).hexdigest(), role='tests'),))
     (tmp_path / 'private_policy.py').write_text('PRIVATE_SENTINEL = "secret"\n', encoding='utf-8')
-    with pytest.raises(InputError, match='allowlist'):
+    with pytest.raises(InputError, match='bound capability report'):
         retrieve_context(tmp_path, inventory, binding['candidate_id'], related_files=(
             dict(file='private_policy.py',
                  sha256=hashlib.sha256((tmp_path / 'private_policy.py').read_bytes()).hexdigest(),
@@ -230,7 +226,12 @@ def test_discovery_to_reviewed_spec_on_opaque_host(tmp_path):
     _, binding, _, answers, _ = prepared()
     source = (BASE / 'target' / 'host_example_e.py').read_bytes().replace(b'_example_e', b'_q7')
     (tmp_path / 'host_q7.py').write_bytes(source)
-    report = discover_repository_capabilities(tmp_path, DEFAULT)
+    (tmp_path / 'private_dir').mkdir()
+    (tmp_path / 'private_dir' / 'host.py').write_text('PRIVATE_SENTINEL = 1\n')
+    (tmp_path / 'credentials').mkdir()
+    (tmp_path / 'credentials' / 'host.py').write_text('PRIVATE_SENTINEL = 2\n')
+    policy = replace(_settings(DEFAULT, None)[1], exclude=('private_dir', 'private_*'))
+    report = discover_repository_capabilities(tmp_path, DEFAULT, policy=policy)
     seam = next(s for s in report['seams'] if s['source']['qualified_symbol'] == 'select_boundary_q7')
     anchor = seam['source']
     nomination = dict(schema_version='1.0', discovery_version=cap.VERSION,
@@ -238,15 +239,34 @@ def test_discovery_to_reviewed_spec_on_opaque_host(tmp_path):
                       source=anchor, pattern='E', proposer='offline-test',
                       rationale='Finite ambiguous outcome with an independent host observation.',
                       evidence=[{k: anchor[k] for k in ('file', 'file_sha256', 'start_line', 'end_line')}])
-    prepared_inventory = prepare_nominated_inventory(tmp_path, report, [nomination], DEFAULT)
+    prepared_inventory = prepare_nominated_inventory(tmp_path, report, [nomination], DEFAULT, policy=policy)
     candidate = prepared_inventory['inventory']['candidates'][0]
     review = dict(schema_version='1.0', prepared_sha256=prepared_inventory['prepared_sha256'],
                   reviews={candidate['candidate_id']: dict(
                       source_sha256=candidate['source']['source_sha256'], reviewer='independent-offline-fixture',
                       reason='Existing finite semantic decision with existing host callbacks.', approved=True)})
-    reviewed = review_nominated_inventory(tmp_path, report, prepared_inventory, review, DEFAULT)
+    reviewed = review_nominated_inventory(tmp_path, report, prepared_inventory, review, DEFAULT, policy=policy)
     inventory = reviewed['inventory']
-    context = retrieve_context(tmp_path, inventory, candidate['candidate_id'])
+    (tmp_path / 'caller.py').write_text('def invoke(x):\n    return select_boundary_q7(x)\n')
+    related = (dict(file='caller.py', sha256=hashlib.sha256((tmp_path / 'caller.py').read_bytes()).hexdigest(),
+                    role='caller'),)
+    with pytest.raises(InputError, match='bound capability report'):
+        retrieve_context(tmp_path, inventory, candidate['candidate_id'], related_files=related)
+    with pytest.raises(InputError, match='mismatch'):
+        retrieve_context(tmp_path, inventory, candidate['candidate_id'], related_files=related,
+                         capability_report=report, discovery_excludes=())
+    for forbidden in ('private_dir/host.py', 'credentials/host.py'):
+        row = dict(file=forbidden, sha256=hashlib.sha256((tmp_path / forbidden).read_bytes()).hexdigest(),
+                   role='caller')
+        with pytest.raises(InputError, match='allowlist'):
+            retrieve_context(tmp_path, inventory, candidate['candidate_id'],
+                             capability_report=report, related_files=(row,))
+        malicious = copy.deepcopy(inventory)
+        malicious['files'].append({k: row[k] for k in ('file', 'sha256')})
+        with pytest.raises(InputError, match='Excluded or sensitive'):
+            retrieve_context(tmp_path, malicious, candidate['candidate_id'], capability_report=report)
+    context = retrieve_context(tmp_path, inventory, candidate['candidate_id'],
+                               capability_report=report, related_files=related)
     verification = copy.deepcopy(binding['verification'])
     verification['entry_point'] = verification['entry_point'].replace('_example_e', '_q7')
     verification['effect_symbols'] = [x.replace('_example_e', '_q7') for x in verification['effect_symbols']]
@@ -267,5 +287,6 @@ def test_discovery_to_reviewed_spec_on_opaque_host(tmp_path):
                     evidence_question=binding['evidence_question'],
                     label_actions=binding['label_actions'], unresolved=[])
     result = draft_reviewed_spec(tmp_path, inventory, context, RecordedReviewAdapter(proposal),
-                                 saved_answers=answers, trusted_verification=verification)
+                                 saved_answers=answers, trusted_verification=verification,
+                                 capability_report=report, related_files=related)
     assert result['status'] == 'reviewed_specification'
