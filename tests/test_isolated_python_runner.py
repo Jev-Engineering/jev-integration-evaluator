@@ -131,6 +131,23 @@ def test_missing_installed_dependency_retains_scheduled_failure(tmp_path):
     assert result.private_outputs == {}
 
 
+def test_dependency_revalidation_charges_total_schedule_deadline(tmp_path, monkeypatch):
+    root, _, spec, _ = installed_fixture(tmp_path)
+    spec['limits']['schedule_seconds'] = 1
+    original = runner._dependency_snapshot
+    calls = 0
+    def delayed(value):
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            time.sleep(1.05)
+        return original(value)
+    monkeypatch.setattr(runner, '_dependency_snapshot', delayed)
+    result = run(root, spec)
+    assert result.receipt['cases'][0]['outcome'] == 'schedule_deadline'
+    assert result.private_outputs == {}
+
+
 def test_installed_sitecustomize_cannot_run_before_approved_entry(tmp_path):
     root, deps, _, selected = installed_fixture(tmp_path)
     (deps / 'sitecustomize.py').write_text('raise AssertionError("site hook ran")\n')

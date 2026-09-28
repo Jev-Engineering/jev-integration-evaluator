@@ -679,6 +679,12 @@ def run_schedule(root: str | Path, spec: dict[str, Any], grant: ExecutionGrant |
                     block = error.code
                     rows.append(_row(case, block))
                     continue
+            # Source and dependency revalidation consumes the same total
+            # schedule budget as target execution.
+            remaining = spec['limits']['schedule_seconds'] - (time.monotonic() - start)
+            if remaining <= 0:
+                rows.append(_row(case, 'schedule_deadline'))
+                continue
             row, output = _execute_case(spec, case, snapshot, dependencies, remaining)
             rows.append(row)
             outputs[case['case_id']] = output
