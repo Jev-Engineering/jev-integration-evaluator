@@ -157,6 +157,27 @@ def test_self_consistent_local_plan_substitution_has_no_apply_authority(tmp_path
     assert b'extra' not in (tmp_path / 'a.py').read_bytes()
 
 
+@pytest.mark.parametrize('body', [
+    '    import os\n    return os.system("true")\n',
+    '    return eval("1 + 1")\n',
+    '    return open("/tmp/unreviewed", "w")\n',
+    '    return value.__class__\n',
+    '    return value[0]\n',
+    '    print(value)\n    return value\n',
+    '    return value + 1\n',
+    '    if value:\n        return 1\n    return 0\n',
+])
+def test_effectful_or_unguarded_helper_body_refused(tmp_path, monkeypatch, body):
+    items = list(_fixture(tmp_path, monkeypatch))
+    items[2] = copy.deepcopy(items[2])
+    original = (tmp_path / 'a.py').read_bytes()
+    items[2]['changes'][0]['new_content'] = original.decode() + '\ndef helper_a(value):\n' + body
+    items[5] = {**items[5], 'proposal_sha256':digest(items[2])}
+    with pytest.raises(InputError):
+        _draft(tmp_path, items)
+    assert (tmp_path / 'a.py').read_bytes() == original
+
+
 def test_interrupted_multifile_apply_blocks_replay_and_keeps_preimages(tmp_path, monkeypatch):
     items = _fixture(tmp_path, monkeypatch)
     plan = _draft(tmp_path, items)

@@ -98,9 +98,15 @@ def _prepared(root, recovery):
                 'request_sha256':digest(request),'context_sha256':digest(context),
                 'policy_sha256':digest(policy),
                 'changes':[{'file':'helper_a.py','old_sha256':_sha(ORIGINALS['helper_a.py']),
-                            'new_content':'X = 1\n\ndef add_one(value):\n    return value + 1\n'},
+                            'new_content':'X = 1\n\ndef add_one(value):\n'
+                                '    if type(value) is not int:\n'
+                                "        raise TypeError('pure numeric prerequisite requires int')\n"
+                                '    return value + 1\n'},
                            {'file':'helper_b.py','old_sha256':_sha(ORIGINALS['helper_b.py']),
-                            'new_content':'X = 2\n\ndef double(value):\n    return value * 2\n'}]}
+                            'new_content':'X = 2\n\ndef double(value):\n'
+                                '    if type(value) is not int:\n'
+                                "        raise TypeError('pure numeric prerequisite requires int')\n"
+                                '    return value * 2\n'}]}
     review = {'approved':True,'proposal_sha256':digest(proposal),
               'context_sha256':digest(context),'policy_sha256':digest(policy),
               'scope_sha256':digest(scope),'validation_sha256':digest(validation),

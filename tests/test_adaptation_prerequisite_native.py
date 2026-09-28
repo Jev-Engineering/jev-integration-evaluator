@@ -63,7 +63,11 @@ print(json.dumps({'reached':True,'result':f'{first}-{second}',
     request = {'context':context,'policy_sha256':digest(policy),'allowed_files':scope,
                'authority':{'mutation':False,'execution':False,'egress':False}}
     changes = [{'file':name,'old_sha256':_sha(raw),
-                'new_content':raw.decode() + f'\ndef helper_{name[0]}(value):\n    return baseline(value)\n'}
+                'new_content':raw.decode() +
+                    f'\ndef helper_{name[0]}(value):\n'
+                    '    if type(value) is not int:\n'
+                    "        raise TypeError('pure numeric prerequisite requires int')\n"
+                    f"    return value {'+ 1' if name == 'a.py' else '* 2'}\n"}
                for name,raw in originals.items()]
     proposal = {'schema_version':'1.0','kind':'adaptation-prerequisites-v1',
                 'request_sha256':digest(request),'context_sha256':digest(context),

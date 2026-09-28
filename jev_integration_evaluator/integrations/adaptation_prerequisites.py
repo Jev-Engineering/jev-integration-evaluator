@@ -19,6 +19,45 @@ from .lifecycle import _bundle_dir, _journal, _lock, _record, _sync_dir
 AUTHORITY = re.compile(r'(?i)(approv|authoriz|permission|verif|validat|lock|guard|policy|allow|deny|authenticat|permit|access|trusted|gate|ok_to|can_|may_)')
 
 
+def _pure_numeric(node, argument, depth=0):
+    if depth > 6:
+        return False
+    if isinstance(node, ast.Name):
+        return node.id == argument and isinstance(node.ctx, ast.Load)
+    if isinstance(node, ast.Constant):
+        return type(node.value) is int and abs(node.value) <= 1_000_000
+    if isinstance(node, ast.UnaryOp):
+        return isinstance(node.op, (ast.UAdd, ast.USub)) and _pure_numeric(node.operand, argument, depth+1)
+    if isinstance(node, ast.BinOp):
+        return (isinstance(node.op, (ast.Add, ast.Sub, ast.Mult))
+                and _pure_numeric(node.left, argument, depth+1)
+                and _pure_numeric(node.right, argument, depth+1)
+                and (not isinstance(node.op, ast.Mult)
+                     or isinstance(node.left, ast.Constant)
+                     or isinstance(node.right, ast.Constant)))
+    return False
+
+
+def _exact_int_guard(statement, argument):
+    if not isinstance(statement, ast.If) or statement.orelse or len(statement.body) != 1:
+        return False
+    test, body = statement.test, statement.body[0]
+    return (isinstance(test, ast.Compare) and len(test.ops) == len(test.comparators) == 1
+            and isinstance(test.ops[0], ast.IsNot)
+            and isinstance(test.left, ast.Call) and not test.left.keywords
+            and isinstance(test.left.func, ast.Name) and test.left.func.id == 'type'
+            and len(test.left.args) == 1 and isinstance(test.left.args[0], ast.Name)
+            and test.left.args[0].id == argument
+            and isinstance(test.comparators[0], ast.Name)
+            and test.comparators[0].id == 'int'
+            and isinstance(body, ast.Raise) and body.cause is None
+            and isinstance(body.exc, ast.Call) and not body.exc.keywords
+            and isinstance(body.exc.func, ast.Name) and body.exc.func.id == 'TypeError'
+            and len(body.exc.args) == 1
+            and isinstance(body.exc.args[0], ast.Constant)
+            and body.exc.args[0].value == 'pure numeric prerequisite requires int')
+
+
 def _safe_additions(old: bytes, new: str) -> None:
     """Permit only new plain top-level helpers; preserve all existing AST nodes."""
     try:
@@ -39,10 +78,17 @@ def _safe_additions(old: bytes, new: str) -> None:
     existing.update(n.id for n in ast.walk(before) if isinstance(n, ast.Name))
     for node in before.body:
         if isinstance(node, (ast.Import, ast.ImportFrom)):
+            if any(alias.name == '*' for alias in node.names):
+                raise InputError('Prerequisite cannot append after wildcard imports')
             existing.update(alias.asname or alias.name.split('.')[0] for alias in node.names)
+    if any(name in existing for name in ('type','int','TypeError')):
+        raise InputError('Prerequisite numeric guard builtins are shadowed')
+    if any(isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
+           and n.func.id in ('exec','eval','globals','locals','vars') for n in ast.walk(before)):
+        raise InputError('Prerequisite cannot append after dynamic global access')
     added = set()
     for node in after.body[len(before.body):]:
-        if (not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        if (not isinstance(node, ast.FunctionDef)
                 or node.decorator_list or node.name in existing or node.name in added
                 or node.name.startswith('_') or AUTHORITY.search(node.name)
                 or node.returns is not None or getattr(node, 'type_params', ())
@@ -55,6 +101,14 @@ def _safe_additions(old: bytes, new: str) -> None:
         if any(isinstance(part, ast.Return) and isinstance(part.value, ast.Constant)
                and part.value.value is True for part in ast.walk(node)):
             raise InputError('Prerequisite cannot add an always-true helper stub')
+        args = node.args
+        positional = args.posonlyargs + args.args
+        if (len(positional) != 1 or args.vararg or args.kwarg or args.kwonlyargs
+                or len(node.body) not in (1, 2) or not isinstance(node.body[-1], ast.Return)
+                or not _pure_numeric(node.body[-1].value, positional[0].arg)
+                or (len(node.body) == 2 and not _exact_int_guard(node.body[0], positional[0].arg))
+                or (len(node.body) == 1 and not isinstance(node.body[0].value, ast.Name))):
+            raise InputError('Prerequisite helper must be a guarded pure numeric expression')
         added.add(node.name)
 
 

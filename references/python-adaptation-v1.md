@@ -50,7 +50,10 @@ existing, exact-scoped Python files may receive appended plain top-level
 helpers. Existing bytes must remain an exact prefix. Existing definitions,
 imports and assignments cannot be changed; new authority-named callbacks,
 obvious always-true stubs, decorators, evaluated defaults and annotations are
-rejected. The #6 context
+rejected. A helper can only return its single argument unchanged or compute
+a bounded integer expression after an exact `int` guard. Calls, imports,
+attribute access, subscripts, branches, loops and mutations are rejected.
+The #6 context
 must refresh against the actual source and retain an approved source-matched
 candidate review. The proposal cites each preimage, and
 an independent reviewer binds the policy, exact scope, full proposal and an
@@ -81,7 +84,10 @@ is `validated_requires_rescan`; it cannot make the old inventory or recipe
 applicable. The dedicated privileged CI job executes a synthetic host that
 imports both newly added helpers from the modified files and checks their
 effects and result. This is synthetic qualification of the bounded path, not
-evidence that an arbitrary host policy or callback is safe.
+evidence that an arbitrary host policy or callback is safe. The external
+reviewer must check that the scheduled native cases actually exercise every
+owned prerequisite and that observations cover its expected effects; an
+entrypoint hash and output receipt alone cannot establish that coverage.
 
 The synthetic structural tests execute the original and proposed method or
 async function with an inert local adapter. They check receiver state, effect
