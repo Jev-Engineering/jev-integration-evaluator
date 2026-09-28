@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["kind", "schema_version", "root_identity", "engine_identity", "request_sha256", "inventory_sha256", "patch_sha256", "owned_file", "adapter_file", "adapter_sha256", "adapter_mode", "contract_digest"],
+  "properties": {
+    "kind": {"const": "adaptation-plan-v1"},
+    "schema_version": {"const": "1.0"},
+    "root_identity": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path_sha256", "device", "inode"],
+      "properties": {
+        "path_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "device": {"type": "integer", "minimum": 0},
+        "inode": {"type": "integer", "minimum": 0}
+      }
+    },
+    "engine_identity": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "request_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "inventory_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "patch_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "adapter_file": {"type": "string", "minLength": 1},
+    "adapter_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "adapter_mode": {"type": "integer", "minimum": 0, "maximum": 4095},
+    "contract_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "owned_file": {
+      "type": "object", "additionalProperties": false,
+      "required": ["file", "old_sha256", "new_sha256", "old_mode", "new_mode"],
+      "properties": {
+        "file": {"type": "string", "minLength": 1},
+        "old_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "new_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "old_mode": {"type": "integer", "minimum": 0, "maximum": 4095},
+        "new_mode": {"type": "integer", "minimum": 0, "maximum": 4095}
+      }
+    }
+  }
+}
