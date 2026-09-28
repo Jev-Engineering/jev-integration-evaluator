@@ -266,6 +266,75 @@ def test_probe_audit_failure_blocks_egress_before_request(tmp_path, monkeypatch)
         assert not sent and host.coordinator.snapshot()['calls'] == 0
 
 
+def test_probe_budget_denial_cannot_retry_egress(tmp_path, monkeypatch):
+    _, plan = inputs(tmp_path)
+    sent = []
+
+    class Remote:
+        is_remote = True
+
+        def __init__(self, **kwargs):
+            pass
+
+        def evaluate(self, *args):
+            sent.append(args)
+            raise AssertionError('must not reach provider')
+
+    monkeypatch.setattr(runtime_lifecycle, 'TypeSafeHTTPClient', Remote)
+    grant = {'endpoint': 'https://api.typesafe.ai/v1/systemone',
+             'credential_ref': 'env:TYPESAFE_API_KEY', 'cost_upper_bound': 0.1}
+    with HostRuntimeLifecycle({'a': adapter('a')}, budget_limits=LIMITS,
+            audit_log=AUDIT, dependency_plan=plan, egress_grant=grant) as host:
+        for _ in range(2):
+            reservation = host.coordinator.reserve('existing', 1)
+            host.coordinator.settle(reservation)
+        approved = digest(host.connectivity_probe_plan())
+        with pytest.raises(LifecycleError, match='provider_probe_budget_denied'):
+            host.probe_provider_connectivity(approved_request_sha256=approved,
+                                             egress_grant=grant)
+        with pytest.raises(LifecycleError, match='exact_provider_probe_authority_required'):
+            host.probe_provider_connectivity(approved_request_sha256=approved,
+                                             egress_grant=grant)
+        assert not sent and host.coordinator.snapshot()['calls'] == 2
+
+
+def test_post_egress_audit_failure_does_not_replay(tmp_path, monkeypatch):
+    _, plan = inputs(tmp_path)
+    sent = []
+
+    class Remote:
+        is_remote = True
+
+        def __init__(self, **kwargs):
+            pass
+
+        def evaluate(self, state, questions, model, timeout_ms):
+            sent.append(state)
+            return {'model': model, 'answers': {'probe': {'type': 'choice',
+                    'choice': 'marker', 'confidence': 1.0,
+                    'probabilities': {'marker': 1.0, 'other': 0.0}}},
+                    'usage': {'input_tokens': 1, 'output_tokens': 1}}
+
+    class ResultAudit:
+        def append(self, event):
+            if event['type'] == 'synthetic_provider_probe_result':
+                raise OSError('private audit path')
+
+    monkeypatch.setattr(runtime_lifecycle, 'TypeSafeHTTPClient', Remote)
+    grant = {'endpoint': 'https://api.typesafe.ai/v1/systemone',
+             'credential_ref': 'env:TYPESAFE_API_KEY', 'cost_upper_bound': 0.1}
+    with HostRuntimeLifecycle({'a': adapter('a')}, budget_limits=LIMITS,
+            audit_log=ResultAudit(), dependency_plan=plan, egress_grant=grant) as host:
+        approved = digest(host.connectivity_probe_plan())
+        with pytest.raises(LifecycleError, match='provider_probe_audit_unavailable'):
+            host.probe_provider_connectivity(approved_request_sha256=approved,
+                                             egress_grant=grant)
+        with pytest.raises(LifecycleError, match='exact_provider_probe_authority_required'):
+            host.probe_provider_connectivity(approved_request_sha256=approved,
+                                             egress_grant=grant)
+        assert len(sent) == 1 and host.coordinator.snapshot()['calls'] == 1
+
+
 def test_synthetic_shadow_is_explicit_and_active_is_rejected(tmp_path):
     with lifecycle(tmp_path, startup_mode='shadow') as host:
         assert host.router('a', {'task_id': 'x'}).config['mode'] == 'shadow'
