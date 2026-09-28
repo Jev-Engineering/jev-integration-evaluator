@@ -263,6 +263,9 @@ def test_discovery_to_reviewed_spec_on_opaque_host(tmp_path):
         malicious['files'].append({k: row[k] for k in ('file', 'sha256')})
         with pytest.raises(InputError, match='absent from bound capability report'):
             retrieve_context(tmp_path, malicious, candidate['candidate_id'], capability_report=report)
+    with pytest.raises(InputError, match='Related source absent'):
+        retrieve_context(tmp_path, inventory, candidate['candidate_id'], capability_report=report,
+                         related_files=(dict(file='unlisted.txt', sha256='0' * 64, role='host_policy'),))
     forged = copy.deepcopy(inventory)
     forged['files'].append(dict(file='extra.py', sha256='0' * 64))
     with pytest.raises(InputError, match='absent from bound capability report'):

@@ -13,7 +13,7 @@ or any related file requires the source-hashed capability report, whose digest
 must match the reviewed inventory's bridge record. Its policy supplies the
 effective exclusions. If `discovery_excludes` is supplied, it must exactly match
 that report. A fresh read-only discovery must exactly match the retained report,
-and every inventory file/hash must occur in it. Every parent prefix is checked.
+and every inventory or related allowlisted file/hash must occur in it. Every parent prefix is checked.
 Legacy inventories can retrieve
 only their own files under default exclusions. The context records the effective
 list and report digest.

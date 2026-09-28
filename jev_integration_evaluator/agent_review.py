@@ -97,6 +97,8 @@ def retrieve_context(root: Path, inventory: dict, candidate_id: str, *,
                 or not cap.HEX.fullmatch(item['sha256'])):
             raise InputError('Invalid related source allowlist')
         extra.append(dict(file=item['file'], sha256=item['sha256'], role=item['role']))
+    if capability_report is not None and any(observed.get(item['file']) != item['sha256'] for item in extra):
+        raise InputError('Related source absent from bound capability report')
     if len({r['file'] for r in rows + extra}) != len(rows + extra):
         raise InputError('Duplicate review context file')
     rows = rows + extra
