@@ -452,6 +452,7 @@ def {names['startup']}(*, budget_limits, audit_log, dependency_plan, client=None
             or type(dependency_plan['files']) is not list
             or len(dependency_plan['files']) != len(reviewed)
             or any(type(row) is not dict or set(row) != {{'path', 'sha256'}}
+                   or type(row['path']) is not str or type(row['sha256']) is not str
                    or reviewed.get(row['path']) != row['sha256']
                    for row in dependency_plan['files'])):
         raise LifecycleError('reviewed_dependency_plan_mismatch')

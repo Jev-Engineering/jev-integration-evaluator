@@ -390,6 +390,10 @@ def test_actual_generated_host_uses_startup_router_without_probe_replacement(tmp
         with pytest.raises(LifecycleError, match='reviewed_dependency_plan_mismatch'):
             module.start_jev_runtime(budget_limits=LIMITS, audit_log=SyntheticAudit(),
                                      dependency_plan=wrong, client=client)
+        with pytest.raises(LifecycleError, match='reviewed_dependency_plan_mismatch'):
+            module.start_jev_runtime(budget_limits=LIMITS, audit_log=SyntheticAudit(),
+                                     dependency_plan={'files': [{'path': [], 'sha256': 'x'}]},
+                                     client=client)
         host = module.start_jev_runtime(budget_limits=LIMITS, audit_log=SyntheticAudit(),
                                         dependency_plan=plan, client=client, startup_mode=mode,
                                         enable_experiment=(mode == 'shadow'))
