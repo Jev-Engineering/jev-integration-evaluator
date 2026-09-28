@@ -129,6 +129,12 @@ shadow parity. Every scheduled failure or unrun case remains a report row.
 The returned postcondition report still declares `integration_verified=false`:
 session dispatch must authenticate host oracle ownership, repository context,
 bundle, phase, attempt and anchors before promotion.
+The runner-owned `private_archive` helper writes bounded raw outputs once to a
+private 0700 directory as an exclusive 0600 file, fsyncs file and directory,
+and returns its digest for external retention with the phase and attempt. A
+readback requires the exact external receipt and archive digests, checks every
+scheduled case against receipt output hashes, and rejects missing, changed or
+wrong-phase archives. It never retries a target to regenerate lost output.
 
 The CLI creates an exclusive private receipt path and fsyncs a
 `started_uncompleted` marker before execution. It refuses to reuse or overwrite

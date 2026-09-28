@@ -22,6 +22,8 @@ import jsonschema
 
 from jev_integration_evaluator.runners import isolated_python as runner
 from jev_integration_evaluator.runners.observations import inspect_lifecycle_postconditions
+from jev_integration_evaluator.runners.private_archive import (
+    write_private_output_archive, read_private_output_archive)
 
 pytestmark = pytest.mark.skipif(sys.platform != 'linux' or os.geteuid() != 0,
                                 reason='requires explicitly qualified privileged Linux launcher')
@@ -171,6 +173,43 @@ def test_dependency_preparation_and_denied_grant_never_import_target(tmp_path):
                                target_environment=selected)
     with pytest.raises(runner.RunnerError, match='execution_authority'):
         runner.run_schedule(root, spec, None)
+
+
+def test_private_output_archive_is_exclusive_anchored_and_phase_bound(tmp_path):
+    root, spec = host(tmp_path)
+    result = run(root, spec)
+    private = tmp_path / 'private-session'
+    private.mkdir(mode=0o700)
+    os.chmod(private, 0o700)
+    path = private / 'baseline-attempt-1.json'
+    digest = write_private_output_archive(path, root, spec, result.receipt,
+                                          result.private_outputs, phase='baseline', attempt=1,
+                                          trusted_receipt_sha256=result.receipt_sha256)
+    restored = read_private_output_archive(path, root, spec, result.receipt,
+                                           phase='baseline', attempt=1,
+                                           trusted_receipt_sha256=result.receipt_sha256,
+                                           trusted_archive_sha256=digest)
+    assert restored == result.private_outputs
+    with pytest.raises(runner.RunnerError, match='private_archive_exists_no_replay'):
+        write_private_output_archive(path, root, spec, result.receipt,
+                                     result.private_outputs, phase='baseline', attempt=1,
+                                     trusted_receipt_sha256=result.receipt_sha256)
+    with pytest.raises(runner.RunnerError, match='private_archive_phase_attempt_mismatch'):
+        read_private_output_archive(path, root, spec, result.receipt,
+                                    phase='modified', attempt=1,
+                                    trusted_receipt_sha256=result.receipt_sha256,
+                                    trusted_archive_sha256=digest)
+    with pytest.raises(runner.RunnerError, match='private_archive_missing_no_replay'):
+        read_private_output_archive(private / 'missing.json', root, spec, result.receipt,
+                                    phase='baseline', attempt=1,
+                                    trusted_receipt_sha256=result.receipt_sha256,
+                                    trusted_archive_sha256=digest)
+    path.write_bytes(path.read_bytes() + b' ')
+    with pytest.raises(runner.RunnerError, match='external_private_archive_anchor_mismatch'):
+        read_private_output_archive(path, root, spec, result.receipt,
+                                    phase='baseline', attempt=1,
+                                    trusted_receipt_sha256=result.receipt_sha256,
+                                    trusted_archive_sha256=digest)
 
 
 def test_missing_or_different_interpreter_is_rejected_before_target_launch(tmp_path):
