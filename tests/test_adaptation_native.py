@@ -37,42 +37,44 @@ class Worker:
         return self.baseline(request)
 '''
 ASYNC = '''import adapter
-import asyncio
 effects = []
+class Pause:
+    def __await__(self):
+        yield None
+        return None
 async def baseline(request):
-    await asyncio.sleep(0)
+    await Pause()
     if request.get('scenario') == 'error':
         raise LookupError('host error')
-    if request.get('scenario') == 'cancel':
-        await asyncio.sleep(60)
     effects.append('once')
     return 'ok'
 async def run(request):
     return await baseline(request)
 '''
-ENTRY = '''import adapter, host, json, sys, asyncio
+ENTRY = '''import adapter, host, json, sys
 adapter.MODE = sys.argv[1]
 if sys.argv[2] == 'async':
+    def finish(coroutine):
+        while True:
+            try: coroutine.send(None)
+            except StopIteration as done: return done.value
     if sys.argv[1] == 'exception':
         try:
-            asyncio.run(host.run({'task_id': 'one', 'scenario': 'error'}))
+            finish(host.run({'task_id': 'one', 'scenario': 'error'}))
             raise AssertionError('expected host exception')
         except LookupError as error:
             result = type(error).__name__
     elif sys.argv[1] == 'cancel':
-        async def cancellation():
-            task = asyncio.create_task(host.run({'task_id': 'one', 'scenario': 'cancel'}))
-            await asyncio.sleep(0)
-            await asyncio.sleep(0)
-            task.cancel()
-            try:
-                await task
-                raise AssertionError('expected cancellation')
-            except asyncio.CancelledError:
-                return 'CancelledError'
-        result = asyncio.run(cancellation())
+        class CancelledError(BaseException): pass
+        coroutine = host.run({'task_id': 'one', 'scenario': 'cancel'})
+        coroutine.send(None)
+        try:
+            coroutine.throw(CancelledError())
+            raise AssertionError('expected cancellation')
+        except CancelledError:
+            result = 'CancelledError'
     else:
-        result = asyncio.run(host.run({'task_id': 'one'}))
+        result = finish(host.run({'task_id': 'one'}))
 else:
     result = host.Worker().run({'task_id': 'one'})
 print(json.dumps({'reached': True, 'result': result, 'effects': host.effects,
@@ -146,7 +148,9 @@ def test_native_edited_host_reachability_parity_and_anchored_lifecycle(tmp_path,
     oracle_sha = _hash(runner.canonical(oracle))
     grant = lambda spec: runner.ExecutionGrant(runner.request_digest(spec), 'synthetic-adaptation-test')
     original = runner.run_schedule(root, baseline, grant(baseline))
-    assert original.receipt['exited_zero'] == 1, (original.receipt['cases'], original.private_outputs)
+    assert original.receipt['exited_zero'] == 1, [
+        (row['outcome'], row['returncode'], row['stdout_bytes'], row['stderr_bytes'])
+        for row in original.receipt['cases']]
     assert life.apply_adaptation(root,bundle,plan['contract_digest'],baseline_spec=baseline,
         baseline_receipt=original.receipt,baseline_outputs=original.private_outputs,oracle=oracle,
         trusted_oracle_sha256=oracle_sha,
