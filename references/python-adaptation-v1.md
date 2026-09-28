@@ -53,7 +53,8 @@ decorators, evaluated defaults and annotations are rejected. The #6 context
 must refresh against the actual source and retain an approved source-matched
 candidate review. The proposal cites each preimage, and
 an independent reviewer binds the policy, exact scope, full proposal and an
-independently authored validation specification. `apply_prerequisites`
+independently authored `prerequisite-validation-v1` specification of expected
+case observations and unchanged entrypoint hashes. `apply_prerequisites`
 regenerates the plan before comparing it to an externally approved digest.
 Its only successful state is `applied_requires_rescan`: the previous inventory,
 source review and binding review become stale, and no recipe may be applied
@@ -73,7 +74,8 @@ Inspect the target before any new plan.
 `inspect_prerequisite_postconditions` requires an externally anchored native
 runner receipt and independently authored oracle for the exact modified
 files, entrypoint, schedule and attempt. It checks every recorded output,
-isolation result and expected observation against the full schedule. Success
+isolation result and expected observation against the full schedule and the
+reviewed validation specification. Success
 is `validated_requires_rescan`; it cannot make the old inventory or recipe
 applicable. The dedicated privileged CI job executes a synthetic host that
 imports both newly added helpers from the modified files and checks their

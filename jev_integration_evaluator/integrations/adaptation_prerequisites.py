@@ -89,6 +89,7 @@ def draft_prerequisite_plan(root, inventory, context, proposal, *, host_policy,
             or any(type(name) is not str for name in allowed_files)):
         raise InputError('Exact prerequisite scope required')
     validate_contract(proposal, 'offline-adaptation-prerequisites-v1')
+    validate_contract(validation_spec, 'prerequisite-validation-v1')
     agent_request = {'context':context, 'policy_sha256':digest(host_policy),
                      'allowed_files':sorted(allowed_files),
                      'authority':{'mutation':False,'execution':False,'egress':False}}
@@ -124,6 +125,20 @@ def draft_prerequisite_plan(root, inventory, context, proposal, *, host_policy,
         if not path.is_file() or file_hash(path) != row['old_sha256']:
             raise InputError('Prerequisite source changed after review')
         _safe_additions(path.read_bytes(), row['new_content'])
+    case_ids = [row['case_id'] for row in validation_spec['cases']]
+    if len(set(case_ids)) != len(case_ids):
+        raise InputError('Duplicate prerequisite validation case')
+    inventory_files = {row['file']:row['sha256'] for row in inventory['files']}
+    for case in validation_spec['cases']:
+        entry = safe_child(root, case['entry'])
+        if (case['entry'] in names or not entry.is_file()
+                or inventory_files.get(case['entry']) != case['entry_sha256']
+                or file_hash(entry) != case['entry_sha256']):
+            raise InputError('Prerequisite validation entry differs from reviewed snapshot')
+        try:
+            _observation(canonical(case['observation']) + b'\n')
+        except RunnerError:
+            raise InputError('Invalid independent prerequisite expected observation') from None
     expected = {'approved','proposal_sha256','context_sha256','policy_sha256',
                 'scope_sha256','validation_sha256','reviewer','reason'}
     if (type(trusted_review) is not dict or set(trusted_review) != expected
@@ -148,7 +163,8 @@ def draft_prerequisite_plan(root, inventory, context, proposal, *, host_policy,
                'inventory_sha256':digest(inventory), 'context_sha256':digest(context),
                'policy_sha256':digest(host_policy), 'proposal_sha256':digest(proposal),
                'review_sha256':digest(trusted_review), 'scope_sha256':digest(sorted(allowed_files)),
-               'patch_sha256':digest(patch), 'owned_sha256':digest(owned)}
+               'patch_sha256':digest(patch), 'owned_sha256':digest(owned),
+               'validation_sha256':digest(validation_spec)}
     validate_contract(binding, 'adaptation-prerequisite-plan-v1')
     return {'status':'planned_prerequisites','binding':binding,'patch':patch,'owned':owned,
             'contract_digest':digest(binding),'target_modified':False}
@@ -355,7 +371,7 @@ def rollback_prerequisites(root, recovery_bundle, approved_digest, rollback_appr
 
 
 def inspect_prerequisite_postconditions(root, recovery_bundle, approved_digest, *,
-                                        spec, receipt, outputs, oracle,
+                                        spec, receipt, outputs, oracle, validation_spec,
                                         trusted_oracle_sha256,
                                         trusted_receipt_sha256):
     """Check independent native helper outcomes; leave all old reviews stale."""
@@ -364,6 +380,9 @@ def inspect_prerequisite_postconditions(root, recovery_bundle, approved_digest, 
     if state['status'] != 'applied_requires_rescan':
         raise InputError('Prerequisite recovery state is not complete')
     plan = read_json(safe_child(_bundle_dir(recovery_bundle), 'recovery-plan.json'))
+    validate_contract(validation_spec, 'prerequisite-validation-v1')
+    if digest(validation_spec) != plan['binding']['validation_sha256']:
+        raise InputError('Native prerequisite validation differs from reviewed expectations')
     root_stat = root.stat()
     if spec.get('source_identity') != {'device':root_stat.st_dev, 'inode':root_stat.st_ino}:
         raise InputError('Native prerequisite proof belongs to another source root')
@@ -374,17 +393,19 @@ def inspect_prerequisite_postconditions(root, recovery_bundle, approved_digest, 
     if (type(oracle) is not dict or set(oracle) != {
             'schema_version','kind','repository_identity','context_sha256',
             'bundle_digest','request_sha256','source_manifest_sha256',
-            'attempt','cases'}
+            'validation_sha256','attempt','cases'}
             or oracle['schema_version'] != '1.0'
             or oracle['kind'] != 'native-prerequisite-postconditions-v1'
             or oracle['repository_identity'] != digest(str(root))
             or oracle['context_sha256'] != plan['binding']['context_sha256']
             or oracle['bundle_digest'] != approved_digest
+            or oracle['validation_sha256'] != digest(validation_spec)
             or oracle['request_sha256'] != request_digest(spec)
             or oracle['source_manifest_sha256'] != digest(spec['files'])
             or type(oracle['attempt']) is not int or not 1 <= oracle['attempt'] <= 3
             or type(oracle['cases']) is not list
             or len(oracle['cases']) != len(spec['schedule'])
+            or len(spec['schedule']) != len(validation_spec['cases'])
             or hashlib.sha256(canonical(oracle)).hexdigest() != trusted_oracle_sha256):
         raise InputError('Independent native prerequisite oracle differs from plan')
     try:
@@ -397,9 +418,14 @@ def inspect_prerequisite_postconditions(root, recovery_bundle, approved_digest, 
             or not receipt['source_identity_valid']
             or set(outputs) != {case['case_id'] for case in spec['schedule']}):
         raise InputError('Native prerequisite schedule incomplete')
-    for expected, case, execution in zip(oracle['cases'], spec['schedule'], receipt['cases']):
+    for expected, reviewed, case, execution in zip(
+            oracle['cases'], validation_spec['cases'], spec['schedule'], receipt['cases']):
         if (type(expected) is not dict or set(expected) != {'case_id','entry_sha256','observation'}
                 or expected['case_id'] != case['case_id']
+                or reviewed['case_id'] != case['case_id']
+                or reviewed['entry'] != case['entry']
+                or reviewed['entry_sha256'] != expected['entry_sha256']
+                or reviewed['observation'] != expected['observation']
                 or len([item for item in spec['files'] if item['path'] == case['entry']
                         and item['sha256'] == expected['entry_sha256']]) != 1
                 or execution['outcome'] != 'exited_zero'

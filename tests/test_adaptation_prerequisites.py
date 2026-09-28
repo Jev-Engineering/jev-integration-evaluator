@@ -17,8 +17,10 @@ def _fixture(root, monkeypatch):
     originals = {'a.py':b'def existing(value):\n    return value\n',
                  'b.py':b'def baseline(value):\n    return value + 1\n'}
     for name, content in originals.items(): (root / name).write_bytes(content)
+    entry = b"print('synthetic entry')\n"
+    (root / 'entry.py').write_bytes(entry)
     inventory = {'files':[{'file':name,'sha256':hashlib.sha256(content).hexdigest()}
-                          for name, content in originals.items()],
+                          for name, content in {**originals,'entry.py':entry}.items()],
                  'candidates':[{'candidate_id':'c','tier':1,'pattern':'C',
                                 'source':{'source_sha256':'a'*64,'file':'a.py',
                                           'file_sha256':hashlib.sha256(originals['a.py']).hexdigest()},
@@ -36,8 +38,12 @@ def _fixture(root, monkeypatch):
     module.RecordedReviewAdapter = RecordedReviewAdapter
     monkeypatch.setitem(sys.modules, module.__name__, module)
     policy = {'fixed_host_rule':'synthetic, caller-owned'}
-    validation = {'expected':{'a.py':'helper returns transformed value',
-                              'b.py':'helper leaves baseline intact'}}
+    validation = {'schema_version':'1.0','kind':'prerequisite-validation-v1',
+                  'cases':[{'case_id':'helper-check','entry':'entry.py',
+                            'entry_sha256':hashlib.sha256(entry).hexdigest(),
+                            'observation':{'reached':True,'result':'synthetic',
+                                'effects':[],'state':{},'assessments':0,
+                                'dependency_origin':'none'}}]}
     changes = [{'file':name,'old_sha256':hashlib.sha256(content).hexdigest(),
                 'new_content':content.decode() + '\ndef helper_'+name[0]+'(value):\n    return value\n'}
                for name, content in originals.items()]
@@ -113,7 +119,9 @@ def test_prerequisite_authority_and_drift_fail_without_mutation(tmp_path, monkey
     elif attack == 'source_review':
         items[0] = copy.deepcopy(items[0])
         items[0]['candidates'][0]['semantic_review']['approved'] = False
-    else: items[4] = {'expected':'weaker'}
+    else:
+        items[4] = copy.deepcopy(items[4])
+        items[4]['cases'][0]['observation']['result'] = 'weaker'
     with pytest.raises(InputError): _draft(tmp_path, items)
     assert all((tmp_path / name).read_bytes() == content for name, content in original.items())
 

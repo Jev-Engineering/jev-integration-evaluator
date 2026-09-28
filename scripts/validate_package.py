@@ -36,6 +36,7 @@ def validate(check_manifest=False):
               'schemas/offline-adaptation-proposal-v1.schema.json',
               'schemas/offline-adaptation-prerequisites-v1.schema.json',
               'schemas/adaptation-prerequisite-plan-v1.schema.json',
+              'schemas/prerequisite-validation-v1.schema.json',
               'schemas/adaptation-request-v1.schema.json','schemas/adaptation-plan-v1.schema.json',
               'references/python-adaptation-v1.md',
               'tests/test_adaptation_shapes.py','tests/test_adaptation_lifecycle.py','tests/test_adaptation_native.py',

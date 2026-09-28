@@ -54,7 +54,11 @@ print(json.dumps({'reached':True,'result':f'{first}-{second}',
     monkeypatch.setitem(sys.modules, module.__name__, module)
     policy = {'synthetic_existing_host_rule':'non-authority arithmetic only'}
     scope = ['a.py','b.py']
-    validation = {'expected':{'helper_a(3)':4,'helper_b(3)':6}}
+    observation = {'reached':True,'result':'4-6','effects':['a4','b6'],
+                   'state':{'count':2},'assessments':0,'dependency_origin':'none'}
+    validation = {'schema_version':'1.0','kind':'prerequisite-validation-v1',
+                  'cases':[{'case_id':'helper-check','entry':'entry.py',
+                            'entry_sha256':_sha(entry),'observation':observation}]}
     request = {'context':context,'policy_sha256':digest(policy),'allowed_files':scope,
                'authority':{'mutation':False,'execution':False,'egress':False}}
     changes = [{'file':name,'old_sha256':_sha(raw),
@@ -80,11 +84,10 @@ print(json.dumps({'reached':True,'result':f'{first}-{second}',
     result = runner.run_schedule(root, spec, runner.ExecutionGrant(
         runner.request_digest(spec), 'synthetic-prerequisite-test'))
     assert result.receipt['scheduled'] == result.receipt['recorded'] == result.receipt['exited_zero'] == 1
-    observation = {'reached':True,'result':'4-6','effects':['a4','b6'],
-                   'state':{'count':2},'assessments':0,'dependency_origin':'none'}
     oracle = {'schema_version':'1.0','kind':'native-prerequisite-postconditions-v1',
               'repository_identity':digest(str(root.resolve())),
               'context_sha256':digest(context),'bundle_digest':plan['contract_digest'],
+              'validation_sha256':digest(validation),
               'request_sha256':runner.request_digest(spec),
               'source_manifest_sha256':digest(spec['files']),'attempt':1,
               'cases':[{'case_id':'helper-check','entry_sha256':_sha(entry),
@@ -92,6 +95,7 @@ print(json.dumps({'reached':True,'result':f'{first}-{second}',
     oracle_sha = _sha(runner.canonical(oracle))
     checked = inspect_prerequisite_postconditions(root,bundle,plan['contract_digest'],
         spec=spec,receipt=result.receipt,outputs=result.private_outputs,oracle=oracle,
+        validation_spec=validation,
         trusted_oracle_sha256=oracle_sha,trusted_receipt_sha256=result.receipt_sha256)
     assert checked['status'] == 'validated_requires_rescan'
     assert checked['recipe_applicable'] is False and checked['integration_verified'] is False
@@ -100,4 +104,11 @@ print(json.dumps({'reached':True,'result':f'{first}-{second}',
     with pytest.raises(InputError, match='oracle'):
         inspect_prerequisite_postconditions(root,bundle,plan['contract_digest'],
             spec=spec,receipt=result.receipt,outputs=result.private_outputs,oracle=forged,
+            validation_spec=validation,
             trusted_oracle_sha256=oracle_sha,trusted_receipt_sha256=result.receipt_sha256)
+    with pytest.raises(InputError, match='case binding'):
+        inspect_prerequisite_postconditions(root,bundle,plan['contract_digest'],
+            spec=spec,receipt=result.receipt,outputs=result.private_outputs,oracle=forged,
+            validation_spec=validation,
+            trusted_oracle_sha256=_sha(runner.canonical(forged)),
+            trusted_receipt_sha256=result.receipt_sha256)
