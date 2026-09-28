@@ -58,10 +58,10 @@ H19 deliberately simulates an executor side effect and records a contract
 violation. All calls and state are synthetic.
 
 The prepared schedule is eight calibration and 24 untouched holdout cases in
-`completion/`. The scorer's `reviewer_id` and `review_date` are deliberately
-null until independent pre-result review. The holdout CLI requires those fields
-and an externally retained exact study-spec digest. Do not use the local digest
-as self-approval. To run the currently authorized calibration only:
+`completion/`. Independent pre-result review by graph44 on 2026-09-28 UTC is
+recorded in the scorer metadata. The holdout CLI requires those fields and an
+externally checked exact study-spec digest. The approved pre-metadata digest is
+retained in the study note. To run the currently authorized calibration only:
 
 ```powershell
 python examples/coding-agent/completion_study.py --split calibration --out validation/issue46-calibration-report.json
