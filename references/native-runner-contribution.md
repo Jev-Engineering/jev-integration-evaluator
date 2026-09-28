@@ -12,6 +12,8 @@ hash, dependency root identity, package metadata, and file hashes are bound to
 the `1.1` request and receipt. Missing, changed, or incompatible interpreters
 and dependencies fail without falling back. Binary extensions, `.pth` files,
 other interpreter builds, and unlisted packages are unsupported.
+The `1.1` source snapshot also rejects copied shared-library artifacts;
+qualified code paths are Python source and approved passive assets only.
 The `1.1` specification also carries exact code-owned isolation capabilities:
 Linux x86-64, read-only copied files, denied network/process/thread/exec
 syscalls, same-inode interpreter, and declared pure-Python dependencies.

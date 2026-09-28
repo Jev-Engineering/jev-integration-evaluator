@@ -72,6 +72,14 @@ def test_isolation_capabilities_are_code_owned():
         runner.validate_spec(spec)
 
 
+def test_native_artifact_in_host_snapshot_is_rejected():
+    spec = contract()
+    spec['files'].append({'path': 'extensions/unsafe.so.1', 'sha256': '0' * 64,
+                          'bytes': 0, 'mode': 0o644})
+    with pytest.raises(runner.RunnerError, match='unsupported_native_artifact'):
+        runner.validate_spec(spec)
+
+
 @pytest.mark.parametrize('payload', [
     b'{"reached":true,"reached":false}\n',
     b'{"reached":NaN}\n',

@@ -233,6 +233,9 @@ def validate_spec(spec: Any) -> None:
     for row in spec['files']:
         _keys(row, {'path', 'sha256', 'bytes', 'mode'}, 'invalid_file_record')
         name = _relative(row['path'])
+        if version == '1.1' and (re.search(r'\.so(?:\.|$)', PurePosixPath(name).name)
+                                 or name.endswith(('.pyd', '.dll', '.pth'))):
+            raise RunnerError('unsupported_native_artifact')
         if name in paths:
             raise RunnerError('duplicate_source_path')
         paths.add(name)
