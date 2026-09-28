@@ -234,8 +234,17 @@ def test_whole_source_review_negative_is_exposed_and_revalidated(tmp_path):
     reconstructed = bridge.prepare_nominated_inventory(
         root, frozen["report"], frozen["prepared"]["nominations"],
         frozen["settings"], policy=selected_policy)
-    assert reconstructed == frozen["prepared"], [
-        key for key in reconstructed if reconstructed[key] != frozen["prepared"][key]]
+    def differing_paths(left, right, path=""):
+        if isinstance(left, dict) and isinstance(right, dict):
+            return [child for key in sorted(set(left) | set(right))
+                    for child in differing_paths(left.get(key), right.get(key), path + "/" + str(key))]
+        if isinstance(left, list) and isinstance(right, list):
+            return [child for index in range(max(len(left), len(right)))
+                    for child in differing_paths(left[index] if index < len(left) else None,
+                                                 right[index] if index < len(right) else None,
+                                                 path + "/" + str(index))]
+        return [path] if left != right else []
+    assert reconstructed == frozen["prepared"], differing_paths(reconstructed, frozen["prepared"])
     assert selected_policy == cap.DiscoveryPolicy.from_json(report["policy"])
     assert assess_selection(root, selection, policy=selected_policy)["status"] == "no_useful_placement"
     with pytest.raises(cap.CapabilityError, match="selection_policy_differs_from_session"):
