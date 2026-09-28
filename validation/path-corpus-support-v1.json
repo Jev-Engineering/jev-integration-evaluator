@@ -74,8 +74,8 @@
   ],
   "command_sha256": {
     "jev_integration_evaluator/agent_review.py": "6779f2de98a71dba54341dcf756a5ad0513273ac34176c23889271ba58d04fb3",
-    "jev_integration_evaluator/cli.py": "87edfec154961e82bfeb5c212919618743632ef87ce990076a8b982993c0616e",
-    "jev_integration_evaluator/integrations/verification.py": "9395bbdc380f842d52eae20a297946fadec28c6c02237fee633bb8fabacc3484",
+    "jev_integration_evaluator/cli.py": "64ac01e7cbf096bd09e273e71ede2457ffd2c2fbfc3db8d9c24d0904f2492a51",
+    "jev_integration_evaluator/integrations/verification.py": "237fd44eb71407e5012c88a91ae179e2405ac4519369d478f2efb0fd013082f1",
     "jev_integration_evaluator/repository_run.py": "39b98bfc0fc5d338e14a60512b4c9c79be01129ddb72e893ce4da120d8830166"
   },
   "connected": {
