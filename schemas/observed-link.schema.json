@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:observed-link:1.0",
+  "type": "object",
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "implementation_study_link"},
+    "study_digest": {"$ref": "#/$defs/hash"},
+    "placement_set_digest": {"$ref": "#/$defs/hash"},
+    "bundle_digest": {"$ref": "#/$defs/hash"},
+    "spec_digest": {"$ref": "#/$defs/hash"},
+    "verified_receipt_sha256": {"$ref": "#/$defs/hash"},
+    "candidate_id": {"type": "string", "minLength": 1},
+    "owned_files": {"type": "array", "minItems": 2, "maxItems": 64,
+      "items": {"type": "object", "properties": {
+        "file": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/hash"},
+        "mode": {"type": "integer", "minimum": 0, "maximum": 4095}
+      }, "required": ["file", "sha256", "mode"], "additionalProperties": false}},
+    "runtime_configuration_digest": {"$ref": "#/$defs/hash"},
+    "rubric_digest": {"$ref": "#/$defs/hash"},
+    "model_id": {"type": "string", "minLength": 1},
+    "policy_version": {"type": "string", "minLength": 1},
+    "jev_source_revision": {"$ref": "#/$defs/hash"},
+    "baseline_source_revision": {"$ref": "#/$defs/hash"},
+    "gate_manifest_digest": {"anyOf": [{"$ref": "#/$defs/hash"}, {"type": "null"}]},
+    "monitor_digest": {"anyOf": [{"$ref": "#/$defs/hash"}, {"type": "null"}]},
+    "environment": {"type": "object", "properties": {
+      "python": {"type": "string", "minLength": 1},
+      "platform": {"type": "string", "minLength": 1},
+      "executable_sha256": {"$ref": "#/$defs/hash"}
+    }, "required": ["python", "platform", "executable_sha256"], "additionalProperties": false},
+    "wiring_status": {"const": "verified_synthetic"},
+    "provider_connectivity": {"const": "not_tested"},
+    "observed_outcomes": {"const": "not_collected"},
+    "benefit_supported": {"const": false},
+    "activation_eligible": {"const": false},
+    "contract_digest": {"$ref": "#/$defs/hash"}
+  },
+  "required": ["schema_version", "kind", "study_digest", "placement_set_digest", "bundle_digest",
+    "spec_digest", "verified_receipt_sha256", "candidate_id", "owned_files",
+    "runtime_configuration_digest", "rubric_digest", "model_id", "policy_version",
+    "jev_source_revision", "baseline_source_revision", "gate_manifest_digest", "monitor_digest", "environment",
+    "wiring_status", "provider_connectivity", "observed_outcomes", "benefit_supported",
+    "activation_eligible", "contract_digest"],
+  "additionalProperties": false,
+  "$defs": {"hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}

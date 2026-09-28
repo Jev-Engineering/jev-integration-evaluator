@@ -6,7 +6,7 @@ A reusable agent skill and Python command-line toolkit for deciding **where JEV 
 
 The skill, Python distribution, and console command are named `jev-integration-evaluator`. The Python module is `jev_integration_evaluator`.
 
-The [original executable implementation specification](references/executable-implementation-prompt.md) is retained as requirements provenance. The supported commands and deliberately bounded implementation coverage in this development build are documented in [the current support contract](references/executable-integrations.md).
+The [original executable implementation specification](references/executable-implementation-prompt.md) is retained as requirements provenance. The supported commands and deliberately bounded implementation coverage in this development build are documented in [the current support contract](references/executable-integrations.md). Frozen implementation/study linkage and bounded synthetic paired collection are documented in [observed evidence linkage](references/observed-evidence-linkage.md).
 
 The default is deliberately conservative: **read-only analysis; no network; runtime off; no target code execution; no automatic adoption**. An unfamiliar repository can produce “no justified integration set.” That is a successful result, not an error.
 

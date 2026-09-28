@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:observed-collection-request:1.0",
+  "type": "object",
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "link_digest": {"$ref": "#/$defs/hash"},
+    "fixture_sha256": {"$ref": "#/$defs/hash"},
+    "labels_sha256": {"$ref": "#/$defs/hash"},
+    "max_pairs": {"$ref": "#/$defs/nullable_int"},
+    "max_total_calls": {"$ref": "#/$defs/nullable_int"},
+    "max_total_cost": {"anyOf": [{"type": "number", "minimum": 0}, {"type": "null"}]},
+    "stop_after_failures": {"$ref": "#/$defs/nullable_int"},
+    "egress": {"const": false}
+  },
+  "required": ["schema_version", "link_digest", "fixture_sha256", "labels_sha256", "max_pairs",
+    "max_total_calls", "max_total_cost", "stop_after_failures", "egress"],
+  "additionalProperties": false,
+  "$defs": {
+    "hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "nullable_int": {"anyOf": [{"type": "integer", "minimum": 1}, {"type": "null"}]}
+  }
+}

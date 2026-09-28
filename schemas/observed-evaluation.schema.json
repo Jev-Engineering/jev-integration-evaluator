@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:observed-evaluation:1.0",
+  "type": "object",
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "link_digest": {"$ref": "#/$defs/hash"},
+    "collection_digest": {"$ref": "#/$defs/hash"},
+    "code_wiring": {"const": "verified_synthetic"},
+    "provider_connectivity": {"const": "not_tested"},
+    "task_outcomes": {"enum": ["synthetic_complete", "incomplete_unknown_budget", "incomplete_bound_insufficient", "incomplete_scheduled_outcomes", "incomplete_egress_scope"]},
+    "supported_benefit": {"const": false},
+    "activation_eligible": {"const": false},
+    "study_evaluation": {"anyOf": [{"type": "object"}, {"type": "null"}]},
+    "monitor_status": {"type": "string", "minLength": 1},
+    "monitor_recommendation": {"type": "string", "minLength": 1},
+    "exposure_action": {"enum": ["none", "suspend"]},
+    "contract_digest": {"$ref": "#/$defs/hash"}
+  },
+  "required": ["schema_version", "link_digest", "collection_digest", "code_wiring",
+    "provider_connectivity", "task_outcomes", "supported_benefit", "activation_eligible",
+    "study_evaluation", "monitor_status", "monitor_recommendation", "exposure_action", "contract_digest"],
+  "additionalProperties": false,
+  "$defs": {"hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}

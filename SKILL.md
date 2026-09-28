@@ -27,6 +27,10 @@ For the issue #12 process-local host-owned runtime checkpoint, read
 `references/host-runtime-lifecycle.md`. It starts off, can exercise offline
 synthetic shadow, and requires separate authority for provider egress.
 
+For exact implementation-to-study linkage and bounded synthetic paired collection,
+read `references/observed-evidence-linkage.md`. Its offline adapter cannot establish
+observed benefit, provider connectivity, or activation eligibility.
+
 **LLMs generate. JEV classifies, selects, and evaluates. Deterministic code enforces. Instrumentation measures. Experiments decide whether JEV stays.**
 
 ## Executable implementation mode
