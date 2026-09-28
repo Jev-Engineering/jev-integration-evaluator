@@ -61,6 +61,19 @@ def retrieve_context(root: Path, inventory: dict, candidate_id: str, *,
             policy = cap.DiscoveryPolicy.from_json(capability_report['policy'])
         except (cap.CapabilityError, KeyError, TypeError):
             raise InputError('Invalid capability report binding') from None
+        try:
+            fresh_report = cap.discover_repository(root, policy)
+        except (cap.CapabilityError, OSError):
+            raise InputError('Fresh discovery unavailable for review context') from None
+        if cap._json(fresh_report) != cap._json(capability_report):
+            raise InputError('Capability report changed since reviewed discovery')
+        observed = {r['file']: r['sha256'] for r in capability_report['files']}
+        if len(observed) != len(capability_report['files']) or any(
+                type(r) is not dict or type(r.get('file')) is not str
+                or type(r.get('sha256')) is not str
+                or observed.get(r['file']) != r['sha256']
+                for r in rows):
+            raise InputError('Inventory source absent from bound capability report')
         excludes = policy.exclude
         if discovery_excludes is not None and discovery_excludes != excludes:
             raise InputError('Discovery exclusion policy mismatch')

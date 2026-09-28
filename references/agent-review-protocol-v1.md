@@ -12,7 +12,9 @@ both the inventory and the allowlist before any source read. A nominated invento
 or any related file requires the source-hashed capability report, whose digest
 must match the reviewed inventory's bridge record. Its policy supplies the
 effective exclusions. If `discovery_excludes` is supplied, it must exactly match
-that report. Every parent prefix is checked. Legacy inventories can retrieve
+that report. A fresh read-only discovery must exactly match the retained report,
+and every inventory file/hash must occur in it. Every parent prefix is checked.
+Legacy inventories can retrieve
 only their own files under default exclusions. The context records the effective
 list and report digest.
 The default limits are 24 included files and 120,000 source bytes. It does not

@@ -247,11 +247,9 @@ def test_discovery_to_reviewed_spec_on_opaque_host(tmp_path):
                       reason='Existing finite semantic decision with existing host callbacks.', approved=True)})
     reviewed = review_nominated_inventory(tmp_path, report, prepared_inventory, review, DEFAULT, policy=policy)
     inventory = reviewed['inventory']
-    (tmp_path / 'caller.py').write_text('def invoke(x):\n    return select_boundary_q7(x)\n')
-    related = (dict(file='caller.py', sha256=hashlib.sha256((tmp_path / 'caller.py').read_bytes()).hexdigest(),
-                    role='caller'),)
+    related = ()
     with pytest.raises(InputError, match='bound capability report'):
-        retrieve_context(tmp_path, inventory, candidate['candidate_id'], related_files=related)
+        retrieve_context(tmp_path, inventory, candidate['candidate_id'])
     with pytest.raises(InputError, match='mismatch'):
         retrieve_context(tmp_path, inventory, candidate['candidate_id'], related_files=related,
                          capability_report=report, discovery_excludes=())
@@ -263,8 +261,16 @@ def test_discovery_to_reviewed_spec_on_opaque_host(tmp_path):
                              capability_report=report, related_files=(row,))
         malicious = copy.deepcopy(inventory)
         malicious['files'].append({k: row[k] for k in ('file', 'sha256')})
-        with pytest.raises(InputError, match='Excluded or sensitive'):
+        with pytest.raises(InputError, match='absent from bound capability report'):
             retrieve_context(tmp_path, malicious, candidate['candidate_id'], capability_report=report)
+    forged = copy.deepcopy(inventory)
+    forged['files'].append(dict(file='extra.py', sha256='0' * 64))
+    with pytest.raises(InputError, match='absent from bound capability report'):
+        retrieve_context(tmp_path, forged, candidate['candidate_id'], capability_report=report)
+    (tmp_path / 'extra.py').write_text('PRIVATE_SENTINEL = 3\n')
+    with pytest.raises(InputError, match='changed since reviewed discovery'):
+        retrieve_context(tmp_path, inventory, candidate['candidate_id'], capability_report=report)
+    (tmp_path / 'extra.py').unlink()
     context = retrieve_context(tmp_path, inventory, candidate['candidate_id'],
                                capability_report=report, related_files=related)
     verification = copy.deepcopy(binding['verification'])
