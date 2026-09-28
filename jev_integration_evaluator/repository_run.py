@@ -545,7 +545,9 @@ def _native_contract(value: Any, state: dict, plan: dict, scope: dict | None,
                    for s in (baseline, modified))):
         raise SessionError("native_schedule_exceeds_session_bounds")
     owned = {row["file"]: row for row in plan["owned_files"]}
-    if not owned or set(owned) - {row["path"] for row in baseline["files"]} or set(owned) - {row["path"] for row in modified["files"]}:
+    existing_owned = {path for path in owned if path in state["source_files"]}
+    if (not owned or existing_owned - {row["path"] for row in baseline["files"]}
+            or set(owned) - {row["path"] for row in modified["files"]}):
         raise SessionError("native_spec_omits_owned_source")
     for name, spec in (("baseline", baseline), ("modified", modified)):
         expected = copy.deepcopy(state["source_files"])

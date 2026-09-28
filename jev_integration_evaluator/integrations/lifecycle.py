@@ -373,7 +373,8 @@ def apply_native_implementation(root, bundle, approval, *, baseline_spec, baseli
                 oracle['baseline']['attempt'] != expected_attempt or
                 baseline_receipt['authority_reference_sha256'] != expected_authority_sha256 or
                 baseline_spec['source_identity'] != {'device': identity.st_dev, 'inode': identity.st_ino} or
-                {row['file'] for row in plan['owned_files']} - {row['path'] for row in baseline_spec['files']} or
+                {row['file'] for row in plan['owned_files'] if row['preimage'] is not None}
+                - {row['path'] for row in baseline_spec['files']} or
                 any(not safe_child(root, row['path']).is_file() or
                     file_hash(safe_child(root, row['path'])) != row['sha256'] or
                     stat.S_IMODE(safe_child(root, row['path']).stat().st_mode) != row['mode']
