@@ -631,6 +631,28 @@
         }
       ]
     },
+    "agent_review_history": {
+      "type": "array", "maxItems": 8,
+      "items": {"type": "object", "properties": {
+        "input_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "candidate_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "reviewer_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "proposal_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "reason_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "evidence_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "evidence_refs": {"type": "array", "maxItems": 128, "items": {"type": "object",
+          "properties": {"file_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+                         "symbol_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}},
+          "required": ["file_sha256", "symbol_sha256"], "additionalProperties": false}},
+        "context_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "status": {"enum": ["reviewed_specification", "unresolved", "blocked"]},
+        "draft_sha256": {"anyOf": [{"type": "null"},
+          {"type": "string", "pattern": "^[a-f0-9]{64}$"}]}
+      }, "required": ["input_sha256", "candidate_sha256", "reviewer_sha256",
+                       "proposal_sha256", "reason_sha256", "evidence_sha256", "evidence_refs",
+                       "context_sha256", "status", "draft_sha256"],
+      "additionalProperties": false}
+    },
     "selection_record": {
       "anyOf": [
         {"type": "null"},

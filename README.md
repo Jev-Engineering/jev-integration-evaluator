@@ -18,8 +18,10 @@ read-only static inspection. With a private external session, source-reviewed
 inventory and implementation specification, and separate exact-bundle scopes, the
 same command can journal the existing single-placement plan, baseline, apply,
 modified verification, status and owned rollback lifecycle. The fixed adapter
-does not author a semantic review, choose callbacks or policy, or compose the
-experimental repository selection flow. Issue #4 remains open. See the
+also accepts a strictly recorded offline source review through `--agent-review`;
+it requires saved host policy, independently reviewed inventory and a fresh
+exact preparation scope. The review grants no provider or execution authority.
+See the
 [session contract](references/repository-session-command.md) and
 [dev11 validation](validation/REPOSITORY-SESSION-VALIDATION-1.3.0.dev11.md).
 

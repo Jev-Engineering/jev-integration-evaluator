@@ -17,6 +17,7 @@
         "inspect_bundle_receipts_and_owned_source",
         "inspect_native_archive_and_external_anchor_before_retry",
         "inspect_native_contract_and_private_archive",
+        "resupply_exact_offline_agent_review",
         "inspect_native_session_stage",
         "inspect_stale_or_changed_verification_receipt",
         "no_further_placement_action",
@@ -32,6 +33,7 @@
         "reconcile_existing_bundle_before_any_retry",
         "reconcile_owned_apply_before_retry",
         "resolve_ambiguous_host_binding",
+        "resolve_offline_agent_review_facts",
         "resolve_host_prerequisite",
         "resolve_scan_coverage_before_implementation",
         "resume_native_with_external_anchors",
@@ -58,6 +60,7 @@
         "supply_externally_retained_session_head",
         "supply_missing_host_binding",
         "supply_recorded_source_reviewed_inventory_and_spec",
+        "supply_indispensable_host_policy_or_verification",
         "supply_source_reviewed_inputs"
       ]
     },

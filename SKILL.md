@@ -14,6 +14,9 @@ single-placement session, use `python -m jev_integration_evaluator.repository_ru
 and read `references/repository-session-command.md`. The fixed adapter requires
 caller-supplied source-reviewed bindings and policy. A session does not grant
 provider connectivity, native isolation or production activation.
+An opt-in `--agent-review` session path accepts a recorded offline review with
+saved host policy and runtime ownership, then requires a separately anchored
+preparation scope before planning. See `references/agent-review-protocol-v1.md`.
 
 **LLMs generate. JEV classifies, selects, and evaluates. Deterministic code enforces. Instrumentation measures. Experiments decide whether JEV stays.**
 

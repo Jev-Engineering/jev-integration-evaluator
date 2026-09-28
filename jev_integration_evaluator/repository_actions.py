@@ -16,6 +16,8 @@ _ACTIONS = {
     "review_unsupported_source_shape": (["supported_source_review"], "new_review", "none", False),
     "resolve_scan_coverage_before_implementation": (["complete_source_coverage"], "new_review", "none", True),
     "supply_recorded_source_reviewed_inventory_and_spec": (["reviewed_inventory", "implementation_spec"], "new_review", "none", True),
+    "supply_indispensable_host_policy_or_verification": (["host_policy_or_runtime_ownership_or_independent_verification"], "new_review", "none", True),
+    "resolve_offline_agent_review_facts": (["existing_host_binding_or_capability_review"], "new_review", "none", True),
     "review_selection_outcome": (["selection_review_or_supported_candidate"], "new_review", "none", True),
     "refresh_source_review_and_selection": (["fresh_source_review", "new_run"], "new_review", "none", False),
     "qualify_composite_transaction": (["composite_transaction_qualification"], "new_review", "none", False),
@@ -51,6 +53,7 @@ _ACTIONS = {
     "inspect_native_archive_and_external_anchor_before_retry": (["native_receipt_anchor", "private_output_anchor", "trusted_session_head"], "external_receipt_or_rollback", "none", True),
     "review_retained_native_schedule_and_postconditions": (["failed_schedule_review", "native_oracle_review"], "new_review", "none", True),
     "inspect_native_contract_and_private_archive": (["native_contract", "private_output_anchor", "trusted_session_head"], "new_review", "none", True),
+    "resupply_exact_offline_agent_review": (["identical_offline_review_envelope", "trusted_session_head"], "new_review", "none", True),
     "resume_native_with_external_anchors": (["trusted_session_head", "native_contract", "native_scope", "native_receipt_anchor", "private_output_anchor"], "exact_scope", "isolated_execution", True),
 }
 

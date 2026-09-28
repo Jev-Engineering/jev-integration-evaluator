@@ -90,19 +90,22 @@ def validate(check_manifest=False):
                  for directory in ('schemas', 'jev_integration_evaluator/data')
                  for name in ('repository-coverage-review-v1', 'repository-conclusion-v1')]
     required += ['jev_integration_evaluator/repository_run.py',
+                 'jev_integration_evaluator/agent_review.py',
                  'jev_integration_evaluator/repository_selection.py',
                  'scripts/run_repository.py', 'scripts/run_repository_session_demo.py',
                  'scripts/run_repository_session_mutations.py',
                  'references/repository-session-command.md',
                  'tests/test_repository_run.py', 'tests/test_repository_run_wheel.py',
                  'tests/test_repository_selection.py',
+                 'tests/test_repository_offline_agent_review.py',
+                 'references/agent-review-protocol-v1.md',
                  'examples/repository-session/context.example.json',
                  'examples/repository-session/scope-denied.example.json']
     required += [f'{directory}/{name}.schema.json'
                  for directory in ('schemas', 'jev_integration_evaluator/data')
                  for name in ('repository-run-context-v1', 'repository-run-scope-v1',
                               'repository-run-selection-v1',
-                              'repository-session-v1')]
+                              'repository-session-v1', 'repository-offline-agent-review-v1')]
     for item in required:
         if not (ROOT/item).is_file():raise InputError('Required package file missing: '+item)
     front=(ROOT/'SKILL.md').read_text().split('---',2)

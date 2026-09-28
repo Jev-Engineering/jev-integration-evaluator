@@ -87,6 +87,43 @@ python -m jev_integration_evaluator.repository_run /absolute/target \
   --stop-after plan
 ```
 
+For the opt-in offline agent review path, set the immutable session context's
+`adapter` to `recorded-reviewed-input-v2` and save the caller-owned `host_policy`
+and `runtime_ownership` answers. Supply `--agent-review /caller/private/review.json`
+instead of `--prepared`. The strict `repository-offline-agent-review-v1` envelope
+contains `candidate_id`, the exact bounded capability report, an independently
+reviewed inventory, an `offline-agent-review-proposal-v1`, caller-owned
+verification, and an explicit `related_files` allowlist (usually empty).
+`--agent-review` is session-only and mutually exclusive with `--prepared`.
+
+The recorded adapter has no provider connection. It rereads only the independently
+discovered source set under the exact session policy, reruns discovery to reject
+drift, validates the proposal and caller answers, and drafts an existing strict v2
+prepared response. It records SHA-256 commitments to the input, proposal,
+reason, evidence, reviewer handle, context and draft before any plan. It stores
+only bounded evidence hashes and a candidate-ID hash; no raw proposal, source,
+prompt or policy text
+in the session. The caller retains the complete review envelope separately.
+The first successful call returns `reviewed_specification_ready` and the exact
+`prepared_sha256`. Before planning, a later invocation must resupply the exact
+envelope and a fresh scope bound to that digest and the externally retained
+`session_head_sha256`. The command rediscovers and redrafts before planning.
+A changed source, policy, proposal, or review input cannot silently continue a
+planned session. After planning, the owned bundle and source/receipt checks
+govern effects; exact owned-byte rollback remains available through its
+separate recovery scope. The status explicitly identifies externally retained
+review content.
+Sessions created by the earlier draft that wrote raw `agent-review-*.json` or
+`agent-draft-*.json` files are incompatible with this journal schema and fail
+closed. This command does not migrate or erase those historical private files;
+the session owner must inspect and dispose of them under the local sensitive-data
+policy before starting a new session.
+Unresolved host facts return `insufficient_evidence` with an explicit next action.
+The public status omits proposal evidence and source context; the private journal
+keeps bounded references for audit. Reviewer identity is an unauthenticated
+opinion. No result authorizes provider egress, target execution, activation, or
+adoption; those operations retain their separate existing gates.
+
 The optional `--selection /caller/selection.json` accepts the mirrored
 `repository-run-selection-v1` contract. `inventory-selection-v1` records a
 reviewed inventory and a `placement-selection-request`; a separately supplied
