@@ -36,7 +36,11 @@ def assess_selection(root: str | Path, entry: dict, *, policy: cap.DiscoveryPoli
         result = inventory_selection.select_placement(
             inventory, entry["request"],
             approved_request_sha256=approved_request_sha256)
-        return {"path": "inventory", "status": result["status"],
+        # This legacy inventory is caller supplied, so an empty candidate list
+        # cannot establish an empty repository-wide discovery result.
+        status = ("no_candidates_in_supplied_inventory"
+                  if result["status"] == "no_candidates_discovered" else result["status"])
+        return {"path": "inventory", "status": status,
                 "selection_sha256": digest(result), "selection": result,
                 "inventory_sha256": digest(inventory),
                 "request_sha256": result["request_sha256"],
@@ -50,7 +54,9 @@ def assess_selection(root: str | Path, entry: dict, *, policy: cap.DiscoveryPoli
                     "settings", "scope_review", "selection_review"}
         if set(entry) != expected:
             raise cap.CapabilityError("invalid_repository_selection")
-        policy = cap.DiscoveryPolicy.from_json(entry["report"]["policy"])
+        reported_policy = cap.DiscoveryPolicy.from_json(entry["report"]["policy"])
+        if reported_policy != policy:
+            raise cap.CapabilityError("selection_policy_differs_from_session")
         args = (root, entry["report"], entry["prepared"],
                 entry["semantic_review"], entry["settings"])
         context = source_selection.prepare_placement_context(

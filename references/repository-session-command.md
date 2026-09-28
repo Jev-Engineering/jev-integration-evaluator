@@ -94,7 +94,10 @@ reviewed inventory and a `placement-selection-request`; a separately supplied
 digest inside a JSON proposal cannot approve itself. `source-selection-v1`
 records the source-wide report, nomination preparation, semantic review,
 settings, optional complete scope review, and optional experimental selection
-review. Both selectors are recomputed against current source before use and on
+review. Its report discovery policy must exactly match the session context
+policy; a report prepared with different bounds requires a matching caller
+context. Selection is recorded before planning or effects, preserving decision
+order. Both selectors are recomputed against current source before use and on
 every resume. The original input is fsynced into a private session archive;
 the journal records its hash, outcome, selector path, and review digest. A
 changed source or review returns `stale_selection` and requires a fresh run.
@@ -108,6 +111,8 @@ unsupported source, missing estimates, an experimental choice, and optimization
 under declared estimates are not interchangeable. A complete negative from the
 source-wide review is reported as `no_useful_placement`; a negative from the
 older inventory selector is limited to `no_useful_placement_within_reviewed_inventory`.
+An empty caller-supplied legacy inventory is reported as
+`no_candidates_in_supplied_inventory`, not as repository-wide absence.
 When the caller also supplies a reviewed implementation response, its inventory,
 candidate and reviewed specification must match the selected inputs before the
 ordinary planner runs. Multiple selected candidates still require the separate

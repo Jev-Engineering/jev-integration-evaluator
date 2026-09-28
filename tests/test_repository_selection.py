@@ -9,7 +9,7 @@ import pytest
 
 from jev_integration_evaluator.io import digest
 from jev_integration_evaluator.repository_run import (
-    ADAPTER, ZERO_GRANTS, SessionError, inspect_repository, run_repository,
+    ADAPTER, ZERO_GRANTS, SessionError, inspect_repository, request_context, run_repository,
 )
 from jev_integration_evaluator.selection import selection_engine_sha256, request_sha256
 from scripts.implementation_fixtures import fixture
@@ -92,7 +92,7 @@ def test_no_useful_inventory_is_scoped_to_reviewed_inventory(tmp_path):
     assert result["status"] == "no_useful_placement_within_reviewed_inventory"
 
 
-@pytest.mark.parametrize("outcome", ["no_candidates_discovered", "deterministic_rejection",
+@pytest.mark.parametrize("outcome", ["no_candidates_in_supplied_inventory", "deterministic_rejection",
                                      "incomplete_analysis", "stale_semantic_review",
                                      "insufficient_estimates", "estimate_based_optimization"])
 def test_repository_command_retains_distinct_inventory_outcomes(tmp_path, outcome):
@@ -103,7 +103,7 @@ def test_repository_command_retains_distinct_inventory_outcomes(tmp_path, outcom
     request.update(mode="optimize", candidate_id=None, decision_review=None,
                    preparation_scope_ref=None, implementation_spec_sha256=None,
                    constraints=load_config()["constraints"])
-    if outcome == "no_candidates_discovered":
+    if outcome == "no_candidates_in_supplied_inventory":
         inventory["candidates"] = []
         inventory["interactions"] = []
     elif outcome == "deterministic_rejection":
@@ -222,13 +222,52 @@ def test_whole_source_review_negative_is_exposed_and_revalidated(tmp_path):
                  "report": report, "prepared": prepared, "semantic_review": semantic,
                  "settings": cfg, "scope_review": scope, "selection_review": None}
     from jev_integration_evaluator.repository_selection import assess_selection
-    assert assess_selection(root, selection, policy=cap.DiscoveryPolicy())["status"] == "no_useful_placement"
+    selected_policy = cap.DiscoveryPolicy.from_json(report["policy"])
+    assert assess_selection(root, selection, policy=selected_policy)["status"] == "no_useful_placement"
+    with pytest.raises(cap.CapabilityError, match="selection_policy_differs_from_session"):
+        assess_selection(root, selection, policy=cap.DiscoveryPolicy())
+    wrong_session = tmp_path / "wrong-policy-session"
+    with pytest.raises(SessionError, match="invalid_or_stale_new_selection"):
+        run_repository(root, wrong_session, selection=selection)
+    assert not list(wrong_session.glob("selection-*.json"))
     session = tmp_path / "source-session"
-    result = run_repository(root, session, selection=selection)
+    context = request_context(policy=selected_policy)
+    result = run_repository(root, session, selection=selection, context=context)
     assert result["status"] == "no_useful_placement"
     assert run_repository(root, session)["status"] == "no_useful_placement"
     (root / "opaque.py").write_text((root / "opaque.py").read_text() + "\n# changed\n")
     assert run_repository(root, session)["status"] == "stale_selection"
+
+
+@pytest.mark.parametrize("stage", ["planned", "verified"])
+def test_selection_cannot_be_injected_after_bundle_or_effect(tmp_path, stage):
+    root, selection, approval, spec = _input(tmp_path)
+    session = tmp_path / "session"
+    inspection = inspect_repository(root)
+    scope = {"schema_version": "1.0", "kind": "repository-run-scope-v1",
+             "reference": "synthetic-local-operator",
+             "repository_identity": inspection["report"]["repository_identity"],
+             "context_sha256": inspection["context_sha256"], "bundle_digest": None,
+             "trusted_session_head": None, "trusted_baseline_receipt": None,
+             "trusted_modified_receipt": None, "rollback_digest": None,
+             "execution_environment": "trusted_host", "grants": {**ZERO_GRANTS, "prepare": True}}
+    prepared = {"schema_version": "1.0", "adapter": ADAPTER,
+                "inventory": selection["inventory"], "spec": spec}
+    planned = run_repository(root, session, prepared=prepared, scope=scope, stop_after="plan")
+    assert planned["status"] == "planned"
+    if stage == "verified":
+        execution = {**scope, "bundle_digest": planned["bundle_digest"],
+                     "trusted_session_head": planned["session_head_sha256"],
+                     "grants": {**ZERO_GRANTS, "baseline": True, "apply": True,
+                                "modified": True}}
+        assert run_repository(root, session, scope=execution)["status"] == "verified"
+    journal_before = (session / "journal.jsonl").read_bytes()
+    source_before = {p.relative_to(root): p.read_bytes() for p in root.rglob("*") if p.is_file()}
+    with pytest.raises(SessionError, match="selection_must_precede_planning_and_effects"):
+        run_repository(root, session, selection=selection,
+                       approved_selection_sha256=approval)
+    assert (session / "journal.jsonl").read_bytes() == journal_before
+    assert {p.relative_to(root): p.read_bytes() for p in root.rglob("*") if p.is_file()} == source_before
 
 
 @pytest.mark.parametrize("entry", ["module", "central", "script"])

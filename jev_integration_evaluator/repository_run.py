@@ -1171,6 +1171,13 @@ def run_repository(repo: str | Path, session: str | Path, *, context: dict | Non
             raise SessionError("selection_input_required_for_approval")
         if selection is not None or journal.state.get("selection_record") is not None:
             current = journal.state.get("selection_record")
+            if (current is None and (journal.state["stage"] != "prepared"
+                    or journal.state["bundle"] is not None
+                    or journal.state["planned_output"] is not None
+                    or journal.state["pending"] is not None
+                    or any(journal.state["attempts"].values())
+                    or any(journal.state["receipts"].values()))):
+                raise SessionError("selection_must_precede_planning_and_effects")
             post_effect = bool(current and journal.state["attempts"]["apply"])
             if post_effect and proposal is not None:
                 raise SessionError("reviewed_prepared_input_after_apply_forbidden")
