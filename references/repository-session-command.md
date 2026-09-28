@@ -248,11 +248,14 @@ before claiming an environment-equivalent result.
 Execution is **trusted-host synthetic verification** only. Requesting an isolated
 backend fails with `independent_isolation_backend_unsupported`, without silently
 executing on the host. The current core probe injects its fixture runtime; this
-does not prove actual application bootstrap or provider connectivity. No existing
-Python recipe is generalized, and no methods, async seams, package rewriting,
-JS/TS runtime, distributed budget, production activation or benefit is advertised.
+does not prove actual application bootstrap or provider connectivity. The
+existing Python recipe engine now accepts separately declared regular, `src/`,
+and explicit namespace package bindings with bounded static package-local
+re-export chains, as described in `references/executable-integrations.md`.
+This session still does not support methods, async seams, arbitrary package
+rewriting, JS/TS runtime, distributed budgets, production activation or benefit.
 
-Local session qualification targets Linux/Python 3.13. Other interpreters,
+Local session qualification in this branch targets WSL Linux/CPython 3.12.3. Other interpreters,
 filesystems, Windows/macOS and hosted jobs must be qualified separately. The
 session filesystem implementation explicitly rejects non-POSIX execution.
 
