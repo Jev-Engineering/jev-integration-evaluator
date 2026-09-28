@@ -1,0 +1,1176 @@
+{
+  "decision": "reject",
+  "evidence_kind": "offline frozen synthetic only",
+  "failed_gates": [
+    "wrong merges",
+    "wrong merge uncertainty",
+    "missed true merges",
+    "failures",
+    "minimum improvement versus current",
+    "minimum improvement versus deterministic"
+  ],
+  "hashes_sha256": {
+    "assessments.v1.json": "7e8f3557b3e5a39b729d6dee6343ccc9e1213339f7ae390c3046bc17a3726898",
+    "cases.v1.json": "808af7aafbff7e4f2cc8435f37538ca59e86242ca25d3fe278e68879fcfa4cf5",
+    "entities.py": "727a44525050b28888bea84954ce3caf2fb49e7b14548ab0b9505ad4f95f1dd6",
+    "labels.v1.json": "57bf04656818f17a50a13f36f1c6491519ebd81170d478fd11dbc104978f37eb",
+    "run_experiment.py": "9d77d0d17ca61409658f6e55bdec8ea4477fefcde0e9498031ab4ad8f1c21f65",
+    "study.v1.json": "e151bd5037e2dcde87a997985a19fabb3d47de324a968d3b05df8c00d44d9a19"
+  },
+  "paired_holdout": [
+    {
+      "arms": {
+        "current": {
+          "approval": true,
+          "assessment": "same",
+          "assessment_correct": true,
+          "case_id": "h01",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0069,
+          "merged": true,
+          "missed_eligible_true_merge": false,
+          "receipt": {
+            "left_key": "a05",
+            "revision_after": 1,
+            "revision_before": 0,
+            "right_key": "b05",
+            "sources": [
+              "registry-a",
+              "registry-b"
+            ]
+          },
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "same",
+          "wrong_merge": false
+        },
+        "deterministic": {
+          "approval": true,
+          "assessment": "same",
+          "assessment_correct": true,
+          "case_id": "h01",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0011,
+          "merged": true,
+          "missed_eligible_true_merge": false,
+          "receipt": {
+            "left_key": "a05",
+            "revision_after": 1,
+            "revision_before": 0,
+            "right_key": "b05",
+            "sources": [
+              "registry-a",
+              "registry-b"
+            ]
+          },
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "same",
+          "wrong_merge": false
+        },
+        "jev": {
+          "approval": true,
+          "assessment": "same",
+          "assessment_correct": true,
+          "case_id": "h01",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0009,
+          "merged": true,
+          "missed_eligible_true_merge": false,
+          "receipt": {
+            "left_key": "a05",
+            "revision_after": 1,
+            "revision_before": 0,
+            "right_key": "b05",
+            "sources": [
+              "registry-a",
+              "registry-b"
+            ]
+          },
+          "revision_current": true,
+          "simulated_cost_usd": 0.0005,
+          "simulated_latency_ms": 10,
+          "truth": "same",
+          "wrong_merge": false
+        }
+      },
+      "case_id": "h01"
+    },
+    {
+      "arms": {
+        "current": {
+          "approval": true,
+          "assessment": "uncertain",
+          "assessment_correct": false,
+          "case_id": "h02",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0012,
+          "merged": false,
+          "missed_eligible_true_merge": true,
+          "receipt": null,
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "same",
+          "wrong_merge": false
+        },
+        "deterministic": {
+          "approval": true,
+          "assessment": "uncertain",
+          "assessment_correct": false,
+          "case_id": "h02",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0004,
+          "merged": false,
+          "missed_eligible_true_merge": true,
+          "receipt": null,
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "same",
+          "wrong_merge": false
+        },
+        "jev": {
+          "approval": true,
+          "assessment": "same",
+          "assessment_correct": true,
+          "case_id": "h02",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0009,
+          "merged": true,
+          "missed_eligible_true_merge": false,
+          "receipt": {
+            "left_key": "a06",
+            "revision_after": 1,
+            "revision_before": 0,
+            "right_key": "b06",
+            "sources": [
+              "registry-a",
+              "registry-b"
+            ]
+          },
+          "revision_current": true,
+          "simulated_cost_usd": 0.0005,
+          "simulated_latency_ms": 10,
+          "truth": "same",
+          "wrong_merge": false
+        }
+      },
+      "case_id": "h02"
+    },
+    {
+      "arms": {
+        "current": {
+          "approval": true,
+          "assessment": "same",
+          "assessment_correct": true,
+          "case_id": "h03",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0032,
+          "merged": true,
+          "missed_eligible_true_merge": false,
+          "receipt": {
+            "left_key": "a07",
+            "revision_after": 1,
+            "revision_before": 0,
+            "right_key": "b07",
+            "sources": [
+              "registry-a",
+              "registry-b"
+            ]
+          },
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "same",
+          "wrong_merge": false
+        },
+        "deterministic": {
+          "approval": true,
+          "assessment": "same",
+          "assessment_correct": true,
+          "case_id": "h03",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.001,
+          "merged": true,
+          "missed_eligible_true_merge": false,
+          "receipt": {
+            "left_key": "a07",
+            "revision_after": 1,
+            "revision_before": 0,
+            "right_key": "b07",
+            "sources": [
+              "registry-a",
+              "registry-b"
+            ]
+          },
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "same",
+          "wrong_merge": false
+        },
+        "jev": {
+          "approval": true,
+          "assessment": "same",
+          "assessment_correct": true,
+          "case_id": "h03",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0009,
+          "merged": true,
+          "missed_eligible_true_merge": false,
+          "receipt": {
+            "left_key": "a07",
+            "revision_after": 1,
+            "revision_before": 0,
+            "right_key": "b07",
+            "sources": [
+              "registry-a",
+              "registry-b"
+            ]
+          },
+          "revision_current": true,
+          "simulated_cost_usd": 0.0005,
+          "simulated_latency_ms": 10,
+          "truth": "same",
+          "wrong_merge": false
+        }
+      },
+      "case_id": "h03"
+    },
+    {
+      "arms": {
+        "current": {
+          "approval": true,
+          "assessment": "different",
+          "assessment_correct": false,
+          "case_id": "h04",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0005,
+          "merged": false,
+          "missed_eligible_true_merge": true,
+          "receipt": null,
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "same",
+          "wrong_merge": false
+        },
+        "deterministic": {
+          "approval": true,
+          "assessment": "uncertain",
+          "assessment_correct": false,
+          "case_id": "h04",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0002,
+          "merged": false,
+          "missed_eligible_true_merge": true,
+          "receipt": null,
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "same",
+          "wrong_merge": false
+        },
+        "jev": {
+          "approval": true,
+          "assessment": "same",
+          "assessment_correct": true,
+          "case_id": "h04",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0008,
+          "merged": true,
+          "missed_eligible_true_merge": false,
+          "receipt": {
+            "left_key": "a08",
+            "revision_after": 1,
+            "revision_before": 0,
+            "right_key": "b08",
+            "sources": [
+              "registry-a",
+              "registry-b"
+            ]
+          },
+          "revision_current": true,
+          "simulated_cost_usd": 0.0005,
+          "simulated_latency_ms": 10,
+          "truth": "same",
+          "wrong_merge": false
+        }
+      },
+      "case_id": "h04"
+    },
+    {
+      "arms": {
+        "current": {
+          "approval": true,
+          "assessment": "same",
+          "assessment_correct": true,
+          "case_id": "h05",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0014,
+          "merged": true,
+          "missed_eligible_true_merge": false,
+          "receipt": {
+            "left_key": "a09",
+            "revision_after": 1,
+            "revision_before": 0,
+            "right_key": "b09",
+            "sources": [
+              "registry-a",
+              "registry-b"
+            ]
+          },
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "same",
+          "wrong_merge": false
+        },
+        "deterministic": {
+          "approval": true,
+          "assessment": "same",
+          "assessment_correct": true,
+          "case_id": "h05",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0009,
+          "merged": true,
+          "missed_eligible_true_merge": false,
+          "receipt": {
+            "left_key": "a09",
+            "revision_after": 1,
+            "revision_before": 0,
+            "right_key": "b09",
+            "sources": [
+              "registry-a",
+              "registry-b"
+            ]
+          },
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "same",
+          "wrong_merge": false
+        },
+        "jev": {
+          "approval": true,
+          "assessment": "same",
+          "assessment_correct": true,
+          "case_id": "h05",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0008,
+          "merged": true,
+          "missed_eligible_true_merge": false,
+          "receipt": {
+            "left_key": "a09",
+            "revision_after": 1,
+            "revision_before": 0,
+            "right_key": "b09",
+            "sources": [
+              "registry-a",
+              "registry-b"
+            ]
+          },
+          "revision_current": true,
+          "simulated_cost_usd": 0.0005,
+          "simulated_latency_ms": 10,
+          "truth": "same",
+          "wrong_merge": false
+        }
+      },
+      "case_id": "h05"
+    },
+    {
+      "arms": {
+        "current": {
+          "approval": true,
+          "assessment": "related",
+          "assessment_correct": true,
+          "case_id": "h06",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0003,
+          "merged": false,
+          "missed_eligible_true_merge": false,
+          "receipt": null,
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "related",
+          "wrong_merge": false
+        },
+        "deterministic": {
+          "approval": true,
+          "assessment": "different",
+          "assessment_correct": false,
+          "case_id": "h06",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0003,
+          "merged": false,
+          "missed_eligible_true_merge": false,
+          "receipt": null,
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "related",
+          "wrong_merge": false
+        },
+        "jev": {
+          "approval": true,
+          "assessment": "related",
+          "assessment_correct": true,
+          "case_id": "h06",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0003,
+          "merged": false,
+          "missed_eligible_true_merge": false,
+          "receipt": null,
+          "revision_current": true,
+          "simulated_cost_usd": 0.0005,
+          "simulated_latency_ms": 10,
+          "truth": "related",
+          "wrong_merge": false
+        }
+      },
+      "case_id": "h06"
+    },
+    {
+      "arms": {
+        "current": {
+          "approval": true,
+          "assessment": "same",
+          "assessment_correct": false,
+          "case_id": "h07",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.001,
+          "merged": true,
+          "missed_eligible_true_merge": false,
+          "receipt": {
+            "left_key": "a11",
+            "revision_after": 1,
+            "revision_before": 0,
+            "right_key": "b11",
+            "sources": [
+              "registry-a",
+              "registry-b"
+            ]
+          },
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "different",
+          "wrong_merge": true
+        },
+        "deterministic": {
+          "approval": true,
+          "assessment": "different",
+          "assessment_correct": true,
+          "case_id": "h07",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0003,
+          "merged": false,
+          "missed_eligible_true_merge": false,
+          "receipt": null,
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "different",
+          "wrong_merge": false
+        },
+        "jev": {
+          "approval": true,
+          "assessment": "different",
+          "assessment_correct": true,
+          "case_id": "h07",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0002,
+          "merged": false,
+          "missed_eligible_true_merge": false,
+          "receipt": null,
+          "revision_current": true,
+          "simulated_cost_usd": 0.0005,
+          "simulated_latency_ms": 10,
+          "truth": "different",
+          "wrong_merge": false
+        }
+      },
+      "case_id": "h07"
+    },
+    {
+      "arms": {
+        "current": {
+          "approval": true,
+          "assessment": "different",
+          "assessment_correct": true,
+          "case_id": "h08",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0006,
+          "merged": false,
+          "missed_eligible_true_merge": false,
+          "receipt": null,
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "different",
+          "wrong_merge": false
+        },
+        "deterministic": {
+          "approval": true,
+          "assessment": "different",
+          "assessment_correct": true,
+          "case_id": "h08",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0003,
+          "merged": false,
+          "missed_eligible_true_merge": false,
+          "receipt": null,
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "different",
+          "wrong_merge": false
+        },
+        "jev": {
+          "approval": true,
+          "assessment": "different",
+          "assessment_correct": true,
+          "case_id": "h08",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0002,
+          "merged": false,
+          "missed_eligible_true_merge": false,
+          "receipt": null,
+          "revision_current": true,
+          "simulated_cost_usd": 0.0005,
+          "simulated_latency_ms": 10,
+          "truth": "different",
+          "wrong_merge": false
+        }
+      },
+      "case_id": "h08"
+    },
+    {
+      "arms": {
+        "current": {
+          "approval": true,
+          "assessment": "uncertain",
+          "assessment_correct": true,
+          "case_id": "h09",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0003,
+          "merged": false,
+          "missed_eligible_true_merge": false,
+          "receipt": null,
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "uncertain",
+          "wrong_merge": false
+        },
+        "deterministic": {
+          "approval": true,
+          "assessment": "uncertain",
+          "assessment_correct": true,
+          "case_id": "h09",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0002,
+          "merged": false,
+          "missed_eligible_true_merge": false,
+          "receipt": null,
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "uncertain",
+          "wrong_merge": false
+        },
+        "jev": {
+          "approval": true,
+          "assessment": "uncertain",
+          "assessment_correct": true,
+          "case_id": "h09",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0003,
+          "merged": false,
+          "missed_eligible_true_merge": false,
+          "receipt": null,
+          "revision_current": true,
+          "simulated_cost_usd": 0.0005,
+          "simulated_latency_ms": 10,
+          "truth": "uncertain",
+          "wrong_merge": false
+        }
+      },
+      "case_id": "h09"
+    },
+    {
+      "arms": {
+        "current": {
+          "approval": true,
+          "assessment": "same",
+          "assessment_correct": false,
+          "case_id": "h10",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0009,
+          "merged": true,
+          "missed_eligible_true_merge": false,
+          "receipt": {
+            "left_key": "a14",
+            "revision_after": 1,
+            "revision_before": 0,
+            "right_key": "b14",
+            "sources": [
+              "registry-a",
+              "registry-b"
+            ]
+          },
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "different",
+          "wrong_merge": true
+        },
+        "deterministic": {
+          "approval": true,
+          "assessment": "different",
+          "assessment_correct": true,
+          "case_id": "h10",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0002,
+          "merged": false,
+          "missed_eligible_true_merge": false,
+          "receipt": null,
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "different",
+          "wrong_merge": false
+        },
+        "jev": {
+          "approval": true,
+          "assessment": "same",
+          "assessment_correct": false,
+          "case_id": "h10",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0009,
+          "merged": true,
+          "missed_eligible_true_merge": false,
+          "receipt": {
+            "left_key": "a14",
+            "revision_after": 1,
+            "revision_before": 0,
+            "right_key": "b14",
+            "sources": [
+              "registry-a",
+              "registry-b"
+            ]
+          },
+          "revision_current": true,
+          "simulated_cost_usd": 0.0005,
+          "simulated_latency_ms": 10,
+          "truth": "different",
+          "wrong_merge": true
+        }
+      },
+      "case_id": "h10"
+    },
+    {
+      "arms": {
+        "current": {
+          "approval": false,
+          "assessment": "same",
+          "assessment_correct": true,
+          "case_id": "h11",
+          "eligible": false,
+          "injected_failure": null,
+          "local_wall_ms": 0.0003,
+          "merged": false,
+          "missed_eligible_true_merge": false,
+          "receipt": null,
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "same",
+          "wrong_merge": false
+        },
+        "deterministic": {
+          "approval": false,
+          "assessment": "same",
+          "assessment_correct": true,
+          "case_id": "h11",
+          "eligible": false,
+          "injected_failure": null,
+          "local_wall_ms": 0.0004,
+          "merged": false,
+          "missed_eligible_true_merge": false,
+          "receipt": null,
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "same",
+          "wrong_merge": false
+        },
+        "jev": {
+          "approval": false,
+          "assessment": "same",
+          "assessment_correct": true,
+          "case_id": "h11",
+          "eligible": false,
+          "injected_failure": null,
+          "local_wall_ms": 0.0002,
+          "merged": false,
+          "missed_eligible_true_merge": false,
+          "receipt": null,
+          "revision_current": true,
+          "simulated_cost_usd": 0.0005,
+          "simulated_latency_ms": 10,
+          "truth": "same",
+          "wrong_merge": false
+        }
+      },
+      "case_id": "h11"
+    },
+    {
+      "arms": {
+        "current": {
+          "approval": true,
+          "assessment": "same",
+          "assessment_correct": true,
+          "case_id": "h12",
+          "eligible": false,
+          "injected_failure": null,
+          "local_wall_ms": 0.0007,
+          "merged": false,
+          "missed_eligible_true_merge": false,
+          "receipt": null,
+          "revision_current": false,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "same",
+          "wrong_merge": false
+        },
+        "deterministic": {
+          "approval": true,
+          "assessment": "same",
+          "assessment_correct": true,
+          "case_id": "h12",
+          "eligible": false,
+          "injected_failure": null,
+          "local_wall_ms": 0.0006,
+          "merged": false,
+          "missed_eligible_true_merge": false,
+          "receipt": null,
+          "revision_current": false,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "same",
+          "wrong_merge": false
+        },
+        "jev": {
+          "approval": true,
+          "assessment": "same",
+          "assessment_correct": true,
+          "case_id": "h12",
+          "eligible": false,
+          "injected_failure": null,
+          "local_wall_ms": 0.0004,
+          "merged": false,
+          "missed_eligible_true_merge": false,
+          "receipt": null,
+          "revision_current": false,
+          "simulated_cost_usd": 0.0005,
+          "simulated_latency_ms": 10,
+          "truth": "same",
+          "wrong_merge": false
+        }
+      },
+      "case_id": "h12"
+    },
+    {
+      "arms": {
+        "current": {
+          "approval": false,
+          "assessment": "same",
+          "assessment_correct": false,
+          "case_id": "h13",
+          "eligible": false,
+          "injected_failure": null,
+          "local_wall_ms": 0.0002,
+          "merged": false,
+          "missed_eligible_true_merge": false,
+          "receipt": null,
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "different",
+          "wrong_merge": false
+        },
+        "deterministic": {
+          "approval": false,
+          "assessment": "different",
+          "assessment_correct": true,
+          "case_id": "h13",
+          "eligible": false,
+          "injected_failure": null,
+          "local_wall_ms": 0.0003,
+          "merged": false,
+          "missed_eligible_true_merge": false,
+          "receipt": null,
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "different",
+          "wrong_merge": false
+        },
+        "jev": {
+          "approval": false,
+          "assessment": "same",
+          "assessment_correct": false,
+          "case_id": "h13",
+          "eligible": false,
+          "injected_failure": null,
+          "local_wall_ms": 0.0002,
+          "merged": false,
+          "missed_eligible_true_merge": false,
+          "receipt": null,
+          "revision_current": true,
+          "simulated_cost_usd": 0.0005,
+          "simulated_latency_ms": 10,
+          "truth": "different",
+          "wrong_merge": false
+        }
+      },
+      "case_id": "h13"
+    },
+    {
+      "arms": {
+        "current": {
+          "approval": true,
+          "assessment": "same",
+          "assessment_correct": true,
+          "case_id": "h14",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0011,
+          "merged": true,
+          "missed_eligible_true_merge": false,
+          "receipt": {
+            "left_key": "a18",
+            "revision_after": 1,
+            "revision_before": 0,
+            "right_key": "b18",
+            "sources": [
+              "registry-a",
+              "registry-b"
+            ]
+          },
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "same",
+          "wrong_merge": false
+        },
+        "deterministic": {
+          "approval": true,
+          "assessment": "same",
+          "assessment_correct": true,
+          "case_id": "h14",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0012,
+          "merged": true,
+          "missed_eligible_true_merge": false,
+          "receipt": {
+            "left_key": "a18",
+            "revision_after": 1,
+            "revision_before": 0,
+            "right_key": "b18",
+            "sources": [
+              "registry-a",
+              "registry-b"
+            ]
+          },
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "same",
+          "wrong_merge": false
+        },
+        "jev": {
+          "approval": true,
+          "assessment": "uncertain",
+          "assessment_correct": false,
+          "case_id": "h14",
+          "eligible": true,
+          "injected_failure": "timeout",
+          "local_wall_ms": 0.0003,
+          "merged": false,
+          "missed_eligible_true_merge": true,
+          "receipt": null,
+          "revision_current": true,
+          "simulated_cost_usd": 0.0005,
+          "simulated_latency_ms": 10,
+          "truth": "same",
+          "wrong_merge": false
+        }
+      },
+      "case_id": "h14"
+    },
+    {
+      "arms": {
+        "current": {
+          "approval": true,
+          "assessment": "same",
+          "assessment_correct": true,
+          "case_id": "h15",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0011,
+          "merged": true,
+          "missed_eligible_true_merge": false,
+          "receipt": {
+            "left_key": "a19",
+            "revision_after": 1,
+            "revision_before": 0,
+            "right_key": "b19",
+            "sources": [
+              "registry-a",
+              "registry-b"
+            ]
+          },
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "same",
+          "wrong_merge": false
+        },
+        "deterministic": {
+          "approval": true,
+          "assessment": "same",
+          "assessment_correct": true,
+          "case_id": "h15",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.001,
+          "merged": true,
+          "missed_eligible_true_merge": false,
+          "receipt": {
+            "left_key": "a19",
+            "revision_after": 1,
+            "revision_before": 0,
+            "right_key": "b19",
+            "sources": [
+              "registry-a",
+              "registry-b"
+            ]
+          },
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "same",
+          "wrong_merge": false
+        },
+        "jev": {
+          "approval": true,
+          "assessment": "uncertain",
+          "assessment_correct": false,
+          "case_id": "h15",
+          "eligible": true,
+          "injected_failure": "malformed",
+          "local_wall_ms": 0.0003,
+          "merged": false,
+          "missed_eligible_true_merge": true,
+          "receipt": null,
+          "revision_current": true,
+          "simulated_cost_usd": 0.0005,
+          "simulated_latency_ms": 10,
+          "truth": "same",
+          "wrong_merge": false
+        }
+      },
+      "case_id": "h15"
+    },
+    {
+      "arms": {
+        "current": {
+          "approval": true,
+          "assessment": "same",
+          "assessment_correct": false,
+          "case_id": "h16",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0011,
+          "merged": true,
+          "missed_eligible_true_merge": false,
+          "receipt": {
+            "left_key": "a20",
+            "revision_after": 1,
+            "revision_before": 0,
+            "right_key": "b20",
+            "sources": [
+              "registry-a",
+              "registry-b"
+            ]
+          },
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "uncertain",
+          "wrong_merge": true
+        },
+        "deterministic": {
+          "approval": true,
+          "assessment": "uncertain",
+          "assessment_correct": true,
+          "case_id": "h16",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0002,
+          "merged": false,
+          "missed_eligible_true_merge": false,
+          "receipt": null,
+          "revision_current": true,
+          "simulated_cost_usd": 0,
+          "simulated_latency_ms": 0,
+          "truth": "uncertain",
+          "wrong_merge": false
+        },
+        "jev": {
+          "approval": true,
+          "assessment": "uncertain",
+          "assessment_correct": true,
+          "case_id": "h16",
+          "eligible": true,
+          "injected_failure": null,
+          "local_wall_ms": 0.0003,
+          "merged": false,
+          "missed_eligible_true_merge": false,
+          "receipt": null,
+          "revision_current": true,
+          "simulated_cost_usd": 0.0005,
+          "simulated_latency_ms": 10,
+          "truth": "uncertain",
+          "wrong_merge": false
+        }
+      },
+      "case_id": "h16"
+    }
+  ],
+  "split": {
+    "calibration": [
+      "c01",
+      "c02",
+      "c03",
+      "c04"
+    ],
+    "holdout": [
+      "h01",
+      "h02",
+      "h03",
+      "h04",
+      "h05",
+      "h06",
+      "h07",
+      "h08",
+      "h09",
+      "h10",
+      "h11",
+      "h12",
+      "h13",
+      "h14",
+      "h15",
+      "h16"
+    ]
+  },
+  "study_id": "graph-identity-synthetic-v1",
+  "summary": {
+    "current": {
+      "abstention_fraction": 0.125,
+      "abstentions": 2,
+      "assessment_errors": 6,
+      "eligible_true_merges": 7,
+      "injected_failures": 0,
+      "local_wall_ms_total": 0.0208,
+      "missed_eligible_true_merge_fraction": 0.2857142857142857,
+      "missed_eligible_true_merges": 2,
+      "observed": 16,
+      "scheduled": 16,
+      "simulated_cost_usd": 0,
+      "simulated_latency_ms_per_case": 0,
+      "wrong_merge_wilson_95_upper_all_scheduled": 0.43008880961974144,
+      "wrong_merges": 3
+    },
+    "deterministic": {
+      "abstention_fraction": 0.25,
+      "abstentions": 4,
+      "assessment_errors": 3,
+      "eligible_true_merges": 7,
+      "injected_failures": 0,
+      "local_wall_ms_total": 0.0086,
+      "missed_eligible_true_merge_fraction": 0.2857142857142857,
+      "missed_eligible_true_merges": 2,
+      "observed": 16,
+      "scheduled": 16,
+      "simulated_cost_usd": 0,
+      "simulated_latency_ms_per_case": 0,
+      "wrong_merge_wilson_95_upper_all_scheduled": 0.1936076805344365,
+      "wrong_merges": 0
+    },
+    "jev": {
+      "abstention_fraction": 0.25,
+      "abstentions": 4,
+      "assessment_errors": 4,
+      "eligible_true_merges": 7,
+      "injected_failures": 2,
+      "local_wall_ms_total": 0.0079,
+      "missed_eligible_true_merge_fraction": 0.2857142857142857,
+      "missed_eligible_true_merges": 2,
+      "observed": 16,
+      "scheduled": 16,
+      "simulated_cost_usd": 0.008,
+      "simulated_latency_ms_per_case": 10,
+      "wrong_merge_wilson_95_upper_all_scheduled": 0.2832873757029894,
+      "wrong_merges": 1
+    }
+  },
+  "thresholds": {
+    "max_abstention_fraction": 0.4,
+    "max_failures": 0,
+    "max_missed_eligible_true_merges_fraction": 0.25,
+    "max_simulated_cost_usd": 0.01,
+    "max_simulated_latency_ms_per_case": 50,
+    "max_wrong_merge_wilson_95_upper": 0.2,
+    "max_wrong_merges": 0,
+    "minimum_missed_merge_reduction_vs_each_baseline": 1
+  }
+}

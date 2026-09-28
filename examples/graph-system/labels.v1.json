@@ -1,0 +1,22 @@
+{
+  "c01":{"label":"same","basis":"matching registration ID and jurisdiction"},
+  "c02":{"label":"same","basis":"synthetic independent source adjudication of alias"},
+  "c03":{"label":"different","basis":"different jurisdiction and independent organizations"},
+  "c04":{"label":"related","basis":"parent and regional affiliate"},
+  "h01":{"label":"same","basis":"matching registration ID and jurisdiction"},
+  "h02":{"label":"same","basis":"synthetic independent source adjudication of alias"},
+  "h03":{"label":"same","basis":"matching registration ID and jurisdiction"},
+  "h04":{"label":"same","basis":"synthetic independent source adjudication of alias"},
+  "h05":{"label":"same","basis":"matching registration ID and jurisdiction"},
+  "h06":{"label":"related","basis":"holding company and subsidiary"},
+  "h07":{"label":"different","basis":"different jurisdictions and independent organizations"},
+  "h08":{"label":"different","basis":"conflicting registration IDs"},
+  "h09":{"label":"uncertain","basis":"insufficient disambiguating evidence"},
+  "h10":{"label":"different","basis":"conflicting registration IDs despite identical names"},
+  "h11":{"label":"same","basis":"matching registration ID; host approval denied"},
+  "h12":{"label":"same","basis":"matching registration ID; revision changed"},
+  "h13":{"label":"different","basis":"conflicting registration IDs; host approval denied"},
+  "h14":{"label":"same","basis":"matching registration ID; injected JEV timeout"},
+  "h15":{"label":"same","basis":"matching registration ID; injected JEV malformed response"},
+  "h16":{"label":"uncertain","basis":"identical name alone without registration evidence"}
+}

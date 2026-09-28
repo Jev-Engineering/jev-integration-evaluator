@@ -1,0 +1,6 @@
+{
+  "c01":{"current":"same","jev":"same"},"c02":{"current":"uncertain","jev":"same"},"c03":{"current":"same","jev":"different"},"c04":{"current":"related","jev":"related"},
+  "h01":{"current":"same","jev":"same"},"h02":{"current":"uncertain","jev":"same"},"h03":{"current":"same","jev":"same"},"h04":{"current":"different","jev":"same"},"h05":{"current":"same","jev":"same"},
+  "h06":{"current":"related","jev":"related"},"h07":{"current":"same","jev":"different"},"h08":{"current":"different","jev":"different"},"h09":{"current":"uncertain","jev":"uncertain"},"h10":{"current":"same","jev":"same"},
+  "h11":{"current":"same","jev":"same"},"h12":{"current":"same","jev":"same"},"h13":{"current":"same","jev":"same"},"h14":{"current":"same","jev":"timeout"},"h15":{"current":"same","jev":"malformed"},"h16":{"current":"same","jev":"uncertain"}
+}
