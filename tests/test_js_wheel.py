@@ -12,8 +12,8 @@ from test_js_lifecycle import fixture as host_fixture
 
 ROOT = Path(__file__).resolve().parents[1]
 PINNED = ROOT / 'node_modules/typescript/lib/typescript.js'
-pytestmark = pytest.mark.skipif(os.name != 'posix' or shutil.which('node') is None or not PINNED.is_file(),
-                                reason='Native POSIX and pinned trusted JS tooling required')
+pytestmark = pytest.mark.skipif(sys.platform != 'linux' or shutil.which('node') is None or not PINNED.is_file(),
+                                reason='Native Linux and pinned trusted JS tooling required')
 
 
 @pytest.fixture(scope='module')

@@ -10,6 +10,7 @@ import shutil
 import signal
 import stat
 import subprocess
+import sys
 import tempfile
 from contextlib import contextmanager
 from importlib.resources import files
@@ -83,8 +84,8 @@ def _tooling(root: Path, tooling_dir: Path) -> dict:
 
 
 def _root(root: Path) -> Path:
-    if os.name != 'posix':
-        raise InputError('JavaScript owned bundle requires a POSIX filesystem')
+    if sys.platform != 'linux':
+        raise InputError('JavaScript owned bundle is supported only on native Linux')
     root = Path(root).resolve(strict=True)
     if not root.is_dir():
         raise InputError('JavaScript target root must be a directory')
@@ -111,6 +112,8 @@ def _sync_dir(path: Path) -> None:
 
 @contextmanager
 def _lock(bundle: Path):
+    if sys.platform != 'linux':
+        raise InputError('JavaScript owned bundle is supported only on native Linux')
     import fcntl
     path = safe_child(Path(bundle), 'operation.lock')
     handle = os.open(path, os.O_RDWR | os.O_NOFOLLOW)
@@ -132,8 +135,8 @@ def _lock(bundle: Path):
 @contextmanager
 def _target_lock(root: Path):
     """Serialize distinct bundles that own the same repository/worktree."""
-    import fcntl
     target = _root(root)
+    import fcntl
     directory = Path(tempfile.gettempdir()) / f'jev-js-target-locks-{os.getuid()}'
     try:
         directory.mkdir(mode=0o700)

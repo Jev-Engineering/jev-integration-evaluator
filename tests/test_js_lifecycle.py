@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -19,8 +18,8 @@ from jev_integration_evaluator.io import InputError, atomic_text, digest, file_h
 
 TOOLING = Path(__file__).resolve().parents[1]
 PINNED = TOOLING / 'node_modules/typescript/lib/typescript.js'
-pytestmark = pytest.mark.skipif(os.name != 'posix' or shutil.which('node') is None or not PINNED.is_file(),
-                                reason='Native POSIX and trusted Node/TypeScript 5.8.3 tooling required')
+pytestmark = pytest.mark.skipif(sys.platform != 'linux' or shutil.which('node') is None or not PINNED.is_file(),
+                                reason='Native Linux and trusted Node/TypeScript 5.8.3 tooling required')
 
 
 def fixture(tmp_path, format_name):
@@ -93,6 +92,9 @@ def test_owned_plan_baseline_apply_modified_and_rollback(tmp_path, format_name):
     assert rolled['status'] == 'rolled_back' and source.read_bytes() == original
     assert not (root / 'jev_runtime.cjs').exists() and not (root / 'jev_adapter.cjs').exists()
     assert status_js(root, bundle, tooling_dir=TOOLING)['status'] == 'rolled_back'
+    with pytest.raises(InputError, match='approval and baseline'):
+        apply_js(root, bundle, plan['bundle_sha256'],
+                 baseline_sha256=baseline['receipt_sha256'], tooling_dir=TOOLING)
 
 
 def test_source_drift_and_output_collision_fail_before_mutation(tmp_path):
@@ -219,6 +221,7 @@ def test_public_support_matrix_distinguishes_discovery_and_runtime(tmp_path):
     assert matrix['supported_recipe'] == 'C'
     assert set(matrix['unsupported_recipes']) == set('ABCDEFGHIJKLM') - {'C'}
     assert matrix['discovery_js_ts'] == 'unparsed_by_this_contract'
+    assert matrix['owned_bundle_platforms'] == ['linux']
     assert matrix['target_verified'] is False
     assert matrix['activation_authorized'] is False
 

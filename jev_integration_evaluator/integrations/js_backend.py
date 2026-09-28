@@ -18,6 +18,7 @@ def js_support_matrix() -> dict:
                 discovery_contract='python-static-capabilities-v1',
                 discovery_js_ts='unparsed_by_this_contract',
                 supported_recipe='C', supported_formats=['esm', 'commonjs', 'typescript'],
+                owned_bundle_platforms=['linux'], unsupported_platforms=['windows', 'darwin'],
                 unsupported_recipes=[letter for letter in 'ABCDEFGHIJKLM' if letter != 'C'],
                 runtime_strategy='native_javascript_default_off',
                 qualification_scope='synthetic_installed_wheel_entrypoints',

@@ -33,6 +33,10 @@ The backend uses a native JavaScript runtime shipped as owned, hashed
 source beside the generated adapter. It does not spawn Python or import target
 packages during planning. A host explicitly creates one runtime owner at
 startup and gives every placement the same process-local budget and task ledger.
+Within that owner, invocation tombstones are shared across routers, so the
+same task/invocation/candidate cannot execute twice. Worker threads and
+multi-process hosts cannot share this in-memory owner and are outside the
+qualified shape; they need a separately reviewed durable coordinator.
 The implemented recipe is bounded registered tool routing (`C`); other
 A–M recipes remain unsupported until their distinct contracts are qualified.
 Finite action IDs, stable task identity, exact source/spec/receipt binding,
@@ -85,7 +89,9 @@ entrypoint; `js-status --trusted-modified-sha256 RECEIPT_SHA256` can then
 report externally anchored verification. Interrupted operations require
 `js-recover` with exact receipt evidence, or `js-rollback` with the separate
 rollback digest. Rollback restores only matching owned bytes and refuses
-concurrent edits. The commands do not install dependencies, grant egress or
+concurrent edits. A rolled-back bundle is one-shot: it cannot be reapplied or
+reuse its historical modified receipt. Prepare and review a fresh bundle for
+another attempt. The commands do not install dependencies, grant egress or
 activate a provider.
 
 Verification cases are supplied separately to avoid archiving request text;
@@ -97,4 +103,7 @@ entrypoint is checked against an observation separate from its exported
 site before their outcomes can be qualified. The
 private bundle contains source preimages required for exact rollback and must
 remain owner private and outside the target. The trusted-host verifier is not
-an isolation boundary for hostile target code.
+an isolation boundary for hostile target code. It imports the target module
+with ordinary Node process privileges only after an explicit execution flag;
+current execution qualification uses project-owned synthetic hosts. A live
+target requires its own separately authorized isolation and policy review.

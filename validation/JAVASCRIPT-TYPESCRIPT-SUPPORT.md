@@ -6,7 +6,9 @@ Each supported shape has one exported top-level async function with one
 `return await original(request)` tail call and six existing top-level finite
 host binding functions. TypeScript is emitted with trusted TypeScript 5.8.3
 outside the target. POSIX is the qualified owned-bundle filesystem. The
-runtime is native JavaScript and default off.
+runtime is native JavaScript and default off. Owned lifecycle support and
+qualification are Linux only; Windows and macOS return an explicit unsupported
+platform result before planning or target execution.
 
 The `python-static-capabilities-v1` repository discovery report still marks
 JS/TS files `parser_not_used_by_this_contract` and cannot nominate them for
@@ -39,6 +41,11 @@ probe-owned effect traces detect duplicate effects and wrong arguments in the
 synthetic fixtures, independently of their exported event arrays. Distinct
 bundles for one target share an external owner lock. Native
 runtime tests cover off/shadow/active synthetic behavior, cancellation,
-assessment/effect audit ordering, shared budgets and receipt tampering.
+assessment/effect audit ordering, shared budgets and receipt tampering. The
+shared invocation ledger prevents replay across routers in one process-local
+owner; Worker threads and multiple processes are unqualified.
+Rollback is one-shot: reapply and reuse of an old modified receipt are denied.
+The verifier executes target modules with ordinary Node privileges and is
+qualified here only with project-owned synthetic hosts, not hostile live code.
 No provider connection, benefit measurement, target plugin loading, production
 activation or universal JavaScript/TypeScript rewriting is claimed.

@@ -51,6 +51,7 @@ class SharedBudget {
     this.calls = 0;
     this.cost = 0;
     this.tasks = new Map();
+    this.invocations = new Set();
     this.suspended = false;
   }
   reserve(taskId, upperBound) {
@@ -80,6 +81,14 @@ class SharedBudget {
     row.closed = true; // Retain a bounded tombstone; never reset charges on retry.
   }
   isClosed(taskId) { return this.tasks.get(taskId)?.closed === true; }
+  claimInvocation(taskId, invocationId, candidateId) {
+    if (this.suspended || typeof invocationId !== 'string' || !invocationId ||
+        typeof candidateId !== 'string' || !candidateId) fail('effect_replay_denied');
+    const key = digest([taskId, invocationId, candidateId]);
+    if (this.invocations.has(key)) fail('effect_replay_denied');
+    if (this.invocations.size >= 100000) fail('invocation_ledger_full');
+    this.invocations.add(key);
+  }
   suspend() { this.suspended = true; }
 }
 
@@ -127,7 +136,7 @@ class NativeRouter {
     this.spec = frozenCopy(spec); this.client = client; this.audit = audit;
     this.budget = budget; this.mode = mode;
     this.activation = activation === null ? null : frozenCopy(activation);
-    this.now = now; this.closed = false; this.invocations = new Set();
+    this.now = now; this.closed = false;
   }
   close() { this.closed = true; this.budget.suspend(); }
   _check(request, bindings, original) {
@@ -138,10 +147,8 @@ class NativeRouter {
         !['registry', 'gate', 'validate', 'blocked', 'evidence', 'baseline_action'].every(x => typeof bindings[x] === 'function'))
       fail('invalid_host_binding');
     this.budget.trackTask(request.task_id);
-    const key = digest([request.task_id, request.invocation_id, this.spec.candidate_id]);
-    if (this.invocations.has(key)) fail('effect_replay_denied');
-    if (this.invocations.size >= 100000) fail('invocation_ledger_full');
-    this.invocations.add(key); // No retry can reexecute an effect after timeout or rejection.
+    this.budget.claimInvocation(request.task_id, request.invocation_id, this.spec.candidate_id);
+    // Shared owner retains tombstones across routers; no retry can replay effects.
   }
   async _fallback(original, request, bindings, reason, signal) {
     const baseline = bindings.baseline_action(request);

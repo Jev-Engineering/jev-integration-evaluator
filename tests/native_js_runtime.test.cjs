@@ -122,6 +122,17 @@ test('two routers share one budget and retain the first charge', async () => {
   assert.deepEqual(second.counts(), {baselineCalls: 1, summaryCalls: 0});
 });
 
+test('two routers sharing a coordinator reject the same invocation identity', async () => {
+  const budget = new SharedBudget({max_calls: 2, max_cost: 2});
+  const first = fixture('off', {budget});
+  const second = fixture('off', {budget});
+  const request = {task_id: 'task', invocation_id: 'same'};
+  assert.equal(await first.router.invoke(first.original, request, first.bindings), 'baseline');
+  await assert.rejects(second.router.invoke(second.original, request, second.bindings), /effect_replay_denied/);
+  assert.deepEqual(first.counts(), {baselineCalls: 1, summaryCalls: 0});
+  assert.deepEqual(second.counts(), {baselineCalls: 0, summaryCalls: 0});
+});
+
 test('assessment is audited before evaluation and failed audit prevents egress', async () => {
   let calls = 0;
   const client = {evidence_type: 'synthetic', evaluate: async () => {
@@ -134,4 +145,31 @@ test('assessment is audited before evaluation and failed audit prevents egress',
     {task_id: 'task', invocation_id: 'one'}, f.bindings), 'baseline');
   assert.equal(calls, 0);
   assert.equal(f.budget.calls, 1);
+});
+
+test('async executor rejection is terminal and cannot replay a baseline effect', async () => {
+  const f = fixture('active');
+  let attempts = 0;
+  f.bindings.registry = () => ({read: f.original, summarize: async () => {
+    attempts++; throw Error('synthetic_executor_rejected');
+  }});
+  const request = {task_id: 'task', invocation_id: 'one'};
+  await assert.rejects(f.router.invoke(f.original, request, f.bindings), /synthetic_executor_rejected/);
+  await assert.rejects(f.router.invoke(f.original, request, f.bindings), /effect_replay_denied/);
+  assert.equal(attempts, 1);
+  assert.deepEqual(f.counts(), {baselineCalls: 0, summaryCalls: 0});
+});
+
+test('host permission change after assessment blocks both proposed and fallback effect', async () => {
+  let permitted = true;
+  const client = {evidence_type: 'synthetic', evaluate: async () => {
+    permitted = false;
+    return {choice: {label: 'summary', confidence: 1}};
+  }};
+  const f = fixture('active', {client});
+  f.bindings.validate = () => permitted;
+  const result = await f.router.invoke(f.original,
+    {task_id: 'task', invocation_id: 'one'}, f.bindings);
+  assert.equal(result, 'blocked');
+  assert.deepEqual(f.counts(), {baselineCalls: 0, summaryCalls: 0});
 });
