@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import json
 
 import pytest
 
@@ -70,7 +71,17 @@ def test_package_binding_one_invocation_resume_and_contributing_source_drift(tmp
 
     initializer = staged_root / "src/fixture_pkg/__init__.py"
     initializer.write_text('"""Changed after reviewed verification."""\n')
+    before_target = {p.relative_to(staged_root): p.read_bytes()
+                     for p in staged_root.rglob("*") if p.is_file()}
+    before_journal = (staged_session / "journal.jsonl").read_bytes()
     with pytest.raises(run.SessionError, match="bundle_integrity_or_source_contract_invalid"):
         run.run_repository(staged_root, staged_session,
                            scope=_scope(staged_root, context, result=resumed,
                                         bundle_digest=staged_digest))
+    assert {p.relative_to(staged_root): p.read_bytes()
+            for p in staged_root.rglob("*") if p.is_file()} == before_target
+    assert (staged_session / "journal.jsonl").read_bytes() == before_journal
+    retained = json.loads(before_journal.splitlines()[-1])["state"]
+    assert retained["run_id"] == resumed["run_id"]
+    assert retained["attempts"] == resumed["attempts"]
+    assert retained["receipts"]["baseline"]["sha256"] == resumed["receipt_references"]["baseline"]["sha256"]
