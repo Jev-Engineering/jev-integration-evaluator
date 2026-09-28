@@ -18,6 +18,10 @@ An opt-in `--agent-review` session path accepts a recorded offline review with
 saved host policy and runtime ownership, then requires a separately anchored
 preparation scope before planning. See `references/agent-review-protocol-v1.md`.
 
+For the issue #12 process-local host-owned runtime checkpoint, read
+`references/host-runtime-lifecycle.md`. It starts off, can exercise offline
+synthetic shadow, and requires separate authority for provider egress.
+
 **LLMs generate. JEV classifies, selects, and evaluates. Deterministic code enforces. Instrumentation measures. Experiments decide whether JEV stays.**
 
 ## Executable implementation mode
