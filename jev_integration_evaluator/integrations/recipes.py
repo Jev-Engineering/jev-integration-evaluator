@@ -277,7 +277,8 @@ def transform(root: Path, spec: dict) -> dict:
                 or any(keyword.iskeyword(name) or len(name) > 128 for name in names)
                 or any(name in found or name in spec['bindings'].values() for name in names)
                 or marker in found or marker + '_started' in found
-                or package_contract is not None or not spec.get('runtime_files')
+                or package_contract is not None
+                or {row['kind'] for row in spec.get('runtime_files', [])} != {'dependency_lock', 'configuration'}
                 or any(isinstance(node, ast.If) and isinstance(node.test, ast.Compare)
                        and isinstance(node.test.left, ast.Name) and node.test.left.id == '__name__'
                        for node in tree.body)):

@@ -19,17 +19,23 @@ def test_installed_wheel_drives_generated_host_and_loads_strict_data(tmp_path, l
     assert install.returncode==0,install.stderr
     target,bundle=tmp_path/'host',tmp_path/'bundle';inv,spec=fixture(target,'C',tag='wheel_source',layout=layout)
     if layout == 'flat':
-        old='jev-integration-evaluator==1.3.0.dev1\n'
-        new='jev-integration-evaluator==1.3.0.dev11\n'
-        (target/'requirements.lock').write_text(old,encoding='utf-8')
-        inv['configuration_evidence'].append({'file':'requirements.lock','sha256':hashlib.sha256(old.encode()).hexdigest()})
+        runtime_files={
+            'requirements.lock':('dependency_lock','jev-integration-evaluator==1.3.0.dev1\n',
+                                 'jev-integration-evaluator==1.3.0.dev11\n'),
+            'runtime.json':('configuration','{"jev_runtime":{"mode":"off","credential_ref":null}}\n',
+                            '{"jev_runtime":{"mode":"off","credential_ref":"env:TYPESAFE_API_KEY"}}\n'),
+        }
+        for name,(_,old,_) in runtime_files.items():
+            (target/name).write_text(old,encoding='utf-8')
+            inv['configuration_evidence'].append({'file':name,'sha256':hashlib.sha256(old.encode()).hexdigest()})
         inv['analysis_identity']['configuration_digest']=digest(inv['configuration_evidence'])
         inv['scan_fingerprint']=digest(inv['analysis_identity'])
         spec['inventory_sha256']=digest(inv)
         spec['inventory_fingerprint']=inv['scan_fingerprint']
-        spec['runtime_files']=[{'file':'requirements.lock','kind':'dependency_lock',
-            'old_sha256':hashlib.sha256(old.encode()).hexdigest(),'new_content':new}]
-        spec['output']['permitted_edits'].append('requirements.lock')
+        spec['runtime_files']=[{'file':name,'kind':kind,
+            'old_sha256':hashlib.sha256(old.encode()).hexdigest(),'new_content':new}
+            for name,(kind,old,new) in runtime_files.items()]
+        spec['output']['permitted_edits'].extend(runtime_files)
         spec['host_lifecycle'] = {'kind': 'module-startup-v1', 'startup': 'start_jev_runtime',
                                   'shutdown': 'stop_jev_runtime', 'complete_task': 'finish_jev_task'}
     write_json(tmp_path/'inventory.json',inv);write_json(tmp_path/'spec.json',spec)
@@ -56,8 +62,9 @@ assert v['status']=='verified',v
 assert implementation_status(repo,bundle,trusted_receipt_sha256=v['receipt_sha256'])['status']=='verified'
 if 'host_lifecycle' in spec:
     from jev_integration_evaluator.integrations.probe import SyntheticClient, SyntheticAudit
-    lock=repo/'requirements.lock'
-    dependency_plan={'files':[{'path':str(lock.resolve()),'sha256':hashlib.sha256(lock.read_bytes()).hexdigest()}]}
+    dependency_plan={'files':[{'path':str((repo/name).resolve()),
+        'sha256':hashlib.sha256((repo/name).read_bytes()).hexdigest()}
+        for name in ('requirements.lock','runtime.json')]}
     sys.path.insert(0,str(repo))
     host=importlib.import_module(Path(spec['source']['file']).stem)
     runtime=host.start_jev_runtime(budget_limits=dict(max_calls_per_task=2,max_cost_per_task=2,

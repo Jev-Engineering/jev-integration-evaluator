@@ -38,21 +38,27 @@ AUDIT = SimpleNamespace(append=lambda event: None)
 
 
 def reviewed_host_lock(root, inventory, spec):
-    old = 'jev-integration-evaluator==1.3.0.dev1\n'
-    new = 'jev-integration-evaluator==1.3.0.dev11\n'
-    (root / 'requirements.lock').write_text(old, encoding='utf-8')
-    inventory['configuration_evidence'].append({
-        'file': 'requirements.lock', 'sha256': hashlib.sha256(old.encode()).hexdigest()})
+    files = {
+        'requirements.lock': ('dependency_lock', 'jev-integration-evaluator==1.3.0.dev1\n',
+                              'jev-integration-evaluator==1.3.0.dev11\n'),
+        'runtime.json': ('configuration', '{"jev_runtime":{"mode":"off","credential_ref":null}}\n',
+                         '{"jev_runtime":{"mode":"off","credential_ref":"env:TYPESAFE_API_KEY"}}\n'),
+    }
+    for name, (_, old, _) in files.items():
+        (root / name).write_text(old, encoding='utf-8')
+        inventory['configuration_evidence'].append({
+            'file': name, 'sha256': hashlib.sha256(old.encode()).hexdigest()})
     inventory['analysis_identity']['configuration_digest'] = digest(inventory['configuration_evidence'])
     inventory['scan_fingerprint'] = digest(inventory['analysis_identity'])
     spec['inventory_sha256'] = digest(inventory)
     spec['inventory_fingerprint'] = inventory['scan_fingerprint']
-    spec['runtime_files'] = [{'file': 'requirements.lock', 'kind': 'dependency_lock',
+    spec['runtime_files'] = [{'file': name, 'kind': kind,
                               'old_sha256': hashlib.sha256(old.encode()).hexdigest(),
-                              'new_content': new}]
-    spec['output']['permitted_edits'].append('requirements.lock')
-    return {'files': [{'path': str((root / 'requirements.lock').resolve()),
-                       'sha256': hashlib.sha256(new.encode()).hexdigest()}]}
+                              'new_content': new} for name, (kind, old, new) in files.items()]
+    spec['output']['permitted_edits'].extend(files)
+    return {'files': [{'path': str((root / name).resolve()),
+                       'sha256': hashlib.sha256(new.encode()).hexdigest()}
+                      for name, (_, _, new) in files.items()]}
 
 
 def adapter(name, scope='workflow'):
@@ -385,8 +391,9 @@ def test_actual_generated_host_uses_startup_router_without_probe_replacement(tmp
         client = SyntheticClient(spec['verification']['cases'][0]['assessment_label'])
         rogue = tmp_path / 'unreviewed.lock'
         rogue.write_text('offline-test==1.0\n', encoding='utf-8')
-        wrong = {'files': [{'path': str(rogue.resolve()),
-                            'sha256': hashlib.sha256(rogue.read_bytes()).hexdigest()}]}
+        wrong = copy.deepcopy(plan)
+        wrong['files'][0] = {'path': str(rogue.resolve()),
+                             'sha256': hashlib.sha256(rogue.read_bytes()).hexdigest()}
         with pytest.raises(LifecycleError, match='reviewed_dependency_plan_mismatch'):
             module.start_jev_runtime(budget_limits=LIMITS, audit_log=SyntheticAudit(),
                                      dependency_plan=wrong, client=client)
@@ -430,6 +437,11 @@ def test_generated_host_lifecycle_rejects_collision_and_keyword(tmp_path):
     reviewed_host_lock(root, inventory, spec)
     spec['host_lifecycle'] = {'kind': 'module-startup-v1', 'startup': spec['bindings']['runtime'],
                               'shutdown': 'stop_jev_runtime', 'complete_task': 'finish_jev_task'}
+    missing_config = copy.deepcopy(spec)
+    missing_config['runtime_files'] = missing_config['runtime_files'][:1]
+    missing_config['output']['permitted_edits'].remove('runtime.json')
+    with pytest.raises(InputError, match='reviewed lock and configuration'):
+        validate_spec(missing_config)
     with pytest.raises(Exception, match='Unsupported host lifecycle'):
         transform(root, spec)
     spec['host_lifecycle']['startup'] = 'class'
