@@ -1,4 +1,4 @@
-"""Synthetic native repository contract checks; no target launch or mutation."""
+"""Synthetic native repository contract and edited-host session qualification."""
 from __future__ import annotations
 import copy
 import hashlib
@@ -15,7 +15,8 @@ from jev_integration_evaluator.integrations import lifecycle as engine
 from jev_integration_evaluator.runners import isolated_python as runner
 from scripts.implementation_fixtures import fixture
 
-pytestmark = pytest.mark.skipif(os.name != 'posix', reason='secure repository session requires POSIX')
+pytestmark = pytest.mark.skipif(sys.platform != 'linux' or os.geteuid() != 0,
+                                reason='requires disposable privileged Linux runner')
 
 
 def planned(tmp_path):
