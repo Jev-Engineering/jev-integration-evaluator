@@ -9,7 +9,7 @@ import jev_integration_evaluator.integrations.adaptation_prerequisites as prereq
 
 from jev_integration_evaluator.integrations.adaptation_prerequisites import (
     apply_prerequisites, draft_prerequisite_plan, draft_agent_prerequisites,
-    prerequisite_status)
+    prerequisite_status, rollback_prerequisites, prerequisite_rollback_digest)
 from jev_integration_evaluator.io import InputError, digest
 
 
@@ -142,10 +142,11 @@ def test_interrupted_multifile_apply_blocks_replay_and_keeps_preimages(tmp_path,
     items = _fixture(tmp_path, monkeypatch)
     plan = _draft(tmp_path, items)
     recovery = tmp_path.parent / (tmp_path.name + '-interrupted')
+    original_apply = prerequisites.apply_patch_plan
     def interrupted(root, patch, approval, *, progress):
         row = patch['changes'][0]
         progress('write_started', row)
-        (tmp_path / row['file']).write_text(row['new_content'])
+        (tmp_path / row['file']).write_bytes(row['new_content'].encode())
         progress('write_completed', row)
         raise RuntimeError('synthetic process interruption')
     monkeypatch.setattr(prerequisites, 'apply_patch_plan', interrupted)
@@ -161,6 +162,15 @@ def test_interrupted_multifile_apply_blocks_replay_and_keeps_preimages(tmp_path,
                             context=items[1], proposal=items[2], host_policy=items[3],
                             validation_spec=items[4], trusted_review=items[5],
                             allowed_files=items[6], recovery_bundle=recovery)
+    monkeypatch.setattr(prerequisites, 'apply_patch_plan', original_apply)
+    with pytest.raises(InputError, match='rollback approval'):
+        rollback_prerequisites(tmp_path, recovery, plan['contract_digest'],
+                               plan['patch']['plan_digest'])
+    approval = prerequisite_rollback_digest(plan['contract_digest'],
+                                             plan['binding']['owned_sha256'])
+    assert rollback_prerequisites(tmp_path, recovery, plan['contract_digest'], approval)['status'] == 'rolled_back'
+    assert prerequisite_status(tmp_path, recovery, plan['contract_digest'])['status'] == 'rolled_back'
+    assert (tmp_path / 'a.py').read_bytes().startswith(b'def existing')
     (recovery / 'preimages/0.utf8').write_bytes(b'tampered')
     with pytest.raises(InputError, match='preimage'):
         prerequisite_status(tmp_path, recovery, plan['contract_digest'])

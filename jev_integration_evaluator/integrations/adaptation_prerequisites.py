@@ -291,12 +291,67 @@ def prerequisite_status(root, recovery_bundle, approved_digest):
         path = safe_child(root, row['file'])
         current.append((file_hash(path), stat.S_IMODE(path.stat().st_mode))
                        if path.is_file() else (None, None))
+    if events and events[-1] == 'rolled_back' and all(
+            actual == (row['old_sha256'], row['mode']) for actual, row in zip(current, plan['owned'])):
+        return {'status':'rolled_back', 'verified':False, 'recipe_applicable':False,
+                'contract_digest':approved_digest}
     if events and events[-1] == 'applied_requires_rescan' and all(
             actual == (row['new_sha256'], row['mode']) for actual, row in zip(current, plan['owned'])):
         return {'status':'applied_requires_rescan', 'verified':False,
                 'recipe_applicable':False, 'contract_digest':approved_digest}
     return {'status':'blocked_recovery', 'verified':False, 'recipe_applicable':False,
             'contract_digest':approved_digest}
+
+
+def prerequisite_rollback_digest(contract_digest, owned_sha256):
+    return digest({'operation':'restore_owned_prerequisite_preimages',
+                   'contract_digest':contract_digest, 'owned_sha256':owned_sha256})
+
+
+def rollback_prerequisites(root, recovery_bundle, approved_digest, rollback_approval):
+    """Restore only exact owned old/new bytes under a distinct approval."""
+    root = Path(root).resolve(strict=True)
+    bundle = _bundle_dir(recovery_bundle)
+    # Validates external plan anchor, private preimages, journal and root identity.
+    prerequisite_status(root, bundle, approved_digest)
+    plan = read_json(safe_child(bundle, 'recovery-plan.json'))
+    if rollback_approval != prerequisite_rollback_digest(
+            approved_digest, plan['binding']['owned_sha256']):
+        raise InputError('Separate exact prerequisite rollback approval required')
+    with _lock(bundle):
+        state = prerequisite_status(root, bundle, approved_digest)
+        if state['status'] == 'rolled_back':
+            return {'status':'rolled_back', 'idempotent':True}
+        restores = []
+        for row in plan['owned']:
+            path = safe_child(root, row['file'])
+            if not path.is_file() or stat.S_IMODE(path.stat().st_mode) != row['mode']:
+                raise InputError('Prerequisite rollback refuses owned mode or path drift')
+            actual = file_hash(path)
+            if actual not in (row['old_sha256'], row['new_sha256']):
+                raise InputError('Prerequisite rollback refuses unrelated owned edits')
+            if actual == row['new_sha256']:
+                restores.append({'file':row['file'], 'new_content':
+                                 safe_child(bundle, row['preimage']).read_bytes().decode('utf-8')})
+        _record(bundle, plan, 'rollback_started')
+        if restores:
+            patch = make_patch_plan(root, restores, plan['patch']['candidate_ids'])
+            def progress(event, change):
+                if event == 'write_completed': _sync_dir(safe_child(root, change['file']).parent)
+                _record(bundle, plan, 'rollback_'+event, change['file'])
+            try:
+                apply_patch_plan(root, patch, patch['plan_digest'], progress=progress)
+            except Exception:
+                _record(bundle, plan, 'rollback_failed_recovery_required')
+                raise
+        if any(file_hash(safe_child(root, row['file'])) != row['old_sha256']
+               or stat.S_IMODE(safe_child(root, row['file']).stat().st_mode) != row['mode']
+               for row in plan['owned']):
+            _record(bundle, plan, 'rollback_identity_failed')
+            raise InputError('Prerequisite rollback did not restore owned identities')
+        _record(bundle, plan, 'rolled_back')
+        return {'status':'rolled_back','restored_files':len(restores),
+                'unrelated_paths_modified':False}
 
 
 def inspect_prerequisite_postconditions(root, recovery_bundle, approved_digest, *,

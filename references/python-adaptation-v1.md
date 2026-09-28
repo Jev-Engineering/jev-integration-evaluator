@@ -66,8 +66,10 @@ preimages and modes, fsyncs them before the first write, and journals every
 write boundary. `prerequisite_status` validates the externally approved plan,
 archive and full owned-file state. An interrupted or inconsistent apply returns
 `blocked_recovery`; it never replays a patch or marks it verified. Preserve
-the bundle for exact owned-byte recovery and inspect the target before any new
-plan.
+the bundle for exact owned-byte recovery. `rollback_prerequisites` requires a
+separate operation-bound digest and restores only owned files whose bytes and
+modes still match the approved old/new identities; unrelated edits block it.
+Inspect the target before any new plan.
 `inspect_prerequisite_postconditions` requires an externally anchored native
 runner receipt and independently authored oracle for the exact modified
 files, entrypoint, schedule and attempt. It checks every recorded output,
