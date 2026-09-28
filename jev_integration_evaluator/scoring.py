@@ -40,19 +40,24 @@ def initial_dimensions(f, node, any_tests, c):
 def score_candidate(c: dict, cfg: dict) -> dict:
     if set(c["dimensions"]) != set(WEIGHTS): raise InputError("Every scoring dimension must be present")
     weights = cfg["scoring"]
-    denom = sum(max(0, w) for w in weights.values())
-    raw = lower = upper = 0.0
+    names = sorted(c["dimensions"])
+    denom = math.fsum(max(0, weights[name]) for name in sorted(weights))
     breakdown = {}
     unknowns = []
-    for name, d in c["dimensions"].items():
+    for name in names:
+        d = c["dimensions"][name]
         value = finite(d["value"], name, 0, 1)
         lo = finite(d["lower"], name+" lower", 0, 1); hi = finite(d["upper"], name+" upper", 0, 1)
         if not lo <= value <= hi: raise InputError("Dimension interval does not contain its value")
         if not d.get("rationale") or not d.get("evidence_refs"): raise InputError("Unexplained scores are prohibited")
         w = weights[name]
-        raw += w*value; lower += w*(lo if w >= 0 else hi); upper += w*(hi if w >= 0 else lo)
         breakdown[name] = {**d, "weight": w, "contribution": w*value/denom}
         if d["status"] == "unknown": unknowns.append(name)
+    raw = math.fsum(weights[name] * c["dimensions"][name]["value"] for name in names)
+    lower = math.fsum(weights[name] * (c["dimensions"][name]["lower"] if weights[name] >= 0
+                                      else c["dimensions"][name]["upper"]) for name in names)
+    upper = math.fsum(weights[name] * (c["dimensions"][name]["upper"] if weights[name] >= 0
+                                      else c["dimensions"][name]["lower"]) for name in names)
     clamp = lambda v: max(0.0, min(1.0, v/denom))
     score = clamp(raw)
     rejected = c["deterministic_alternative"] in ("preferred", "mandatory") or c["pattern"] == "NONE"
