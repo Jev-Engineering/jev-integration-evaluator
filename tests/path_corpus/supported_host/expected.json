@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0",
+  "evidence_kind": "synthetic_independent_oracle",
+  "source_sha256": {
+    "host.py": "6778a185b4d789bbc314cf03c94832f82cf5d81fb9c1ec5399cb0e1afcc32bf3",
+    "main.py": "a6f53a22782b15e4ea8a08233b91f4c045262f6a67cc9bdc9a33cad400b3655e"
+  },
+  "baseline_cases": [
+    {"item": "alpha", "intent": "read", "grant": "permit",
+     "result": "read:alpha", "events": [["read", "alpha"]]},
+    {"item": "beta", "intent": "read", "grant": "deny",
+     "result": "blocked", "events": []}
+  ]
+}

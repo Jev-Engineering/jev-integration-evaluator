@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0",
+  "evidence_kind": "synthetic_independent_oracle",
+  "source_sha256": {
+    "main.py": "2d3539984b1d26c33e4b03d3b227269f30a9f9a37f1b39dd5550e47ab583a54b"
+  },
+  "host_policy": "Exact integer arithmetic remains deterministic; no semantic placement approved."
+}

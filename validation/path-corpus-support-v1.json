@@ -1,0 +1,122 @@
+{
+  "architecture": "x86_64",
+  "cases": [
+    {
+      "discovery_outcome": "unsupported_or_unresolved",
+      "host": "opaque_host",
+      "runtime_activation_authorized": false,
+      "source_sha256": {
+        "main.py": "febba000726f5cc2a8fcc317e0a1b724a2d3a170479f4fc40c01598f1a7ada3f",
+        "service.py": "b31e26f882c3beb5a045b2bc7e952dbe163fb67691e5407966829aba6ae3b67e"
+      },
+      "status": "insufficient_evidence",
+      "target_executed": false,
+      "target_modified": false
+    },
+    {
+      "discovery_outcome": "unsupported_or_unresolved",
+      "host": "package_host",
+      "runtime_activation_authorized": false,
+      "source_sha256": {
+        "app/__init__.py": "746e1ee830311146e16153e3f73b78f436a713f2667be9f615cef96818c984a0",
+        "app/pipeline.py": "24e6e88aac5607a75c441b072f5796a1ab93b1484d31618e26c619a7fc321f78",
+        "runner.py": "05a4620832f62044d2772a780aa2d98b436089342a9c385933e5ec1ab69a3dd4"
+      },
+      "status": "insufficient_evidence",
+      "target_executed": false,
+      "target_modified": false
+    },
+    {
+      "discovery_outcome": "review_required",
+      "host": "supported_host",
+      "runtime_activation_authorized": false,
+      "source_sha256": {
+        "host.py": "6778a185b4d789bbc314cf03c94832f82cf5d81fb9c1ec5399cb0e1afcc32bf3",
+        "main.py": "a6f53a22782b15e4ea8a08233b91f4c045262f6a67cc9bdc9a33cad400b3655e"
+      },
+      "status": "review_required",
+      "target_executed": false,
+      "target_modified": false
+    },
+    {
+      "discovery_outcome": "deterministic_rejection",
+      "host": "missing_callbacks",
+      "runtime_activation_authorized": false,
+      "source_sha256": {
+        "main.py": "f29e5bc6a792bfbbd6fc009f3c986bc381a1a8df3655de36bd12d1efc0e2abe4"
+      },
+      "status": "deterministic_rejection",
+      "target_executed": false,
+      "target_modified": false
+    },
+    {
+      "discovery_outcome": "unsupported_or_unresolved",
+      "host": "deterministic_only",
+      "runtime_activation_authorized": false,
+      "source_sha256": {
+        "main.py": "2d3539984b1d26c33e4b03d3b227269f30a9f9a37f1b39dd5550e47ab583a54b"
+      },
+      "status": "insufficient_evidence",
+      "target_executed": false,
+      "target_modified": false
+    },
+    {
+      "discovery_outcome": "incomplete_analysis",
+      "host": "unsupported_language",
+      "runtime_activation_authorized": false,
+      "source_sha256": {
+        "main.go": "4b1475d9d96a2f8f54244e5df94ae587af48bd5026a4e9aa5fb66233ce7df553"
+      },
+      "status": "incomplete_analysis",
+      "target_executed": false,
+      "target_modified": false
+    }
+  ],
+  "command_sha256": {
+    "jev_integration_evaluator/agent_review.py": "6779f2de98a71dba54341dcf756a5ad0513273ac34176c23889271ba58d04fb3",
+    "jev_integration_evaluator/cli.py": "87edfec154961e82bfeb5c212919618743632ef87ce990076a8b982993c0616e",
+    "jev_integration_evaluator/integrations/verification.py": "9395bbdc380f842d52eae20a297946fadec28c6c02237fee633bb8fabacc3484",
+    "jev_integration_evaluator/repository_run.py": "39b98bfc0fc5d338e14a60512b4c9c79be01129ddb72e893ce4da120d8830166"
+  },
+  "connected": {
+    "activation_authorized": false,
+    "asserted_paths": [
+      "discovery_review_plan_baseline_apply_modified",
+      "external_cli_review_input_and_owned_plan",
+      "offline_off_shadow_active_once_each",
+      "baseline_and_apply_interruption_resume",
+      "dirty_git_conflict_preservation",
+      "post_apply_conflict_preservation",
+      "tampered_baseline_receipt_blocks_mutation",
+      "forged_external_receipt_anchor_blocks_recovery",
+      "independent_policy_and_duplicate_effect_mutations"
+    ],
+    "execution_environment": "trusted_host_synthetic",
+    "passed_cases": 14,
+    "provider_connectivity": "not_tested",
+    "source_sha256": {
+      "host.py": "6778a185b4d789bbc314cf03c94832f82cf5d81fb9c1ec5399cb0e1afcc32bf3",
+      "main.py": "a6f53a22782b15e4ea8a08233b91f4c045262f6a67cc9bdc9a33cad400b3655e"
+    },
+    "status": "passed",
+    "test": "tests/test_path_corpus_connected.py"
+  },
+  "evidence_type": "synthetic_offline",
+  "oracle_sha256": {
+    "tests/path_corpus/generate_support.py": "11a211d463ec3cdee11cbae316621f92e87bb750795a4aa1f581f47e6e5f2682",
+    "tests/test_path_corpus_connected.py": "cc5696c228f12e3dde0a7cd79303f876dd85bb6e2ca05f25d96cf24e38b79b33",
+    "tests/test_path_corpus_oracle.py": "90057a18255d65d7678ad503b397dfc9af00bbd59a33a3df81921a6773d4a304"
+  },
+  "platform": "linux",
+  "python": "3.12.3",
+  "qualification_scope": "public_path_inspection_and_synthetic_connected_fixture",
+  "schema_version": "1.0",
+  "unrun": [
+    "target_native_runner",
+    "installed_host_lifecycle",
+    "hosted_python_matrix",
+    "javascript_typescript_backend",
+    "live_provider_benefit",
+    "activation"
+  ]
+}

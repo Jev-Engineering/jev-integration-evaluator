@@ -10,6 +10,13 @@ python scripts/validate_package.py
 
 Test Python-only mode and TypeScript-enabled mode. A missing optional parser must remain an explicitly disclosed fallback, not a crash or silently verified result. Synthetic data must retain its evidence label and cannot be promoted to an observed outcome.
 
+For independent path qualification, run
+`python -m pytest -q tests/test_path_corpus_connected.py tests/test_path_corpus_oracle.py tests/test_path_corpus_mutations.py`
+and `python tests/path_corpus/generate_support.py --out NEW_JSON` on Linux.
+Compare the generated JSON with `validation/path-corpus-support-v1.json` after
+reviewing changes to both host source and oracle. Keep unrun paths explicit;
+the trusted-host synthetic verifier does not qualify installed startup.
+
 Keep configuration strict, stable CLI errors actionable, archives free of credentials/build caches, and citations to primary upstream API documentation dated. Changes to confidence semantics, threshold activation, budgets, authorization, cache keys, paired matching and statistical assumptions require focused tests and a version note. Re-generate release checksums only after tests and documentation are final.
 
 For executable-integration changes, also run `python scripts/run_implementation_demo.py --out NEW_PRIVATE_DIRECTORY` and the installed-wheel host test. Keep the support matrix and all strict implementation schema copies current. Do not publish private target bundles. Record actual interpreters/platforms; unrun CI jobs and live activation are not local validation results.

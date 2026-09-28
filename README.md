@@ -25,6 +25,13 @@ See the
 [session contract](references/repository-session-command.md) and
 [dev11 validation](validation/REPOSITORY-SESSION-VALIDATION-1.3.0.dev11.md).
 
+The [independent path corpus](validation/PATH-CORPUS-CURRENT-SUPPORT.md)
+records six source-hashed synthetic hosts and a connected offline host test.
+Its generated support record distinguishes public path inspection from the
+review, plan, baseline, apply and modified verification exercised by the
+trusted-host synthetic verifier. Installed application startup, target-native
+verification, JS/TS implementation and live provider benefit remain unrun.
+
 ## Mixed source-review correction in 1.3.0.dev10
 
 The repository placement selector now blocks an approved candidate when its
