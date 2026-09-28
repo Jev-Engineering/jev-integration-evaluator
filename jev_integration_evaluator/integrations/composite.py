@@ -15,7 +15,7 @@ import stat
 from .. import __version__
 from ..contracts import seal, verify, validate_contract, utc_now
 from ..implementation import FORBIDDEN, apply_patch_plan, make_patch_plan, run_authorized_tests
-from ..io import InputError, digest, file_hash, loads, read_json, safe_child, write_json
+from ..io import InputError, atomic_text, digest, file_hash, loads, read_json, safe_child, write_json
 from .contracts import validate_inventory, validate_spec
 from .lifecycle import (_bundle_dir, _root_identity, _write_bytes, _sync_dir, _lock,
                         _journal, _record, _inspect_file, engine_identity)
@@ -264,6 +264,7 @@ def _load(root, bundle, *, current_engine=False):
         row = owned[change['file']]
         if (FORBIDDEN.search(change['file']) or change['old_sha256'] != row['old_sha256']
                 or change['new_sha256'] != row['new_sha256']
+                or (row['preimage'] is not None and row['old_mode'] != row['new_mode'])
                 or hashlib.sha256(change['new_content'].encode('utf-8')).hexdigest() != row['new_sha256']
                 or (row['preimage'] is not None and
                     file_hash(safe_child(bundle,row['preimage'])) != row['old_sha256'])):
@@ -433,8 +434,11 @@ def rollback_composite(root,bundle,approval):
             if row['preimage'] is None:
                 path.unlink(); _sync_dir(path.parent)
             else:
-                _write_bytes(path,safe_child(bundle,row['preimage']).read_bytes())
-                os.chmod(path,row['old_mode']); _sync_dir(path.parent)
+                # The applied file already has the reviewed original mode. The
+                # atomic writer copies that mode onto its temp file before one
+                # replace, so a crash exposes either recognized byte/mode pair.
+                atomic_text(path,safe_child(bundle,row['preimage']).read_bytes().decode('utf-8'))
+                _sync_dir(path.parent)
             _record(bundle,plan,'rollback_write_completed',row['file'])
         if any(_inspect_file(root,row) != 'baseline' for row in plan['owned_files']):
             raise InputError('Composite rollback incomplete; retain recovery bundle')

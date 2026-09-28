@@ -1,8 +1,10 @@
 """Synthetic composite planning and transaction ownership, without private hosts."""
 import copy
 import json
+import os
 from pathlib import Path
 import subprocess
+import stat
 import sys
 
 import pytest
@@ -401,3 +403,37 @@ def test_worktree_lock_and_concurrent_owned_edit_refuse_rollback(tmp_path):
         rollback_composite(root,bundle,approval)
     assert target.read_bytes().endswith(b'# concurrent edit\n')
     assert unrelated.read_bytes()==b'other owner'
+
+
+@pytest.mark.skipif(sys.platform != 'linux', reason='POSIX atomic mode preservation')
+def test_rollback_crash_after_mode_preserving_replace_recovers(tmp_path,monkeypatch):
+    root,inventory,selection,specs = _two_hosts(tmp_path)
+    for spec in specs.values():
+        os.chmod(root/spec['source']['file'],0o644)
+    # File modes are not part of discovery hashes, but the reviewed inventory
+    # and plan are built after the explicit mode choice.
+    bundle=tmp_path/'bundle'
+    plan=plan_composite(root,inventory,selection,specs,bundle)
+    owned=read_json(bundle/'composite-plan.json')['owned_files']
+    original_row=next(row for row in owned if row['preimage'])
+    target=root/original_row['file']
+    assert original_row['old_mode']==0o644
+    baseline=verify_composite(root,bundle,'baseline',approve_execution=True)
+    apply_composite(root,bundle,plan['bundle_digest'],baseline_sha256=baseline['receipt_sha256'])
+    original=composite.atomic_text
+    triggered=False
+    def after_replace(path,text):
+        nonlocal triggered
+        original(path,text)
+        if Path(path)==target and not triggered:
+            triggered=True
+            raise SystemExit('crash after atomic replacement, before journal completion')
+    monkeypatch.setattr(composite,'atomic_text',after_replace)
+    approval=status_composite(root,bundle)['rollback_digest']
+    with pytest.raises(SystemExit): rollback_composite(root,bundle,approval)
+    monkeypatch.setattr(composite,'atomic_text',original)
+    assert triggered
+    assert file_hash(target)==original_row['old_sha256']
+    assert stat.S_IMODE(target.stat().st_mode)==original_row['old_mode']
+    assert status_composite(root,bundle)['status']=='blocked_recovery'
+    assert rollback_composite(root,bundle,approval)['status']=='rolled_back'
