@@ -302,6 +302,12 @@ def bootstrap(): return Runtime()
     forged_oracle['modified']['cases'][-1]['observation']['assessments'] = 0
     with pytest.raises(runner.RunnerError, match='external_oracle_anchor_mismatch'):
         inspect_lifecycle_postconditions(forged_oracle, **arguments)
+    drifted = copy.deepcopy(arguments)
+    drifted['modified_receipt'] = copy.deepcopy(drifted['modified_receipt'])
+    drifted['modified_receipt']['source_identity_valid'] = False
+    drifted['trusted_modified_receipt_sha256'] = hashlib.sha256(
+        runner.canonical(drifted['modified_receipt'])).hexdigest()
+    assert inspect_lifecycle_postconditions(oracle, **drifted)['postconditions_satisfied'] is False
 
 
 def test_real_bootstrap_off_shadow_no_replacement_callback(tmp_path):

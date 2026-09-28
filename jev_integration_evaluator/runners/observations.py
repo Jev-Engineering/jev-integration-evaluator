@@ -115,7 +115,8 @@ def inspect_lifecycle_postconditions(
                 stdout, stderr = output
                 if _hash(stdout) != execution['stdout_sha256'] or _hash(stderr) != execution['stderr_sha256']:
                     raise RunnerError('native_output_receipt_mismatch')
-                if execution['outcome'] == 'exited_zero' and execution['isolation_established'] and stderr == b'':
+                if (execution['outcome'] == 'exited_zero' and execution['isolation_established']
+                        and receipt['source_identity_valid'] and stderr == b''):
                     try:
                         observed = _observation(stdout)
                     except RunnerError:
