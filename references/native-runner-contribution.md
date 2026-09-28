@@ -12,6 +12,11 @@ hash, dependency root identity, package metadata, and file hashes are bound to
 the `1.1` request and receipt. Missing, changed, or incompatible interpreters
 and dependencies fail without falling back. Binary extensions, `.pth` files,
 other interpreter builds, and unlisted packages are unsupported.
+The dedicated ephemeral CI job compares the full kernel, architecture,
+interpreter, libseccomp, worker, supervisor, and runtime-closure identity to
+`validation/native-runner-environment-lock.json` before executing required
+privileged cases. A changed hosted image or source byte requires review and a
+new lock; a green generic test matrix cannot substitute for this job.
 This is an unmerged, opt-in backend contribution. It is not connected to the
 repository command/session, existing implementation verification receipts, or
 TypeSafe runtime bootstrap. It neither replaces the existing probe nor changes
