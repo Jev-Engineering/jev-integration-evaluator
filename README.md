@@ -103,6 +103,7 @@ Each stage rechecks source identity and requires its own explicit authorization 
 | Run rigorous before/after experiments | [`references/experimental-methodology.md`](references/experimental-methodology.md) · [`references/lifecycle-and-evidence.md`](references/lifecycle-and-evidence.md) |
 | Operate multiple placements with budgets and canaries | [`references/operational-evidence-v1.2.md`](references/operational-evidence-v1.2.md) |
 | Connect to the live JEV API | [Live integration](#-going-live) below · [`references/security-and-privacy.md`](references/security-and-privacy.md) |
+| Coordinate template delivery through reviewed PRs and merge | [`references/template-delivery-orchestration-prompt.md`](references/template-delivery-orchestration-prompt.md) |
 | See what each release validated | [`CHANGELOG.md`](CHANGELOG.md) · [`validation/`](validation/) |
 
 Every command also documents itself: `python -m jev_integration_evaluator --help`.
