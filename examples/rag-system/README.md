@@ -72,5 +72,47 @@ Adoption is separately rejected because even a passing synthetic screen
 would need independent observed task and provider evidence. Simulated model
 cost and latency are separate from measured local Python elapsed time.
 
-`claim_check` remains the unchanged, disconnected seam for issue #47. No
-combined passage and claim benefit is measured here.
+The original `claim_check` body remains unchanged. No combined passage and
+claim benefit is measured here.
+
+## Claim support fixture (#47)
+
+The original `claim_check` helper still returns an injected classifier's raw
+answer; it is not a delivery gate. `answer_with_claim_review` adds a separate
+synthetic consumer. Its generator emits structured atomic claims with stable
+claim IDs and citation references (`passage_id`, start, end, exact quote).
+Before assessment, the host checks citation membership and verbatim spans in
+the selected #45 `EvidenceBundle`. Passage stance is source metadata and does
+not establish claim truth. Host request fields declare critical claims and
+dependencies; neither model labels nor scorer labels can change them.
+
+The consumer's registered policies are `deterministic` and `jev`. The latter
+validates a complete per-claim `supported / contradicted / unsupported /
+uncertain` assessment and evidence IDs. Code-owned rules release supported
+claims, remove separable noncritical failed claims, block failed critical or
+dependent claims, and request more evidence on uncertainty, cancellation,
+malformed or missing assessment, timeout, or audit failure. An injected host
+audit must succeed before a release or revision becomes a final answer. A late
+result cannot resume a cancelled attempt. The example constructs no provider,
+retrieval service, or production delivery mechanism.
+
+The [frozen #47 case file](study47_cases.json), [scorer-only labels](study47_labels.json),
+[synthetic predictions](study47_predictions.json), and [policy](study47_policy.json)
+were independently reviewed before the holdout run. The
+[report](study47_report.json) records all 15 holdout cases in four arms:
+historical `answer_request` only, generic-classifier counterfactual (raw helper
+output recorded but unused), deterministic span checks, and bounded assessed
+consumer. Every arm gets the same retrieved passages with #45 assessment off.
+
+```shell
+python examples/rag-system/run_study47.py --out path/to/new-report.json
+python -m pytest -q tests/test_rag_claim47.py tests/test_rag_claim47_study.py
+```
+
+The synthetic holdout passed independent final-answer checks in 7/15
+historical, 7/15 generic counterfactual, 9/15 deterministic, and 9/15 assessed
+cases. The assessed arm had five failed or missing assessments, one audit
+failure, and one simulated resource breach. It fails the preset screen and
+adoption is rejected from synthetic evidence. Assessor costs and latencies are
+assigned fixture values; only local Python elapsed time was measured. This
+study does not test a combined #45+#47 treatment or real answer quality.
