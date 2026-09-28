@@ -66,6 +66,14 @@ class SharedBudget {
     row.calls += 1; this.calls += 1; this.cost += upperBound;
     return Object.freeze({taskId, upperBound});
   }
+  trackTask(taskId) {
+    if (this.suspended || typeof taskId !== 'string' || !taskId) fail('budget_denied');
+    if (!this.tasks.has(taskId)) {
+      if (this.tasks.size >= this.limits.max_tasks) fail('budget_denied');
+      this.tasks.set(taskId, {calls: 0, closed: false});
+    }
+    if (this.tasks.get(taskId).closed) fail('task_closed');
+  }
   closeTask(taskId) {
     const row = this.tasks.get(taskId);
     if (!row) fail('unknown_task');
@@ -129,9 +137,10 @@ class NativeRouter {
         typeof original !== 'function' || !plain(bindings) ||
         !['registry', 'gate', 'validate', 'blocked', 'evidence', 'baseline_action'].every(x => typeof bindings[x] === 'function'))
       fail('invalid_host_binding');
-    if (this.budget.isClosed(request.task_id)) fail('task_closed');
+    this.budget.trackTask(request.task_id);
     const key = digest([request.task_id, request.invocation_id, this.spec.candidate_id]);
     if (this.invocations.has(key)) fail('effect_replay_denied');
+    if (this.invocations.size >= 100000) fail('invocation_ledger_full');
     this.invocations.add(key); // No retry can reexecute an effect after timeout or rejection.
   }
   async _fallback(original, request, bindings, reason, signal) {

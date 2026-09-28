@@ -39,6 +39,9 @@ test('off retains one baseline effect and rejects invocation replay', async () =
   assert.deepEqual(f.counts(), {baselineCalls: 1, summaryCalls: 0});
   await assert.rejects(f.router.invoke(f.original, request, f.bindings), /effect_replay_denied/);
   assert.deepEqual(f.counts(), {baselineCalls: 1, summaryCalls: 0});
+  f.budget.closeTask('task');
+  await assert.rejects(f.router.invoke(f.original,
+    {task_id: 'task', invocation_id: 'two'}, f.bindings), /task_closed/);
 });
 
 test('shadow returns baseline and does not execute proposed action', async () => {
