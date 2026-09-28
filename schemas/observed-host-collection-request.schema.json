@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:observed-host-collection-request:1.0",
+  "type": "object",
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "link_digest": {"$ref": "#/$defs/hash"},
+    "study_digest": {"$ref": "#/$defs/hash"},
+    "input_manifest_sha256": {"$ref": "#/$defs/hash"},
+    "labels_sha256": {"$ref": "#/$defs/hash"},
+    "adapter_id": {"type": "string", "minLength": 1},
+    "contract_digest": {"$ref": "#/$defs/hash"},
+    "host_scope_digest": {"$ref": "#/$defs/hash"},
+    "egress_grant_sha256": {"anyOf": [{"$ref": "#/$defs/hash"}, {"type": "null"}]},
+    "evidence_type": {"enum": ["synthetic", "observed"]},
+    "max_pairs": {"anyOf": [{"type": "integer", "minimum": 1}, {"type": "null"}]},
+    "max_pair_calls": {"anyOf": [{"type": "integer", "minimum": 1}, {"type": "null"}]},
+    "max_pair_cost": {"anyOf": [{"type": "number", "minimum": 0}, {"type": "null"}]},
+    "max_total_cost": {"anyOf": [{"type": "number", "minimum": 0}, {"type": "null"}]},
+    "stop_after_failures": {"anyOf": [{"type": "integer", "minimum": 1}, {"type": "null"}]}
+  },
+  "required": ["schema_version", "link_digest", "study_digest", "input_manifest_sha256",
+    "labels_sha256", "adapter_id", "contract_digest", "host_scope_digest",
+    "egress_grant_sha256", "evidence_type", "max_pairs", "max_pair_calls",
+    "max_pair_cost", "max_total_cost", "stop_after_failures"],
+  "additionalProperties": false,
+  "$defs": {"hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}

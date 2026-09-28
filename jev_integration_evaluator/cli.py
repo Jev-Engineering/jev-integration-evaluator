@@ -133,6 +133,31 @@ def parser():
     s.add_argument("--plan",required=True); s.add_argument("--input",required=True); s.add_argument("--out",required=True)
     s.add_argument("--expected-digest"); s.add_argument("--as-of",help="Explicit UTC evaluation time for reproducible offline replay")
     s.add_argument("--enforce",action="store_true",help="Exit 3 unless observed, pinned, complete and fresh monitoring passes")
+    s=common("observed-link","Freeze a source-bound implementation/study identity; no collection or activation")
+    s.add_argument("--repo",required=True);s.add_argument("--bundle",required=True)
+    s.add_argument("--study",required=True);s.add_argument("--placement-set",required=True)
+    s.add_argument("--study-digest",required=True);s.add_argument("--placement-digest",required=True)
+    s.add_argument("--receipt-sha256",required=True);s.add_argument("--out",required=True)
+    s.add_argument("--monitor-plan");s.add_argument("--monitor-digest")
+    for name, description in (
+        ("observed-check", "Recheck a frozen implementation/study link against current source"),
+        ("observed-collect-offline", "Collect only approved synthetic paired fixtures with independent labels"),
+        ("observed-evaluate", "Recompute a linked study and raw gate evidence without activation"),
+    ):
+        s=common(name,description)
+        s.add_argument("--repo",required=True);s.add_argument("--bundle",required=True)
+        s.add_argument("--study",required=True);s.add_argument("--placement-set",required=True)
+        s.add_argument("--link",required=True);s.add_argument("--link-digest",required=True)
+        s.add_argument("--receipt-sha256",required=True);s.add_argument("--out",required=True)
+        s.add_argument("--monitor-plan")
+        if name=="observed-collect-offline":
+            s.add_argument("--request",required=True);s.add_argument("--fixtures",required=True)
+            s.add_argument("--labels",required=True);s.add_argument("--approve-request",required=True)
+        if name=="observed-evaluate":
+            s.add_argument("--collection",required=True);s.add_argument("--collection-digest",required=True)
+            s.add_argument("--gate-bundle");s.add_argument("--holdout-report")
+            s.add_argument("--holdout-plan");s.add_argument("--holdout-rows")
+            s.add_argument("--monitor-rows");s.add_argument("--monitor-as-of")
     s=common("implementation-recipes", "List executable bounded Python recipes and unsupported shapes")
     s.add_argument("--json",action="store_true",help="Machine-readable catalog (also the default)")
     s=common("implement-plan", "Derive a reviewed, default-off host patch without executing or changing the target")
@@ -377,6 +402,44 @@ def execute(args):
         result=evaluate_monitor(read_json(args.plan),_records(args.input),expected_digest=args.expected_digest,as_of=args.as_of)
         _save(args.out,result); atomic_text(Path(args.out).with_suffix(".report.md"),render_monitor(result))
         return result
+    if cmd=="observed-link":
+        from .observed_evidence import freeze_link
+        return _save(args.out,freeze_link(args.repo,args.bundle,read_json(args.study),
+            read_json(args.placement_set),expected_study_digest=args.study_digest,
+            expected_placement_digest=args.placement_digest,
+            trusted_implementation_receipt_sha256=args.receipt_sha256,
+            monitor_plan=read_json(args.monitor_plan) if args.monitor_plan else None,
+            expected_monitor_digest=args.monitor_digest))
+    if cmd in ("observed-check","observed-collect-offline","observed-evaluate"):
+        from .observed_evidence import check_link, collect_offline, evaluate_linked
+        link,study,placement=read_json(args.link),read_json(args.study),read_json(args.placement_set)
+        check_link(args.repo,args.bundle,study,placement,link,
+            expected_link_digest=args.link_digest,
+            trusted_implementation_receipt_sha256=args.receipt_sha256,
+            monitor_plan=read_json(args.monitor_plan) if args.monitor_plan else None)
+        if cmd=="observed-check":
+            return _save(args.out,{"status":"current", "link_digest":args.link_digest,
+                                   "target_executed":False,"activation_eligible":False})
+        if cmd=="observed-collect-offline":
+            return _save(args.out,collect_offline(link,study,read_json(args.request),
+                _records(args.fixtures),_records(args.labels),
+                approved_request_sha256=args.approve_request,
+                expected_link_digest=args.link_digest,root=args.repo,bundle=args.bundle,
+                placement_set=placement,
+                trusted_implementation_receipt_sha256=args.receipt_sha256,
+                monitor_plan=read_json(args.monitor_plan) if args.monitor_plan else None))
+        return _save(args.out,evaluate_linked(link,study,read_json(args.collection),
+            expected_link_digest=args.link_digest,
+            expected_collection_digest=args.collection_digest,
+            root=args.repo,bundle=args.bundle,placement_set=placement,
+            trusted_implementation_receipt_sha256=args.receipt_sha256,
+            gate_bundle=read_json(args.gate_bundle) if args.gate_bundle else None,
+            holdout_report=read_json(args.holdout_report) if args.holdout_report else None,
+            holdout_plan=read_json(args.holdout_plan) if args.holdout_plan else None,
+            holdout_rows=_records(args.holdout_rows) if args.holdout_rows else None,
+            monitor_plan=read_json(args.monitor_plan) if args.monitor_plan else None,
+            monitor_rows=_records(args.monitor_rows) if args.monitor_rows else None,
+            monitor_as_of=args.monitor_as_of))
     raise InputError("Unknown command")
 
 
