@@ -40,6 +40,15 @@ _ACTIONS = {
     "supply_external_receipt_anchor_or_owned_rollback_scope": (["external_receipt_anchor_or_rollback_scope", "trusted_session_head"], "external_receipt_or_rollback", "none", True),
     "retain_owned_bundle_for_explicit_recovery": (["rollback_scope", "trusted_session_head"], "exact_scope", "owned_mutation", True),
     "resume_with_externally_retained_session_head": (["trusted_session_head", "execution_scope"], "exact_scope", "trusted_host_execution", True),
+    "review_native_bundle_and_scope": (["bundle_review", "native_contract", "native_scope", "trusted_session_head"], "exact_scope", "isolated_execution", True),
+    "supply_exact_native_contract_or_isolation_scope": (["native_contract", "native_scope", "trusted_session_head"], "exact_scope", "isolated_execution", True),
+    "review_native_postcondition_failure": (["native_oracle_review", "private_output_anchor"], "new_review", "none", True),
+    "inspect_native_session_stage": (["session_review"], "new_review", "none", True),
+    "reconcile_owned_apply_before_retry": (["owned_byte_review", "trusted_session_head"], "new_review", "none", True),
+    "inspect_native_archive_and_external_anchor_before_retry": (["native_receipt_anchor", "private_output_anchor", "trusted_session_head"], "external_receipt_or_rollback", "none", True),
+    "review_retained_native_schedule_and_postconditions": (["failed_schedule_review", "native_oracle_review"], "new_review", "none", True),
+    "inspect_native_contract_and_private_archive": (["native_contract", "private_output_anchor", "trusted_session_head"], "new_review", "none", True),
+    "resume_native_with_external_anchors": (["trusted_session_head", "native_contract", "native_scope", "native_receipt_anchor", "private_output_anchor"], "exact_scope", "isolated_execution", True),
 }
 
 for _operation, _effect in (("baseline", "trusted_host_execution"),
@@ -47,6 +56,13 @@ for _operation, _effect in (("baseline", "trusted_host_execution"),
                             ("modified", "trusted_host_execution")):
     _ACTIONS[f"obtain_exact_bundle_{_operation}_scope"] = (
         [f"{_operation}_scope", "trusted_session_head"], "exact_scope", _effect, True)
+
+for _operation, _effect in (("baseline", "isolated_execution"),
+                            ("apply", "owned_mutation"),
+                            ("modified", "isolated_execution")):
+    _ACTIONS[f"obtain_exact_native_{_operation}_scope"] = (
+        [f"{_operation}_scope", "native_contract", "trusted_session_head"],
+        "exact_scope", _effect, True)
 
 
 def next_action_contract(code: str) -> dict:

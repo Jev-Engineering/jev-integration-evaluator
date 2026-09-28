@@ -230,7 +230,9 @@ def _scope(value: Any, state: dict, head: str | None, existing: bool) -> dict | 
             raise SessionError("execution_environment_required")
         if value["execution_environment"] == "isolated" and value["schema_version"] != "1.1":
             raise SessionError("independent_isolation_backend_unsupported")
-    if value["execution_environment"] == "isolated" and value.get("native_contract_sha256") is None:
+    if (value["execution_environment"] == "isolated"
+            and any(value["grants"][k] for k in ("baseline", "apply", "modified"))
+            and value.get("native_contract_sha256") is None):
         raise SessionError("native_contract_anchor_required")
     if (state.get("execution_backend") is not None and
             any(value["grants"][k] for k in ("baseline", "apply", "modified")) and
@@ -944,7 +946,7 @@ def _run_native_lifecycle(journal: Journal, root: Path, bundle: Path, plan: dict
     if state["stage"] == phase + "_failed" and not retry:
         return _summary(journal, "verification_failed", "review_retained_failure_and_explicitly_request_bounded_retry")
     if not _allowed(scope, phase, state):
-        return _summary(journal, "missing_scope", "obtain_exact_bundle_" + phase + "_scope")
+        return _summary(journal, "missing_scope", "obtain_exact_native_" + phase + "_scope")
     contract = _native_contract(contract_input, state, plan, scope, phase if phase != "apply" else None)
     if phase == "apply":
         baseline_receipt, baseline_outputs = _native_prior(journal, root, state, scope, contract, "baseline")
@@ -971,7 +973,7 @@ def _run_native_lifecycle(journal: Journal, root: Path, bundle: Path, plan: dict
             _complete(journal, state, "apply", "apply_failed", "native_apply_interrupted_recovery_required")
             return _summary(journal, "blocked_recovery", "reconcile_owned_apply_before_retry")
         _complete(journal, state, "apply", "applied_unverified")
-        return _summary(journal, "applied_unverified", "resume_with_externally_retained_session_head")
+        return _summary(journal, "applied_unverified", "resume_native_with_external_anchors")
     _snapshot(root, state, plan, applied=phase == "modified")
     baseline_receipt = baseline_outputs = None
     if phase == "modified":
@@ -1018,7 +1020,7 @@ def _run_native_lifecycle(journal: Journal, root: Path, bundle: Path, plan: dict
         return _summary(journal, "verification_failed", "review_retained_native_schedule_and_postconditions")
     stage = "baseline_passed" if phase == "baseline" else "verified"
     _complete(journal, state, phase, stage)
-    return _summary(journal, stage, "resume_with_externally_retained_session_head" if phase == "baseline"
+    return _summary(journal, stage, "resume_native_with_external_anchors" if phase == "baseline"
                     else "software_wiring_only_no_activation", target_executed=True,
                     native_postconditions=report)
 
@@ -1166,7 +1168,10 @@ def run_repository(repo: str | Path, session: str | Path, *, context: dict | Non
             journal.append(state, "reviewed_preparation_bound")
             state = _begin(journal, "plan", checked_scope)
             try:
-                result = engine.plan_implementation(root, proposal["inventory"], proposal["spec"]["candidate_id"], proposal["spec"], out)
+                result = engine.plan_implementation(
+                    root, proposal["inventory"], proposal["spec"]["candidate_id"],
+                    proposal["spec"], out,
+                    native_readable_sources=checked_scope["execution_environment"] == "isolated")
             except MissingBinding:
                 _complete(journal, state, "plan", "plan_failed", "missing_host_binding")
                 return _summary(journal, "missing_prerequisite", "supply_missing_host_binding")
@@ -1185,7 +1190,8 @@ def run_repository(repo: str | Path, session: str | Path, *, context: dict | Non
             state["bundle"] = dict(path=str(out), digest=result["bundle_digest"])
             _complete(journal, state, "plan", "planned")
             if stop_after == "plan":
-                return _summary(journal, "planned", "review_exact_bundle_and_obtain_execution_mutation_scope")
+                return _summary(journal, "planned", "review_native_bundle_and_scope" if checked_scope["execution_environment"] == "isolated"
+                                else "review_exact_bundle_and_obtain_execution_mutation_scope")
         state = journal.state
         bundle_path = Path(state["bundle"]["path"])
         plan, spec = _engine_bundle(root, bundle_path)

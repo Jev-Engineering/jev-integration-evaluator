@@ -181,7 +181,7 @@ def _load(root, bundle, *, current_engine=False):
     return root, bundle, plan, spec, inventory, patch
 
 
-def plan_implementation(root, inventory, candidate_id, spec, output):
+def plan_implementation(root, inventory, candidate_id, spec, output, *, native_readable_sources=False):
     root, out = Path(root).resolve(strict=True), _bundle_dir(output)
     if out == root or out.is_relative_to(root): raise InputError('Plan output must be outside the target')
     spec = validate_spec(spec)
@@ -190,6 +190,8 @@ def plan_implementation(root, inventory, candidate_id, spec, output):
         _, _, plan, oldspec, _, _ = _load(root, out, current_engine=True)
         if digest(spec) != digest(oldspec) or digest(inventory) != spec['inventory_sha256']:
             raise InputError('Refusing to overwrite a different implementation bundle')
+        if any(row['old_sha256'] is None and row['new_mode'] != (0o644 if native_readable_sources else (0o666 if os.name == 'nt' else 0o600)) for row in plan['owned_files']):
+            raise InputError('Existing bundle source mode differs from requested execution backend')
         validate_inventory(root, inventory, spec)
         return {'status': 'planned', 'bundle_digest': plan['contract_digest'], 'reused': True}
     validate_inventory(root, inventory, spec)
@@ -218,7 +220,7 @@ def plan_implementation(root, inventory, candidate_id, spec, output):
             preimage = 'preimages/' + digest(change['file']) + '.utf8'
             _write_bytes(safe_child(out, preimage), p.read_bytes())
         owned.append({'file': change['file'], 'old_sha256': change['old_sha256'], 'new_sha256': change['new_sha256'],
-                      'old_mode': mode, 'new_mode': mode if mode is not None else (0o666 if os.name == 'nt' else 0o600), 'preimage': preimage})
+                      'old_mode': mode, 'new_mode': mode if mode is not None else (0o644 if native_readable_sources else (0o666 if os.name == 'nt' else 0o600)), 'preimage': preimage})
     write_json(out / 'implementation-spec.json', spec)
     write_json(out / 'verification-cases.json', spec['verification'])
     write_json(out / 'reviewed-inventory.json', inventory)
@@ -330,6 +332,8 @@ def apply_implementation(root, bundle, approval, *, baseline_sha256):
     root, bundle, plan, spec, inventory, patch = _load(root, bundle, current_engine=True)
     if approval != plan['contract_digest']: raise InputError('Exact reviewed bundle digest approval is required')
     if not baseline_sha256: raise InputError('An externally retained baseline receipt digest is required')
+    if any(row['old_sha256'] is None and row['new_mode'] == 0o644 for row in plan['owned_files']):
+        raise InputError('Native bundle requires isolated baseline proof')
     with _lock(bundle):
         receipt = _receipt(root, bundle, plan, spec, 'baseline', baseline_sha256)
         if receipt['status'] != 'passed': raise InputError('Baseline verification did not pass')
@@ -381,10 +385,10 @@ def apply_native_implementation(root, bundle, approval, *, baseline_spec, baseli
                     for row in baseline_spec['files'])):
             raise InputError('Native baseline source or bundle changed')
         _check_discovery(root, plan)
-        return _apply_locked(root, bundle, plan, spec, inventory, patch)
+        return _apply_locked(root, bundle, plan, spec, inventory, patch, native_readable_sources=True)
 
 
-def _apply_locked(root, bundle, plan, spec, inventory, patch):
+def _apply_locked(root, bundle, plan, spec, inventory, patch, *, native_readable_sources=False):
     status = implementation_status(root, bundle)
     if status['status'] in ('applied_unverified', 'verification_failed', 'verified'):
         _check_discovery(root, plan, applied=True)
@@ -395,7 +399,10 @@ def _apply_locked(root, bundle, plan, spec, inventory, patch):
     if any(_inspect_file(root, r) != 'baseline' for r in plan['owned_files']): raise InputError('Owned path drift before apply')
     _record(bundle, plan, 'apply_started')
     def progress(event, change):
-        if event == 'write_completed': _sync_dir(safe_child(root, change['file']).parent)
+        if event == 'write_completed':
+            if native_readable_sources and change['operation'] == 'create':
+                os.chmod(safe_child(root, change['file']), 0o644)
+            _sync_dir(safe_child(root, change['file']).parent)
         _record(bundle, plan, 'apply_' + event, change['file'])
     try:
         apply_patch_plan(root, patch, patch['plan_digest'], progress=progress)

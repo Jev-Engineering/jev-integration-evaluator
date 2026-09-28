@@ -21,12 +21,14 @@ def planned(tmp_path):
     inventory, spec = fixture(root, 'C', native_probe=True)
     context = session.request_context()
     scanned = session.inspect_repository(root, context=context)
-    scope = dict(schema_version='1.0', kind='repository-run-scope-v1', reference='synthetic-plan',
+    scope = dict(schema_version='1.1', kind='repository-run-scope-v1', reference='synthetic-plan',
                  repository_identity=scanned['report']['repository_identity'],
                  context_sha256=scanned['context_sha256'], bundle_digest=None,
                  trusted_session_head=None, trusted_baseline_receipt=None,
                  trusted_modified_receipt=None, rollback_digest=None,
-                 execution_environment='none', grants={**session.ZERO_GRANTS, 'prepare': True})
+                 native_contract_sha256=None, trusted_oracle_sha256=None,
+                 trusted_baseline_private_output=None, trusted_modified_private_output=None,
+                 execution_environment='isolated', grants={**session.ZERO_GRANTS, 'prepare': True})
     prepared = dict(schema_version='1.0', adapter=session.ADAPTER, inventory=inventory, spec=spec)
     result = session.run_repository(root, output, context=context, prepared=prepared,
                                     scope=scope, stop_after='plan')
