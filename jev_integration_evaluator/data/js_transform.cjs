@@ -71,14 +71,15 @@ function transform(input) {
   if (format === 'commonjs') {
     const exports = source.statements.filter(x => ts.isExpressionStatement(x) &&
       ts.isBinaryExpression(x.expression) && x.expression.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
-      nameOf(x.expression.right) === input.symbol &&
       ((x.expression.left.getText(source) === 'module.exports') ||
        (x.expression.left.getText(source) === 'exports.' + input.symbol)));
-    if (exports.length !== 1) refuse('selected_js_export_required');
+    if (exports.length !== 1 || nameOf(exports[0].expression.right) !== input.symbol)
+      refuse('selected_js_export_required');
   }
   let forbidden = false;
   const visit = node => {
-    if (ts.isDecorator(node) || ts.isImportCall(node) ||
+    if (ts.isDecorator(node) || ts.isImportCall(node) || ts.isImportDeclaration(node) ||
+        ts.isCallExpression(node) && nameOf(node.expression) === 'require' ||
         ts.isCallExpression(node) && ['eval', 'Function'].includes(nameOf(node.expression)) ||
         ts.isNewExpression(node) && nameOf(node.expression) === 'Function' ||
         ts.isIdentifier(node) && node.text === input.adapter_alias ||

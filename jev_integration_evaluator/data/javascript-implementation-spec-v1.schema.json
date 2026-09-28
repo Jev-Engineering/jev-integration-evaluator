@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Bounded reviewed JavaScript recipe C implementation specification",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "recipe_id", "candidate_id", "source", "bindings", "runtime", "verification_sha256", "verification_cases_count"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "recipe_id": {"const": "javascript.C"},
+    "candidate_id": {"type": "string", "minLength": 1, "maxLength": 256},
+    "source": {
+      "type": "object", "additionalProperties": false,
+      "required": ["file", "sha256", "symbol", "original"],
+      "properties": {
+        "file": {"type": "string", "pattern": "^[A-Za-z_$][A-Za-z0-9_$-]*\\.(mjs|cjs|ts)$"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "symbol": {"type": "string", "pattern": "^[A-Za-z_$][A-Za-z0-9_$]*$"},
+        "original": {"type": "string", "pattern": "^[A-Za-z_$][A-Za-z0-9_$]*$"}
+      }
+    },
+    "bindings": {
+      "type": "object", "additionalProperties": false,
+      "required": ["registry", "gate", "validate", "blocked", "evidence", "baseline_action"],
+      "properties": {
+        "registry": {"$ref": "#/$defs/symbol"}, "gate": {"$ref": "#/$defs/symbol"},
+        "validate": {"$ref": "#/$defs/symbol"}, "blocked": {"$ref": "#/$defs/symbol"},
+        "evidence": {"$ref": "#/$defs/symbol"}, "baseline_action": {"$ref": "#/$defs/symbol"}
+      }
+    },
+    "runtime": {
+      "type": "object", "additionalProperties": false,
+      "required": ["registered_action_ids", "questions", "primary_question", "label_actions", "runtime"],
+      "properties": {
+        "registered_action_ids": {"type": "array", "minItems": 1, "maxItems": 32, "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1, "maxLength": 128}},
+        "questions": {"type": "object", "minProperties": 1, "maxProperties": 8},
+        "primary_question": {"type": "string", "minLength": 1},
+        "label_actions": {"type": "object", "minProperties": 2, "maxProperties": 32},
+        "runtime": {"type": "object", "required": ["mode", "canary_scope", "cost_upper_bound", "timeout_ms", "model"],
+          "properties": {"mode": {"const": "off"}, "canary_scope": {"type": "string"},
+            "cost_upper_bound": {"type": "number", "exclusiveMinimum": 0},
+            "timeout_ms": {"type": "integer", "minimum": 1, "maximum": 120000},
+            "model": {"type": "string", "minLength": 1}},
+          "additionalProperties": false}
+      }
+    },
+    "verification_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "verification_cases_count": {"type": "integer", "minimum": 1, "maximum": 16}
+  },
+  "$defs": {"symbol": {"type": "string", "pattern": "^[A-Za-z_$][A-Za-z0-9_$]*$"}}
+}

@@ -9,7 +9,41 @@ from pathlib import Path
 import shutil
 import subprocess
 
-from ..io import InputError, safe_child
+from ..io import InputError, file_hash, safe_child
+
+
+def js_support_matrix() -> dict:
+    """Static capability contract, not a claim about an arbitrary target."""
+    return dict(schema_version='1.0', implementation_contract='javascript-owned-bundle-v1',
+                discovery_contract='python-static-capabilities-v1',
+                discovery_js_ts='unparsed_by_this_contract',
+                supported_recipe='C', supported_formats=['esm', 'commonjs', 'typescript'],
+                unsupported_recipes=[letter for letter in 'ABCDEFGHIJKLM' if letter != 'C'],
+                runtime_strategy='native_javascript_default_off',
+                qualification_scope='synthetic_installed_wheel_entrypoints',
+                target_verified=False, provider_connectivity='not_tested', activation_authorized=False)
+
+
+def trusted_js_tool_identity(tooling_dir: Path) -> dict:
+    """Pin executable and package tooling bytes outside any target."""
+    tool_root = Path(tooling_dir).resolve(strict=True)
+    compiler = (tool_root / 'node_modules/typescript/lib/typescript.js').resolve(strict=True)
+    node_name = shutil.which('node')
+    if (not compiler.is_file() or not compiler.is_relative_to(tool_root)
+            or node_name is None):
+        raise InputError('Pinned trusted JavaScript tooling unavailable')
+    node = Path(node_name).resolve(strict=True)
+    if not node.is_file():
+        raise InputError('Pinned trusted JavaScript tooling unavailable')
+    data = Path(str(files('jev_integration_evaluator').joinpath('data')))
+    return dict(node_path=str(node), node_sha256=file_hash(node),
+                compiler_path=str(compiler), compiler_sha256=file_hash(compiler),
+                compiler_version='5.8.3', transformer_sha256=file_hash(data / 'js_transform.cjs'),
+                runtime_sha256=file_hash(data / 'native_js_runtime.cjs'),
+                probe_sha256=file_hash(data / 'js_probe.cjs'),
+                emitter_sha256=file_hash(data / 'js_emit.cjs'),
+                backend_sha256=file_hash(Path(__file__)),
+                lifecycle_sha256=file_hash(Path(__file__).with_name('js_lifecycle.py')))
 
 
 def transform_js_source(root: Path, source_file: str, *, symbol: str, original: str,

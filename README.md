@@ -32,6 +32,15 @@ review, plan, baseline, apply and modified verification exercised by the
 trusted-host synthetic verifier. Installed application startup, target-native
 verification, JS/TS implementation and live provider benefit remain unrun.
 
+The separate [JavaScript/TypeScript backend](references/javascript-typescript-backend-v1.md)
+implements one bounded recipe C shape in flat ESM, CommonJS and TypeScript
+hosts. `js-support`, `js-plan`, `js-verify`, `js-apply`, `js-status`, `js-recover` and
+`js-rollback` use reviewed source hashes, an owner-private bundle, pinned
+trusted tooling and exact external receipt anchors. The
+[support matrix](validation/JAVASCRIPT-TYPESCRIPT-SUPPORT.md) lists all A–M
+recipes and current synthetic qualification. The repository path corpus above
+has not been rerun as a connected JS/TS host.
+
 ## Mixed source-review correction in 1.3.0.dev10
 
 The repository placement selector now blocks an approved candidate when its

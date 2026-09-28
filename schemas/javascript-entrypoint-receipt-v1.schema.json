@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Bounded JavaScript entrypoint observation receipt",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "kind", "phase", "plan_sha256", "cases_sha256", "status", "scheduled", "observed", "observation_sha256", "source_sha256", "contract_digest"],
+  "properties": {
+    "schema_version": {"const": "1.0"}, "kind": {"const": "javascript-entrypoint-receipt-v1"},
+    "phase": {"enum": ["baseline", "modified"]},
+    "plan_sha256": {"$ref": "#/$defs/hash"}, "cases_sha256": {"$ref": "#/$defs/hash"},
+    "status": {"enum": ["passed", "failed"]}, "scheduled": {"type": "integer", "minimum": 1, "maximum": 16},
+    "observed": {"type": "integer", "minimum": 0, "maximum": 16},
+    "observation_sha256": {"$ref": "#/$defs/hash"},
+    "source_sha256": {"$ref": "#/$defs/hash"},
+    "contract_digest": {"$ref": "#/$defs/hash"}
+  },
+  "$defs": {"hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}

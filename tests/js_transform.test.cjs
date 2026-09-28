@@ -60,3 +60,11 @@ test('CommonJS transform preserves the strict directive prologue', () => {
   const transformed = JSON.parse(result.stdout).transformed_source;
   assert.match(transformed, /^'use strict';\s*const jevAdapter = require/);
 });
+
+test('CommonJS later export replacement cannot escape reviewed entrypoint', () => {
+  const value = request('host.cjs',
+    'async function seam(request) { return await original(request); }\n' +
+    'async function original(request) { return request; }\n' +
+    'module.exports = seam;\nmodule.exports = original;\n');
+  assert.equal(run(value).status, 2);
+});

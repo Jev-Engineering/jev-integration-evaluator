@@ -126,6 +126,23 @@ def validate(check_manifest=False):
                  'tests/test_path_corpus_mutations.py',
                  'validation/path-corpus-support-v1.json',
                  'validation/PATH-CORPUS-CURRENT-SUPPORT.md']
+    required += ['jev_integration_evaluator/integrations/js_backend.py',
+                 'jev_integration_evaluator/integrations/js_lifecycle.py',
+                 'jev_integration_evaluator/data/js_transform.cjs',
+                 'jev_integration_evaluator/data/js_emit.cjs',
+                 'jev_integration_evaluator/data/js_probe.cjs',
+                 'jev_integration_evaluator/data/native_js_runtime.cjs',
+                 'references/javascript-typescript-backend-v1.md',
+                 'validation/JAVASCRIPT-TYPESCRIPT-SUPPORT.md',
+                 'tests/test_js_lifecycle.py', 'tests/test_js_wheel.py',
+                 'tests/test_js_backend_trusted.py',
+                 'tests/test_js_entrypoint.py', 'tests/js_transform.test.cjs',
+                 'tests/native_js_runtime.test.cjs']
+    required += [f'{directory}/{name}.schema.json'
+                 for directory in ('schemas', 'jev_integration_evaluator/data')
+                 for name in ('javascript-implementation-spec-v1',
+                              'javascript-implementation-plan-v1',
+                              'javascript-entrypoint-receipt-v1')]
     required += [f'{directory}/{name}.schema.json'
                  for directory in ('schemas', 'jev_integration_evaluator/data')
                  for name in ('repository-run-context-v1', 'repository-run-scope-v1',
