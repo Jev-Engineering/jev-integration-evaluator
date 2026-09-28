@@ -67,6 +67,17 @@ def test_real_entry_and_source_modes_remain_unchanged(tmp_path):
     assert len(list(root.iterdir())) == 1
 
 
+def test_target_startup_customization_is_not_implicitly_executed(tmp_path):
+    poison = 'raise AssertionError("unapproved startup customization ran")\n'
+    root, spec = host(tmp_path, 'print("entry reached", flush=True)\n', files={
+        'sitecustomize.py': poison,
+        'usercustomize.py': poison,
+        'conftest.py': poison,
+    })
+    result = run(root, spec)
+    assert_zero(result, b'entry reached\n')
+
+
 def test_real_bootstrap_off_shadow_no_replacement_callback(tmp_path):
     source = '''import sys
 from runtime import bootstrap
