@@ -49,12 +49,13 @@ preparatory case: two to eight
 existing, exact-scoped Python files may receive appended plain top-level
 helpers. Existing bytes must remain an exact prefix. Existing definitions,
 imports and assignments cannot be changed; new authority-named callbacks,
-decorators, evaluated defaults and annotations are rejected. The #6 context
+obvious always-true stubs, decorators, evaluated defaults and annotations are
+rejected. The #6 context
 must refresh against the actual source and retain an approved source-matched
 candidate review. The proposal cites each preimage, and
 an independent reviewer binds the policy, exact scope, full proposal and an
 independently authored `prerequisite-validation-v1` specification of expected
-case observations and unchanged entrypoint hashes. `apply_prerequisites`
+case observations and unchanged entrypoint hashes and modes. `apply_prerequisites`
 regenerates the plan before comparing it to an externally approved digest.
 Its only successful state is `applied_requires_rescan`: the previous inventory,
 source review and binding review become stale, and no recipe may be applied

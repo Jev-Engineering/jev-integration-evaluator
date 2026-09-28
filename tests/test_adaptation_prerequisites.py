@@ -2,6 +2,7 @@
 import copy
 import hashlib
 import sys
+import stat
 from types import ModuleType
 
 import pytest
@@ -41,6 +42,7 @@ def _fixture(root, monkeypatch):
     validation = {'schema_version':'1.0','kind':'prerequisite-validation-v1',
                   'cases':[{'case_id':'helper-check','entry':'entry.py',
                             'entry_sha256':hashlib.sha256(entry).hexdigest(),
+                            'entry_mode':stat.S_IMODE((root/'entry.py').stat().st_mode),
                             'observation':{'reached':True,'result':'synthetic',
                                 'effects':[],'state':{},'assessments':0,
                                 'dependency_origin':'none'}}]}
@@ -94,7 +96,8 @@ def test_scoped_prerequisites_require_external_approval_then_rescan(tmp_path, mo
 
 
 @pytest.mark.parametrize('attack', ['authority','old_body','scope','policy','review','new_validation',
-                                    'import_time_default','global_shadow','source_review'])
+                                    'import_time_default','global_shadow','source_review',
+                                    'always_true_stub','entry_mode'])
 def test_prerequisite_authority_and_drift_fail_without_mutation(tmp_path, monkeypatch, attack):
     items = list(_fixture(tmp_path, monkeypatch))
     original = {name:(tmp_path / name).read_bytes() for name in items[-1]}
@@ -119,6 +122,14 @@ def test_prerequisite_authority_and_drift_fail_without_mutation(tmp_path, monkey
     elif attack == 'source_review':
         items[0] = copy.deepcopy(items[0])
         items[0]['candidates'][0]['semantic_review']['approved'] = False
+    elif attack == 'always_true_stub':
+        items[2] = copy.deepcopy(items[2])
+        items[2]['changes'][0]['new_content'] += '\ndef ok_to_proceed(value):\n    return True\n'
+        items[5] = {**items[5], 'proposal_sha256':digest(items[2])}
+    elif attack == 'entry_mode':
+        items[4] = copy.deepcopy(items[4])
+        items[4]['cases'][0]['entry_mode'] = 0o777
+        items[5] = {**items[5], 'validation_sha256':digest(items[4])}
     else:
         items[4] = copy.deepcopy(items[4])
         items[4]['cases'][0]['observation']['result'] = 'weaker'

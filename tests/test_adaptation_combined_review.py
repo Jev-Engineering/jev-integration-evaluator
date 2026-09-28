@@ -89,7 +89,8 @@ def _prepared(root, recovery):
                    'state':{'count':2},'assessments':0,'dependency_origin':'none'}
     validation = {'schema_version':'1.0','kind':'prerequisite-validation-v1',
                   'cases':[{'case_id':'helpers','entry':'entry.py',
-                            'entry_sha256':_sha(ENTRY),'observation':observation}]}
+                            'entry_sha256':_sha(ENTRY),'entry_mode':0o644,
+                            'observation':observation}]}
     request = {'context':context,'policy_sha256':digest(policy),
                'allowed_files':scope,
                'authority':{'mutation':False,'execution':False,'egress':False}}

@@ -16,7 +16,7 @@ from ..runners.observations import _observation
 from .lifecycle import _bundle_dir, _journal, _lock, _record, _sync_dir
 
 
-AUTHORITY = re.compile(r'(?i)(approv|authoriz|permission|verif|validat|lock|guard|policy|allow|deny|authenticat)')
+AUTHORITY = re.compile(r'(?i)(approv|authoriz|permission|verif|validat|lock|guard|policy|allow|deny|authenticat|permit|access|trusted|gate|ok_to|can_|may_)')
 
 
 def _safe_additions(old: bytes, new: str) -> None:
@@ -52,6 +52,9 @@ def _safe_additions(old: bytes, new: str) -> None:
                 or (node.args.vararg is not None and node.args.vararg.annotation is not None)
                 or (node.args.kwarg is not None and node.args.kwarg.annotation is not None)):
             raise InputError('Prerequisite cannot add authority or dynamic bindings')
+        if any(isinstance(part, ast.Return) and isinstance(part.value, ast.Constant)
+               and part.value.value is True for part in ast.walk(node)):
+            raise InputError('Prerequisite cannot add an always-true helper stub')
         added.add(node.name)
 
 
@@ -133,7 +136,8 @@ def draft_prerequisite_plan(root, inventory, context, proposal, *, host_policy,
         entry = safe_child(root, case['entry'])
         if (case['entry'] in names or not entry.is_file()
                 or inventory_files.get(case['entry']) != case['entry_sha256']
-                or file_hash(entry) != case['entry_sha256']):
+                or file_hash(entry) != case['entry_sha256']
+                or stat.S_IMODE(entry.stat().st_mode) != case['entry_mode']):
             raise InputError('Prerequisite validation entry differs from reviewed snapshot')
         try:
             _observation(canonical(case['observation']) + b'\n')
@@ -426,6 +430,8 @@ def inspect_prerequisite_postconditions(root, recovery_bundle, approved_digest, 
                 or reviewed['entry'] != case['entry']
                 or reviewed['entry_sha256'] != expected['entry_sha256']
                 or reviewed['observation'] != expected['observation']
+                or len([item for item in spec['files'] if item['path'] == case['entry']
+                        and item['mode'] == reviewed['entry_mode']]) != 1
                 or len([item for item in spec['files'] if item['path'] == case['entry']
                         and item['sha256'] == expected['entry_sha256']]) != 1
                 or execution['outcome'] != 'exited_zero'

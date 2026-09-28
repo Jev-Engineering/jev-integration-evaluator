@@ -58,7 +58,8 @@ print(json.dumps({'reached':True,'result':f'{first}-{second}',
                    'state':{'count':2},'assessments':0,'dependency_origin':'none'}
     validation = {'schema_version':'1.0','kind':'prerequisite-validation-v1',
                   'cases':[{'case_id':'helper-check','entry':'entry.py',
-                            'entry_sha256':_sha(entry),'observation':observation}]}
+                            'entry_sha256':_sha(entry),'entry_mode':0o644,
+                            'observation':observation}]}
     request = {'context':context,'policy_sha256':digest(policy),'allowed_files':scope,
                'authority':{'mutation':False,'execution':False,'egress':False}}
     changes = [{'file':name,'old_sha256':_sha(raw),
