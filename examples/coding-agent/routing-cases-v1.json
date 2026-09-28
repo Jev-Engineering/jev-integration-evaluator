@@ -1,0 +1,274 @@
+{
+  "schema_version": "coding-agent-routing-cases-v1",
+  "cases": [
+    {
+      "id": "c01",
+      "split": "calibration",
+      "objective": "Read a source file",
+      "arguments": {
+        "path": "src/a.py"
+      },
+      "permissions": [
+        "read"
+      ],
+      "registered": [
+        "read_file",
+        "search_repo",
+        "write_file"
+      ]
+    },
+    {
+      "id": "c02",
+      "split": "calibration",
+      "objective": "Find a function in the repository",
+      "arguments": {
+        "query": "dispatch"
+      },
+      "permissions": [
+        "search"
+      ],
+      "registered": [
+        "read_file",
+        "search_repo"
+      ]
+    },
+    {
+      "id": "c03",
+      "split": "calibration",
+      "objective": "Write a file",
+      "arguments": {
+        "path": "out/a.txt",
+        "content": "ok"
+      },
+      "permissions": [
+        "write"
+      ],
+      "registered": [
+        "write_file"
+      ]
+    },
+    {
+      "id": "c04",
+      "split": "calibration",
+      "objective": "Read or search for a source file",
+      "arguments": {
+        "path": "src/a.py"
+      },
+      "permissions": [
+        "read",
+        "search"
+      ],
+      "registered": [
+        "read_file",
+        "search_repo"
+      ]
+    },
+    {
+      "id": "c05",
+      "split": "calibration",
+      "objective": "Read a source file",
+      "arguments": {
+        "path": "src/a.py"
+      },
+      "permissions": [],
+      "registered": [
+        "read_file"
+      ]
+    },
+    {
+      "id": "c06",
+      "split": "calibration",
+      "objective": "Delete the repository",
+      "arguments": {
+        "path": "src/a.py"
+      },
+      "permissions": [
+        "write"
+      ],
+      "registered": [
+        "read_file",
+        "write_file"
+      ]
+    },
+    {
+      "id": "h01",
+      "split": "holdout",
+      "objective": "Inspect the contents of a source file",
+      "arguments": {
+        "path": "src/b.py"
+      },
+      "permissions": [
+        "read"
+      ],
+      "registered": [
+        "read_file",
+        "search_repo",
+        "write_file"
+      ]
+    },
+    {
+      "id": "h02",
+      "split": "holdout",
+      "objective": "Locate occurrences of a symbol",
+      "arguments": {
+        "query": "dispatch_once"
+      },
+      "permissions": [
+        "search"
+      ],
+      "registered": [
+        "read_file",
+        "search_repo"
+      ]
+    },
+    {
+      "id": "h03",
+      "split": "holdout",
+      "objective": "Save revised content to a file",
+      "arguments": {
+        "path": "out/b.txt",
+        "content": "revision"
+      },
+      "permissions": [
+        "write"
+      ],
+      "registered": [
+        "read_file",
+        "write_file"
+      ]
+    },
+    {
+      "id": "h04",
+      "split": "holdout",
+      "objective": "Read the selected file",
+      "arguments": {
+        "path": "src/c.py"
+      },
+      "permissions": [
+        "read"
+      ],
+      "registered": [
+        "read_file",
+        "search_repo"
+      ]
+    },
+    {
+      "id": "h05",
+      "split": "holdout",
+      "objective": "Search for a class definition",
+      "arguments": {
+        "query": "Router"
+      },
+      "permissions": [
+        "search"
+      ],
+      "registered": [
+        "read_file",
+        "search_repo"
+      ]
+    },
+    {
+      "id": "h06",
+      "split": "holdout",
+      "objective": "Write a generated note",
+      "arguments": {
+        "path": "out/note.txt",
+        "content": "note"
+      },
+      "permissions": [
+        "write"
+      ],
+      "registered": [
+        "write_file",
+        "search_repo"
+      ]
+    },
+    {
+      "id": "h07",
+      "split": "holdout",
+      "objective": "Inspect or search source",
+      "arguments": {
+        "path": "src/d.py"
+      },
+      "permissions": [
+        "read",
+        "search"
+      ],
+      "registered": [
+        "read_file",
+        "search_repo"
+      ]
+    },
+    {
+      "id": "h08",
+      "split": "holdout",
+      "objective": "Read a private source file",
+      "arguments": {
+        "path": "private/a.py"
+      },
+      "permissions": [],
+      "registered": [
+        "read_file"
+      ]
+    },
+    {
+      "id": "h09",
+      "split": "holdout",
+      "objective": "Delete all source files",
+      "arguments": {
+        "path": "src"
+      },
+      "permissions": [
+        "write"
+      ],
+      "registered": [
+        "read_file",
+        "write_file"
+      ]
+    },
+    {
+      "id": "h10",
+      "split": "holdout",
+      "objective": "Inspect a source file",
+      "arguments": {
+        "path": 17
+      },
+      "permissions": [
+        "read"
+      ],
+      "registered": [
+        "read_file"
+      ]
+    },
+    {
+      "id": "h11",
+      "split": "holdout",
+      "objective": "Locate references",
+      "arguments": {
+        "query": "Agent"
+      },
+      "permissions": [
+        "search"
+      ],
+      "registered": [
+        "read_file",
+        "search_repo"
+      ]
+    },
+    {
+      "id": "h12",
+      "split": "holdout",
+      "objective": "Read the config file",
+      "arguments": {
+        "path": "config.json"
+      },
+      "permissions": [
+        "read"
+      ],
+      "registered": [
+        "read_file",
+        "search_repo"
+      ]
+    }
+  ]
+}
