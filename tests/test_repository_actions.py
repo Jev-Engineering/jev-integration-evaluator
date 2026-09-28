@@ -15,6 +15,9 @@ from jev_integration_evaluator import capabilities as cap
 from jev_integration_evaluator.config import DEFAULT
 from jev_integration_evaluator.nomination_inventory import discover_repository_capabilities
 from jev_integration_evaluator.repository_conclusion import coverage_review_schedule
+from jev_integration_evaluator.integrations import lifecycle as engine
+from jev_integration_evaluator.integrations.errors import MissingBinding, UnsupportedShape
+from jev_integration_evaluator.io import InputError
 from scripts.implementation_fixtures import fixture
 
 
@@ -117,6 +120,73 @@ def test_bound_response_rejects_replay_to_another_run(tmp_path):
     assert verified["status"] == "verified"
 
 
+def test_bound_response_completed_plan_is_adopted_after_interruption(tmp_path, monkeypatch):
+    if os.name != "posix":
+        pytest.skip("repository sessions require a POSIX secure filesystem")
+    target = tmp_path / "target"
+    inventory, spec = fixture(target, "C")
+    context = run.request_context(adapter=run.BOUND_ADAPTER)
+    session = tmp_path / "session"
+    initial = run.run_repository(target, session, context=context)
+    prepared = dict(schema_version="1.0", adapter=run.BOUND_ADAPTER,
+                    request_sha256=initial["agent_request_sha256"], inventory=inventory, spec=spec)
+    scope = dict(schema_version="1.0", kind="repository-run-scope-v1",
+                 reference="synthetic-reviewed-preparation", repository_identity=initial["repository_identity"],
+                 context_sha256=initial["context_sha256"], bundle_digest=None,
+                 trusted_session_head=initial["session_head_sha256"], trusted_baseline_receipt=None,
+                 trusted_modified_receipt=None, rollback_digest=None,
+                 execution_environment="trusted_host", grants={**run.ZERO_GRANTS, "prepare": True})
+    original = engine.plan_implementation
+
+    def finish_then_interrupt(*args, **kwargs):
+        original(*args, **kwargs)
+        raise KeyboardInterrupt()
+
+    monkeypatch.setattr(engine, "plan_implementation", finish_then_interrupt)
+    with pytest.raises(KeyboardInterrupt):
+        run.run_repository(target, session, prepared=prepared, scope=scope)
+    monkeypatch.setattr(engine, "plan_implementation",
+                        lambda *args, **kwargs: pytest.fail("completed v2 plan was repeated"))
+    pending = json.loads((session / "journal.jsonl").read_text().splitlines()[-1])
+    assert pending["state"]["pending"]["operation"] == "plan"
+    resumed = run.run_repository(target, session, scope={
+        **scope, "trusted_session_head": pending["record_sha256"]})
+    assert resumed["status"] == "missing_scope"
+    assert resumed["stage"] == "planned"
+    assert resumed["attempts"]["plan"] == 1
+
+
+@pytest.mark.parametrize("error,status,action,history_code", [
+    (MissingBinding("synthetic missing binding"), "missing_prerequisite", "supply_missing_host_binding", "missing_host_binding"),
+    (UnsupportedShape("synthetic unsupported shape"), "unsupported", "select_supported_source_shape", "unsupported_source_shape"),
+    (OSError("synthetic host prerequisite"), "missing_prerequisite", "resolve_host_prerequisite", "host_prerequisite_unavailable"),
+    (InputError("synthetic invalid review"), "insufficient_evidence", "review_invalid_preparation_inputs", "planning_input_invalid"),
+])
+def test_planning_outcomes_are_distinct_and_retain_failure(tmp_path, monkeypatch,
+                                                            error, status, action, history_code):
+    if os.name != "posix":
+        pytest.skip("repository sessions require a POSIX secure filesystem")
+    target = tmp_path / "target"
+    inventory, spec = fixture(target, "C")
+    context = run.request_context()
+    inspection = run.inspect_repository(target, context=context)
+    scope = dict(schema_version="1.0", kind="repository-run-scope-v1",
+                 reference="synthetic-reviewed-preparation", repository_identity=inspection["report"]["repository_identity"],
+                 context_sha256=inspection["context_sha256"], bundle_digest=None,
+                 trusted_session_head=None, trusted_baseline_receipt=None,
+                 trusted_modified_receipt=None, rollback_digest=None,
+                 execution_environment="trusted_host", grants={**run.ZERO_GRANTS, "prepare": True})
+    monkeypatch.setattr(engine, "plan_implementation", lambda *args, **kwargs: (_ for _ in ()).throw(error))
+    result = run.run_repository(target, tmp_path / "session", context=context,
+                                prepared={"schema_version": "1.0", "adapter": run.ADAPTER,
+                                          "inventory": inventory, "spec": spec}, scope=scope)
+    assert result["status"] == status
+    assert result["next_action_contract"]["code"] == action
+    record = json.loads((tmp_path / "session" / "journal.jsonl").read_text().splitlines()[-1])
+    assert record["state"]["failures"][-1]["code"] == history_code
+    assert result["attempts"]["plan"] == 1
+
+
 def test_read_only_reviewed_negative_requires_fresh_anchored_complete_review(tmp_path, capsys):
     if os.name != "posix":
         pytest.skip("repository discovery requires a POSIX secure filesystem")
@@ -159,3 +229,42 @@ def test_read_only_reviewed_negative_requires_fresh_anchored_complete_review(tmp
     with pytest.raises(CapabilityError, match="stale_or_tampered_capability_report"):
         run.inspect_repository(target, context=context, capabilities=report, coverage_review=review,
                                review_sha256=cap._digest(review))
+
+
+def test_ambiguous_unsupported_conclusion_is_not_claimed_as_proven_unsupported(tmp_path, capsys):
+    if os.name != "posix":
+        pytest.skip("repository discovery requires a POSIX secure filesystem")
+    target = tmp_path / "target"
+    target.mkdir()
+    (target / "opaque.py").write_text("async def z9(q):\n    return await q()\n")
+    report = discover_repository_capabilities(target, copy.deepcopy(DEFAULT))
+    context = run.request_context(policy=cap.DiscoveryPolicy.from_json(report["policy"]))
+    schedule = coverage_review_schedule(report, copy.deepcopy(DEFAULT))
+    opinion = {p: {"disposition": "not_useful", "reason": "No justified semantic placement in this fixture."}
+               for p in "ABCDEFGHIJKLM"}
+    review = {
+        "schema_version": "1.0", "contract": "repository-coverage-review-v1",
+        **{key: schedule[key] for key in ("report_sha256", "conclusion_engine_sha256",
+                                          "settings_sha256", "objective_sha256")},
+        "reviewer": "synthetic-fixture-reviewer",
+        "files": [{**row, "patterns": copy.deepcopy(opinion)} for row in schedule["files"]],
+        "seams": [{**row, "patterns": copy.deepcopy(opinion)} for row in schedule["seams"]],
+    }
+    review["files"][0]["patterns"]["C"]["disposition"] = "potentially_useful"
+    review["seams"][0]["patterns"]["C"]["disposition"] = "potentially_useful"
+    for name, value in (("context", context), ("capabilities", report), ("coverage-review", review)):
+        (tmp_path / f"{name}.json").write_text(json.dumps(value))
+    assert run.main([str(target), "--context", str(tmp_path / "context.json"),
+                     "--capabilities", str(tmp_path / "capabilities.json"),
+                     "--coverage-review", str(tmp_path / "coverage-review.json"),
+                     "--review-sha256", cap._digest(review)]) == 0
+    result = json.loads(capsys.readouterr().out)
+    assert result["status"] == "insufficient_evidence"
+    assert result["conclusion"]["outcome"] == "unsupported_or_unresolved"
+    assert result["review_principal_authenticated"] is False
+    review["seams"][0]["patterns"]["C"]["disposition"] = "unresolved"
+    review["files"][0]["patterns"]["C"]["disposition"] = "unresolved"
+    incomplete = run.inspect_repository(target, context=context, capabilities=report,
+                                        coverage_review=review, review_sha256=cap._digest(review))
+    assert incomplete["status"] == "insufficient_evidence"
+    assert incomplete["conclusion"]["coverage"]["unresolved_pattern_reviews"] == 2

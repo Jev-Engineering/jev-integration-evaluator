@@ -58,6 +58,20 @@ bundles. Both adapters still undergo the existing source, semantic and recipe
 checks before planning. A schema-valid response cannot grant execution, egress,
 installation, publication or activation.
 
+Preparation failures are classified from explicit engine error types:
+`MissingBinding` or an unavailable host prerequisite yields
+`missing_prerequisite`; `UnsupportedShape` yields `unsupported`; other invalid
+planning input yields `insufficient_evidence`. Each attempted plan keeps a
+distinct failure code in the journal. A repository conclusion's current
+`unsupported_or_unresolved` finding does not distinguish a proven unsupported
+shape from an unestablished preflight, so the command conservatively surfaces
+`insufficient_evidence` for that finding. A future explicit `unsupported`
+support code would surface `unsupported` only with complete anchored review.
+Unresolved or unanchored opinions also remain `insufficient_evidence`. The underlying
+conclusion is included unchanged, and a reviewed negative explicitly reports
+`review_principal_authenticated: false` at both levels. These labels do not
+authenticate a reviewer or authorize a retry, effect, or deployment.
+
 The same command accepts a caller-selected private session directory outside the
 target, an optional context, recorded reviewed inputs, and a separate scope:
 
@@ -78,8 +92,9 @@ reference are not authorization. Keep secrets out of inputs: use credential
 references, not credentials. The caller-controlled session parent must not be
 writable by an untrusted target or another untrusted principal.
 
-Recorded responses have exactly `schema_version`, `adapter`, `inventory`, and
-`spec` fields. The existing deterministic implementation-spec, inventory, recipe,
+V1 recorded responses have exactly `schema_version`, `adapter`, `inventory`, and
+`spec` fields; V2 additionally requires the exact `request_sha256`. The existing
+deterministic implementation-spec, inventory, recipe,
 source, finite-label, runtime-off, and observation validators retain authority.
 The adapter does not evaluate Python, commands, module identifiers or expressions
 from a response. It does not implement autonomous review or draft policy and
@@ -106,7 +121,17 @@ still does not gain authority from a success-shaped file inside that bundle.
 continuations use the same command and preserve the context when it is omitted.
 A changed supplied objective, answer, bound, adapter or scan policy is rejected,
 not silently substituted. To change the review context or accepted source, use a
-new reviewed run; automated semantic replanning is not implemented here.
+new reviewed run. `--replan` accepts a changed, separately reviewed prepared
+response only before any baseline, apply, modified-verification or rollback
+attempt. It requires a fresh exact-head preparation scope, retains the prior
+decision and bundle in append-only history, and uses a distinct private output
+directory. Plan attempts remain under `max_attempts`; the maximum number of
+in-run replans is one less than that bound. Interrupted replans reconcile a
+finished engine plan without repeating it; incomplete private output is kept
+and needs explicit bounded retry. Replanning after an effect attempt, while an
+effect is pending, after cancellation, or after source/context drift is refused.
+No prior bundle grant authorizes a new bundle. This is caller-reviewed replanning,
+not automatic semantic drafting or a model-issued approval.
 
 ## Authorization and receipts
 

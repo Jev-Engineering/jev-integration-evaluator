@@ -28,6 +28,7 @@ from . import capabilities as cap
 from .integrations import lifecycle as engine
 from .integrations.contracts import validate_spec, validate_inventory
 from .integrations.verification import verify_implementation
+from .integrations.errors import MissingBinding, UnsupportedShape
 from .io import InputError, digest as engine_digest, read_json
 from .repository_actions import next_action_contract
 from .repository_conclusion import conclude_repository, DEFAULT_OBJECTIVE
@@ -131,25 +132,39 @@ def inspect_repository(repo: str | Path, *, context: dict | None = None,
             review=coverage_review, expected_review_sha256=review_sha256,
             policy=cap.DiscoveryPolicy.from_json(context["policy"]))
         if conclusion["outcome"] == "no_useful_placement":
+            status = "no_useful_placement"
             action = "no_further_placement_action"
+        elif conclusion["outcome"] == "unsupported_or_unresolved":
+            status = ("unsupported" if conclusion["coverage"]["complete_anchored_review"]
+                      and conclusion["findings"]
+                      and all(row["implementation_support"] == "unsupported"
+                              for row in conclusion["findings"])
+                      else "insufficient_evidence")
+            action = ("review_unsupported_source_shape" if status == "unsupported"
+                      else "review_repository_conclusion_and_missing_opinions")
         else:
+            status = conclusion["outcome"]
             action = "review_repository_conclusion_and_missing_opinions"
         return dict(schema_version="1.0", kind="repository-run-inspection-v1",
-                    status=conclusion["outcome"], context_sha256=cap._digest(context),
+                    status=status, context_sha256=cap._digest(context),
                     report=report, conclusion=conclusion, next_action=action,
                     next_action_contract=next_action_contract(action),
                     agent_request=None,
                     agent_request_sha256=None,
+                    review_principal_authenticated=False,
                     target_executed=False, target_modified=False,
                     runtime_activation_authorized=False, benefit_demonstrated=False)
-    action = ("resolve_scan_coverage_before_implementation"
-              if not report["coverage"]["complete_within_policy"]
-              else "supply_source_reviewed_inputs")
+    if not report["coverage"]["complete_within_policy"]:
+        status, action = "incomplete_analysis", "resolve_scan_coverage_before_implementation"
+    elif report["discovery_outcome"] == "unsupported_or_unresolved":
+        status, action = "insufficient_evidence", "review_repository_conclusion_and_missing_opinions"
+    else:
+        status, action = report["discovery_outcome"], "supply_source_reviewed_inputs"
     agent_request = (_agent_request(None, report["repository_identity"],
                      report["report_sha256"], context, _file_map(report))
                      if action == "supply_source_reviewed_inputs" else None)
     return dict(schema_version="1.0", kind="repository-run-inspection-v1",
-                status=report["discovery_outcome"], context_sha256=cap._digest(context),
+                status=status, context_sha256=cap._digest(context),
                 report=report, next_action=action,
                 next_action_contract=next_action_contract(action),
                 agent_request=agent_request,
@@ -223,6 +238,10 @@ def _validate_state(state: dict) -> None:
     _validate_context(state["context"])
     if len(state["failures"]) > sum(state["attempts"].values()):
         raise SessionError("invalid_session_failure_history")
+    if state.get("decision_epoch", 0) != len(state.get("replan_history", [])):
+        raise SessionError("invalid_replan_history")
+    if len(state.get("replan_history", [])) > state["context"]["bounds"]["max_attempts"] - 1:
+        raise SessionError("invalid_replan_history")
 
 
 class Journal:
@@ -415,6 +434,9 @@ def _summary(journal: Journal, status: str, next_action: str, **extra: Any) -> d
                 receipt_references=copy.deepcopy(state["receipts"]), attempts=copy.deepcopy(state["attempts"]),
                 failed_attempts=len(state["failures"]),
                 retained_schedules=copy.deepcopy(state["receipt_history"]), constraints_retained=True,
+                decision_epoch=state.get("decision_epoch", 0),
+                replan_history=copy.deepcopy(state.get("replan_history", [])),
+                replan_limit=state["context"]["bounds"]["max_attempts"] - 1,
                 snapshot_scope="bounded_source_and_configuration_not_full_repository",
                 classification="synthetic_wiring_only", runtime_activation_authorized=False,
                 benefit_demonstrated=False, provider_connectivity="not_tested", **extra)
@@ -546,7 +568,13 @@ def _reconcile(journal: Journal, root: Path, scope: dict | None) -> bool:
         try:
             prepared_bundle = Path(state["planned_output"])
             _, _, plan, spec, inventory, _ = engine._load(root, prepared_bundle, current_engine=True)
-            expected = dict(schema_version="1.0", adapter=ADAPTER, inventory=inventory, spec=spec)
+            adapter = state["context"]["adapter"]
+            expected = dict(schema_version="1.0", adapter=adapter, inventory=inventory, spec=spec)
+            if adapter == BOUND_ADAPTER:
+                request = _agent_request(state["run_id"], state["repository_identity"],
+                                         state["initial_report_sha256"], state["context"],
+                                         state["source_files"])
+                expected["request_sha256"] = cap._digest(request)
             if cap._digest(expected) != state["prepared_sha256"]:
                 return False
             events = engine._journal(prepared_bundle, plan)
@@ -601,15 +629,18 @@ def _reconcile(journal: Journal, root: Path, scope: dict | None) -> bool:
 def run_repository(repo: str | Path, session: str | Path, *, context: dict | None = None,
                    prepared: dict | None = None, bundle: str | Path | None = None,
                    scope: dict | None = None, cancel: bool = False, retry: bool = False,
-                   recover: bool = False, stop_after: str | None = None) -> dict:
+                   recover: bool = False, replan: bool = False,
+                   stop_after: str | None = None) -> dict:
     """Connect planning, baseline, apply, verification, status and owned rollback.
 
     A supplied context must exactly match an existing run. Omitting it reuses the
     saved answers and constraints; it never clears them. A fresh scope is checked
     for every invocation. A stored grant is provenance, not reusable authority.
     """
-    if any(type(value) is not bool for value in (cancel, retry, recover)):
+    if any(type(value) is not bool for value in (cancel, retry, recover, replan)):
         raise SessionError("invalid_control_flag")
+    if replan and (cancel or recover or bundle is not None or retry):
+        raise SessionError("incompatible_replan_control")
     if stop_after is not None and stop_after not in OPERATIONS:
         raise SessionError("invalid_stop_stage")
     root, fd, _ = cap._secure_root(repo)
@@ -627,7 +658,8 @@ def run_repository(repo: str | Path, session: str | Path, *, context: dict | Non
                          initial_report_sha256=report["report_sha256"], stage="prepared", pending=None,
                          bundle=None, planned_output=None, prepared_sha256=None, receipts=dict(baseline=None, modified=None),
                          attempts={op: 0 for op in OPERATIONS}, failures=[], receipt_history=[],
-                         authorization_references=[], cancelled=False)
+                         authorization_references=[], cancelled=False,
+                         decision_epoch=0, replan_history=[])
             checked_scope = _scope(scope, state, None, False)
             journal.append(state, "run_created")
             if not report["coverage"]["complete_within_policy"]:
@@ -660,6 +692,32 @@ def run_repository(repo: str | Path, session: str | Path, *, context: dict | Non
             return _summary(journal, "cancelled", "retain_owned_bundle_for_explicit_recovery")
         if journal.state["cancelled"] and not recover:
             return _summary(journal, "cancelled", "retain_owned_bundle_for_explicit_recovery")
+        if replan:
+            state = copy.deepcopy(journal.state)
+            if (not existing or proposal is None or state["prepared_sha256"] is None
+                    or cap._digest(proposal) == state["prepared_sha256"]):
+                raise SessionError("replan_requires_changed_reviewed_response")
+            if (state["pending"] is not None or state["cancelled"]
+                    or any(state["attempts"][op] for op in ("baseline", "apply", "modified", "rollback"))
+                    or any(state["receipts"].values())):
+                raise SessionError("replan_after_effect_forbidden")
+            if (not _allowed(checked_scope, "plan", state)
+                    or state["attempts"]["plan"] >= state["context"]["bounds"]["max_attempts"]
+                    or len(state.get("replan_history", [])) >= state["context"]["bounds"]["max_attempts"] - 1):
+                raise SessionError("replan_scope_or_limit_unavailable")
+            _snapshot(root, state, None, applied=False)
+            try:
+                validate_inventory(root, proposal["inventory"], proposal["spec"])
+            except (InputError, KeyError, TypeError, ValueError, OSError):
+                raise SessionError("replan_review_or_source_invalid") from None
+            state.setdefault("replan_history", []).append(dict(
+                epoch=state.get("decision_epoch", 0), stage=state["stage"],
+                prepared_sha256=state["prepared_sha256"],
+                planned_output=state["planned_output"], bundle=copy.deepcopy(state["bundle"]),
+                scope_reference=checked_scope["reference"], scope_sha256=cap._digest(checked_scope)))
+            state["decision_epoch"] = state.get("decision_epoch", 0) + 1
+            state["stage"], state["bundle"], state["planned_output"], state["prepared_sha256"] = "prepared", None, None, None
+            journal.append(state, "reviewed_pre_effect_replan_requested")
         if journal.state["pending"] and not recover:
             if not _reconcile(journal, root, checked_scope):
                 if (journal.state["pending"]["operation"] == "plan" and retry and proposal is not None
@@ -708,9 +766,18 @@ def run_repository(repo: str | Path, session: str | Path, *, context: dict | Non
             state = _begin(journal, "plan", checked_scope)
             try:
                 result = engine.plan_implementation(root, proposal["inventory"], proposal["spec"]["candidate_id"], proposal["spec"], out)
-            except (InputError, OSError, ValueError, KeyError, TypeError):
-                _complete(journal, state, "plan", "plan_failed", "planning_failed_no_target_mutation")
-                return _summary(journal, "unsupported_or_missing_prerequisite", "review_prepared_bindings_and_source_shape")
+            except MissingBinding:
+                _complete(journal, state, "plan", "plan_failed", "missing_host_binding")
+                return _summary(journal, "missing_prerequisite", "supply_missing_host_binding")
+            except UnsupportedShape:
+                _complete(journal, state, "plan", "plan_failed", "unsupported_source_shape")
+                return _summary(journal, "unsupported", "select_supported_source_shape")
+            except OSError:
+                _complete(journal, state, "plan", "plan_failed", "host_prerequisite_unavailable")
+                return _summary(journal, "missing_prerequisite", "resolve_host_prerequisite")
+            except (InputError, ValueError, KeyError, TypeError):
+                _complete(journal, state, "plan", "plan_failed", "planning_input_invalid")
+                return _summary(journal, "insufficient_evidence", "review_invalid_preparation_inputs")
             state["bundle"] = dict(path=str(out), digest=result["bundle_digest"])
             _complete(journal, state, "plan", "planned")
             if stop_after == "plan":
@@ -821,12 +888,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--cancel", action="store_true")
     parser.add_argument("--retry", action="store_true")
     parser.add_argument("--recover", action="store_true")
+    parser.add_argument("--replan", action="store_true")
     parser.add_argument("--stop-after", choices=OPERATIONS)
     args = parser.parse_args(argv)
     try:
         context = _external(args.context, args.repo) if args.context else None
         if args.session is None:
-            if any((args.prepared, args.bundle, args.scope, args.cancel, args.retry, args.recover, args.stop_after)):
+            if any((args.prepared, args.bundle, args.scope, args.cancel, args.retry, args.recover, args.replan, args.stop_after)):
                 raise SessionError("explicit_external_session_required")
             result = inspect_repository(args.repo, context=context,
                 capabilities=_external(args.capabilities, args.repo) if args.capabilities else None,
@@ -839,7 +907,8 @@ def main(argv: list[str] | None = None) -> int:
             result = run_repository(args.repo, args.session, context=context,
                 prepared=_external(args.prepared, args.repo) if args.prepared else None,
                 bundle=args.bundle, scope=_external(args.scope, args.repo) if args.scope else None,
-                cancel=args.cancel, retry=args.retry, recover=args.recover, stop_after=args.stop_after)
+                cancel=args.cancel, retry=args.retry, recover=args.recover,
+                replan=args.replan, stop_after=args.stop_after)
         print(json.dumps(result, ensure_ascii=True, allow_nan=False))
         return 3 if result["status"] in ("verification_failed", "blocked_recovery") else 0
     except SessionError as exc:
