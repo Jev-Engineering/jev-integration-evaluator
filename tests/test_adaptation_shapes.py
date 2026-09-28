@@ -196,3 +196,11 @@ def test_reviewed_preparation_rechecks_complete_snapshot_and_review(tmp_path):
     request['inventory_sha256'] = digest(inventory)
     with pytest.raises(InputError, match='review'):
         prepare_reviewed_shape(tmp_path, inventory, request)
+    inventory['candidates'][0]['semantic_review']['approved'] = True
+    adapter_path.write_bytes(b'def unrelated(original, request):\n    return original(request)\n')
+    changed_adapter_sha = hashlib.sha256(adapter_path.read_bytes()).hexdigest()
+    inventory['files'][1]['sha256'] = changed_adapter_sha
+    request['binding_review']['adapter_sha256'] = changed_adapter_sha
+    request['inventory_sha256'] = digest(inventory)
+    with pytest.raises(UnsupportedShape, match='callback'):
+        prepare_reviewed_shape(tmp_path, inventory, request)

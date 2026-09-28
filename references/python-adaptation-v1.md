@@ -21,8 +21,11 @@ source edit and its hash without writing or importing target code. The
 `adaptation-request-v1` schema is mirrored under `schemas/` and packaged data.
 The current preparatory path requires one existing unambiguous static import of
 the flat `adapter_name.py` module. The adapter file must be scanned and its
-exact bytes named in the binding review. The caller must independently review
-that code before any apply operation.
+exact bytes named in the binding review. The selected `invoke` or
+`invoke_async` callback must exist as one undecorated, correctly typed
+two-argument function; missing, ambiguous and obvious placeholder callbacks
+fail preparation. The caller must independently review the callback's policy
+and effects before any apply operation.
 An adapter hash in an untrusted request is not an approval.
 The inventory and review digests must be retained and authenticated outside
 the target and private preparation directory; locally matching JSON files

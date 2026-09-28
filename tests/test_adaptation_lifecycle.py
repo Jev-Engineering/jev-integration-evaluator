@@ -131,3 +131,14 @@ def test_adapter_drift_blocks_apply_and_source_drift_blocks_rollback(tmp_path, m
     assert life.adaptation_status(root, bundle)['status'] == 'blocked_recovery'
     with pytest.raises(InputError, match='changed owned'):
         life.rollback_adaptation(root, bundle, plan['contract_digest'])
+
+
+def test_old_engine_bundle_allows_inspection_and_exact_rollback_only(tmp_path, monkeypatch):
+    root, bundle, plan, oracle, adapter_sha = _fixture(tmp_path)
+    monkeypatch.setattr(life, 'engine_identity', lambda: '0'*64)
+    assert life.adaptation_status(root, bundle)['status'] == 'planned'
+    with pytest.raises(InputError, match='identity'):
+        life.apply_adaptation(root, bundle, plan['contract_digest'], baseline_spec={},
+            baseline_receipt={}, baseline_outputs={}, oracle=oracle,
+            trusted_oracle_sha256='0'*64, trusted_baseline_receipt_sha256='1'*64)
+    assert life.rollback_adaptation(root, bundle, plan['contract_digest'])['status'] == 'rolled_back'

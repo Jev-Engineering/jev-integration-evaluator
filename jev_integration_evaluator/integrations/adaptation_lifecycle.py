@@ -34,7 +34,7 @@ def _check_native(spec, root, row, adapter_file, adapter_sha):
     _proof_file(spec, adapter_file, adapter_sha)
 
 
-def _load(root, bundle):
+def _load(root, bundle, *, current_engine=False):
     root, bundle = Path(root).resolve(strict=True), _bundle_dir(bundle)
     if bundle == root or bundle.is_relative_to(root):
         raise InputError('Adaptation bundle must remain outside target')
@@ -50,7 +50,7 @@ def _load(root, bundle):
                              'adapter_file', 'adapter_sha256', 'contract_digest'}
             or digest({k:v for k,v in plan.items() if k != 'contract_digest'}) != plan['contract_digest']
             or plan['root_identity'] != _root_identity(root)
-            or plan['engine_identity'] != engine_identity()
+            or (current_engine and plan['engine_identity'] != engine_identity())
             or plan['request_sha256'] != digest(request)
             or plan['inventory_sha256'] != digest(inventory)
             or plan['patch_sha256'] != digest(patch)
@@ -131,7 +131,7 @@ def plan_adaptation(root, inventory, request, bundle):
 def apply_adaptation(root, bundle, approved_plan_sha256, *, baseline_spec, baseline_receipt,
                      baseline_outputs, oracle, trusted_oracle_sha256,
                      trusted_baseline_receipt_sha256):
-    root, bundle, plan, patch, request, _ = _load(root, bundle)
+    root, bundle, plan, patch, request, _ = _load(root, bundle, current_engine=True)
     if approved_plan_sha256 != plan['contract_digest']:
         raise InputError('Externally approved exact adaptation plan digest required')
     with _lock(bundle):
@@ -155,9 +155,12 @@ def apply_adaptation(root, bundle, approved_plan_sha256, *, baseline_spec, basel
         if not report['postconditions_satisfied'] or baseline_receipt['exited_zero'] != baseline_receipt['scheduled']:
             raise InputError('Independent native baseline postconditions failed')
         _record(bundle, plan, 'apply_started', row['file'])
+        def progress(event, change):
+            if event == 'write_completed':
+                _sync_dir(safe_child(root, change['file']).parent)
+            _record(bundle, plan, 'apply_' + event, change['file'])
         try:
-            apply_patch_plan(root, patch, patch['plan_digest'],
-                             progress=lambda event, change: _record(bundle, plan, 'apply_' + event, change['file']))
+            apply_patch_plan(root, patch, patch['plan_digest'], progress=progress)
         except Exception:
             _record(bundle, plan, 'apply_failed_recovery_required', row['file'])
             raise
@@ -171,7 +174,7 @@ def verify_adaptation(root, bundle, *, baseline_spec, baseline_receipt, baseline
                       modified_spec, modified_receipt, modified_outputs, oracle,
                       trusted_oracle_sha256, trusted_baseline_receipt_sha256,
                       trusted_modified_receipt_sha256):
-    root, bundle, plan, _, _, _ = _load(root, bundle)
+    root, bundle, plan, _, _, _ = _load(root, bundle, current_engine=True)
     with _lock(bundle):
         events = [row['event'] for row in _journal(bundle, plan)]
         row = plan['owned_file']
@@ -231,8 +234,11 @@ def rollback_adaptation(root, bundle, approved_plan_sha256):
         preimage = safe_child(bundle, 'preimage.utf8').read_bytes().decode('utf-8')
         reverse = make_patch_plan(root, [{'file': row['file'], 'new_content': preimage}], [request['candidate_id']])
         _record(bundle, plan, 'rollback_started', row['file'])
-        apply_patch_plan(root, reverse, reverse['plan_digest'],
-                         progress=lambda event, change: _record(bundle, plan, 'rollback_' + event, change['file']))
+        def progress(event, change):
+            if event == 'write_completed':
+                _sync_dir(safe_child(root, change['file']).parent)
+            _record(bundle, plan, 'rollback_' + event, change['file'])
+        apply_patch_plan(root, reverse, reverse['plan_digest'], progress=progress)
         if _inspect_file(root, row) != 'baseline':
             raise InputError('Rollback did not restore owned source')
         _record(bundle, plan, 'rolled_back', row['file'])

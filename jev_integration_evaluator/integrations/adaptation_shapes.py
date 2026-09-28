@@ -243,6 +243,24 @@ def prepare_reviewed_shape(root: Path, inventory: dict, request: dict) -> dict:
                and node.names[0].asname is None]
     if len(imports) != 1 or len(_module_bindings(tree).get(request['adapter_name'], [])) != 1:
         raise UnsupportedShape('Adapter must be one unambiguous existing static module import')
+    adapter_path = safe_child(root, binding['adapter_file'])
+    try:
+        adapter_tree = ast.parse(adapter_path.read_bytes().decode('utf-8'))
+    except (UnicodeError, SyntaxError):
+        raise UnsupportedShape('Reviewed adapter is not valid UTF-8 Python') from None
+    callback_name = 'invoke_async' if request['strategy']['shape'] == 'async-module-tail-call-v1' else 'invoke'
+    callback_type = ast.AsyncFunctionDef if callback_name == 'invoke_async' else ast.FunctionDef
+    if len(_module_bindings(adapter_tree).get(callback_name, [])) != 1:
+        raise UnsupportedShape('Missing or ambiguous reviewed adapter callback')
+    callback = _unique(adapter_tree.body, callback_name, callback_type)
+    _simple_args(callback, 2)
+    if (not callback.body or all(isinstance(n, ast.Pass) or
+            (isinstance(n, ast.Expr) and isinstance(n.value, ast.Constant) and n.value.value is Ellipsis)
+            for n in callback.body) or
+            (len(callback.body) == 1 and isinstance(callback.body[0], ast.Return)
+             and isinstance(callback.body[0].value, ast.Constant)
+             and callback.body[0].value.value in (None, True, False))):
+        raise UnsupportedShape('Placeholder or constant adapter callback is unsupported')
     proposal = prepare_shape(path.read_bytes(), shape=request['strategy']['shape'],
                              symbol=source['symbol'], source_sha256=source['file_sha256'],
                              anchor_sha256=source['anchor_sha256'], adapter_name=request['adapter_name'])
