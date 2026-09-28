@@ -4,6 +4,7 @@ from __future__ import annotations
 import ast
 import codecs
 import io
+import hashlib
 import tokenize
 from dataclasses import dataclass
 from pathlib import Path
@@ -17,6 +18,10 @@ from .errors import UnsupportedShape, MissingBinding, AmbiguousBinding
 from .package_bindings import StaticBindings, module_layout
 
 COMMON = dict(runtime=1, evidence=1, baseline_action=1, registry=1, gate=2, validate=2, blocked=2, guard=1)
+
+
+def host_lifecycle_marker(names, binding, candidate_id):
+    return '_jev_host_' + digest((names, binding, candidate_id))[:16]
 
 
 @dataclass(frozen=True)
@@ -264,6 +269,23 @@ def transform(root: Path, spec: dict) -> dict:
     except (UnicodeError, SyntaxError):
         raise InputError('Source must be valid UTF-8 Python') from None
     found = _module_bindings(tree)
+    lifecycle = spec.get('host_lifecycle')
+    if lifecycle is not None:
+        names = [lifecycle[k] for k in ('startup', 'shutdown', 'complete_task')]
+        marker = host_lifecycle_marker(lifecycle, spec['bindings']['runtime'], spec['candidate_id'])
+        if (lifecycle['kind'] != 'module-startup-v1' or len(set(names)) != 3
+                or any(keyword.iskeyword(name) or len(name) > 128 for name in names)
+                or any(name in found or name in spec['bindings'].values() for name in names)
+                or marker in found or marker + '_started' in found
+                or package_contract is not None
+                or {row['kind'] for row in spec.get('runtime_files', [])} != {'dependency_lock', 'configuration'}
+                or any(isinstance(node, ast.If) and isinstance(node.test, ast.Compare)
+                       and isinstance(node.test.left, ast.Name) and node.test.left.id == '__name__'
+                       for node in tree.body)):
+            raise UnsupportedShape('Unsupported host lifecycle name or module entrypoint')
+        runtime_nodes = found.get(spec['bindings']['runtime'], [])
+        if len(runtime_nodes) != 1 or not isinstance(runtime_nodes[0], ast.FunctionDef) or runtime_nodes[0] not in tree.body:
+            raise UnsupportedShape('Host lifecycle requires a local top-level runtime binding')
     f = _function(tree, found, spec['source']['symbol'], 1)
     body = f.body[:]
     if body and isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant) and isinstance(body[0].value.value, str):
@@ -373,15 +395,27 @@ def transform(root: Path, spec: dict) -> dict:
             break
     import_prefix = '.' if package_contract is not None else ''
     import_line = f'from {import_prefix}{spec["output"]["module"]} import invoke as {alias}'.encode() + newline
+    if lifecycle is not None:
+        adapter_alias = '_jev_adapter_' + digest(spec)[:16]
+        if adapter_alias in found:
+            raise InputError('Generated adapter alias conflicts with an existing symbol')
+        adapter_import = (f'from . import {spec["output"]["module"]} as {adapter_alias}' if package_contract is not None
+                          else f'import {spec["output"]["module"]} as {adapter_alias}')
+        import_line += adapter_import.encode() + newline
     changed = changed[:insertion] + import_line + changed[insertion:]
     host = changed.decode('utf-8')
+    if lifecycle is not None:
+        host += _host_lifecycle(lifecycle, spec['bindings']['runtime'], adapter_alias,
+                                spec['candidate_id'], spec['runtime_files'])
     ast.parse(host, filename=rel)
     runtime_spec = {k: spec[k] for k in ('candidate_id', 'experiment_id', 'source', 'recipe', 'questions',
                                         'primary_question', 'evidence_question', 'label_actions', 'runtime', 'policy')}
     runtime_spec['registered_action_ids'] = registered_actions
     adapter = _adapter(runtime_spec)
     ast.parse(adapter, filename=output)
-    result = {'changes': [{'file': rel, 'new_content': host}, {'file': output, 'new_content': adapter}],
+    result = {'changes': [{'file': rel, 'new_content': host}, {'file': output, 'new_content': adapter}]
+            + [{'file': row['file'], 'new_content': row['new_content']}
+               for row in spec.get('runtime_files', [])],
             'entry_point': f'{module_name}:{f.name}', 'baseline_symbol': original,
             'adapter_symbol': f'{module_name.rpartition(".")[0] + "." if package_contract else ""}{spec["output"]["module"]}:invoke', 'binding_digest': digest(spec['bindings']),
             'source_shape': r.shape, 'recipe_contract': r.contract,
@@ -390,7 +424,60 @@ def transform(root: Path, spec: dict) -> dict:
         result['package_binding'] = package_contract
         result['contributing_sources'] = resolver.dependencies
         result['qualified_bindings'] = qualified_bindings
+    if lifecycle is not None:
+        result['host_lifecycle'] = lifecycle
     return result
+
+
+def _host_lifecycle(names, binding, adapter_alias, candidate_id, runtime_files):
+    marker = host_lifecycle_marker(names, binding, candidate_id)
+    expected = {row['file']: hashlib.sha256(row['new_content'].encode('utf-8')).hexdigest()
+                for row in runtime_files}
+    return f'''
+{marker} = None
+{marker}_started = False
+
+def {names['startup']}(*, budget_limits, audit_log, dependency_plan, client=None,
+                       egress_grant=None, startup_mode='off', enable_experiment=False):
+    """Construct this reviewed module's process-local runtime exactly once."""
+    from jev_integration_evaluator.integrations.runtime_lifecycle import HostRuntimeLifecycle
+    from jev_integration_evaluator.integrations.runtime_lifecycle import LifecycleError
+    from pathlib import Path
+    global {marker}, {marker}_started, {binding}
+    if {marker}_started:
+        raise RuntimeError('host_runtime_already_started')
+    if type(enable_experiment) is not bool or (enable_experiment and startup_mode != 'shadow'):
+        raise ValueError('synthetic_shadow_authority_required')
+    reviewed = {{str(Path(__file__).resolve().parent / rel): sha for rel, sha in {expected!r}.items()}}
+    if (type(dependency_plan) is not dict or set(dependency_plan) != {{'files'}}
+            or type(dependency_plan['files']) is not list
+            or len(dependency_plan['files']) != len(reviewed)
+            or any(type(row) is not dict or set(row) != {{'path', 'sha256'}}
+                   or type(row['path']) is not str or type(row['sha256']) is not str
+                   or reviewed.get(row['path']) != row['sha256']
+                   for row in dependency_plan['files'])):
+        raise LifecycleError('reviewed_dependency_plan_mismatch')
+    runtime = HostRuntimeLifecycle({{{candidate_id!r}: {adapter_alias}}},
+        budget_limits=budget_limits, audit_log=audit_log, dependency_plan=dependency_plan,
+        client=client, egress_grant=egress_grant, startup_mode=startup_mode)
+    {binding} = runtime.runtime_binding({candidate_id!r})
+    {adapter_alias}.ENABLED = enable_experiment
+    {marker} = runtime
+    {marker}_started = True
+    return runtime
+
+def {names['complete_task']}(task_id):
+    if {marker} is None:
+        raise RuntimeError('host_runtime_not_started')
+    {marker}.complete_task(task_id)
+
+def {names['shutdown']}():
+    global {marker}
+    if {marker} is not None:
+        {adapter_alias}.ENABLED = False
+        {marker}.close()
+        {marker} = None
+'''
 
 
 def _adapter(spec):

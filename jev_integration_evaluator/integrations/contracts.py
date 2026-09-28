@@ -4,10 +4,14 @@ from __future__ import annotations
 import copy
 from importlib.resources import files
 from pathlib import Path
+import hashlib
+import json
+import re
 import jsonschema
 
 from ..config import load_config, validate_config
 from ..io import InputError, canonical, digest, read_json, safe_child, file_hash
+from ..implementation import FORBIDDEN
 from ..questions import validate_questions
 from ..runtime import SafeRouter
 
@@ -39,8 +43,57 @@ def validate_spec(spec: dict) -> dict:
         raise InputError('Integration module cannot replace the host module')
     adapter_path = ((Path(spec['source']['file']).parent / (spec['output']['module'] + '.py')).as_posix()
                     if 'package_binding' in spec else spec['output']['module'] + '.py')
-    if set(spec['output']['permitted_edits']) != {spec['source']['file'], adapter_path}:
-        raise InputError('Permitted edits must name exactly the host and owned adapter')
+    runtime_files = spec.get('runtime_files', [])
+    if ('host_lifecycle' in spec and
+            ('package_binding' in spec or
+             {row['kind'] for row in runtime_files} != {'dependency_lock', 'configuration'})):
+        raise InputError('Supported host lifecycle requires a flat host, reviewed lock and configuration')
+    runtime_paths = [row['file'] for row in runtime_files]
+    if (len(runtime_paths) != len(set(runtime_paths)) or
+            set(spec['output']['permitted_edits']) !=
+            {spec['source']['file'], adapter_path, *runtime_paths} or
+            len(spec['output']['permitted_edits']) != 2 + len(runtime_paths)):
+        raise InputError('Permitted edits must name exactly the host, adapter and reviewed runtime files')
+    for row in runtime_files:
+        path = row['file']
+        if (path in (spec['source']['file'], adapter_path) or FORBIDDEN.search(path)
+                or not path.endswith(('.lock', '.json'))
+                or hashlib.sha256(row['new_content'].encode('utf-8')).hexdigest() == row['old_sha256']):
+            raise InputError('Invalid or unchanged reviewed runtime file')
+        if row['kind'] == 'dependency_lock' and not path.endswith('.lock'):
+            raise InputError('Dependency lock role requires a lockfile')
+        if row['kind'] == 'configuration':
+            if not path.endswith('.json'):
+                raise InputError('Configuration role requires JSON')
+            try:
+                def unique(pairs):
+                    result = {}
+                    for key, value in pairs:
+                        if key in result: raise ValueError('duplicate')
+                        result[key] = value
+                    return result
+                config = json.loads(row['new_content'], object_pairs_hook=unique)
+            except ValueError:
+                raise InputError('Invalid reviewed runtime configuration') from None
+            runtime = config.get('jev_runtime') if type(config) is dict and set(config) == {'jev_runtime'} else None
+            if (type(runtime) is not dict or not {'mode', 'credential_ref'} <= set(runtime)
+                    or set(runtime) - {'mode', 'credential_ref', 'feature_flag'}
+                    or runtime['mode'] != 'off' or runtime.get('feature_flag', False) is not False
+                    or (runtime['credential_ref'] is not None and
+                        (type(runtime['credential_ref']) is not str or
+                         not re.fullmatch(r'env:[A-Z][A-Z0-9_]{0,127}', runtime['credential_ref'])))):
+                raise InputError('Runtime configuration must remain off with credential reference only')
+        if row['kind'] == 'dependency_lock':
+            pins = []
+            for line in row['new_content'].splitlines():
+                line = line.strip()
+                if not line or line.startswith('#'): continue
+                match = re.fullmatch(r'([A-Za-z][A-Za-z0-9_.-]{0,127})==([A-Za-z0-9][A-Za-z0-9_.+!-]{0,127})', line)
+                if match is None:
+                    raise InputError('Unsupported dependency lock syntax')
+                pins.append(match.group(1).lower().replace('_', '-').replace('.', '-'))
+            if len(pins) != len(set(pins)) or 'jev-integration-evaluator' not in pins:
+                raise InputError('Conflicting or missing evaluator dependency lock')
     if spec['output']['dependencies'] != ['jev-integration-evaluator>=1.3.0.dev1']:
         raise InputError('Declare the installed evaluator dependency; automatic installation is not authorized')
     pattern = spec['recipe']['id'].split('.')[-1]
@@ -103,6 +156,11 @@ def validate_inventory(root: Path, inventory: dict, spec: dict) -> dict:
         if not p.is_file() or file_hash(p) != expected:
             raise InputError('Source drift from the reviewed inventory')
         seen[rel] = expected
+    for row in spec.get('runtime_files', []):
+        path = safe_child(root, row['file'])
+        if (seen.get(row['file']) != row['old_sha256'] or not path.is_file()
+                or file_hash(path) != row['old_sha256']):
+            raise InputError('Runtime file changed since source review')
     p = safe_child(root, spec['source']['file'])
     if not p.is_file() or file_hash(p) != spec['source']['file_sha256']:
         raise InputError('Selected source changed since review')

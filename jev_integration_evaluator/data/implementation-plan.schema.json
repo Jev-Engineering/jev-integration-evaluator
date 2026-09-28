@@ -153,7 +153,7 @@
         "additionalProperties": false
       },
       "minItems": 2,
-      "maxItems": 2
+      "maxItems": 6
     },
     "discovery_files": {
       "type": "object",

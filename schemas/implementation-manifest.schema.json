@@ -3,6 +3,17 @@
   "$id": "urn:completetech:jev:implementation-manifest:1.0",
   "type": "object",
   "properties": {
+    "host_lifecycle": {
+      "type": "object",
+      "properties": {
+        "kind": {"const": "module-startup-v1"},
+        "startup": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"},
+        "shutdown": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"},
+        "complete_task": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"}
+      },
+      "required": ["kind", "startup", "shutdown", "complete_task"],
+      "additionalProperties": false
+    },
     "entry_point": {
       "type": "string",
       "minLength": 1

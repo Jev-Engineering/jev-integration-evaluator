@@ -34,6 +34,8 @@ def validate(check_manifest=False):
               'schemas/implementation-manifest.schema.json','schemas/implementation-tests.schema.json',
               'tests/test_executable_recipes.py','tests/test_executable_runtime.py','tests/test_executable_safety.py','tests/test_executable_cli.py','tests/test_executable_wheel.py',
               'tests/test_executable_host_boundaries.py','tests/test_executable_source_scope.py','tests/test_executable_verification_identity.py',
+              'jev_integration_evaluator/integrations/runtime_lifecycle.py',
+              'tests/test_host_runtime_lifecycle.py', 'references/host-runtime-lifecycle.md',
               'validation/REPOSITORY-SESSION-VALIDATION-1.3.0.dev11.md',
               'jev_integration_evaluator/integrations/observations.py','schemas/implementation-observation.schema.json',
               'tests/test_executable_failure_receipts.py','tests/test_executable_source_fidelity.py','tests/test_executable_command_receipts.py',
