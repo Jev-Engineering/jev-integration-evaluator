@@ -20,6 +20,7 @@ import time
 import pytest
 
 from jev_integration_evaluator.runners import isolated_python as runner
+from jev_integration_evaluator.runners.observations import inspect_lifecycle_postconditions
 
 pytestmark = pytest.mark.skipif(sys.platform != 'linux' or os.geteuid() != 0,
                                 reason='requires explicitly qualified privileged Linux launcher')
@@ -216,6 +217,86 @@ def bootstrap(): return Runtime()
     assert outputs[('edited', 'off')] == outputs[('baseline', 'off')]
     assert outputs[('baseline', 'shadow')] == outputs[('baseline', 'off')]
     assert outputs[('edited', 'shadow')] == b'baseline:x 1 1 True ' + origin
+
+
+def test_independent_json_state_oracle_binds_edited_entry_and_parity(tmp_path):
+    _, _, _, selected = installed_fixture(tmp_path)
+    entry = '''import json, sys
+from runtime import bootstrap
+runtime = bootstrap()
+result = runtime.decide('x', sys.argv[1])
+runtime.close()
+print(json.dumps({'reached': True, 'result': result, 'effects': runtime.effects,
+                  'state': {'closed': runtime.closed}, 'assessments': runtime.assessments,
+                  'dependency_origin': runtime.origin()}, sort_keys=True), flush=True)
+'''
+    shared = '''import toy_package
+class Runtime:
+    def __init__(self):
+        self.effects = []
+        self.assessments = 0
+        self.closed = False
+    def origin(self): return toy_package.__file__
+    def close(self): self.closed = True
+def bootstrap(): return Runtime()
+'''
+    baseline_body = '''    def decide(self, value, mode):
+        self.effects.append('charge:' + value)
+        return 'baseline:' + value
+'''
+    edited_body = '''    def decide(self, value, mode):
+        self.effects.append('charge:' + value)
+        if mode == 'shadow': self.assessments += 1
+        return 'baseline:' + value
+'''
+    specs, results = {}, {}
+    for phase, body, modes in [('baseline', baseline_body, ['baseline']),
+                               ('modified', edited_body, ['off', 'shadow'])]:
+        source = tmp_path / phase
+        source.mkdir()
+        (source / 'entry.py').write_text(entry)
+        (source / 'runtime.py').write_text(shared.replace('def bootstrap():', body + 'def bootstrap():'))
+        schedule = [{'case_id': mode, 'entry': 'entry.py', 'argv': [mode]} for mode in modes]
+        specs[phase] = runner.prepare_spec(source, ['entry.py', 'runtime.py'], schedule,
+                                           target_environment=selected)
+        results[phase] = run(source, specs[phase])
+    origin = '/deps/toy_package/__init__.py'
+    def expected(assessments):
+        return {'reached': True, 'result': 'baseline:x', 'effects': ['charge:x'],
+                'state': {'closed': True}, 'assessments': assessments,
+                'dependency_origin': origin}
+    oracle = {'schema_version': '1.0', 'kind': 'native-postconditions-v1',
+              'repository_identity': '1' * 64, 'context_sha256': '2' * 64,
+              'bundle_digest': '3' * 64, 'adapter': 'json-state-v1'}
+    for phase, modes in [('baseline', ['baseline']), ('modified', ['off', 'shadow'])]:
+        spec = specs[phase]
+        oracle[phase] = {'request_sha256': runner.request_digest(spec),
+                         'source_manifest_sha256': results[phase].receipt['source_manifest_sha256'],
+                         'attempt': 1,
+                         'cases': [{'case_id': mode, 'entry_sha256': spec['files'][0]['sha256'],
+                                    'observation': expected(1 if mode == 'shadow' else 0)}
+                                   for mode in modes]}
+    oracle_hash = hashlib.sha256(runner.canonical(oracle)).hexdigest()
+    arguments = dict(trusted_oracle_sha256=oracle_hash,
+                     baseline_spec=specs['baseline'], baseline_receipt=results['baseline'].receipt,
+                     baseline_outputs=results['baseline'].private_outputs,
+                     trusted_baseline_receipt_sha256=results['baseline'].receipt_sha256,
+                     modified_spec=specs['modified'], modified_receipt=results['modified'].receipt,
+                     modified_outputs=results['modified'].private_outputs,
+                     trusted_modified_receipt_sha256=results['modified'].receipt_sha256)
+    report = inspect_lifecycle_postconditions(oracle, **arguments)
+    assert report['scheduled'] == report['recorded'] == 3
+    assert report['postconditions_satisfied'] is True
+    assert report['integration_verified'] is False
+    tampered = copy.deepcopy(arguments)
+    tampered['modified_outputs'] = dict(tampered['modified_outputs'])
+    tampered['modified_outputs']['shadow'] = (b'{}\n', b'')
+    with pytest.raises(runner.RunnerError, match='native_output_receipt_mismatch'):
+        inspect_lifecycle_postconditions(oracle, **tampered)
+    forged_oracle = copy.deepcopy(oracle)
+    forged_oracle['modified']['cases'][-1]['observation']['assessments'] = 0
+    with pytest.raises(runner.RunnerError, match='external_oracle_anchor_mismatch'):
+        inspect_lifecycle_postconditions(forged_oracle, **arguments)
 
 
 def test_real_bootstrap_off_shadow_no_replacement_callback(tmp_path):
