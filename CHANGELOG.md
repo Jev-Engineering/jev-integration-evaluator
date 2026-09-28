@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased — versioned template catalog
+
+- Package `python.bounded-tail-call@1.0.0` with strict request, manifest and
+  lock contracts, source/policy/renderer-bound offline materialization and
+  explicit lifecycle statuses. The renderer produces planner inputs only.
+- Add `template list|inspect|validate|materialize` CLI and importable API;
+  validate current reviewed inventory/spec inputs and refuse unknown versions,
+  stale source, output collisions and incomplete render reuse.
+
 ## 1.3.0.dev12 — native Windows repository discovery
 
 - Add a handle-bound Windows NTFS discovery backend for local drive roots, with

@@ -29,6 +29,8 @@ Keep configuration strict, stable CLI errors actionable, archives free of creden
 
 For executable-integration changes, also run `python scripts/run_implementation_demo.py --out NEW_PRIVATE_DIRECTORY` and the installed-wheel host test. Keep the support matrix and all strict implementation schema copies current. Do not publish private target bundles. Record actual interpreters/platforms; unrun CI jobs and live activation are not local validation results.
 
+For template catalog changes, keep the packaged manifest, mirrored request/manifest/lock schemas, CLI/API, lifecycle matrix, references and wheel checks aligned. Run `tests/test_template_catalog.py` and `tests/test_template_materialization_wheel.py`, then rebuild `SHA256SUMS` after final edits and run `python scripts/validate_package.py --check-manifest`. Template materialization is an offline planner-input gate, not installed host delivery.
+
 For dev3 changes, retain the observation-contract, full-schedule receipt, unavailable-command, real process-termination and source-fidelity regressions. Re-verification after interruption must not reuse a historical pass as current evidence.
 
 For discovery changes, run all `tests/test_capabilities*.py` suites on a supported

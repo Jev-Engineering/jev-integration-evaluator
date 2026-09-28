@@ -1,5 +1,10 @@
 # Executable Python integrations — development support contract
 
+For a versioned source-bound package of current reviewed inventory and binding
+specification, see [template catalog v1](template-catalog-v1.md). Its renderer
+produces planner inputs only; the separate implementation lifecycle below still
+governs planning, baseline, application, verification and rollback.
+
 Version: **1.3.0.dev6**. This is a bounded implementation engine, not a general-purpose program rewriter or production activation certification. Public CLI and package names remain `jev-integration-evaluator` and `jev_integration_evaluator`. Legacy commands and receipts are retained.
 
 The new [capability discovery contract](capabilities.md) is a separate preparation
