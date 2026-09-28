@@ -195,7 +195,14 @@ def draft_reviewed_spec(root: Path, inventory: dict, context: dict, adapter: Rev
     if type(proposal['unresolved']) is not list or any(type(x) is not str or len(x) > 128 for x in proposal['unresolved']):
         raise InputError('Invalid unresolved facts')
     candidate = next(c for c in inventory['candidates'] if c['candidate_id'] == context['candidate_id'])
-    pending = sorted(set(proposal['unresolved']))
+    blocked_facts = set(proposal['unresolved'])
+    if blocked_facts - {'ambiguous_callback', 'missing_independent_observation',
+                        'unsupported_binding', 'missing_host_capability'}:
+        raise InputError('Unsupported unresolved agent field')
+    if blocked_facts:
+        return dict(status='blocked', reasons=sorted(blocked_facts),
+                    reviewer=proposal['reviewer'], context_sha256=digest(context))
+    pending = []
     indispensable = {'host_policy', 'independent_verification', 'runtime_ownership'}
     pending.extend(sorted(k for k in indispensable if k not in saved_answers and
                           (k != 'independent_verification' or not trusted_verification)))

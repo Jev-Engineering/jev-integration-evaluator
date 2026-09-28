@@ -1,6 +1,7 @@
 """Offline source-bound drafting; fixtures are synthetic, not host measurements."""
 import copy
 import hashlib
+import sys
 import json
 from pathlib import Path
 
@@ -10,6 +11,11 @@ from jev_integration_evaluator.agent_review import (
     RecordedReviewAdapter, draft_reviewed_spec, retrieve_context,
 )
 from jev_integration_evaluator.io import InputError, digest
+from jev_integration_evaluator import capabilities as cap
+from jev_integration_evaluator.config import DEFAULT
+from jev_integration_evaluator.nomination_inventory import (
+    discover_repository_capabilities, prepare_nominated_inventory, review_nominated_inventory,
+)
 
 
 BASE = Path(__file__).resolve().parents[1] / 'examples' / 'implementation' / 'e'
@@ -90,6 +96,20 @@ def test_missing_independent_observations_remain_unresolved():
     assert result['fields'] == ['independent_verification']
 
 
+def test_agent_only_reports_supported_blocked_facts():
+    inventory, binding, context, answers, proposal = prepared()
+    proposal['unresolved'] = ['ambiguous_callback']
+    result = draft_reviewed_spec(BASE / 'target', inventory, context,
+                                 RecordedReviewAdapter(proposal), saved_answers=answers,
+                                 trusted_verification=binding['verification'])
+    assert result['status'] == 'blocked' and result['reasons'] == ['ambiguous_callback']
+    proposal['unresolved'] = ['grant_execution']
+    with pytest.raises(InputError, match='Unsupported unresolved'):
+        draft_reviewed_spec(BASE / 'target', inventory, context,
+                            RecordedReviewAdapter(proposal), saved_answers=answers,
+                            trusted_verification=binding['verification'])
+
+
 def test_ambiguous_callback_is_rejected():
     inventory, binding, context, answers, proposal = prepared()
     proposal['bindings']['observe'] = proposal['bindings']['finish']
@@ -166,3 +186,49 @@ def test_related_caller_test_and_host_policy_are_source_hashed(tmp_path):
     assert related['policy.json']['roles'] == ['host_policy']
     assert all(len(related[name]['sha256']) == 64 for name in
                ('test_host.py', 'caller.py', 'policy.json'))
+
+
+@pytest.mark.skipif(sys.platform != 'linux', reason='Native POSIX discovery backend')
+def test_discovery_to_reviewed_spec_on_opaque_host(tmp_path):
+    _, binding, _, answers, _ = prepared()
+    source = (BASE / 'target' / 'host_example_e.py').read_bytes().replace(b'_example_e', b'_q7')
+    (tmp_path / 'host_q7.py').write_bytes(source)
+    report = discover_repository_capabilities(tmp_path, DEFAULT)
+    seam = next(s for s in report['seams'] if s['source']['qualified_symbol'] == 'select_boundary_q7')
+    anchor = seam['source']
+    nomination = dict(schema_version='1.0', discovery_version=cap.VERSION,
+                      report_sha256=report['report_sha256'], seam_id=seam['seam_id'],
+                      source=anchor, pattern='E', proposer='offline-test',
+                      rationale='Finite ambiguous outcome with an independent host observation.',
+                      evidence=[{k: anchor[k] for k in ('file', 'file_sha256', 'start_line', 'end_line')}])
+    prepared_inventory = prepare_nominated_inventory(tmp_path, report, [nomination], DEFAULT)
+    candidate = prepared_inventory['inventory']['candidates'][0]
+    review = dict(schema_version='1.0', prepared_sha256=prepared_inventory['prepared_sha256'],
+                  reviews={candidate['candidate_id']: dict(
+                      source_sha256=candidate['source']['source_sha256'], reviewer='independent-offline-fixture',
+                      reason='Existing finite semantic decision with existing host callbacks.', approved=True)})
+    reviewed = review_nominated_inventory(tmp_path, report, prepared_inventory, review, DEFAULT)
+    inventory = reviewed['inventory']
+    context = retrieve_context(tmp_path, inventory, candidate['candidate_id'])
+    verification = copy.deepcopy(binding['verification'])
+    verification['entry_point'] = verification['entry_point'].replace('_example_e', '_q7')
+    verification['effect_symbols'] = [x.replace('_example_e', '_q7') for x in verification['effect_symbols']]
+    for case in verification['cases']:
+        for phase in ('baseline', 'active'):
+            case[phase]['calls'] = {k.replace('_example_e', '_q7'): v for k, v in case[phase]['calls'].items()}
+    request = dict(context=context, saved_answers=answers,
+                   authority=dict(mutation=False, execution=False, egress=False,
+                                  installation=False, activation=False))
+    proposal = dict(schema_version='1.0', kind='offline-agent-review-proposal-v1',
+                    request_sha256=digest(request), reviewer='offline-reviewer',
+                    reason='Existing callback roles matched to recipe E.',
+                    evidence=[dict(file='host_q7.py', sha256=hashlib.sha256(source).hexdigest(),
+                                   symbol='select_boundary_q7')],
+                    recipe_id='python.E',
+                    bindings={k: v.replace('_example_e', '_q7') for k, v in binding['bindings'].items()},
+                    questions=binding['questions'], primary_question=binding['primary_question'],
+                    evidence_question=binding['evidence_question'],
+                    label_actions=binding['label_actions'], unresolved=[])
+    result = draft_reviewed_spec(tmp_path, inventory, context, RecordedReviewAdapter(proposal),
+                                 saved_answers=answers, trusted_verification=verification)
+    assert result['status'] == 'reviewed_specification'

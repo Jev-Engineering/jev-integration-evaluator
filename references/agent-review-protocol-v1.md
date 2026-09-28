@@ -30,6 +30,10 @@ independent of the reviewer. Missing inputs yield `unresolved` fields. The
 reviewer response must use exactly the declared fields; extra command,
 authority, measurement or source replacement fields fail closed. A changed
 source, answer or context invalidates `request_sha256`.
+The adapter may report only `ambiguous_callback`, `missing_independent_observation`,
+`unsupported_binding` or `missing_host_capability` as blocked facts. It cannot
+invent additional questions. Only absent caller-owned host policy, runtime
+ownership or independent verification appears in the `unresolved` result.
 
 The proposal schema is mirrored at `schemas/offline-agent-review-proposal-v1.schema.json`
 and `jev_integration_evaluator/data/offline-agent-review-proposal-v1.schema.json`.
@@ -47,4 +51,5 @@ Current support follows the existing recipe transformer: a flat Python module
 with a single synchronous tail call and unambiguous supported bindings. Missing
 host callbacks, independent observations or policy are unresolved; the reviewer
 cannot create replacements. Tests use synthetic fixtures, including renamed
-opaque callback identifiers. They do not establish live benefit or target safety.
+opaque callback identifiers and a POSIX discovery-to-specification path. They do
+not establish live benefit or target safety.
