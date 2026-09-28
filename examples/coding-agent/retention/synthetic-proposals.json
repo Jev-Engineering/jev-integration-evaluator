@@ -1,0 +1,1075 @@
+{
+  "proposals": [
+    {
+      "case_id": "c01",
+      "historical_choice_revision": 7,
+      "historical_keep_ids": [
+        "c01-i01",
+        "c01-i04"
+      ],
+      "jev_input_binding": {
+        "items_sha256": "a26d763d88eae04ddace8106d7d07b13c78439ff8e304e0a014427678fb3bcf6",
+        "revision": 7
+      },
+      "jev_per_item": {
+        "c01-i02": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "c01-i03": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "c01-i05": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "keep",
+          "latency_ms": 18
+        }
+      }
+    },
+    {
+      "case_id": "c02",
+      "historical_choice_revision": 7,
+      "historical_keep_ids": [
+        "c02-i03",
+        "c02-i05"
+      ],
+      "jev_input_binding": {
+        "items_sha256": "2127dd996759a573299c33cd5106d28c25fafafea9fc5a820abe2addbb16e1b0",
+        "revision": 7
+      },
+      "jev_per_item": {
+        "c02-i01": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "c02-i02": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "c02-i03": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "c02-i05": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "keep",
+          "latency_ms": 18
+        }
+      }
+    },
+    {
+      "case_id": "c03",
+      "historical_choice_revision": 7,
+      "historical_keep_ids": [
+        "c03-i02",
+        "c03-i05"
+      ],
+      "jev_input_binding": {
+        "items_sha256": "6e3b93fbbb59167d809d164a7e46f697bd0882db808f94cba04b869559f967e1",
+        "revision": 7
+      },
+      "jev_per_item": {
+        "c03-i01": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "keep",
+          "latency_ms": 18
+        },
+        "c03-i02": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "c03-i03": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "c03-i05": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        }
+      }
+    },
+    {
+      "case_id": "c04",
+      "historical_choice_revision": 7,
+      "historical_keep_ids": [
+        "c04-i04",
+        "c04-i05"
+      ],
+      "jev_input_binding": {
+        "items_sha256": "b465365ef8f0b898992dbfe253a058578bb98a68ee450bbad6678da37fbdca3d",
+        "revision": 7
+      },
+      "jev_per_item": {
+        "c04-i01": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "c04-i02": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "c04-i03": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "c04-i05": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "keep",
+          "latency_ms": 18
+        }
+      }
+    },
+    {
+      "case_id": "c05",
+      "historical_choice_revision": 7,
+      "historical_keep_ids": [
+        "c05-i01",
+        "c05-i05"
+      ],
+      "jev_input_binding": {
+        "items_sha256": "be6938e4a2e2ee93e232c3a978632e37fc2ec6f1e1b63f018a4a10da5b84b28f",
+        "revision": 7
+      },
+      "jev_per_item": {
+        "c05-i01": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "keep",
+          "latency_ms": 18
+        },
+        "c05-i02": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "c05-i03": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "c05-i05": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "keep",
+          "latency_ms": 18
+        }
+      }
+    },
+    {
+      "case_id": "c06",
+      "historical_choice_revision": 7,
+      "historical_keep_ids": [
+        "c06-i01",
+        "c06-i04"
+      ],
+      "jev_input_binding": {
+        "items_sha256": "7daecf62be1c35ba12a2fe61578b2a5e24b15cc91ccc82425df5085b52017eb1",
+        "revision": 7
+      },
+      "jev_per_item": {
+        "c06-i02": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "c06-i03": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "c06-i05": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        }
+      }
+    },
+    {
+      "case_id": "c07",
+      "historical_choice_revision": 7,
+      "historical_keep_ids": [
+        "c07-i01",
+        "c07-i03"
+      ],
+      "jev_input_binding": {
+        "items_sha256": "10c964c4cf0cd6b93c9e8c13833b0ac0acd39971bde142a93427f61f05193e83",
+        "revision": 7
+      },
+      "jev_per_item": {
+        "c07-i01": {
+          "confidence": null,
+          "cost_units": 0.003,
+          "label": "malformed",
+          "latency_ms": 30
+        },
+        "c07-i02": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "c07-i03": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "c07-i05": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        }
+      }
+    },
+    {
+      "case_id": "h01",
+      "historical_choice_revision": 7,
+      "historical_keep_ids": [
+        "h01-i01",
+        "h01-i04"
+      ],
+      "jev_input_binding": {
+        "items_sha256": "7341c586a8d562f0b1cf8982e20210edfee9b412de0aaa87a900cb5fa1e6ece3",
+        "revision": 7
+      },
+      "jev_per_item": {
+        "h01-i02": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h01-i03": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h01-i05": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "keep",
+          "latency_ms": 18
+        }
+      }
+    },
+    {
+      "case_id": "h02",
+      "historical_choice_revision": 7,
+      "historical_keep_ids": [
+        "h02-i04",
+        "h02-i05"
+      ],
+      "jev_input_binding": {
+        "items_sha256": "3eaad7698a390bb442a7ad4d19062ab4ca9b56b50c5726cb9672eec8c72a4aa9",
+        "revision": 7
+      },
+      "jev_per_item": {
+        "h02-i01": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h02-i02": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h02-i03": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h02-i05": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "keep",
+          "latency_ms": 18
+        }
+      }
+    },
+    {
+      "case_id": "h03",
+      "historical_choice_revision": 7,
+      "historical_keep_ids": [
+        "h03-i01",
+        "h03-i04"
+      ],
+      "jev_input_binding": {
+        "items_sha256": "db3cf4dc8f7a5320c3a16e3b2228718f49e22544d580600d88f6cceb9b6b1211",
+        "revision": 7
+      },
+      "jev_per_item": {
+        "h03-i02": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h03-i03": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h03-i05": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        }
+      }
+    },
+    {
+      "case_id": "h04",
+      "historical_choice_revision": 7,
+      "historical_keep_ids": [
+        "h04-i01",
+        "h04-i05"
+      ],
+      "jev_input_binding": {
+        "items_sha256": "f6775b1241eb4b17256ce6549cad51bb108e4dcb50220747851b615cd35b6f17",
+        "revision": 7
+      },
+      "jev_per_item": {
+        "h04-i02": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h04-i03": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h04-i05": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        }
+      }
+    },
+    {
+      "case_id": "h05",
+      "historical_choice_revision": 7,
+      "historical_keep_ids": [
+        "h05-i04",
+        "h05-i05"
+      ],
+      "jev_input_binding": {
+        "items_sha256": "cd20a0b877def87a0103e860942af66d095c02291a9284e5070c208256127e6b",
+        "revision": 7
+      },
+      "jev_per_item": {
+        "h05-i01": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h05-i02": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h05-i03": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h05-i05": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "keep",
+          "latency_ms": 18
+        }
+      }
+    },
+    {
+      "case_id": "h06",
+      "historical_choice_revision": 7,
+      "historical_keep_ids": [
+        "h06-i01",
+        "h06-i04"
+      ],
+      "jev_input_binding": {
+        "items_sha256": "aa034bf9f957969e208d477cab62b58e75a9fe57ad688c2b44928296edfd7798",
+        "revision": 7
+      },
+      "jev_per_item": {
+        "h06-i01": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h06-i02": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h06-i03": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h06-i05": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "keep",
+          "latency_ms": 18
+        }
+      }
+    },
+    {
+      "case_id": "h07",
+      "historical_choice_revision": 7,
+      "historical_keep_ids": [
+        "h07-i04",
+        "h07-i05"
+      ],
+      "jev_input_binding": {
+        "items_sha256": "c4c3701639616de33e3f534fd9e8ee81f9717929e4024640772b1728855da944",
+        "revision": 7
+      },
+      "jev_per_item": {
+        "h07-i01": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h07-i02": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h07-i03": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h07-i05": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "keep",
+          "latency_ms": 18
+        }
+      }
+    },
+    {
+      "case_id": "h08",
+      "historical_choice_revision": 6,
+      "historical_keep_ids": [
+        "h08-i01",
+        "h08-i04"
+      ],
+      "jev_input_binding": {
+        "items_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "revision": 6
+      },
+      "jev_per_item": {
+        "h08-i01": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h08-i02": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h08-i03": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h08-i05": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "keep",
+          "latency_ms": 18
+        }
+      }
+    },
+    {
+      "case_id": "h09",
+      "historical_choice_revision": 7,
+      "historical_keep_ids": [
+        "h09-i01",
+        "h09-i05"
+      ],
+      "jev_input_binding": {
+        "items_sha256": "1d920d66d84c160395ac7b78f468712eccff635cc1395d33051d78794032105b",
+        "revision": 7
+      },
+      "jev_per_item": {
+        "h09-i01": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "keep",
+          "latency_ms": 18
+        },
+        "h09-i02": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h09-i03": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h09-i05": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "keep",
+          "latency_ms": 18
+        }
+      }
+    },
+    {
+      "case_id": "h10",
+      "historical_choice_revision": 7,
+      "historical_keep_ids": [
+        "h10-i04",
+        "h10-i05"
+      ],
+      "jev_input_binding": {
+        "items_sha256": "e0724b64433b51134e99ad817d2f05b271d0d7cfa9737da7df64f0cc7f739dcd",
+        "revision": 7
+      },
+      "jev_per_item": {
+        "h10-i01": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h10-i02": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h10-i03": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h10-i05": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "keep",
+          "latency_ms": 18
+        }
+      }
+    },
+    {
+      "case_id": "h11",
+      "historical_choice_revision": 7,
+      "historical_keep_ids": [
+        "h11-i01",
+        "h11-i04"
+      ],
+      "jev_input_binding": {
+        "items_sha256": "0bd2373f60478b9b5bc469ebdb8e5a75c819c7df2c5c82de7195addca7ed178f",
+        "revision": 7
+      },
+      "jev_per_item": {
+        "h11-i01": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "keep",
+          "latency_ms": 18
+        },
+        "h11-i02": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h11-i03": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h11-i05": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "keep",
+          "latency_ms": 18
+        }
+      }
+    },
+    {
+      "case_id": "h12",
+      "historical_choice_revision": 7,
+      "historical_keep_ids": [
+        "h12-i03",
+        "h12-i05"
+      ],
+      "jev_input_binding": {
+        "items_sha256": "ac918723e2738f0010619fe1047b550fcb33e8e1efe9198994b71c530673a657",
+        "revision": 7
+      },
+      "jev_per_item": {
+        "h12-i01": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "keep",
+          "latency_ms": 18
+        },
+        "h12-i02": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h12-i03": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h12-i05": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "keep",
+          "latency_ms": 18
+        }
+      }
+    },
+    {
+      "case_id": "h13",
+      "historical_choice_revision": 7,
+      "historical_keep_ids": [
+        "h13-i04",
+        "h13-i05"
+      ],
+      "jev_input_binding": {
+        "items_sha256": "fc161b8a5c8c285308e74e67df99f70c7d4e05c34fe47a7f64c136b8769c56a8",
+        "revision": 7
+      },
+      "jev_per_item": {
+        "h13-i01": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "keep",
+          "latency_ms": 18
+        },
+        "h13-i02": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h13-i03": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h13-i05": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        }
+      }
+    },
+    {
+      "case_id": "h14",
+      "historical_choice_revision": 7,
+      "historical_keep_ids": [
+        "h14-i01",
+        "h14-i04"
+      ],
+      "jev_input_binding": {
+        "items_sha256": "3c614c12a02bfb09cdbfaee1415958bef1f01f33e45665aac6ad98379cf3321e",
+        "revision": 7
+      },
+      "jev_per_item": {
+        "h14-i01": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "keep",
+          "latency_ms": 18
+        },
+        "h14-i02": {
+          "confidence": null,
+          "cost_units": 0.003,
+          "label": "timeout",
+          "latency_ms": 30
+        },
+        "h14-i03": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h14-i05": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        }
+      }
+    },
+    {
+      "case_id": "h15",
+      "historical_choice_revision": 7,
+      "historical_keep_ids": [
+        "h15-i01",
+        "h15-i04"
+      ],
+      "jev_input_binding": {
+        "items_sha256": "f7dd879bc287f49858489d5b2c52dc6b1db278f69612f8a96616b0dd531c4599",
+        "revision": 7
+      },
+      "jev_per_item": {
+        "h15-i01": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "keep",
+          "latency_ms": 18
+        },
+        "h15-i02": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h15-i03": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h15-i05": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        }
+      }
+    },
+    {
+      "case_id": "h16",
+      "historical_choice_revision": 7,
+      "historical_keep_ids": [
+        "h16-i04",
+        "h16-i05"
+      ],
+      "jev_input_binding": {
+        "items_sha256": "362e18e25798d85339d7a2e9e044c9cbe4c3e70fdfc9c1eaa195e63c6d737b74",
+        "revision": 7
+      },
+      "jev_per_item": {
+        "h16-i01": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "keep",
+          "latency_ms": 18
+        },
+        "h16-i02": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h16-i03": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h16-i05": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        }
+      }
+    },
+    {
+      "case_id": "h17",
+      "historical_choice_revision": 7,
+      "historical_keep_ids": [
+        "h17-i01",
+        "h17-i04"
+      ],
+      "jev_input_binding": {
+        "items_sha256": "866099c703f637036b997be2381a6a2d0181e0f6116ae0a8bc7155d1503eb871",
+        "revision": 7
+      },
+      "jev_per_item": {
+        "h17-i02": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h17-i03": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h17-i05": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        }
+      }
+    },
+    {
+      "case_id": "h18",
+      "historical_choice_revision": 7,
+      "historical_keep_ids": [
+        "h18-i01",
+        "h18-i04"
+      ],
+      "jev_input_binding": {
+        "items_sha256": "76eb95c58aec134a5d4bbd7311f1a83951488a5f537f18b73a3feefac0f99e31",
+        "revision": 7
+      },
+      "jev_per_item": {
+        "h18-i01": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "fault": "late",
+          "label": "keep",
+          "latency_ms": 45
+        },
+        "h18-i02": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h18-i03": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h18-i05": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "keep",
+          "latency_ms": 18
+        }
+      }
+    },
+    {
+      "case_id": "h19",
+      "historical_choice_revision": 7,
+      "historical_keep_ids": [
+        "h19-i04",
+        "h19-i05"
+      ],
+      "jev_input_binding": {
+        "items_sha256": "62e4e3616a24ae605bead11181e8c6f3234e6fd8b7b368e56cf5d8cb621f2f24",
+        "revision": 7
+      },
+      "jev_per_item": {
+        "h19-i01": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "keep",
+          "latency_ms": 18
+        },
+        "h19-i02": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h19-i03": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h19-i05": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h19-i06": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h19-i07": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h19-i08": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h19-i09": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h19-i10": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h19-i11": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h19-i12": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h19-i13": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h19-i14": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h19-i15": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h19-i16": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h19-i17": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h19-i18": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        }
+      }
+    },
+    {
+      "case_id": "h20",
+      "historical_choice_revision": 7,
+      "historical_keep_ids": [
+        "h20-i01",
+        "h20-i04"
+      ],
+      "jev_input_binding": {
+        "items_sha256": "c4d496bdafeb6510df934efe792d18aa4d6005a58fd4cec2f5e3d60e0f7b2b2a",
+        "revision": 7
+      },
+      "jev_per_item": {
+        "h20-i01": {
+          "confidence": null,
+          "cost_units": 0.003,
+          "label": "malformed",
+          "latency_ms": 30
+        },
+        "h20-i02": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h20-i03": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        },
+        "h20-i05": {
+          "confidence": 0.9,
+          "cost_units": 0.003,
+          "label": "drop",
+          "latency_ms": 18
+        }
+      }
+    }
+  ],
+  "provider_calls": 0,
+  "schema_version": "issue49-proposals-draft-v1"
+}

@@ -1,0 +1,233 @@
+{
+  "injections": [
+    {
+      "case_id": "c01",
+      "fault": {
+        "kind": "none"
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "c02",
+      "fault": {
+        "kind": "none"
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "c03",
+      "fault": {
+        "kind": "none"
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "c04",
+      "fault": {
+        "kind": "none"
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "c05",
+      "fault": {
+        "kind": "none"
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "c06",
+      "fault": {
+        "kind": "none"
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "c07",
+      "fault": {
+        "kind": "none"
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "c08",
+      "fault": {
+        "kind": "none"
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "h01",
+      "fault": {
+        "kind": "none"
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "h02",
+      "fault": {
+        "kind": "none"
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "h03",
+      "fault": {
+        "kind": "none"
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "h04",
+      "fault": {
+        "kind": "none"
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "h05",
+      "fault": {
+        "kind": "none"
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "h06",
+      "fault": {
+        "kind": "none"
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "h07",
+      "fault": {
+        "kind": "revision_change_before_commit",
+        "new_revision": 8
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "h08",
+      "fault": {
+        "kind": "stale_proposal_revision",
+        "proposal_revision": 6
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "h09",
+      "fault": {
+        "kind": "none"
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "h10",
+      "fault": {
+        "kind": "none"
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "h11",
+      "fault": {
+        "kind": "none"
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "h12",
+      "fault": {
+        "kind": "none"
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "h13",
+      "fault": {
+        "kind": "none"
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "h14",
+      "fault": {
+        "kind": "none"
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "h15",
+      "fault": {
+        "kind": "none"
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "h16",
+      "fault": {
+        "kind": "fake_write_false_success_partial",
+        "required_atomic_rollback": true
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "h17",
+      "fault": {
+        "kind": "none"
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "h18",
+      "fault": {
+        "kind": "none"
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "h19",
+      "fault": {
+        "kind": "none"
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "h20",
+      "fault": {
+        "kind": "reader_missing_result"
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "h21",
+      "fault": {
+        "kind": "none"
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "h22",
+      "fault": {
+        "kind": "none"
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "h23",
+      "fault": {
+        "kind": "none"
+      },
+      "trusted_host_only": true
+    },
+    {
+      "case_id": "h24",
+      "fault": {
+        "kind": "none"
+      },
+      "trusted_host_only": true
+    }
+  ],
+  "schema_version": "issue49-host-injection-draft-v1",
+  "trusted_host_only": true
+}

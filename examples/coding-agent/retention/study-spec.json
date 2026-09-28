@@ -1,0 +1,60 @@
+{
+  "assignment_seed": 490146,
+  "candidate": "JEV-594296255D6E",
+  "frozen_input_sha256": {
+    "attacks": "ffd4780e94b41fed3f80cf28d6590e84b3abbb1f5bd0111cacd14c6dbc4f44d3",
+    "histories": "57ce04315c48688cdddaafb0fcd3bdfcbd9e5ddfbea16b2467378deaeb17cfa8",
+    "injections": "c4627fc5fb3539bdda63e16472cf5b97bcdb5a1d8332aacc86f25403ba45d9bf",
+    "oracle": "c40f5c976ee58203c2b70c738c25d5ac4341977cf731a066dab1814fc4350429",
+    "policy": "56ab7217e1970b7cd8095a726f346d3241f8a5e39acba5a8a5904201c41cc013",
+    "projection": "5d1a37d8dc62070bf4abcdeccec4b2d22020356c024c6e42c37ff9aa110ac313",
+    "proposals": "dd4e2b1bfeaa7dd0d54a6e5865fa1e76080c7f68d81d1026b28c75b5a9bf0259",
+    "reader_questions": "d15d00615fc29c8ddb1f64803eb103e49be037897cffa6a63bdd9906ae798ecc",
+    "report_schema": "7790d9aab00d69ba079cefd88bbb0afbe877418c9ea96eb35aedfeda0e75b145",
+    "runner": "c5fdb7325486063b6bee49b0e943fa7435e6eb42d119ee4c18f0e97e793509b5",
+    "scorer": "0ac0e9f7532ba86ce97234e5b149ac30ca07d3d5ce45fe8e8848ad239904bc65",
+    "source": "dc3e0f2647c922c1789da3fcf750dd16f61ed0634dd16123ec9c3961acf26a1f"
+  },
+  "note": "No holdout executed. Scorer reviewer fields remain null until independent pre-result review. Synthetic proposals are co-authored fixtures, not provider observations.",
+  "schema_version": "coding-agent-retention-study-v1",
+  "source_base_commit": "bbd77306877797ee6d418483fd0be46342c67cfa",
+  "splits": {
+    "calibration": [
+      "c01",
+      "c02",
+      "c03",
+      "c04",
+      "c05",
+      "c06",
+      "c07",
+      "c08"
+    ],
+    "holdout": [
+      "h01",
+      "h02",
+      "h03",
+      "h04",
+      "h05",
+      "h06",
+      "h07",
+      "h08",
+      "h09",
+      "h10",
+      "h11",
+      "h12",
+      "h13",
+      "h14",
+      "h15",
+      "h16",
+      "h17",
+      "h18",
+      "h19",
+      "h20",
+      "h21",
+      "h22",
+      "h23",
+      "h24"
+    ]
+  },
+  "status": "prepared_pending_independent_review"
+}

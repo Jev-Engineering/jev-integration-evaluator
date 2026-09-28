@@ -82,3 +82,47 @@ counts missing latency observations, gives assessment p50/p95, and separately
 measures local fixture runner wall time. No provider, production executor or
 real agent was run. The synthetic result does not support live adoption or
 deployment.
+
+## Issue 49: safe synthetic history retention
+
+`agent.py::retain_history` remains the historical count-budget comparator,
+including its original one-argument `llm.choose(entries)` call. The separate
+`retention_study.py` compares it with a deterministic pinned-plus-recent policy
+and a bounded synthetic JEV item assessor. The guarded host accepts `/prune`
+only for verbatim item retention. `/compact` and invalid modes leave memory
+unchanged; generative compaction is a separate operation. It checks immutable
+host pins, item IDs and byte digests, provenance, revisions, exact token budgets,
+and a compare-and-swap fake-memory transaction with independent readback and
+rollback. A model cannot change pins, mode, budget or item text.
+
+The synthetic data in `retention/` separates original histories, host-only
+fault injections, mode attacks, co-authored synthetic choices, reader-visible
+later questions, and scorer-only answers/source IDs. The runner constructs
+allowlisted chooser and reader inputs; neither receives scorer answers or fault
+schedules. The independent oracle checks raw retained bytes/provenance and a
+later source-cited answer. Tasks test anticipated-domain recall, not arbitrary
+future recall. Reports contain IDs and counts, not original item text.
+
+The schedule has eight calibration cases and 24 holdout cases: 20 `/prune`
+efficacy rows for all three arms and four mode-safety rows for guarded arms.
+The historical function has no mode argument and is N/A on those four rows.
+Every blocked, missing and failed outcome stays in its applicable denominator.
+Synthetic assessment costs and sequential per-call/per-episode latencies are
+predeclared assumptions; local runner wall time is measured separately. No
+user history, provider, production memory or generator is used.
+
+Only calibration is available pending independent pre-result review. Scorer
+reviewer fields are null and the holdout CLI requires an externally checked
+exact study-spec digest. To run calibration from the repository root with a
+new output path:
+
+```powershell
+python examples/coding-agent/retention_study.py --split calibration --out validation/issue49-calibration-report.json
+python -m pytest -q tests/test_coding_agent_retention.py
+```
+
+The draft choices and oracle were co-authored as synthetic fixtures; independent
+adjudication and a frozen holdout remain required. A calibration result cannot
+support live adoption or permission to process real user history. The reader
+currently sees item provenance labels but no explicit supersession edge; cases
+whose answer depends on that edge can be undercounted as downstream successes.
