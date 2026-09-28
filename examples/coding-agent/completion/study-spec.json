@@ -8,10 +8,10 @@
     "policy": "03f5bcd345dd2b71711f1d7295e3c6421df5c416583421c888eee87ead906bbb",
     "report_schema": "e9fc61d11daaf7f1c89d4b58d2cb4de379d527b449d2bbe21d5bc741279ee042",
     "runner": "44e2e6aac7b2add2a064a434a693eedfe38076f46c708df5ed3d31fbfc465310",
-    "scorer": "99de6e0c507e55af35cde4bfe17dcba223d5d0d1bf45e44ad1feaa15cbd99650",
+    "scorer": "98f49e85e042720e6f9bd7023d3c713580e50b6c464ec755394c3dee54e2e89d",
     "source": "dc3e0f2647c922c1789da3fcf750dd16f61ed0634dd16123ec9c3961acf26a1f"
   },
-  "note": "No holdout executed. Reviewer ID/date remain null in scorer until independent approval. Synthetic costs/latencies are assumptions.",
+  "note": "No holdout executed. Independent pre-result review by graph44 on 2026-09-28 UTC approved pre-metadata study digest 16a1424dd85bfebcdb9a20f047c69ac845bae7e144641de1c7fb5e18d3fcaeed. Synthetic costs/latencies are assumptions.",
   "policy_version": "completion-host-observation-v1",
   "rubric_version": "completion-choice-v1",
   "schema_version": "coding-agent-completion-study-v1",
