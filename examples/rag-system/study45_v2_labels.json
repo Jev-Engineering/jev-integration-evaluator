@@ -1,0 +1,19 @@
+{
+  "study_id": "rag-evidence-45-v2",
+  "label_provenance": "Synthetic case author predeclared expected passage and answer identities from the authored registry/audit/archive text. These are scorer-only labels, separately frozen from assessor responses; no independent human adjudication or real-world factual verification is claimed. Orchestrator review occurs before holdout execution.",
+  "adjudication_rule": "Registry support is relevant to the named filing/license/permit; same-item audit revocation or expiry is a material conflict; archive absence or uncertain evidence requires abstention. Blog/forum topical overlap is irrelevant to the requested administrative record. The expected citation is the first registry support; conflict citation is mandatory when present.",
+  "labels": {
+    "V2-C01":{"relevant":["v2c1a"],"expected":"supported","citation":"v2c1a"},
+    "V2-C02":{"relevant":["v2c2a","v2c2b"],"expected":"conflicted","citation":"v2c2a","conflict":"v2c2b"},
+    "V2-H01":{"relevant":["v2h1b"],"expected":"supported","citation":"v2h1b"},
+    "V2-H02":{"relevant":["v2h2a","v2h2b"],"expected":"conflicted","citation":"v2h2a","conflict":"v2h2b"},
+    "V2-H03":{"relevant":["v2h3a"],"expected":"supported","citation":"v2h3a"},
+    "V2-H04":{"relevant":["v2h4a"],"expected":"supported","citation":"v2h4a"},
+    "V2-H05":{"relevant":["v2h5a"],"expected":"supported","citation":"v2h5a"},
+    "V2-H06":{"relevant":["v2h6b"],"expected":"supported","citation":"v2h6b"},
+    "V2-H07":{"relevant":["v2h7b"],"expected":"abstain"},
+    "V2-H08":{"relevant":["v2h8a","v2h8b"],"expected":"conflicted","citation":"v2h8a","conflict":"v2h8b"},
+    "V2-H09":{"relevant":["v2h9b"],"expected":"abstain"},
+    "V2-H10":{"relevant":["v2h10a"],"expected":"supported","citation":"v2h10a"}
+  }
+}

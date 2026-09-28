@@ -1,0 +1,25 @@
+{
+  "study_id": "rag-evidence-45-v2",
+  "adapter_id": "hand-authored-synthetic-assessor-v2",
+  "rubric": "Each retrieved passage gets exactly one registered relevant/irrelevant/uncertain label. Missing, timeout, malformed, and resource-excess replies fail closed. These predictions are fixed fixture data, not a calibrated model.",
+  "generator_id": "first-support-with-same-claim-conflict-v1",
+  "generator_rule": "Generate from the first selected supports span; cite it and every selected same-claim contradicts span, otherwise abstain. No provider call.",
+  "arms": ["current", "lexical", "jev"],
+  "limits": {"max_retrieved_passages": 32, "max_assessor_calls_per_case": 1, "max_generator_calls_per_case": 1, "max_simulated_assessor_latency_ms_per_case": 100, "max_simulated_assessor_cost_usd_per_case": 0.001},
+  "minimum_useful_effect": {"answer_success_gain_over_lexical": 0.2, "max_missing_or_failed_outcomes": 0, "max_contradiction_omissions": 0, "max_cost_limit_violations": 0, "max_latency_limit_violations": 0},
+  "stop_rule": "Run each of 10 new holdout cases once under all three arms in fixed case order; never stop early or tune from holdout. Any failure stays in denominator. Synthetic screen success would still require observed provider/task evidence before adoption.",
+  "responses": {
+    "V2-C01":{"labels":{"v2c1a":"relevant","v2c1b":"irrelevant"},"simulated_latency_ms":35,"simulated_cost_usd":0.0004},
+    "V2-C02":{"labels":{"v2c2a":"relevant","v2c2b":"irrelevant"},"simulated_latency_ms":40,"simulated_cost_usd":0.0005},
+    "V2-H01":{"labels":{"v2h1a":"irrelevant","v2h1b":"relevant"},"simulated_latency_ms":36,"simulated_cost_usd":0.0004},
+    "V2-H02":{"labels":{"v2h2a":"relevant","v2h2b":"irrelevant","v2h2c":"irrelevant"},"simulated_latency_ms":44,"simulated_cost_usd":0.0005},
+    "V2-H03":{"failure":"missing","simulated_latency_ms":100,"simulated_cost_usd":0.0005},
+    "V2-H04":{"failure":"timeout","simulated_latency_ms":100,"simulated_cost_usd":0.0005},
+    "V2-H05":{"labels":{"v2h5a":"approve","v2h5b":"irrelevant"},"simulated_latency_ms":32,"simulated_cost_usd":0.0004},
+    "V2-H06":{"labels":{"v2h6a":"irrelevant","v2h6b":"relevant"},"simulated_latency_ms":39,"simulated_cost_usd":0.0005},
+    "V2-H07":{"labels":{"v2h7a":"irrelevant","v2h7b":"uncertain"},"simulated_latency_ms":37,"simulated_cost_usd":0.0004},
+    "V2-H08":{"labels":{"v2h8a":"relevant","v2h8b":"uncertain"},"simulated_latency_ms":120,"simulated_cost_usd":0.0006},
+    "V2-H09":{"labels":{"v2h9a":"irrelevant","v2h9b":"uncertain"},"simulated_latency_ms":31,"simulated_cost_usd":0.0004},
+    "V2-H10":{"labels":{"v2h10a":"relevant","v2h10b":"irrelevant"},"simulated_latency_ms":41,"simulated_cost_usd":0.0012}
+  }
+}

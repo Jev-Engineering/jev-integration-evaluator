@@ -1,0 +1,1380 @@
+{
+  "calibration_ids": [
+    "C01",
+    "C02"
+  ],
+  "disposition": "synthetic_screen_only_needs_observed_evidence",
+  "evidence_kind": "offline_synthetic_fixture",
+  "holdout_ids": [
+    "H01",
+    "H02",
+    "H03",
+    "H04",
+    "H05",
+    "H06",
+    "H07",
+    "H08"
+  ],
+  "holdout_summary": {
+    "current": {
+      "answer_success": 4,
+      "assessor_calls": 0,
+      "contradiction_omissions": 0,
+      "failures": 0,
+      "generator_calls": 8,
+      "local_elapsed_ns": 44300,
+      "n": 8,
+      "selected_passages": 19
+    },
+    "jev": {
+      "answer_success": 8,
+      "assessor_calls": 8,
+      "contradiction_omissions": 0,
+      "failures": 0,
+      "generator_calls": 7,
+      "local_elapsed_ns": 50300,
+      "n": 8,
+      "selected_passages": 10
+    },
+    "lexical": {
+      "answer_success": 4,
+      "assessor_calls": 0,
+      "contradiction_omissions": 0,
+      "failures": 0,
+      "generator_calls": 8,
+      "local_elapsed_ns": 76300,
+      "n": 8,
+      "selected_passages": 19
+    }
+  },
+  "jev_gain_over_lexical": 0.5,
+  "limits": "No provider, paid model, production retrieval, real answer quality, model latency, or model cost measured. Small authored cases are not an independent 30-cluster study. Local elapsed time is only Python fixture runtime.",
+  "rows": [
+    {
+      "answer": {
+        "citations": [
+          "a1",
+          "a2"
+        ],
+        "status": "conflicted"
+      },
+      "answer_success": true,
+      "arm": "current",
+      "assessor_calls": 0,
+      "case_id": "C01",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "a1",
+        "conflict": "a2",
+        "expected": "conflicted",
+        "relevant": [
+          "a1",
+          "a2"
+        ]
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 32200,
+      "passage_labels": {
+        "a1": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "a2": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "a3": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "a1",
+        "a2",
+        "a3"
+      ],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "a1",
+          "a2"
+        ],
+        "status": "conflicted"
+      },
+      "answer_success": true,
+      "arm": "lexical",
+      "assessor_calls": 0,
+      "case_id": "C01",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "a1",
+        "conflict": "a2",
+        "expected": "conflicted",
+        "relevant": [
+          "a1",
+          "a2"
+        ]
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 77000,
+      "passage_labels": {
+        "a1": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "a2": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "a3": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "a1",
+        "a2",
+        "a3"
+      ],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "a1",
+          "a2"
+        ],
+        "status": "conflicted"
+      },
+      "answer_success": true,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "case_id": "C01",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "a1",
+        "conflict": "a2",
+        "expected": "conflicted",
+        "relevant": [
+          "a1",
+          "a2"
+        ]
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 13000,
+      "passage_labels": {
+        "a1": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "a2": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "a3": {
+          "assessment": "irrelevant",
+          "independent_relevant": false,
+          "selected": false
+        }
+      },
+      "selected_ids": [
+        "a1",
+        "a2"
+      ],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "b1"
+        ],
+        "status": "supported"
+      },
+      "answer_success": false,
+      "arm": "current",
+      "assessor_calls": 0,
+      "case_id": "C02",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "b2",
+        "expected": "supported",
+        "relevant": [
+          "b2"
+        ]
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 8300,
+      "passage_labels": {
+        "b1": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        },
+        "b2": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "b1",
+        "b2"
+      ],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "b1"
+        ],
+        "status": "supported"
+      },
+      "answer_success": false,
+      "arm": "lexical",
+      "assessor_calls": 0,
+      "case_id": "C02",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "b2",
+        "expected": "supported",
+        "relevant": [
+          "b2"
+        ]
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 11200,
+      "passage_labels": {
+        "b1": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        },
+        "b2": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "b1",
+        "b2"
+      ],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "b2"
+        ],
+        "status": "supported"
+      },
+      "answer_success": true,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "case_id": "C02",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "b2",
+        "expected": "supported",
+        "relevant": [
+          "b2"
+        ]
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 7500,
+      "passage_labels": {
+        "b1": {
+          "assessment": "irrelevant",
+          "independent_relevant": false,
+          "selected": false
+        },
+        "b2": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "b2"
+      ],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "h1a"
+        ],
+        "status": "supported"
+      },
+      "answer_success": false,
+      "arm": "current",
+      "assessor_calls": 0,
+      "case_id": "H01",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "h1b",
+        "expected": "supported",
+        "relevant": [
+          "h1b"
+        ]
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 6700,
+      "passage_labels": {
+        "h1a": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        },
+        "h1b": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "h1a",
+        "h1b"
+      ],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "h1a"
+        ],
+        "status": "supported"
+      },
+      "answer_success": false,
+      "arm": "lexical",
+      "assessor_calls": 0,
+      "case_id": "H01",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "h1b",
+        "expected": "supported",
+        "relevant": [
+          "h1b"
+        ]
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 8700,
+      "passage_labels": {
+        "h1a": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        },
+        "h1b": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "h1a",
+        "h1b"
+      ],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "h1b"
+        ],
+        "status": "supported"
+      },
+      "answer_success": true,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "case_id": "H01",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "h1b",
+        "expected": "supported",
+        "relevant": [
+          "h1b"
+        ]
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 6100,
+      "passage_labels": {
+        "h1a": {
+          "assessment": "irrelevant",
+          "independent_relevant": false,
+          "selected": false
+        },
+        "h1b": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "h1b"
+      ],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "h2a",
+          "h2b"
+        ],
+        "status": "conflicted"
+      },
+      "answer_success": true,
+      "arm": "current",
+      "assessor_calls": 0,
+      "case_id": "H02",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "h2a",
+        "conflict": "h2b",
+        "expected": "conflicted",
+        "relevant": [
+          "h2a",
+          "h2b"
+        ]
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 6400,
+      "passage_labels": {
+        "h2a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "h2b": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "h2c": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "h2a",
+        "h2b",
+        "h2c"
+      ],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "h2a",
+          "h2b"
+        ],
+        "status": "conflicted"
+      },
+      "answer_success": true,
+      "arm": "lexical",
+      "assessor_calls": 0,
+      "case_id": "H02",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "h2a",
+        "conflict": "h2b",
+        "expected": "conflicted",
+        "relevant": [
+          "h2a",
+          "h2b"
+        ]
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 10900,
+      "passage_labels": {
+        "h2a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "h2b": {
+          "assessment": "irrelevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "h2c": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "h2a",
+        "h2b",
+        "h2c"
+      ],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "h2a",
+          "h2b"
+        ],
+        "status": "conflicted"
+      },
+      "answer_success": true,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "case_id": "H02",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "h2a",
+        "conflict": "h2b",
+        "expected": "conflicted",
+        "relevant": [
+          "h2a",
+          "h2b"
+        ]
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 7000,
+      "passage_labels": {
+        "h2a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "h2b": {
+          "assessment": "irrelevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "h2c": {
+          "assessment": "irrelevant",
+          "independent_relevant": false,
+          "selected": false
+        }
+      },
+      "selected_ids": [
+        "h2a",
+        "h2b"
+      ],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "h3a"
+        ],
+        "status": "supported"
+      },
+      "answer_success": false,
+      "arm": "current",
+      "assessor_calls": 0,
+      "case_id": "H03",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "expected": "abstain",
+        "relevant": []
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 5200,
+      "passage_labels": {
+        "h3a": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        },
+        "h3b": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "h3a",
+        "h3b"
+      ],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "h3a"
+        ],
+        "status": "supported"
+      },
+      "answer_success": false,
+      "arm": "lexical",
+      "assessor_calls": 0,
+      "case_id": "H03",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "expected": "abstain",
+        "relevant": []
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 9400,
+      "passage_labels": {
+        "h3a": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        },
+        "h3b": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "h3a",
+        "h3b"
+      ],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [],
+        "status": "abstain"
+      },
+      "answer_success": true,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "case_id": "H03",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "insufficient",
+      "expected_answer": {
+        "expected": "abstain",
+        "relevant": []
+      },
+      "generator_calls": 0,
+      "local_elapsed_ns": 5800,
+      "passage_labels": {
+        "h3a": {
+          "assessment": "irrelevant",
+          "independent_relevant": false,
+          "selected": false
+        },
+        "h3b": {
+          "assessment": "irrelevant",
+          "independent_relevant": false,
+          "selected": false
+        }
+      },
+      "selected_ids": [],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "h4a"
+        ],
+        "status": "supported"
+      },
+      "answer_success": false,
+      "arm": "current",
+      "assessor_calls": 0,
+      "case_id": "H04",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "h4b",
+        "expected": "supported",
+        "relevant": [
+          "h4b"
+        ]
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 4800,
+      "passage_labels": {
+        "h4a": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        },
+        "h4b": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "h4a",
+        "h4b"
+      ],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "h4a"
+        ],
+        "status": "supported"
+      },
+      "answer_success": false,
+      "arm": "lexical",
+      "assessor_calls": 0,
+      "case_id": "H04",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "h4b",
+        "expected": "supported",
+        "relevant": [
+          "h4b"
+        ]
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 8300,
+      "passage_labels": {
+        "h4a": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        },
+        "h4b": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "h4a",
+        "h4b"
+      ],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "h4b"
+        ],
+        "status": "supported"
+      },
+      "answer_success": true,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "case_id": "H04",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "h4b",
+        "expected": "supported",
+        "relevant": [
+          "h4b"
+        ]
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 6100,
+      "passage_labels": {
+        "h4a": {
+          "assessment": "irrelevant",
+          "independent_relevant": false,
+          "selected": false
+        },
+        "h4b": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "h4b"
+      ],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "h5a",
+          "h5b"
+        ],
+        "status": "conflicted"
+      },
+      "answer_success": true,
+      "arm": "current",
+      "assessor_calls": 0,
+      "case_id": "H05",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "h5a",
+        "conflict": "h5b",
+        "expected": "conflicted",
+        "relevant": [
+          "h5a",
+          "h5b"
+        ]
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 6000,
+      "passage_labels": {
+        "h5a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "h5b": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "h5c": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "h5a",
+        "h5b",
+        "h5c"
+      ],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "h5a",
+          "h5b"
+        ],
+        "status": "conflicted"
+      },
+      "answer_success": true,
+      "arm": "lexical",
+      "assessor_calls": 0,
+      "case_id": "H05",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "h5a",
+        "conflict": "h5b",
+        "expected": "conflicted",
+        "relevant": [
+          "h5a",
+          "h5b"
+        ]
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 11700,
+      "passage_labels": {
+        "h5a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "h5b": {
+          "assessment": "irrelevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "h5c": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "h5a",
+        "h5b",
+        "h5c"
+      ],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "h5a",
+          "h5b"
+        ],
+        "status": "conflicted"
+      },
+      "answer_success": true,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "case_id": "H05",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "h5a",
+        "conflict": "h5b",
+        "expected": "conflicted",
+        "relevant": [
+          "h5a",
+          "h5b"
+        ]
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 8600,
+      "passage_labels": {
+        "h5a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "h5b": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "h5c": {
+          "assessment": "irrelevant",
+          "independent_relevant": false,
+          "selected": false
+        }
+      },
+      "selected_ids": [
+        "h5a",
+        "h5b"
+      ],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "h6a"
+        ],
+        "status": "supported"
+      },
+      "answer_success": false,
+      "arm": "current",
+      "assessor_calls": 0,
+      "case_id": "H06",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "expected": "abstain",
+        "relevant": [
+          "h6b"
+        ]
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 4900,
+      "passage_labels": {
+        "h6a": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        },
+        "h6b": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "h6a",
+        "h6b"
+      ],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "h6a"
+        ],
+        "status": "supported"
+      },
+      "answer_success": false,
+      "arm": "lexical",
+      "assessor_calls": 0,
+      "case_id": "H06",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "expected": "abstain",
+        "relevant": [
+          "h6b"
+        ]
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 8700,
+      "passage_labels": {
+        "h6a": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        },
+        "h6b": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "h6a",
+        "h6b"
+      ],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [],
+        "status": "abstain"
+      },
+      "answer_success": true,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "case_id": "H06",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "expected": "abstain",
+        "relevant": [
+          "h6b"
+        ]
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 5100,
+      "passage_labels": {
+        "h6a": {
+          "assessment": "irrelevant",
+          "independent_relevant": false,
+          "selected": false
+        },
+        "h6b": {
+          "assessment": "uncertain",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "h6b"
+      ],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "h7a"
+        ],
+        "status": "supported"
+      },
+      "answer_success": true,
+      "arm": "current",
+      "assessor_calls": 0,
+      "case_id": "H07",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "h7a",
+        "expected": "supported",
+        "relevant": [
+          "h7a"
+        ]
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 4500,
+      "passage_labels": {
+        "h7a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "h7b": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "h7a",
+        "h7b"
+      ],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "h7a"
+        ],
+        "status": "supported"
+      },
+      "answer_success": true,
+      "arm": "lexical",
+      "assessor_calls": 0,
+      "case_id": "H07",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "h7a",
+        "expected": "supported",
+        "relevant": [
+          "h7a"
+        ]
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 8200,
+      "passage_labels": {
+        "h7a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "h7b": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "h7a",
+        "h7b"
+      ],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "h7a"
+        ],
+        "status": "supported"
+      },
+      "answer_success": true,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "case_id": "H07",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "h7a",
+        "expected": "supported",
+        "relevant": [
+          "h7a"
+        ]
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 5300,
+      "passage_labels": {
+        "h7a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "h7b": {
+          "assessment": "irrelevant",
+          "independent_relevant": false,
+          "selected": false
+        }
+      },
+      "selected_ids": [
+        "h7a"
+      ],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "h8a",
+          "h8b"
+        ],
+        "status": "conflicted"
+      },
+      "answer_success": true,
+      "arm": "current",
+      "assessor_calls": 0,
+      "case_id": "H08",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "h8a",
+        "conflict": "h8b",
+        "expected": "conflicted",
+        "relevant": [
+          "h8a",
+          "h8b"
+        ]
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 5800,
+      "passage_labels": {
+        "h8a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "h8b": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "h8c": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "h8a",
+        "h8b",
+        "h8c"
+      ],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "h8a",
+          "h8b"
+        ],
+        "status": "conflicted"
+      },
+      "answer_success": true,
+      "arm": "lexical",
+      "assessor_calls": 0,
+      "case_id": "H08",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "h8a",
+        "conflict": "h8b",
+        "expected": "conflicted",
+        "relevant": [
+          "h8a",
+          "h8b"
+        ]
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 10400,
+      "passage_labels": {
+        "h8a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "h8b": {
+          "assessment": "irrelevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "h8c": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "h8a",
+        "h8b",
+        "h8c"
+      ],
+      "simulated_model_cost": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "h8a",
+          "h8b"
+        ],
+        "status": "conflicted"
+      },
+      "answer_success": true,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "case_id": "H08",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "h8a",
+        "conflict": "h8b",
+        "expected": "conflicted",
+        "relevant": [
+          "h8a",
+          "h8b"
+        ]
+      },
+      "generator_calls": 1,
+      "local_elapsed_ns": 6300,
+      "passage_labels": {
+        "h8a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "h8b": {
+          "assessment": "uncertain",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "h8c": {
+          "assessment": "irrelevant",
+          "independent_relevant": false,
+          "selected": false
+        }
+      },
+      "selected_ids": [
+        "h8a",
+        "h8b"
+      ],
+      "simulated_model_cost": null
+    }
+  ],
+  "rubric": "relevant means directly answers the requested item; uncertain is retained; irrelevant is excluded; an explicit contradiction for a selected claim is retained by host policy",
+  "seed": 4501,
+  "sha256": {
+    "pipeline.py": "e5c85c4da7b8a7818b68c5fc2c449b81962ea6df5313bb855832ae414176c87b",
+    "run_study45.py": "17a971ff214559d666729f33abaf53e4c8ab908192a9bfd574201e15c69414be",
+    "study45.json": "2930f4fd996bcd6676bc7fef279f01c23300cc37365978fca7c1e77d5a404394"
+  },
+  "stop_rule": "one fixed pass over all eight holdout cases and three arms; no early stop or tuning from holdout; synthetic evidence never authorizes adoption",
+  "study_id": "rag-evidence-45-v1",
+  "threshold": {
+    "answer_success_gain_over_lexical": 0.15,
+    "max_assessor_calls_per_case": 1,
+    "max_contradiction_omissions": 0,
+    "max_missing_outcomes": 0
+  },
+  "threshold_passed": true
+}

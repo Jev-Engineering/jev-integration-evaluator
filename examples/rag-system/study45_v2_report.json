@@ -1,0 +1,1674 @@
+{
+  "adjudication_rule": "Registry support is relevant to the named filing/license/permit; same-item audit revocation or expiry is a material conflict; archive absence or uncertain evidence requires abstention. Blog/forum topical overlap is irrelevant to the requested administrative record. The expected citation is the first registry support; conflict citation is mandatory when present.",
+  "adoption_decision": "reject_adoption_from_synthetic_evidence",
+  "assignment_unit": "case",
+  "calibration_ids": [
+    "V2-C01",
+    "V2-C02"
+  ],
+  "evidence_kind": "offline_synthetic_fixture",
+  "generator_rule": "Generate from the first selected supports span; cite it and every selected same-claim contradicts span, otherwise abstain. No provider call.",
+  "holdout_ids": [
+    "V2-H01",
+    "V2-H02",
+    "V2-H03",
+    "V2-H04",
+    "V2-H05",
+    "V2-H06",
+    "V2-H07",
+    "V2-H08",
+    "V2-H09",
+    "V2-H10"
+  ],
+  "holdout_summary": {
+    "current": {
+      "answer_success": 7,
+      "assessor_calls": 0,
+      "contradiction_omissions": 0,
+      "cost_limit_violations": 0,
+      "failed_or_missing": 0,
+      "generator_calls": 10,
+      "latency_limit_violations": 0,
+      "local_elapsed_ns": 56400,
+      "n": 10
+    },
+    "jev": {
+      "answer_success": 5,
+      "assessor_calls": 10,
+      "contradiction_omissions": 1,
+      "cost_limit_violations": 1,
+      "failed_or_missing": 5,
+      "generator_calls": 5,
+      "latency_limit_violations": 1,
+      "local_elapsed_ns": 63500,
+      "n": 10
+    },
+    "lexical": {
+      "answer_success": 7,
+      "assessor_calls": 0,
+      "contradiction_omissions": 0,
+      "cost_limit_violations": 0,
+      "failed_or_missing": 0,
+      "generator_calls": 10,
+      "latency_limit_violations": 0,
+      "local_elapsed_ns": 124800,
+      "n": 10
+    }
+  },
+  "jev_gain_over_lexical": -0.2,
+  "label_provenance": "Synthetic case author predeclared expected passage and answer identities from the authored registry/audit/archive text. These are scorer-only labels, separately frozen from assessor responses; no independent human adjudication or real-world factual verification is claimed. Orchestrator review occurs before holdout execution.",
+  "limits": {
+    "max_assessor_calls_per_case": 1,
+    "max_generator_calls_per_case": 1,
+    "max_retrieved_passages": 32,
+    "max_simulated_assessor_cost_usd_per_case": 0.001,
+    "max_simulated_assessor_latency_ms_per_case": 100
+  },
+  "limits_of_inference": "Fixture predictions, costs and latency are authored simulations. Local elapsed time is Python runtime only. No provider, real retrieval, real answer quality, model cost or model latency measured. Labels have no independent human adjudication.",
+  "next_evidence": "needs_independent_real_task_and_provider_observation",
+  "rows": [
+    {
+      "answer": {
+        "citations": [
+          "v2c1a"
+        ],
+        "status": "supported"
+      },
+      "answer_success": true,
+      "arm": "current",
+      "assessor_calls": 0,
+      "case_id": "V2-C01",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "v2c1a",
+        "expected": "supported",
+        "relevant": [
+          "v2c1a"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 41400,
+      "passage_labels": {
+        "v2c1a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "v2c1b": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2c1a",
+        "v2c1b"
+      ],
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "v2c1a"
+        ],
+        "status": "supported"
+      },
+      "answer_success": true,
+      "arm": "lexical",
+      "assessor_calls": 0,
+      "case_id": "V2-C01",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "v2c1a",
+        "expected": "supported",
+        "relevant": [
+          "v2c1a"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 117400,
+      "passage_labels": {
+        "v2c1a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "v2c1b": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2c1a",
+        "v2c1b"
+      ],
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "v2c1a"
+        ],
+        "status": "supported"
+      },
+      "answer_success": true,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "case_id": "V2-C01",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "v2c1a",
+        "expected": "supported",
+        "relevant": [
+          "v2c1a"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 15300,
+      "passage_labels": {
+        "v2c1a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "v2c1b": {
+          "assessment": "irrelevant",
+          "independent_relevant": false,
+          "selected": false
+        }
+      },
+      "selected_ids": [
+        "v2c1a"
+      ],
+      "simulated_assessor_cost_usd": 0.0004,
+      "simulated_assessor_latency_ms": 35
+    },
+    {
+      "answer": {
+        "citations": [
+          "v2c2a",
+          "v2c2b"
+        ],
+        "status": "conflicted"
+      },
+      "answer_success": true,
+      "arm": "current",
+      "assessor_calls": 0,
+      "case_id": "V2-C02",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "v2c2a",
+        "conflict": "v2c2b",
+        "expected": "conflicted",
+        "relevant": [
+          "v2c2a",
+          "v2c2b"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 13500,
+      "passage_labels": {
+        "v2c2a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "v2c2b": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2c2a",
+        "v2c2b"
+      ],
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "v2c2a",
+          "v2c2b"
+        ],
+        "status": "conflicted"
+      },
+      "answer_success": true,
+      "arm": "lexical",
+      "assessor_calls": 0,
+      "case_id": "V2-C02",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "v2c2a",
+        "conflict": "v2c2b",
+        "expected": "conflicted",
+        "relevant": [
+          "v2c2a",
+          "v2c2b"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 13300,
+      "passage_labels": {
+        "v2c2a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "v2c2b": {
+          "assessment": "irrelevant",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2c2a",
+        "v2c2b"
+      ],
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "v2c2a",
+          "v2c2b"
+        ],
+        "status": "conflicted"
+      },
+      "answer_success": true,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "case_id": "V2-C02",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "v2c2a",
+        "conflict": "v2c2b",
+        "expected": "conflicted",
+        "relevant": [
+          "v2c2a",
+          "v2c2b"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 13600,
+      "passage_labels": {
+        "v2c2a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "v2c2b": {
+          "assessment": "irrelevant",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2c2a",
+        "v2c2b"
+      ],
+      "simulated_assessor_cost_usd": 0.0005,
+      "simulated_assessor_latency_ms": 40
+    },
+    {
+      "answer": {
+        "citations": [
+          "v2h1a"
+        ],
+        "status": "supported"
+      },
+      "answer_success": false,
+      "arm": "current",
+      "assessor_calls": 0,
+      "case_id": "V2-H01",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "v2h1b",
+        "expected": "supported",
+        "relevant": [
+          "v2h1b"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 6600,
+      "passage_labels": {
+        "v2h1a": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        },
+        "v2h1b": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2h1a",
+        "v2h1b"
+      ],
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "v2h1a"
+        ],
+        "status": "supported"
+      },
+      "answer_success": false,
+      "arm": "lexical",
+      "assessor_calls": 0,
+      "case_id": "V2-H01",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "v2h1b",
+        "expected": "supported",
+        "relevant": [
+          "v2h1b"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 13400,
+      "passage_labels": {
+        "v2h1a": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        },
+        "v2h1b": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2h1a",
+        "v2h1b"
+      ],
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "v2h1b"
+        ],
+        "status": "supported"
+      },
+      "answer_success": true,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "case_id": "V2-H01",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "v2h1b",
+        "expected": "supported",
+        "relevant": [
+          "v2h1b"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 9500,
+      "passage_labels": {
+        "v2h1a": {
+          "assessment": "irrelevant",
+          "independent_relevant": false,
+          "selected": false
+        },
+        "v2h1b": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2h1b"
+      ],
+      "simulated_assessor_cost_usd": 0.0004,
+      "simulated_assessor_latency_ms": 36
+    },
+    {
+      "answer": {
+        "citations": [
+          "v2h2a",
+          "v2h2b"
+        ],
+        "status": "conflicted"
+      },
+      "answer_success": true,
+      "arm": "current",
+      "assessor_calls": 0,
+      "case_id": "V2-H02",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "v2h2a",
+        "conflict": "v2h2b",
+        "expected": "conflicted",
+        "relevant": [
+          "v2h2a",
+          "v2h2b"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 6900,
+      "passage_labels": {
+        "v2h2a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "v2h2b": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "v2h2c": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2h2a",
+        "v2h2b",
+        "v2h2c"
+      ],
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "v2h2a",
+          "v2h2b"
+        ],
+        "status": "conflicted"
+      },
+      "answer_success": true,
+      "arm": "lexical",
+      "assessor_calls": 0,
+      "case_id": "V2-H02",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "v2h2a",
+        "conflict": "v2h2b",
+        "expected": "conflicted",
+        "relevant": [
+          "v2h2a",
+          "v2h2b"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 12900,
+      "passage_labels": {
+        "v2h2a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "v2h2b": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "v2h2c": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2h2a",
+        "v2h2b",
+        "v2h2c"
+      ],
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "v2h2a",
+          "v2h2b"
+        ],
+        "status": "conflicted"
+      },
+      "answer_success": true,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "case_id": "V2-H02",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "v2h2a",
+        "conflict": "v2h2b",
+        "expected": "conflicted",
+        "relevant": [
+          "v2h2a",
+          "v2h2b"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 8200,
+      "passage_labels": {
+        "v2h2a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "v2h2b": {
+          "assessment": "irrelevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "v2h2c": {
+          "assessment": "irrelevant",
+          "independent_relevant": false,
+          "selected": false
+        }
+      },
+      "selected_ids": [
+        "v2h2a",
+        "v2h2b"
+      ],
+      "simulated_assessor_cost_usd": 0.0005,
+      "simulated_assessor_latency_ms": 44
+    },
+    {
+      "answer": {
+        "citations": [
+          "v2h3a"
+        ],
+        "status": "supported"
+      },
+      "answer_success": true,
+      "arm": "current",
+      "assessor_calls": 0,
+      "case_id": "V2-H03",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "v2h3a",
+        "expected": "supported",
+        "relevant": [
+          "v2h3a"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 5200,
+      "passage_labels": {
+        "v2h3a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "v2h3b": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2h3a",
+        "v2h3b"
+      ],
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "v2h3a"
+        ],
+        "status": "supported"
+      },
+      "answer_success": true,
+      "arm": "lexical",
+      "assessor_calls": 0,
+      "case_id": "V2-H03",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "v2h3a",
+        "expected": "supported",
+        "relevant": [
+          "v2h3a"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 10100,
+      "passage_labels": {
+        "v2h3a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "v2h3b": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2h3a",
+        "v2h3b"
+      ],
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null
+    },
+    {
+      "answer": {
+        "citations": [],
+        "status": "abstain"
+      },
+      "answer_success": false,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "case_id": "V2-H03",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "assessment_failed",
+      "expected_answer": {
+        "citation": "v2h3a",
+        "expected": "supported",
+        "relevant": [
+          "v2h3a"
+        ]
+      },
+      "generator_calls": 0,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 6700,
+      "passage_labels": {
+        "v2h3a": {
+          "assessment": null,
+          "independent_relevant": true,
+          "selected": false
+        },
+        "v2h3b": {
+          "assessment": null,
+          "independent_relevant": false,
+          "selected": false
+        }
+      },
+      "selected_ids": [],
+      "simulated_assessor_cost_usd": 0.0005,
+      "simulated_assessor_latency_ms": 100
+    },
+    {
+      "answer": {
+        "citations": [
+          "v2h4a"
+        ],
+        "status": "supported"
+      },
+      "answer_success": true,
+      "arm": "current",
+      "assessor_calls": 0,
+      "case_id": "V2-H04",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "v2h4a",
+        "expected": "supported",
+        "relevant": [
+          "v2h4a"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 4900,
+      "passage_labels": {
+        "v2h4a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "v2h4b": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2h4a",
+        "v2h4b"
+      ],
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "v2h4a"
+        ],
+        "status": "supported"
+      },
+      "answer_success": true,
+      "arm": "lexical",
+      "assessor_calls": 0,
+      "case_id": "V2-H04",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "v2h4a",
+        "expected": "supported",
+        "relevant": [
+          "v2h4a"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 9100,
+      "passage_labels": {
+        "v2h4a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "v2h4b": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2h4a",
+        "v2h4b"
+      ],
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null
+    },
+    {
+      "answer": {
+        "citations": [],
+        "status": "abstain"
+      },
+      "answer_success": false,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "case_id": "V2-H04",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "assessment_failed",
+      "expected_answer": {
+        "citation": "v2h4a",
+        "expected": "supported",
+        "relevant": [
+          "v2h4a"
+        ]
+      },
+      "generator_calls": 0,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 7100,
+      "passage_labels": {
+        "v2h4a": {
+          "assessment": null,
+          "independent_relevant": true,
+          "selected": false
+        },
+        "v2h4b": {
+          "assessment": null,
+          "independent_relevant": false,
+          "selected": false
+        }
+      },
+      "selected_ids": [],
+      "simulated_assessor_cost_usd": 0.0005,
+      "simulated_assessor_latency_ms": 100
+    },
+    {
+      "answer": {
+        "citations": [
+          "v2h5a"
+        ],
+        "status": "supported"
+      },
+      "answer_success": true,
+      "arm": "current",
+      "assessor_calls": 0,
+      "case_id": "V2-H05",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "v2h5a",
+        "expected": "supported",
+        "relevant": [
+          "v2h5a"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 5600,
+      "passage_labels": {
+        "v2h5a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "v2h5b": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2h5a",
+        "v2h5b"
+      ],
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "v2h5a"
+        ],
+        "status": "supported"
+      },
+      "answer_success": true,
+      "arm": "lexical",
+      "assessor_calls": 0,
+      "case_id": "V2-H05",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "v2h5a",
+        "expected": "supported",
+        "relevant": [
+          "v2h5a"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 11300,
+      "passage_labels": {
+        "v2h5a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "v2h5b": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2h5a",
+        "v2h5b"
+      ],
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null
+    },
+    {
+      "answer": {
+        "citations": [],
+        "status": "abstain"
+      },
+      "answer_success": false,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "case_id": "V2-H05",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "assessment_failed",
+      "expected_answer": {
+        "citation": "v2h5a",
+        "expected": "supported",
+        "relevant": [
+          "v2h5a"
+        ]
+      },
+      "generator_calls": 0,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 6400,
+      "passage_labels": {
+        "v2h5a": {
+          "assessment": null,
+          "independent_relevant": true,
+          "selected": false
+        },
+        "v2h5b": {
+          "assessment": null,
+          "independent_relevant": false,
+          "selected": false
+        }
+      },
+      "selected_ids": [],
+      "simulated_assessor_cost_usd": 0.0004,
+      "simulated_assessor_latency_ms": 32
+    },
+    {
+      "answer": {
+        "citations": [
+          "v2h6a"
+        ],
+        "status": "supported"
+      },
+      "answer_success": false,
+      "arm": "current",
+      "assessor_calls": 0,
+      "case_id": "V2-H06",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "v2h6b",
+        "expected": "supported",
+        "relevant": [
+          "v2h6b"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 5400,
+      "passage_labels": {
+        "v2h6a": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        },
+        "v2h6b": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2h6a",
+        "v2h6b"
+      ],
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "v2h6a"
+        ],
+        "status": "supported"
+      },
+      "answer_success": false,
+      "arm": "lexical",
+      "assessor_calls": 0,
+      "case_id": "V2-H06",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "v2h6b",
+        "expected": "supported",
+        "relevant": [
+          "v2h6b"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 25300,
+      "passage_labels": {
+        "v2h6a": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        },
+        "v2h6b": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2h6a",
+        "v2h6b"
+      ],
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "v2h6b"
+        ],
+        "status": "supported"
+      },
+      "answer_success": true,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "case_id": "V2-H06",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "v2h6b",
+        "expected": "supported",
+        "relevant": [
+          "v2h6b"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 7800,
+      "passage_labels": {
+        "v2h6a": {
+          "assessment": "irrelevant",
+          "independent_relevant": false,
+          "selected": false
+        },
+        "v2h6b": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2h6b"
+      ],
+      "simulated_assessor_cost_usd": 0.0005,
+      "simulated_assessor_latency_ms": 39
+    },
+    {
+      "answer": {
+        "citations": [],
+        "status": "abstain"
+      },
+      "answer_success": true,
+      "arm": "current",
+      "assessor_calls": 0,
+      "case_id": "V2-H07",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "expected": "abstain",
+        "relevant": [
+          "v2h7b"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 4400,
+      "passage_labels": {
+        "v2h7a": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        },
+        "v2h7b": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2h7a",
+        "v2h7b"
+      ],
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null
+    },
+    {
+      "answer": {
+        "citations": [],
+        "status": "abstain"
+      },
+      "answer_success": true,
+      "arm": "lexical",
+      "assessor_calls": 0,
+      "case_id": "V2-H07",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "expected": "abstain",
+        "relevant": [
+          "v2h7b"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 9900,
+      "passage_labels": {
+        "v2h7a": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        },
+        "v2h7b": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2h7a",
+        "v2h7b"
+      ],
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null
+    },
+    {
+      "answer": {
+        "citations": [],
+        "status": "abstain"
+      },
+      "answer_success": true,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "case_id": "V2-H07",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "expected": "abstain",
+        "relevant": [
+          "v2h7b"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 5100,
+      "passage_labels": {
+        "v2h7a": {
+          "assessment": "irrelevant",
+          "independent_relevant": false,
+          "selected": false
+        },
+        "v2h7b": {
+          "assessment": "uncertain",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2h7b"
+      ],
+      "simulated_assessor_cost_usd": 0.0004,
+      "simulated_assessor_latency_ms": 37
+    },
+    {
+      "answer": {
+        "citations": [
+          "v2h8a",
+          "v2h8b"
+        ],
+        "status": "conflicted"
+      },
+      "answer_success": true,
+      "arm": "current",
+      "assessor_calls": 0,
+      "case_id": "V2-H08",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "v2h8a",
+        "conflict": "v2h8b",
+        "expected": "conflicted",
+        "relevant": [
+          "v2h8a",
+          "v2h8b"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 7400,
+      "passage_labels": {
+        "v2h8a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "v2h8b": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2h8a",
+        "v2h8b"
+      ],
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "v2h8a",
+          "v2h8b"
+        ],
+        "status": "conflicted"
+      },
+      "answer_success": true,
+      "arm": "lexical",
+      "assessor_calls": 0,
+      "case_id": "V2-H08",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "v2h8a",
+        "conflict": "v2h8b",
+        "expected": "conflicted",
+        "relevant": [
+          "v2h8a",
+          "v2h8b"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 9900,
+      "passage_labels": {
+        "v2h8a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "v2h8b": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2h8a",
+        "v2h8b"
+      ],
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null
+    },
+    {
+      "answer": {
+        "citations": [],
+        "status": "abstain"
+      },
+      "answer_success": false,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "case_id": "V2-H08",
+      "citation_correct": true,
+      "contradiction_omitted": true,
+      "cost_limit_violated": false,
+      "evidence_status": "assessment_failed",
+      "expected_answer": {
+        "citation": "v2h8a",
+        "conflict": "v2h8b",
+        "expected": "conflicted",
+        "relevant": [
+          "v2h8a",
+          "v2h8b"
+        ]
+      },
+      "generator_calls": 0,
+      "latency_limit_violated": true,
+      "local_elapsed_ns": 3200,
+      "passage_labels": {
+        "v2h8a": {
+          "assessment": null,
+          "independent_relevant": true,
+          "selected": false
+        },
+        "v2h8b": {
+          "assessment": null,
+          "independent_relevant": true,
+          "selected": false
+        }
+      },
+      "selected_ids": [],
+      "simulated_assessor_cost_usd": 0.0006,
+      "simulated_assessor_latency_ms": 120
+    },
+    {
+      "answer": {
+        "citations": [
+          "v2h9a"
+        ],
+        "status": "supported"
+      },
+      "answer_success": false,
+      "arm": "current",
+      "assessor_calls": 0,
+      "case_id": "V2-H09",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "expected": "abstain",
+        "relevant": [
+          "v2h9b"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 5700,
+      "passage_labels": {
+        "v2h9a": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        },
+        "v2h9b": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2h9a",
+        "v2h9b"
+      ],
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "v2h9a"
+        ],
+        "status": "supported"
+      },
+      "answer_success": false,
+      "arm": "lexical",
+      "assessor_calls": 0,
+      "case_id": "V2-H09",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "expected": "abstain",
+        "relevant": [
+          "v2h9b"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 13100,
+      "passage_labels": {
+        "v2h9a": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        },
+        "v2h9b": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2h9a",
+        "v2h9b"
+      ],
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null
+    },
+    {
+      "answer": {
+        "citations": [],
+        "status": "abstain"
+      },
+      "answer_success": true,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "case_id": "V2-H09",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "expected": "abstain",
+        "relevant": [
+          "v2h9b"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 5700,
+      "passage_labels": {
+        "v2h9a": {
+          "assessment": "irrelevant",
+          "independent_relevant": false,
+          "selected": false
+        },
+        "v2h9b": {
+          "assessment": "uncertain",
+          "independent_relevant": true,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2h9b"
+      ],
+      "simulated_assessor_cost_usd": 0.0004,
+      "simulated_assessor_latency_ms": 31
+    },
+    {
+      "answer": {
+        "citations": [
+          "v2h10a"
+        ],
+        "status": "supported"
+      },
+      "answer_success": true,
+      "arm": "current",
+      "assessor_calls": 0,
+      "case_id": "V2-H10",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "v2h10a",
+        "expected": "supported",
+        "relevant": [
+          "v2h10a"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 4300,
+      "passage_labels": {
+        "v2h10a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "v2h10b": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2h10a",
+        "v2h10b"
+      ],
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null
+    },
+    {
+      "answer": {
+        "citations": [
+          "v2h10a"
+        ],
+        "status": "supported"
+      },
+      "answer_success": true,
+      "arm": "lexical",
+      "assessor_calls": 0,
+      "case_id": "V2-H10",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": false,
+      "evidence_status": "ready",
+      "expected_answer": {
+        "citation": "v2h10a",
+        "expected": "supported",
+        "relevant": [
+          "v2h10a"
+        ]
+      },
+      "generator_calls": 1,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 9800,
+      "passage_labels": {
+        "v2h10a": {
+          "assessment": "relevant",
+          "independent_relevant": true,
+          "selected": true
+        },
+        "v2h10b": {
+          "assessment": "relevant",
+          "independent_relevant": false,
+          "selected": true
+        }
+      },
+      "selected_ids": [
+        "v2h10a",
+        "v2h10b"
+      ],
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null
+    },
+    {
+      "answer": {
+        "citations": [],
+        "status": "abstain"
+      },
+      "answer_success": false,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "case_id": "V2-H10",
+      "citation_correct": true,
+      "contradiction_omitted": false,
+      "cost_limit_violated": true,
+      "evidence_status": "assessment_failed",
+      "expected_answer": {
+        "citation": "v2h10a",
+        "expected": "supported",
+        "relevant": [
+          "v2h10a"
+        ]
+      },
+      "generator_calls": 0,
+      "latency_limit_violated": false,
+      "local_elapsed_ns": 3800,
+      "passage_labels": {
+        "v2h10a": {
+          "assessment": null,
+          "independent_relevant": true,
+          "selected": false
+        },
+        "v2h10b": {
+          "assessment": null,
+          "independent_relevant": false,
+          "selected": false
+        }
+      },
+      "selected_ids": [],
+      "simulated_assessor_cost_usd": 0.0012,
+      "simulated_assessor_latency_ms": 41
+    }
+  ],
+  "rubric": "Each retrieved passage gets exactly one registered relevant/irrelevant/uncertain label. Missing, timeout, malformed, and resource-excess replies fail closed. These predictions are fixed fixture data, not a calibrated model.",
+  "screen_decision": "reject_on_frozen_synthetic_threshold",
+  "seed": 4502,
+  "source_sha256": {
+    "pipeline.py": "e5c85c4da7b8a7818b68c5fc2c449b81962ea6df5313bb855832ae414176c87b",
+    "run_study45.py": "17a971ff214559d666729f33abaf53e4c8ab908192a9bfd574201e15c69414be",
+    "run_study45_v2.py": "0d1ab62a2fa142c2d473292b0a761e579be0af11f94166a8e63fb0aa9f40f232",
+    "study45_v2_cases.json": "38fc79c772ea88f11f8468b4a581f89c7a228ef2ada1a696ea76d8983c0d216d",
+    "study45_v2_labels.json": "a935221bfa4925d063947326ff68ca7216b93d70e262385fa575d3c82ba2f1f4",
+    "study45_v2_predictions.json": "2eec149bc291117b57955a68f62fde97cc4b441027d03355a932375b9dfed5ab"
+  },
+  "stop_rule": "Run each of 10 new holdout cases once under all three arms in fixed case order; never stop early or tune from holdout. Any failure stays in denominator. Synthetic screen success would still require observed provider/task evidence before adoption.",
+  "study_id": "rag-evidence-45-v2",
+  "threshold": {
+    "answer_success_gain_over_lexical": 0.2,
+    "max_contradiction_omissions": 0,
+    "max_cost_limit_violations": 0,
+    "max_latency_limit_violations": 0,
+    "max_missing_or_failed_outcomes": 0
+  }
+}
