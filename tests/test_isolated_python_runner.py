@@ -144,6 +144,16 @@ def test_installed_sitecustomize_cannot_run_before_approved_entry(tmp_path):
     assert_zero(run(root, spec), b'installed-dependency\n', case='installed')
 
 
+def test_dependency_preparation_and_denied_grant_never_import_target(tmp_path):
+    root, deps, original, selected = installed_fixture(tmp_path)
+    (deps / 'toy_package' / '__init__.py').write_text(
+        'raise AssertionError("dependency imported before approval")\n')
+    spec = runner.prepare_spec(root, ['entry.py'], original['schedule'],
+                               target_environment=selected)
+    with pytest.raises(runner.RunnerError, match='execution_authority'):
+        runner.run_schedule(root, spec, None)
+
+
 def test_missing_or_different_interpreter_is_rejected_before_target_launch(tmp_path):
     root, _, spec, selected = installed_fixture(tmp_path)
     selected['interpreter_path'] = str(tmp_path / 'missing-python')
