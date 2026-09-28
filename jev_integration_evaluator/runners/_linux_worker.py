@@ -183,7 +183,10 @@ def main() -> int:
             resource.setrlimit(kind, (bound, bound))
         os.environ.clear()
         os.environ.update(environment)
-        sys.path[:] = ['/host']
+        dependency_path = request.get('dependency_path')
+        if dependency_path not in (None, '/deps'):
+            raise RuntimeError('unsupported_dependency_path')
+        sys.path[:] = ['/host'] + ([dependency_path] if dependency_path else [])
         sys.argv[:] = ['/host/' + entry] + args
         sys.dont_write_bytecode = True
         _seccomp(library)

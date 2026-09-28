@@ -1,6 +1,17 @@
 # Standalone native runner contribution — NOT an issue #8 completion
 
 Contribution contract: `linux-chroot-seccomp-python-ro-v1` / schema `1.0`.
+The opt-in `1.1` contract adds a selected installed environment with an
+executable that resolves to the exact trusted worker interpreter inode and an
+explicit pure-Python dependency snapshot. This limited mode does not launch
+target-provided interpreter code before isolation. It copies approved `.py`
+modules and distribution `METADATA` into `/deps`, verifies bytes and modes at
+each case and after execution, and adds `/deps` to `sys.path` only after
+chroot, credential drop, and seccomp installation. The selected path, binary
+hash, dependency root identity, package metadata, and file hashes are bound to
+the `1.1` request and receipt. Missing, changed, or incompatible interpreters
+and dependencies fail without falling back. Binary extensions, `.pth` files,
+other interpreter builds, and unlisted packages are unsupported.
 This is an unmerged, opt-in backend contribution. It is not connected to the
 repository command/session, existing implementation verification receipts, or
 TypeSafe runtime bootstrap. It neither replaces the existing probe nor changes
@@ -64,7 +75,8 @@ SafeRouter, HostGate or BudgetCoordinator and does not qualify issue #12.
 
 Windows, macOS, non-x86-64 Linux, nonprivileged/rootless launch, other Python/kernel
 versions, writable target filesystems, spawned processes or threads, sockets,
-provider connectivity, target-installed environments, arbitrary framework or
+provider connectivity, nonidentical target interpreter builds, compiled
+dependencies, arbitrary framework or
 stdlib dependency discovery, ESM/CommonJS/TypeScript execution, generated JEV
 recipe wiring, durable repository sessions, composite transactions and production
 activation are not qualified by this contribution. There is no automatic host
@@ -117,6 +129,14 @@ spec = prepare_spec(
     ["entry.py", "runtime.py"],
     [{"case_id": "off", "entry": "entry.py", "argv": ["off"]}],
 )
+# For the supported same-interpreter installed pure-Python subset, add:
+# target_environment={
+#   'interpreter_path': '/approved/venv/bin/python',
+#   'dependency_root': '/approved/venv/lib/pythonX.Y/site-packages',
+#   'files': ['package/__init__.py', 'package-1.0.dist-info/METADATA'],
+#   'distributions': [{'name': 'package', 'version': '1.0',
+#                     'metadata_path': 'package-1.0.dist-info/METADATA'}],
+# }
 # Display/store spec for review. Do not automatically create a grant from it.
 # Only after the trusted caller supplies the exact approval and scope reference:
 grant = ExecutionGrant(externally_approved_digest, externally_supplied_reference)

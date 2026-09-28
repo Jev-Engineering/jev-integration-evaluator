@@ -191,9 +191,15 @@ def environment_identity() -> dict[str, Any]:
 
 
 def validate_spec(spec: Any) -> None:
-    _keys(spec, {'schema_version', 'backend', 'source_identity', 'files', 'environment_identity',
-                 'environment', 'schedule', 'limits'}, 'invalid_spec_fields')
-    if spec['schema_version'] != '1.0' or spec['backend'] != BACKEND:
+    if type(spec) is not dict:
+        raise RunnerError('invalid_spec_fields')
+    version = spec.get('schema_version')
+    expected = {'schema_version', 'backend', 'source_identity', 'files', 'environment_identity',
+                'environment', 'schedule', 'limits'}
+    if version == '1.1':
+        expected.add('target_environment')
+    _keys(spec, expected, 'invalid_spec_fields')
+    if version not in ('1.0', '1.1') or spec['backend'] != BACKEND:
         raise RunnerError('unsupported_contract_or_backend')
     if len(canonical(spec)) > MAX_CONTRACT_BYTES:
         raise RunnerError('contract_byte_limit')
@@ -228,6 +234,53 @@ def validate_spec(spec: Any) -> None:
         total += row['bytes']
     if total > MAX_SOURCE_BYTES:
         raise RunnerError('source_byte_limit')
+    if version == '1.1':
+        target = spec['target_environment']
+        _keys(target, {'interpreter_path', 'interpreter_sha256', 'dependency_root',
+                       'dependency_identity', 'files', 'distributions'}, 'invalid_target_environment')
+        for key in ('interpreter_path', 'dependency_root'):
+            value = target[key]
+            if (not isinstance(value, str) or not value.startswith('/')
+                    or len(value) > 4096 or '\0' in value):
+                raise RunnerError('invalid_target_environment')
+        _hex(target['interpreter_sha256'], 'invalid_target_environment')
+        _keys(target['dependency_identity'], {'device', 'inode'}, 'invalid_target_environment')
+        for value in target['dependency_identity'].values():
+            _integer(value, 0, 2**64 - 1, 'invalid_target_environment')
+        if type(target['files']) is not list or not 1 <= len(target['files']) <= 256:
+            raise RunnerError('invalid_dependency_files')
+        dep_paths: set[str] = set()
+        for row in target['files']:
+            _keys(row, {'path', 'sha256', 'bytes', 'mode'}, 'invalid_dependency_file')
+            path = _relative(row['path'])
+            if (path in dep_paths or not (path.endswith('.py')
+                                          or path.endswith('.dist-info/METADATA'))):
+                raise RunnerError('unsupported_or_duplicate_dependency')
+            dep_paths.add(path)
+            _hex(row['sha256'], 'invalid_dependency_file')
+            _integer(row['bytes'], 0, MAX_FILE_BYTES, 'invalid_dependency_file')
+            if row['mode'] not in (0o444, 0o644, 0o555, 0o755):
+                raise RunnerError('unsupported_dependency_mode')
+            total += row['bytes']
+        if total > MAX_SOURCE_BYTES:
+            raise RunnerError('source_byte_limit')
+        if (type(target['distributions']) is not list or not target['distributions']
+                or len(target['distributions']) > 32):
+            raise RunnerError('invalid_dependency_provenance')
+        for distribution in target['distributions']:
+            _keys(distribution, {'name', 'version', 'metadata_path'}, 'invalid_dependency_provenance')
+            if (not isinstance(distribution['name'], str) or not _ID.fullmatch(distribution['name'])
+                    or not isinstance(distribution['version'], str)
+                    or not _ID.fullmatch(distribution['version'])
+                    or distribution['metadata_path'] not in dep_paths
+                    or not distribution['metadata_path'].endswith('.dist-info/METADATA')):
+                raise RunnerError('invalid_dependency_provenance')
+        module_roots = {d['name'].replace('-', '_') for d in target['distributions']}
+        for path in dep_paths:
+            if path.endswith('.py') and not any(
+                    path == name + '.py' or path.startswith(name + '/')
+                    for name in module_roots):
+                raise RunnerError('unproven_dependency_module')
     if any(any(parent.as_posix() in paths for parent in PurePosixPath(name).parents if str(parent) != '.')
            for name in paths):
         raise RunnerError('source_path_collision')
@@ -265,7 +318,8 @@ def validate_spec(spec: Any) -> None:
 
 def prepare_spec(root: str | Path, paths: list[str], schedule: list[dict[str, Any]], *,
                  environment: dict[str, str] | None = None,
-                 limits: dict[str, int] | None = None) -> dict[str, Any]:
+                 limits: dict[str, int] | None = None,
+                 target_environment: dict[str, Any] | None = None) -> dict[str, Any]:
     """Read only explicitly named files; no target execution and no approval."""
     if type(paths) is not list or not 1 <= len(paths) <= 256:
         raise RunnerError('invalid_files')
@@ -288,6 +342,46 @@ def prepare_spec(root: str | Path, paths: list[str], schedule: list[dict[str, An
             'schedule': schedule, 'limits': limits or {
                 'wall_seconds': 3, 'cpu_seconds': 2, 'address_space_bytes': 128 * 1024**2,
                 'open_files': 32, 'output_bytes': 4096, 'schedule_seconds': 30}}
+    if target_environment is not None:
+        _keys(target_environment, {'interpreter_path', 'dependency_root', 'files',
+                                   'distributions'}, 'invalid_target_environment')
+        if (not isinstance(target_environment['interpreter_path'], str)
+                or not isinstance(target_environment['dependency_root'], str)
+                or type(target_environment['files']) is not list
+                or not target_environment['files']
+                or len(target_environment['files']) > 256):
+            raise RunnerError('invalid_target_environment')
+        selected = Path(target_environment['interpreter_path'])
+        if (not selected.is_absolute() or not selected.is_file()
+                or not os.path.samefile(selected, sys.executable)):
+            raise RunnerError('unsupported_target_interpreter')
+        dep_root = target_environment['dependency_root']
+        dep_fd = _root_fd(dep_root)
+        try:
+            dep_rows = []
+            dep_contents = {}
+            for relative in target_environment['files']:
+                data, st = _read_at(dep_fd, relative)
+                dep_contents[relative] = data
+                dep_rows.append({'path': relative, 'sha256': _hash(data), 'bytes': len(data),
+                                 'mode': stat.S_IMODE(st.st_mode)})
+            dep_identity = _identity(os.fstat(dep_fd))
+        finally:
+            os.close(dep_fd)
+        for distribution in target_environment['distributions']:
+            metadata = dep_contents.get(distribution['metadata_path'], b'')
+            try:
+                headers = metadata.decode('utf-8').splitlines()
+            except UnicodeDecodeError as error:
+                raise RunnerError('invalid_dependency_provenance') from error
+            if (f"Name: {distribution['name']}" not in headers
+                    or f"Version: {distribution['version']}" not in headers):
+                raise RunnerError('invalid_dependency_provenance')
+        spec['schema_version'] = '1.1'
+        spec['target_environment'] = {'interpreter_path': str(selected),
+            'interpreter_sha256': _plain_hash(selected), 'dependency_root': str(dep_root),
+            'dependency_identity': dep_identity, 'files': dep_rows,
+            'distributions': target_environment['distributions']}
     validate_spec(spec)
     return spec
 
@@ -337,6 +431,28 @@ def _snapshot(root_fd: int, spec: Mapping[str, Any]) -> dict[str, bytes]:
     return result
 
 
+def _dependency_snapshot(spec: Mapping[str, Any]) -> dict[str, bytes]:
+    target = spec['target_environment']
+    selected = Path(target['interpreter_path'])
+    if (not selected.is_file() or not os.path.samefile(selected, sys.executable)
+            or _plain_hash(selected) != target['interpreter_sha256']):
+        raise RunnerError('target_interpreter_drift')
+    fd = _root_fd(target['dependency_root'])
+    try:
+        if _identity(os.fstat(fd)) != target['dependency_identity']:
+            raise RunnerError('dependency_root_changed')
+        result = {}
+        for row in target['files']:
+            data, st = _read_at(fd, row['path'])
+            if (len(data), _hash(data), stat.S_IMODE(st.st_mode)) != (
+                    row['bytes'], row['sha256'], row['mode']):
+                raise RunnerError('dependency_drift')
+            result[row['path']] = data
+        return result
+    finally:
+        os.close(fd)
+
+
 def _kill_and_reap(process: subprocess.Popen[bytes]) -> bool:
     # The v1 kernel policy denies all creation/escape of descendants. killpg is
     # still used defensively, and the direct worker is always reaped.
@@ -354,6 +470,7 @@ def _kill_and_reap(process: subprocess.Popen[bytes]) -> bool:
 
 
 def _execute_case(spec: dict[str, Any], case: dict[str, Any], snapshot: dict[str, bytes],
+                  dependencies: dict[str, bytes],
                   remaining: float) -> tuple[dict[str, Any], tuple[bytes, bytes]]:
     start = time.monotonic()
     process = None
@@ -372,6 +489,15 @@ def _execute_case(spec: dict[str, Any], case: dict[str, Any], snapshot: dict[str
                 with target.open('xb') as handle:
                     handle.write(snapshot[row['path']])
                 os.chmod(target, row['mode'])
+            if spec['schema_version'] == '1.1':
+                dep_dir = jail / 'deps'
+                dep_dir.mkdir(mode=0o755)
+                for row in spec['target_environment']['files']:
+                    target = dep_dir / row['path']
+                    target.parent.mkdir(parents=True, exist_ok=True, mode=0o755)
+                    with target.open('xb') as handle:
+                        handle.write(dependencies[row['path']])
+                    os.chmod(target, row['mode'])
             # No writable jail directory, /proc, device, runtime socket, mount,
             # external directory descriptor, or target-created symlink exists.
             for item in [jail, host, *jail.rglob('*')]:
@@ -382,6 +508,7 @@ def _execute_case(spec: dict[str, Any], case: dict[str, Any], snapshot: dict[str
             worker = Path(__file__).with_name('_linux_worker.py').resolve()
             request = {'jail': str(jail), 'entry': case['entry'], 'argv': case['argv'],
                        'environment': spec['environment'], 'limits': spec['limits'],
+                       'dependency_path': '/deps' if spec['schema_version'] == '1.1' else None,
                        'library_path': environment['library_path'],
                        'library_sha256': environment['library_sha256'],
                        'runtime_dependencies_sha256': environment['runtime_dependencies_sha256']}
@@ -448,6 +575,12 @@ def _execute_case(spec: dict[str, Any], case: dict[str, Any], snapshot: dict[str
                 target = host / row['path']
                 if (_plain_hash(target), stat.S_IMODE(target.stat().st_mode)) != (row['sha256'], row['mode']):
                     outcome = 'copied_source_drift'
+            if spec['schema_version'] == '1.1':
+                for row in spec['target_environment']['files']:
+                    target = jail / 'deps' / row['path']
+                    if (_plain_hash(target), stat.S_IMODE(target.stat().st_mode)) != (
+                            row['sha256'], row['mode']):
+                        outcome = 'copied_source_drift'
             stdout, stderr = bytes(buffers['stdout']), bytes(buffers['stderr'])
             return _row(case, outcome, target_launch_released=ready, isolation_established=ready,
                         returncode=rc, stdout_bytes=len(stdout), stderr_bytes=len(stderr),
@@ -496,6 +629,7 @@ def run_schedule(root: str | Path, spec: dict[str, Any], grant: ExecutionGrant |
             raise RunnerError('environment_drift')
         root_fd = _root_fd(root)
         snapshot = _snapshot(root_fd, spec)
+        dependencies = _dependency_snapshot(spec) if spec['schema_version'] == '1.1' else {}
     except (RunnerError, OSError) as error:
         block = error.code if isinstance(error, RunnerError) else 'prerequisite_io_error'
     else:
@@ -520,7 +654,15 @@ def run_schedule(root: str | Path, spec: dict[str, Any], grant: ExecutionGrant |
                 block = error.code
                 rows.append(_row(case, block))
                 continue
-            row, output = _execute_case(spec, case, snapshot, remaining)
+            if spec['schema_version'] == '1.1':
+                try:
+                    if _dependency_snapshot(spec) != dependencies:
+                        raise RunnerError('dependency_drift')
+                except RunnerError as error:
+                    block = error.code
+                    rows.append(_row(case, block))
+                    continue
+            row, output = _execute_case(spec, case, snapshot, dependencies, remaining)
             rows.append(row)
             outputs[case['case_id']] = output
             # Failed setup is a hard stop, not a silent unsandboxed fallback.
@@ -533,6 +675,8 @@ def run_schedule(root: str | Path, spec: dict[str, Any], grant: ExecutionGrant |
                 check_fd = _root_fd(root)
                 try:
                     final_identity_valid = _snapshot(check_fd, spec) == snapshot
+                    if spec['schema_version'] == '1.1':
+                        final_identity_valid = final_identity_valid and _dependency_snapshot(spec) == dependencies
                 finally:
                     os.close(check_fd)
             except RunnerError:
@@ -543,7 +687,7 @@ def run_schedule(root: str | Path, spec: dict[str, Any], grant: ExecutionGrant |
         if root_fd is not None:
             os.close(root_fd)
     receipt = {
-        'schema_version': '1.0', 'backend': BACKEND, 'run_id': str(uuid.uuid4()),
+        'schema_version': spec['schema_version'], 'backend': BACKEND, 'run_id': str(uuid.uuid4()),
         'request_sha256': digest, 'authority_reference_sha256': _hash(grant.authority_reference.encode()),
         'source_manifest_sha256': _hash(canonical(spec['files'])),
         'environment_identity_sha256': _hash(canonical(spec['environment_identity'])),
@@ -554,6 +698,8 @@ def run_schedule(root: str | Path, spec: dict[str, Any], grant: ExecutionGrant |
         'exited_zero': sum(row['outcome'] == 'exited_zero' for row in rows),
         'cases': rows,
     }
+    if spec['schema_version'] == '1.1':
+        receipt['target_environment_sha256'] = _hash(canonical(spec['target_environment']))
     return RunResult(receipt, outputs)
 
 
@@ -570,10 +716,12 @@ def inspect_receipt(spec: dict[str, Any], receipt: dict[str, Any], *,
            'environment_identity_sha256', 'schedule_sha256', 'evidence_kind',
            'integration_verified', 'activation_eligible', 'source_identity_valid',
            'scheduled', 'recorded', 'exited_zero', 'cases'}
+    if spec['schema_version'] == '1.1':
+        top.add('target_environment_sha256')
     _keys(receipt, top, 'invalid_receipt_fields')
     if len(canonical(receipt)) > MAX_CONTRACT_BYTES:
         raise RunnerError('receipt_byte_limit')
-    if (receipt['schema_version'] != '1.0' or receipt['backend'] != BACKEND
+    if (receipt['schema_version'] != spec['schema_version'] or receipt['backend'] != BACKEND
             or receipt['evidence_kind'] != 'runner_execution_only'
             or receipt['integration_verified'] is not False
             or receipt['activation_eligible'] is not False
@@ -588,6 +736,8 @@ def inspect_receipt(spec: dict[str, Any], receipt: dict[str, Any], *,
                 'source_manifest_sha256': _hash(canonical(spec['files'])),
                 'environment_identity_sha256': _hash(canonical(spec['environment_identity'])),
                 'schedule_sha256': _hash(canonical(spec['schedule']))}
+    if spec['schema_version'] == '1.1':
+        bindings['target_environment_sha256'] = _hash(canonical(spec['target_environment']))
     if any(receipt[key] != expected for key, expected in bindings.items()):
         raise RunnerError('receipt_binding_mismatch')
     _hex(receipt['authority_reference_sha256'], 'invalid_authority_reference_hash')
@@ -605,6 +755,8 @@ def inspect_receipt(spec: dict[str, Any], receipt: dict[str, Any], *,
                      'unsafe_or_missing_source', 'unsupported_source_file', 'source_byte_limit',
                      'unsupported_platform', 'privileged_launcher_required',
                      'libseccomp_missing', 'runtime_probe_failed', 'absolute_root_required',
+                     'unsupported_target_interpreter', 'target_interpreter_drift',
+                     'dependency_root_changed', 'dependency_drift',
                      'prerequisite_io_error'}
     for case, row in zip(spec['schedule'], receipt['cases']):
         _keys(row, row_fields, 'invalid_case_receipt')

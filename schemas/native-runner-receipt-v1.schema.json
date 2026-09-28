@@ -1,188 +1,390 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "additionalProperties": false,
   "description": "Runner-only contribution. Cross-artifact semantic validation is mandatory.",
-  "properties": {
-    "activation_eligible": {
-      "const": false
-    },
-    "authority_reference_sha256": {
-      "pattern": "^[0-9a-f]{64}$",
-      "type": "string"
-    },
-    "backend": {
-      "const": "linux-chroot-seccomp-python-ro-v1"
-    },
-    "cases": {
-      "items": {
-        "additionalProperties": false,
-        "properties": {
-          "case_id": {
-            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,95}$",
-            "type": "string"
-          },
-          "cleanup_complete": {
-            "type": "boolean"
-          },
-          "command_sha256": {
-            "pattern": "^[0-9a-f]{64}$",
-            "type": "string"
-          },
-          "elapsed_ms": {
-            "maximum": 180000,
-            "minimum": 0,
-            "type": "integer"
-          },
-          "isolation_established": {
-            "type": "boolean"
-          },
-          "outcome": {
-            "enum": [
-              "exited_zero",
-              "execution_failed",
-              "timeout",
-              "output_limit",
-              "setup_failed",
-              "cleanup_failed",
-              "copied_source_drift",
-              "schedule_deadline",
-              "environment_drift",
-              "source_root_changed",
-              "source_drift",
-              "source_changed_during_read",
-              "unsafe_or_missing_root",
-              "unsafe_or_missing_source",
-              "unsupported_source_file",
-              "source_byte_limit",
-              "unsupported_platform",
-              "privileged_launcher_required",
-              "libseccomp_missing",
-              "runtime_probe_failed",
-              "absolute_root_required",
-              "prerequisite_io_error"
-            ],
-            "type": "string"
-          },
-          "returncode": {
-            "anyOf": [
-              {
-                "type": "null"
-              },
-              {
-                "maximum": 255,
-                "minimum": -128,
-                "type": "integer"
-              }
-            ]
-          },
-          "stderr_bytes": {
-            "maximum": 1048576,
-            "minimum": 0,
-            "type": "integer"
-          },
-          "stderr_sha256": {
-            "pattern": "^[0-9a-f]{64}$",
-            "type": "string"
-          },
-          "stdout_bytes": {
-            "maximum": 1048576,
-            "minimum": 0,
-            "type": "integer"
-          },
-          "stdout_sha256": {
-            "pattern": "^[0-9a-f]{64}$",
-            "type": "string"
-          },
-          "target_launch_released": {
-            "type": "boolean"
-          }
+  "oneOf": [
+    {
+      "additionalProperties": false,
+      "properties": {
+        "activation_eligible": {
+          "const": false
         },
-        "required": [
-          "case_id",
-          "command_sha256",
-          "outcome",
-          "target_launch_released",
-          "isolation_established",
-          "returncode",
-          "stdout_bytes",
-          "stderr_bytes",
-          "stdout_sha256",
-          "stderr_sha256",
-          "elapsed_ms",
-          "cleanup_complete"
-        ],
-        "type": "object"
+        "authority_reference_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "backend": {
+          "const": "linux-chroot-seccomp-python-ro-v1"
+        },
+        "cases": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "case_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,95}$",
+                "type": "string"
+              },
+              "cleanup_complete": {
+                "type": "boolean"
+              },
+              "command_sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "elapsed_ms": {
+                "maximum": 180000,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "isolation_established": {
+                "type": "boolean"
+              },
+              "outcome": {
+                "enum": [
+                  "exited_zero",
+                  "execution_failed",
+                  "timeout",
+                  "output_limit",
+                  "setup_failed",
+                  "cleanup_failed",
+                  "copied_source_drift",
+                  "schedule_deadline",
+                  "environment_drift",
+                  "source_root_changed",
+                  "source_drift",
+                  "source_changed_during_read",
+                  "unsafe_or_missing_root",
+                  "unsafe_or_missing_source",
+                  "unsupported_source_file",
+                  "source_byte_limit",
+                  "unsupported_platform",
+                  "privileged_launcher_required",
+                  "libseccomp_missing",
+                  "runtime_probe_failed",
+                  "absolute_root_required",
+                  "unsupported_target_interpreter",
+                  "target_interpreter_drift",
+                  "dependency_root_changed",
+                  "dependency_drift",
+                  "prerequisite_io_error"
+                ],
+                "type": "string"
+              },
+              "returncode": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "maximum": 255,
+                    "minimum": -128,
+                    "type": "integer"
+                  }
+                ]
+              },
+              "stderr_bytes": {
+                "maximum": 1048576,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "stderr_sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "stdout_bytes": {
+                "maximum": 1048576,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "stdout_sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "target_launch_released": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "case_id",
+              "command_sha256",
+              "outcome",
+              "target_launch_released",
+              "isolation_established",
+              "returncode",
+              "stdout_bytes",
+              "stderr_bytes",
+              "stdout_sha256",
+              "stderr_sha256",
+              "elapsed_ms",
+              "cleanup_complete"
+            ],
+            "type": "object"
+          },
+          "maxItems": 64,
+          "minItems": 1,
+          "type": "array"
+        },
+        "environment_identity_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "evidence_kind": {
+          "const": "runner_execution_only"
+        },
+        "exited_zero": {
+          "maximum": 64,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "integration_verified": {
+          "const": false
+        },
+        "recorded": {
+          "maximum": 64,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "request_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "run_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "schedule_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "scheduled": {
+          "maximum": 64,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "schema_version": {
+          "const": "1.0"
+        },
+        "source_identity_valid": {
+          "type": "boolean"
+        },
+        "source_manifest_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        }
       },
-      "maxItems": 64,
-      "minItems": 1,
-      "type": "array"
+      "required": [
+        "schema_version",
+        "backend",
+        "run_id",
+        "request_sha256",
+        "authority_reference_sha256",
+        "source_manifest_sha256",
+        "environment_identity_sha256",
+        "schedule_sha256",
+        "evidence_kind",
+        "integration_verified",
+        "activation_eligible",
+        "source_identity_valid",
+        "scheduled",
+        "recorded",
+        "exited_zero",
+        "cases"
+      ],
+      "type": "object"
     },
-    "environment_identity_sha256": {
-      "pattern": "^[0-9a-f]{64}$",
-      "type": "string"
-    },
-    "evidence_kind": {
-      "const": "runner_execution_only"
-    },
-    "exited_zero": {
-      "maximum": 64,
-      "minimum": 0,
-      "type": "integer"
-    },
-    "integration_verified": {
-      "const": false
-    },
-    "recorded": {
-      "maximum": 64,
-      "minimum": 1,
-      "type": "integer"
-    },
-    "request_sha256": {
-      "pattern": "^[0-9a-f]{64}$",
-      "type": "string"
-    },
-    "run_id": {
-      "format": "uuid",
-      "type": "string"
-    },
-    "schedule_sha256": {
-      "pattern": "^[0-9a-f]{64}$",
-      "type": "string"
-    },
-    "scheduled": {
-      "maximum": 64,
-      "minimum": 1,
-      "type": "integer"
-    },
-    "schema_version": {
-      "const": "1.0"
-    },
-    "source_identity_valid": {
-      "type": "boolean"
-    },
-    "source_manifest_sha256": {
-      "pattern": "^[0-9a-f]{64}$",
-      "type": "string"
+    {
+      "additionalProperties": false,
+      "properties": {
+        "activation_eligible": {
+          "const": false
+        },
+        "authority_reference_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "backend": {
+          "const": "linux-chroot-seccomp-python-ro-v1"
+        },
+        "cases": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "case_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,95}$",
+                "type": "string"
+              },
+              "cleanup_complete": {
+                "type": "boolean"
+              },
+              "command_sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "elapsed_ms": {
+                "maximum": 180000,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "isolation_established": {
+                "type": "boolean"
+              },
+              "outcome": {
+                "enum": [
+                  "exited_zero",
+                  "execution_failed",
+                  "timeout",
+                  "output_limit",
+                  "setup_failed",
+                  "cleanup_failed",
+                  "copied_source_drift",
+                  "schedule_deadline",
+                  "environment_drift",
+                  "source_root_changed",
+                  "source_drift",
+                  "source_changed_during_read",
+                  "unsafe_or_missing_root",
+                  "unsafe_or_missing_source",
+                  "unsupported_source_file",
+                  "source_byte_limit",
+                  "unsupported_platform",
+                  "privileged_launcher_required",
+                  "libseccomp_missing",
+                  "runtime_probe_failed",
+                  "absolute_root_required",
+                  "unsupported_target_interpreter",
+                  "target_interpreter_drift",
+                  "dependency_root_changed",
+                  "dependency_drift",
+                  "prerequisite_io_error"
+                ],
+                "type": "string"
+              },
+              "returncode": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "maximum": 255,
+                    "minimum": -128,
+                    "type": "integer"
+                  }
+                ]
+              },
+              "stderr_bytes": {
+                "maximum": 1048576,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "stderr_sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "stdout_bytes": {
+                "maximum": 1048576,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "stdout_sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "target_launch_released": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "case_id",
+              "command_sha256",
+              "outcome",
+              "target_launch_released",
+              "isolation_established",
+              "returncode",
+              "stdout_bytes",
+              "stderr_bytes",
+              "stdout_sha256",
+              "stderr_sha256",
+              "elapsed_ms",
+              "cleanup_complete"
+            ],
+            "type": "object"
+          },
+          "maxItems": 64,
+          "minItems": 1,
+          "type": "array"
+        },
+        "environment_identity_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "evidence_kind": {
+          "const": "runner_execution_only"
+        },
+        "exited_zero": {
+          "maximum": 64,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "integration_verified": {
+          "const": false
+        },
+        "recorded": {
+          "maximum": 64,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "request_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "run_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "schedule_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "scheduled": {
+          "maximum": 64,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "schema_version": {
+          "const": "1.1"
+        },
+        "source_identity_valid": {
+          "type": "boolean"
+        },
+        "source_manifest_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "target_environment_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "backend",
+        "run_id",
+        "request_sha256",
+        "authority_reference_sha256",
+        "source_manifest_sha256",
+        "environment_identity_sha256",
+        "schedule_sha256",
+        "evidence_kind",
+        "integration_verified",
+        "activation_eligible",
+        "source_identity_valid",
+        "scheduled",
+        "recorded",
+        "exited_zero",
+        "cases",
+        "target_environment_sha256"
+      ],
+      "type": "object"
     }
-  },
-  "required": [
-    "schema_version",
-    "backend",
-    "run_id",
-    "request_sha256",
-    "authority_reference_sha256",
-    "source_manifest_sha256",
-    "environment_identity_sha256",
-    "schedule_sha256",
-    "evidence_kind",
-    "integration_verified",
-    "activation_eligible",
-    "source_identity_valid",
-    "scheduled",
-    "recorded",
-    "exited_zero",
-    "cases"
   ],
-  "title": "native-runner-receipt-v1",
-  "type": "object"
+  "title": "native-runner-receipt-v1"
 }

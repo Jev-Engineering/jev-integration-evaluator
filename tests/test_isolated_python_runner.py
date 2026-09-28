@@ -78,6 +78,58 @@ def test_target_startup_customization_is_not_implicitly_executed(tmp_path):
     assert_zero(result, b'entry reached\n')
 
 
+def installed_fixture(tmp_path):
+    root = tmp_path / 'target'
+    root.mkdir()
+    (root / 'entry.py').write_text('import toy_package\nprint(toy_package.value(), flush=True)\n')
+    deps = tmp_path / 'installed-site-packages'
+    (deps / 'toy_package').mkdir(parents=True)
+    (deps / 'toy_package' / '__init__.py').write_text('def value(): return "installed-dependency"\n')
+    metadata = deps / 'toy_package-1.0.dist-info' / 'METADATA'
+    metadata.parent.mkdir()
+    metadata.write_text('Metadata-Version: 2.1\nName: toy_package\nVersion: 1.0\n')
+    selected = {'interpreter_path': sys.executable, 'dependency_root': str(deps),
+                'files': ['toy_package/__init__.py', 'toy_package-1.0.dist-info/METADATA'],
+                'distributions': [{'name': 'toy_package', 'version': '1.0',
+                                   'metadata_path': 'toy_package-1.0.dist-info/METADATA'}]}
+    schedule = [{'case_id': 'installed', 'entry': 'entry.py', 'argv': []}]
+    spec = runner.prepare_spec(root, ['entry.py'], schedule, target_environment=selected)
+    return root, deps, spec, selected
+
+
+def test_exact_installed_pure_python_dependency_runs_inside_jail(tmp_path):
+    root, _, spec, _ = installed_fixture(tmp_path)
+    assert spec['schema_version'] == '1.1'
+    result = run(root, spec)
+    assert_zero(result, b'installed-dependency\n', case='installed')
+    assert spec['target_environment']['interpreter_sha256'] == spec['environment_identity']['python_sha256']
+    assert result.receipt['schema_version'] == '1.1'
+    runner.inspect_receipt(spec, result.receipt, trusted_receipt_sha256=result.receipt_sha256)
+    altered = copy.deepcopy(result.receipt)
+    altered['target_environment_sha256'] = '0' * 64
+    with pytest.raises(runner.RunnerError, match='receipt_binding_mismatch'):
+        runner.inspect_receipt(spec, altered)
+
+
+def test_installed_dependency_drift_retains_scheduled_failure(tmp_path):
+    root, deps, spec, _ = installed_fixture(tmp_path)
+    (deps / 'toy_package' / '__init__.py').write_text('def value(): return "changed"\n')
+    result = run(root, spec)
+    assert [row['outcome'] for row in result.receipt['cases']] == ['dependency_drift']
+    assert result.private_outputs == {}
+    runner.inspect_receipt(spec, result.receipt)
+
+
+def test_missing_or_different_interpreter_is_rejected_before_target_launch(tmp_path):
+    root, _, spec, selected = installed_fixture(tmp_path)
+    selected['interpreter_path'] = str(tmp_path / 'missing-python')
+    with pytest.raises(runner.RunnerError, match='unsupported_target_interpreter'):
+        runner.prepare_spec(root, ['entry.py'], spec['schedule'], target_environment=selected)
+    spec['target_environment']['interpreter_sha256'] = '0' * 64
+    result = run(root, spec)
+    assert result.receipt['cases'][0]['outcome'] == 'target_interpreter_drift'
+
+
 def test_real_bootstrap_off_shadow_no_replacement_callback(tmp_path):
     source = '''import sys
 from runtime import bootstrap

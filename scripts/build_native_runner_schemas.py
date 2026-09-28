@@ -41,11 +41,28 @@ spec=obj({
                     'items':{'type':'string','maxLength':1024,'pattern':'^[^\u0000]*$'}}})},
     'limits':limits,
 })
+file_record=obj({'path':REL,'sha256':HEX,'bytes':integer(0,2097152),
+                 'mode':{'type':'integer','enum':[292,420,365,493]}})
+target_environment=obj({
+    'interpreter_path':{'type':'string','pattern':'^/[^\\u0000]*$','maxLength':4096},
+    'interpreter_sha256':HEX,
+    'dependency_root':{'type':'string','pattern':'^/[^\\u0000]*$','maxLength':4096},
+    'dependency_identity':obj({'device':integer(0,2**64-1),'inode':integer(0,2**64-1)}),
+    'files':{'type':'array','minItems':1,'maxItems':256,'items':file_record},
+    'distributions':{'type':'array','minItems':1,'maxItems':32,'items':obj({
+        'name':ID,'version':ID,'metadata_path':REL})},
+})
+spec11=json.loads(json.dumps(spec))
+spec11['properties']['schema_version']=const('1.1')
+spec11['properties']['target_environment']=target_environment
+spec11['required'].append('target_environment')
+spec={'oneOf':[spec,spec11]}
 outcomes=['exited_zero','execution_failed','timeout','output_limit','setup_failed',
     'cleanup_failed','copied_source_drift','schedule_deadline','environment_drift',
     'source_root_changed','source_drift','source_changed_during_read','unsafe_or_missing_root',
     'unsafe_or_missing_source','unsupported_source_file','source_byte_limit','unsupported_platform',
     'privileged_launcher_required','libseccomp_missing','runtime_probe_failed','absolute_root_required',
+    'unsupported_target_interpreter','target_interpreter_drift','dependency_root_changed','dependency_drift',
     'prerequisite_io_error']
 row=obj({'case_id':ID,'command_sha256':HEX,'outcome':{'type':'string','enum':outcomes},
     'target_launch_released':{'type':'boolean'},'isolation_established':{'type':'boolean'},
@@ -60,6 +77,11 @@ receipt=obj({'schema_version':const('1.0'),'backend':const('linux-chroot-seccomp
     'integration_verified':const(False),'activation_eligible':const(False),
     'source_identity_valid':{'type':'boolean'},'scheduled':integer(1,64),'recorded':integer(1,64),
     'exited_zero':integer(0,64),'cases':{'type':'array','minItems':1,'maxItems':64,'items':row}})
+receipt11=json.loads(json.dumps(receipt))
+receipt11['properties']['schema_version']=const('1.1')
+receipt11['properties']['target_environment_sha256']=HEX
+receipt11['required'].append('target_environment_sha256')
+receipt={'oneOf':[receipt,receipt11]}
 
 
 def main():
