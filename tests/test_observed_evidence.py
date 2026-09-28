@@ -225,6 +225,11 @@ def test_collection_tamper_and_gate_substitution_rejected(tmp_path, cfg):
                         expected_collection_digest=report['contract_digest'], gate_bundle={},
                         root=root, bundle=bundle, placement_set=placement,
                         trusted_implementation_receipt_sha256=receipt)
+    with pytest.raises(InputError, match='requires frozen plan, raw rows and report'):
+        evaluate_linked(link, study, report, expected_link_digest=link['contract_digest'],
+                        expected_collection_digest=report['contract_digest'], holdout_report={},
+                        root=root, bundle=bundle, placement_set=placement,
+                        trusted_implementation_receipt_sha256=receipt)
 
 
 def test_frozen_monitor_recomputes_complete_denominator_and_only_suspends(tmp_path, cfg):

@@ -156,6 +156,7 @@ def parser():
         if name=="observed-evaluate":
             s.add_argument("--collection",required=True);s.add_argument("--collection-digest",required=True)
             s.add_argument("--gate-bundle");s.add_argument("--holdout-report")
+            s.add_argument("--holdout-plan");s.add_argument("--holdout-rows")
             s.add_argument("--monitor-rows");s.add_argument("--monitor-as-of")
     s=common("implementation-recipes", "List executable bounded Python recipes and unsupported shapes")
     s.add_argument("--json",action="store_true",help="Machine-readable catalog (also the default)")
@@ -434,6 +435,8 @@ def execute(args):
             trusted_implementation_receipt_sha256=args.receipt_sha256,
             gate_bundle=read_json(args.gate_bundle) if args.gate_bundle else None,
             holdout_report=read_json(args.holdout_report) if args.holdout_report else None,
+            holdout_plan=read_json(args.holdout_plan) if args.holdout_plan else None,
+            holdout_rows=_records(args.holdout_rows) if args.holdout_rows else None,
             monitor_plan=read_json(args.monitor_plan) if args.monitor_plan else None,
             monitor_rows=_records(args.monitor_rows) if args.monitor_rows else None,
             monitor_as_of=args.monitor_as_of))

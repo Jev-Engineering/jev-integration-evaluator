@@ -307,6 +307,7 @@ def evaluate_linked(link: dict, study: dict, collection: dict, *,
                     root, bundle, placement_set: dict,
                     trusted_implementation_receipt_sha256: str,
                     gate_bundle: dict | None = None, holdout_report: dict | None = None,
+                    holdout_plan: dict | None = None, holdout_rows: list[dict] | None = None,
                     monitor_plan: dict | None = None, monitor_rows: list[dict] | None = None,
                     monitor_as_of: str | None = None) -> dict:
     """Recompute existing study and raw gate checks; never promote synthetic benefit."""
@@ -322,6 +323,14 @@ def evaluate_linked(link: dict, study: dict, collection: dict, *,
     verify(study, expected=link['study_digest'])
     if collection['link_digest'] != link['contract_digest'] or collection['study_digest'] != study['contract_digest']:
         raise InputError('Collection differs from frozen implementation study')
+    if any(x is not None for x in (holdout_report, holdout_plan, holdout_rows)):
+        if any(x is None for x in (holdout_report, holdout_plan, holdout_rows)):
+            raise InputError('Legacy holdout evidence requires frozen plan, raw rows and report together')
+        from .holdout import validate_holdout
+        recomputed = validate_holdout(holdout_plan, holdout_rows,
+                                     expected_digest=holdout_plan['contract_digest'])
+        if recomputed != holdout_report:
+            raise InputError('Legacy holdout summary differs from raw recomputation')
     if monitor_rows is not None and monitor_plan is None:
         raise InputError('Unfrozen monitor evidence is unsupported')
     monitor_status, monitor_recommendation, exposure_action = 'not_run', 'none', 'none'
