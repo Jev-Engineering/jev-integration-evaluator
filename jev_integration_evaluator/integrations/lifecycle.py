@@ -333,28 +333,79 @@ def apply_implementation(root, bundle, approval, *, baseline_sha256):
     with _lock(bundle):
         receipt = _receipt(root, bundle, plan, spec, 'baseline', baseline_sha256)
         if receipt['status'] != 'passed': raise InputError('Baseline verification did not pass')
-        status = implementation_status(root, bundle)
-        if status['status'] in ('applied_unverified', 'verification_failed', 'verified'):
-            _check_discovery(root, plan, applied=True)
-            return {**status, 'idempotent': True}
-        if status['status'] != 'planned': raise InputError('Bundle needs explicit recovery/rollback, not another application')
-        validate_inventory(root, inventory, spec)
-        _check_discovery(root, plan)
-        if any(_inspect_file(root, r) != 'baseline' for r in plan['owned_files']): raise InputError('Owned path drift before apply')
-        _record(bundle, plan, 'apply_started')
-        def progress(event, change):
-            if event == 'write_completed': _sync_dir(safe_child(root, change['file']).parent)
-            _record(bundle, plan, 'apply_' + event, change['file'])
+        return _apply_locked(root, bundle, plan, spec, inventory, patch)
+
+
+def apply_native_implementation(root, bundle, approval, *, baseline_spec, baseline_receipt,
+                                trusted_baseline_sha256, trusted_oracle_sha256, oracle,
+                                baseline_outputs, expected_repository_identity,
+                                expected_context_sha256, expected_attempt,
+                                expected_authority_sha256):
+    """Apply only after an independently anchored native baseline has passed.
+
+    The native proof is intentionally separate from the legacy verifier receipt.
+    Source, bundle, schedule and oracle checks occur again under the bundle lock.
+    """
+    from ..runners.isolated_python import RunnerError, inspect_receipt
+    from ..runners.observations import inspect_baseline_postconditions
+    root, bundle, plan, spec, inventory, patch = _load(root, bundle, current_engine=True)
+    if approval != plan['contract_digest']:
+        raise InputError('Exact reviewed bundle digest approval is required')
+    with _lock(bundle):
         try:
-            apply_patch_plan(root, patch, patch['plan_digest'], progress=progress)
-        except Exception:
-            _record(bundle, plan, 'apply_failed_recovery_required')
-            raise
-        if any(_inspect_file(root, r) != 'applied' for r in plan['owned_files']):
-            _record(bundle, plan, 'apply_identity_failed')
-            raise InputError('Applied bytes/modes did not match the reviewed bundle')
-        _record(bundle, plan, 'applied_unverified')
-        return implementation_status(root, bundle)
+            inspect_receipt(baseline_spec, baseline_receipt,
+                            trusted_receipt_sha256=trusted_baseline_sha256)
+            report = inspect_baseline_postconditions(
+                oracle, trusted_oracle_sha256=trusted_oracle_sha256,
+                spec=baseline_spec, receipt=baseline_receipt,
+                outputs=baseline_outputs, trusted_receipt_sha256=trusted_baseline_sha256)
+        except (RunnerError, KeyError, TypeError, ValueError) as error:
+            raise InputError('Native baseline proof invalid') from error
+        if (not report['postconditions_satisfied'] or
+                baseline_receipt['recorded'] != baseline_receipt['scheduled'] or
+                baseline_receipt['exited_zero'] != baseline_receipt['scheduled'] or
+                not baseline_receipt['source_identity_valid']):
+            raise InputError('Native baseline did not pass its complete schedule')
+        identity = Path(root).stat()
+        if (oracle['bundle_digest'] != plan['contract_digest'] or
+                oracle['repository_identity'] != expected_repository_identity or
+                oracle['context_sha256'] != expected_context_sha256 or
+                oracle['baseline']['attempt'] != expected_attempt or
+                baseline_receipt['authority_reference_sha256'] != expected_authority_sha256 or
+                baseline_spec['source_identity'] != {'device': identity.st_dev, 'inode': identity.st_ino} or
+                {row['file'] for row in plan['owned_files']} - {row['path'] for row in baseline_spec['files']} or
+                any(not safe_child(root, row['path']).is_file() or
+                    file_hash(safe_child(root, row['path'])) != row['sha256'] or
+                    stat.S_IMODE(safe_child(root, row['path']).stat().st_mode) != row['mode']
+                    for row in baseline_spec['files'])):
+            raise InputError('Native baseline source or bundle changed')
+        _check_discovery(root, plan)
+        return _apply_locked(root, bundle, plan, spec, inventory, patch)
+
+
+def _apply_locked(root, bundle, plan, spec, inventory, patch):
+    status = implementation_status(root, bundle)
+    if status['status'] in ('applied_unverified', 'verification_failed', 'verified'):
+        _check_discovery(root, plan, applied=True)
+        return {**status, 'idempotent': True}
+    if status['status'] != 'planned': raise InputError('Bundle needs explicit recovery/rollback, not another application')
+    validate_inventory(root, inventory, spec)
+    _check_discovery(root, plan)
+    if any(_inspect_file(root, r) != 'baseline' for r in plan['owned_files']): raise InputError('Owned path drift before apply')
+    _record(bundle, plan, 'apply_started')
+    def progress(event, change):
+        if event == 'write_completed': _sync_dir(safe_child(root, change['file']).parent)
+        _record(bundle, plan, 'apply_' + event, change['file'])
+    try:
+        apply_patch_plan(root, patch, patch['plan_digest'], progress=progress)
+    except Exception:
+        _record(bundle, plan, 'apply_failed_recovery_required')
+        raise
+    if any(_inspect_file(root, r) != 'applied' for r in plan['owned_files']):
+        _record(bundle, plan, 'apply_identity_failed')
+        raise InputError('Applied bytes/modes did not match the reviewed bundle')
+    _record(bundle, plan, 'applied_unverified')
+    return implementation_status(root, bundle)
 
 
 def rollback_digest(plan):

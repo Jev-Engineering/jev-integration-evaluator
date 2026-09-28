@@ -1,10 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:completetech:jev:repository-run-scope-v1:1.0",
+  "$id": "urn:completetech:jev:repository-run-scope-v1:1.1",
   "type": "object",
   "properties": {
     "schema_version": {
-      "const": "1.0"
+      "enum": [
+        "1.0",
+        "1.1"
+      ]
     },
     "kind": {
       "const": "repository-run-scope-v1"
@@ -122,6 +125,50 @@
           "type": "null"
         }
       ]
+    },
+    "native_contract_sha256": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "trusted_baseline_private_output": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "trusted_modified_private_output": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "trusted_oracle_sha256": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
     }
   },
   "required": [
@@ -138,5 +185,53 @@
     "execution_environment",
     "grants"
   ],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "schema_version": {
+            "const": "1.1"
+          }
+        },
+        "required": [
+          "schema_version"
+        ]
+      },
+      "then": {
+        "required": [
+          "native_contract_sha256",
+          "trusted_baseline_private_output",
+          "trusted_modified_private_output",
+          "trusted_oracle_sha256"
+        ]
+      },
+      "else": {
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "native_contract_sha256"
+              ]
+            },
+            {
+              "required": [
+                "trusted_baseline_private_output"
+              ]
+            },
+            {
+              "required": [
+                "trusted_modified_private_output"
+              ]
+            },
+            {
+              "required": [
+                "trusted_oracle_sha256"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
 }

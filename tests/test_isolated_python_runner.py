@@ -21,7 +21,8 @@ import pytest
 import jsonschema
 
 from jev_integration_evaluator.runners import isolated_python as runner
-from jev_integration_evaluator.runners.observations import inspect_lifecycle_postconditions
+from jev_integration_evaluator.runners.observations import (
+    inspect_lifecycle_postconditions, inspect_baseline_postconditions)
 from jev_integration_evaluator.runners.private_archive import (
     write_private_output_archive, read_private_output_archive)
 
@@ -354,6 +355,12 @@ def bootstrap(): return Runtime()
                      modified_outputs=results['modified'].private_outputs,
                      trusted_modified_receipt_sha256=results['modified'].receipt_sha256)
     report = inspect_lifecycle_postconditions(oracle, **arguments)
+    baseline_report = inspect_baseline_postconditions(
+        oracle, trusted_oracle_sha256=oracle_hash,
+        spec=specs['baseline'], receipt=results['baseline'].receipt,
+        outputs=results['baseline'].private_outputs,
+        trusted_receipt_sha256=results['baseline'].receipt_sha256)
+    assert baseline_report['postconditions_satisfied'] is True
     assert report['scheduled'] == report['recorded'] == 3
     assert report['postconditions_satisfied'] is True
     assert report['integration_verified'] is False

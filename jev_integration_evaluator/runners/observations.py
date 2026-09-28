@@ -53,6 +53,51 @@ def _observation(data: bytes) -> dict[str, Any]:
     return value
 
 
+def inspect_baseline_postconditions(
+    oracle: dict[str, Any], *, trusted_oracle_sha256: str,
+    spec: dict[str, Any], receipt: dict[str, Any],
+    outputs: dict[str, tuple[bytes, bytes]], trusted_receipt_sha256: str,
+) -> dict[str, Any]:
+    """Check the frozen pre-edit host baseline before any owned mutation."""
+    if _hash(canonical(oracle)) != trusted_oracle_sha256:
+        raise RunnerError('external_oracle_anchor_mismatch')
+    if (type(oracle) is not dict or oracle.get('schema_version') != '1.0'
+            or oracle.get('kind') != 'native-postconditions-v1'
+            or oracle.get('adapter') != 'json-state-v1'):
+        raise RunnerError('unsupported_native_oracle')
+    inspect_receipt(spec, receipt, trusted_receipt_sha256=trusted_receipt_sha256)
+    binding = oracle['baseline']
+    if (binding['request_sha256'] != request_digest(spec)
+            or binding['source_manifest_sha256'] != receipt['source_manifest_sha256']
+            or len(binding['cases']) != len(spec['schedule'])):
+        raise RunnerError('native_oracle_phase_binding_mismatch')
+    rows = []
+    for expected, case, execution in zip(binding['cases'], spec['schedule'], receipt['cases']):
+        entry = next((row for row in spec['files'] if row['path'] == case['entry']), None)
+        if (expected['case_id'] != case['case_id'] or entry is None
+                or expected['entry_sha256'] != entry['sha256']):
+            raise RunnerError('native_oracle_source_mismatch')
+        pair = outputs.get(case['case_id'])
+        matched = False
+        if pair is not None:
+            stdout, stderr = pair
+            if _hash(stdout) != execution['stdout_sha256'] or _hash(stderr) != execution['stderr_sha256']:
+                raise RunnerError('native_output_receipt_mismatch')
+            if (execution['outcome'] == 'exited_zero' and execution['isolation_established']
+                    and receipt['source_identity_valid'] and not stderr):
+                try:
+                    observed = _observation(stdout)
+                except RunnerError:
+                    observed = None
+                matched = bool(observed and observed == expected['observation']
+                               and observed['assessments'] == 0)
+        rows.append({'case_id': case['case_id'], 'execution_outcome': execution['outcome'],
+                     'postcondition_matched': matched})
+    return {'scheduled': len(rows), 'recorded': len(rows), 'cases': rows,
+            'postconditions_satisfied': all(row['postcondition_matched'] for row in rows),
+            'integration_verified': False, 'activation_eligible': False}
+
+
 def inspect_lifecycle_postconditions(
     oracle: dict[str, Any], *, trusted_oracle_sha256: str,
     baseline_spec: dict[str, Any], baseline_receipt: dict[str, Any],
