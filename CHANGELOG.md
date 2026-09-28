@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.3.0.dev12 — native Windows repository discovery
+
+- Add a handle-bound Windows NTFS discovery backend for local drive roots, with
+  explicit file-ID, root-containment, case-collision, reparse-point and access
+  checks. Preserve the existing report schemas and source-bound digests.
+- Add owner-only Windows report outputs, long-path support, explicit UNC and
+  unsupported-filesystem results, secure external-input checks and a redacted
+  interruption outcome.
+- Add native Windows fixtures and a hosted Windows Server 2022 CI job for
+  junctions, symbolic links, ACL denial, long paths, limits, casing and prepare.
+  The job requires all cases to execute without skips.
+- Keep repository sessions, runtime operations, provider egress, activation
+  and broader placement qualification under their existing contracts.
+
 ## 1.3.0.dev11 — bounded repository session checkpoint
 
 - Add a read-only path command and an opt-in, private, resumable session around

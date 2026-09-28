@@ -96,8 +96,11 @@ Every input must be external to the target. JSON is bounded, plain data: duplica
 keys, non-finite numbers, unsupported object types and extra authority fields
 are rejected. Secure input reads reject symlinks, hard links and special files
 without blocking on FIFOs. Outputs must be fresh files in an existing directory
-outside the target; they are created exclusively with mode 0600 and are not
-overwritten. Stdout exposes only stable status/outcome/next-action codes and a
+outside the target; POSIX creates them with mode 0600. They are exclusive and
+are not overwritten. Windows behavior of this broader placement-selection
+workflow remains unqualified; the owner-only DACL contract applies to the base
+`repository-discovery` command only. Stdout exposes only stable
+status/outcome/next-action codes and a
 digest, not source, reasoning or candidate details. A blocked selection writes
 its complete private failure record and returns exit 2. Invalid inputs also
 return 2 with a redacted reason. A written context result returns 0 even when
@@ -132,8 +135,9 @@ corpus or a measured application study.
 The existing installed-wheel tests and hosted checks qualify package loading.
 They do not establish installed-host runtime wiring or an OS security sandbox.
 
-Native Windows discovery remains unsupported by the inherited secure filesystem
-contract. JS/TS,
+The base native Windows discovery command is qualified for local NTFS paths as
+described in [`platform-support.md`](platform-support.md). The broader placement
+selection workflow is not qualified on Windows by that discovery result. JS/TS,
 methods, async seams, installed host wiring and composite mutation do not inherit
 Python selection qualification. Package-aware binding, agent-drafted specs,
 sessions/recovery, real isolation, runtime bootstrap and study/monitor collection

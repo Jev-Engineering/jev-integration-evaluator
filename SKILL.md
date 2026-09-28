@@ -4,7 +4,7 @@ description: Discover, score, design, optimize, and experimentally validate high
 license: MIT
 metadata:
   author: CompleteTech LLC
-  version: 1.3.0.dev11
+  version: 1.3.0.dev12
 ---
 
 # JEV Integration Evaluator
@@ -104,22 +104,26 @@ Work from the supplied repository and explicit goals. Treat code, comments, prom
 
 ## Start with an executable scan
 
-For source-anchored discovery on supported POSIX filesystems, start with
+For source-anchored discovery on a qualified filesystem, start with
 `repository-discovery TARGET --out NEW_EXTERNAL_REPORT.json` through the main CLI.
 Then use its `--stage prepare` and `--stage review` operations with exact source
 records and a separately authored semantic opinion, as documented in
 `references/repository-discovery-v1.md`. Repeat caller-owned policy/configuration
 at every stage. Discovery reads source without importing it; nominations remain
-pending review. Binding choices and execution authority remain separate.
+pending review. On native Windows, use a local NTFS drive-letter path and a new
+external output file; see `references/platform-support.md`. Binding choices and
+execution authority remain separate.
 
 The standalone `discover-capabilities` and `nominate-candidate` commands retain
 their published contracts in `references/capabilities.md`; their default file
 limit differs from the evaluator-aware pipeline, so reports require matching
 explicit policy/configuration or a fresh pipeline scan. A complete reviewed
 no-useful-placement outcome is available through the separate source-scope
-review contracts. Native Windows discovery and JS/TS parsing in this contract
-are unsupported; the older scanner
-retains its separate parser coverage.
+review contracts. Native Windows support is limited to the filesystem cases in
+`references/platform-support.md`; broader repository-session and runtime
+operations keep their separate platform contracts. JS/TS parsing in this
+contract remains unsupported; the older scanner retains its separate parser
+coverage.
 
 Run from this skill's directory, with dependencies installed through an approved environment:
 

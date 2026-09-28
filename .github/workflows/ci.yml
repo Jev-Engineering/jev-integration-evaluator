@@ -54,6 +54,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Record Linux test runtime identity
+        run: python -c "import platform,sys; print(platform.platform()); print(sys.version); print(sys.executable)"
       - run: python -m pip install -e ".[test]"
       - run: npm install --ignore-scripts --no-audit --no-fund --package-lock=false
       - run: python -m pytest -q
@@ -68,6 +70,44 @@ jobs:
       - run: python scripts/run_implementation_demo.py --out "$RUNNER_TEMP/jev-implementation-demo"
       - run: python -m pytest -q tests/test_repository_run.py tests/test_repository_run_wheel.py
       - run: python scripts/run_repository_session_demo.py --out "$RUNNER_TEMP/jev-repository-session-demo"
+  windows-discovery:
+    # Hosted Windows runners are disposable and have no repository secrets.
+    # Enable the two OS features needed by the real symlink and long-path fixtures.
+    runs-on: windows-2022
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Record Windows test runtime identity
+        run: python -c "import platform,sys; print(platform.platform()); print(sys.version); print(sys.executable)"
+      - name: Provision native Windows filesystem fixtures
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $devMode = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock'
+          New-Item -Path $devMode -Force | Out-Null
+          New-ItemProperty -Path $devMode -Name AllowDevelopmentWithoutDevLicense `
+            -PropertyType DWord -Value 1 -Force | Out-Null
+          $fileSystem = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
+          New-ItemProperty -Path $fileSystem -Name LongPathsEnabled `
+            -PropertyType DWord -Value 1 -Force | Out-Null
+      - run: python -m pip install -e ".[test]"
+      - name: Execute all required native Windows discovery cases
+        env:
+          JEV_REQUIRE_WINDOWS_SYMLINKS: "1"
+        run: python -m pytest -q tests/test_repository_discovery_windows.py --junitxml "$env:RUNNER_TEMP\windows-discovery.xml"
+      - name: Reject skipped or missing native Windows cases
+        run: |
+          python -c "import sys,xml.etree.ElementTree as E; r=E.parse(sys.argv[1]).getroot(); s=[r] if r.tag=='testsuite' else list(r.findall('testsuite')); n=sum(int(x.get('tests',0)) for x in s); k=sum(int(x.get('skipped',0)) for x in s); f=sum(int(x.get('failures',0))+int(x.get('errors',0)) for x in s); print(f'native Windows discovery cases: collected={n} skipped={k} failed={f}'); sys.exit(1 if n < 19 or k or f else 0)" "$env:RUNNER_TEMP\windows-discovery.xml"
   python-only:
     runs-on: ubuntu-latest
     steps:

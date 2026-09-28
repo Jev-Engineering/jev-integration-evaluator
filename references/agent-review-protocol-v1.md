@@ -32,8 +32,10 @@ and every inventory or related allowlisted file/hash must occur in it. Every par
 Legacy inventories can retrieve
 only their own files under default exclusions after a fresh secure scanner run
 proves exact file/hash membership. They cannot add related files. The context
-records the effective list and report digest. Native Windows source retrieval is
-unsupported because the secure scanner backend requires POSIX descriptors.
+records the effective list and report digest. This agent-review/session source
+retrieval flow still requires the POSIX descriptor backend; the base
+`repository-discovery` command has the separate native Windows support listed
+in [`platform-support.md`](platform-support.md).
 The default limits are 24 included files and 120,000 source bytes. It does not
 import a target module. Context contains source text and must
 remain in a private local artifact; it is not suitable for a public log or PR.
