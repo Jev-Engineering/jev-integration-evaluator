@@ -42,6 +42,7 @@ def validate(check_manifest=False):
               'tests/test_adaptation_shapes.py','tests/test_adaptation_lifecycle.py','tests/test_adaptation_native.py',
               'tests/test_adaptation_review.py','tests/test_adaptation_prerequisites.py',
               'tests/test_adaptation_prerequisite_native.py',
+              'tests/test_adaptation_combined_review.py',
               'jev_integration_evaluator/integrations/lifecycle.py','jev_integration_evaluator/integrations/verification.py',
               'schemas/implementation-spec.schema.json','schemas/implementation-plan.schema.json','schemas/implementation-receipt.schema.json',
               'schemas/implementation-manifest.schema.json','schemas/implementation-tests.schema.json',
