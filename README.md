@@ -2,280 +2,124 @@
 
 # 🧭 JEV Integration Evaluator
 
-**Evidence-driven analysis for deciding where JEV earns its place — and where it doesn't.**
-
-*CompleteTech LLC*
+**Find where an AI decision point would actually help your codebase — and prove it before you trust it.**
 
 [![Version](https://img.shields.io/badge/version-1.3.0.dev11-blue)](CHANGELOG.md)
 [![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)](pyproject.toml)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Dependencies](https://img.shields.io/badge/deps-PyYAML%20%C2%B7%20jsonschema-lightgrey)](README.md#-get-started)
-[![Network](https://img.shields.io/badge/default-offline%20%C2%B7%20read--only-orange)](README.md#-design-defaults)
+[![Default](https://img.shields.io/badge/default-offline%20%C2%B7%20read--only-orange)](#-safe-by-default)
+
+*A CompleteTech LLC agent skill and Python CLI*
 
 </div>
 
 ---
 
+## What is this?
+
+JEV answers small, structured questions — "which of these five known actions fits this situation?" — instead of generating free text. Many codebases have spots where a brittle keyword check or heuristic makes exactly that kind of judgment call.
+
+This toolkit **scans a repository, finds those spots, scores them, and walks you through testing whether JEV actually does better** — with real experiments, not vibes. It never runs your code, never calls the network, and never changes anything unless you explicitly approve an exact, reviewed patch.
+
 > **LLMs generate. JEV classifies, selects, and evaluates. Deterministic code enforces. Instrumentation measures. Experiments decide whether JEV stays.**
 
-A reusable agent skill and Python command-line toolkit for deciding **where JEV is useful, where it is not, how to integrate it, and how to measure whether it earns its place**. It implements the supplied 47-part specification through source analyzers, A–M placement playbooks, transparent scoring, constrained optimization, a typed assessment runtime, an approved patch workflow, reports and research tools.
+## 🛡️ Safe by default
 
-The skill, Python distribution, and console command are named `jev-integration-evaluator`. The Python module is `jev_integration_evaluator`.
-
-The [original executable implementation specification](references/executable-implementation-prompt.md) is retained as requirements provenance. The supported commands and deliberately bounded implementation coverage of this development build are documented in [the current support contract](references/executable-integrations.md), and frozen implementation/study linkage with bounded synthetic paired collection in [observed evidence linkage](references/observed-evidence-linkage.md).
-
-## 🛡️ Design defaults
-
-> [!IMPORTANT]
-> The default is deliberately conservative: **read-only analysis · no network · runtime off · no target code execution · no automatic adoption.**
-> An unfamiliar repository can produce "no justified integration set." That is a successful result, not an error.
-
-| Default | Meaning |
+| | |
 |---|---|
-| 📖 Read-only | Discovery parses source; it never imports or executes target modules |
-| 🔌 No network | No key needed for local scans; egress requires explicit authorization and budgets |
-| ⏸️ Runtime off | Generated adapters ship default-off with feature flags and fallback |
-| ✍️ Approved mutation only | Applying a patch requires review and an exact plan-digest approval |
-| 🧪 Evidence-gated | Synthetic results can never produce a keep recommendation or authorize activation |
+| 📖 **Read-only** | Scans parse source; they never import or execute your code |
+| 🔌 **Offline** | No API key, no network — until you explicitly authorize and budget it |
+| ⏸️ **Runtime off** | Generated adapters ship disabled, behind flags, with fallback |
+| ✍️ **Approved changes only** | Edits require your review and an exact plan-digest approval |
+| 🧪 **Evidence-gated** | Synthetic or demo results can never justify adoption |
 
-## 🗺️ How the workflow fits together
+> [!TIP]
+> "No useful JEV placement found" is a **successful result**, not an error. The tool is built to say no.
 
-```mermaid
-flowchart LR
-    A["🔍 Discover<br/>repository-discovery / scan"] --> B["🧑‍⚖️ Semantic review<br/>source-hash-bound opinions"]
-    B --> C["📊 Score & optimize<br/>16 dimensions · placement sets"]
-    C --> D["🎯 Select<br/>selection / repository-placement"]
-    D --> E["🛠️ Plan & apply<br/>implement-plan · digest-approved apply"]
-    E --> F["✅ Verify<br/>scheduled receipts · owned rollback"]
-    F --> G["🧪 Experiment<br/>frozen studies · holdouts · canary"]
-    G --> H{"⚖️ Decide"}
-    H -->|keep| I["Separate deployment authority"]
-    H -->|modify / disable / needs_more_evidence| A
-    B -.->|"complete negative review"| J["🚫 no_useful_placement<br/>(a valid outcome)"]
-```
+## 🚀 Quick start
 
-Every stage rechecks source identity, caller-owned policy and its own explicit scope. No stage grants the next stage's authority.
-
-## 🚀 Get started
-
-Requires **Python 3.10+**. Runtime dependencies are **PyYAML** and **jsonschema** — NumPy, SciPy and a model API are *not* required for the analysis/statistical commands. Optional reliability-chart output needs matplotlib. For native JavaScript/TypeScript analysis, install trusted Node tooling and TypeScript 5.x or 6.x; the development toolchain is pinned in `package.json` and does not load target-repository plugins.
+Needs Python 3.10+. Only two runtime dependencies (PyYAML, jsonschema).
 
 ```bash
-# Run only after approving dependency installation in your environment.
-python -m venv .venv
-# Windows PowerShell: .venv\Scripts\Activate.ps1
-# Linux/macOS: source .venv/bin/activate
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\Activate.ps1
 python -m pip install -e ".[test]"
+```
 
-# Optional trusted TypeScript parser, installed here rather than in the target.
-npm install --ignore-scripts --no-audit --no-fund
+Scan a repository and review what it found:
 
-# Local analysis; use an output directory outside the target for clean repeated scans.
+```bash
 python -m jev_integration_evaluator scan --repo /path/to/repo --out ./analysis --depth STANDARD
 python -m jev_integration_evaluator onboard --inventory ./analysis/jev-opportunities.json
 ```
 
-The installed console command `jev-integration-evaluator` is equivalent to `python -m jev_integration_evaluator`. A PowerShell path with spaces must be quoted. WSL shutdown, branch publication, merge and deployment are never part of the default workflow.
+The scan writes ranked opportunities, an architecture map, integration and experiment plans, a risk analysis, and machine-readable JSON/CSV — into `./analysis`, outside your repo. The results report says "no experiment was run" until you actually run one.
 
-## ✨ What is implemented
-
-| Area | Working capability |
-|---|---|
-| 🔍 **Discovery** | Python AST and optional native TypeScript compiler AST; calls, local assignment dataflow, branches, loops, exception paths, source hashes, conservative call/side-effect maps, 13 A–M patterns, deterministic/generative rejection. Other languages retain explicit review-only leads. |
-| 🧩 **Design** | Atomic, bounded Choice/Noul rubrics, typed Score contract support, legal-action membership, evidence requirements, baseline fallback, timing/bypass and deterministic policy recommendations. |
-| 📊 **Ranking** | All 16 configured weighted dimensions, explanations and unknown intervals; hard rejection gates; source-matched semantic reviews; source-correlated runtime measurements. |
-| 🎯 **Placement selection** | Minimal, balanced and maximum-reliability sets under latency, cost, calls, complexity, risk and throughput constraints. Conflicts and measured interaction effects; exact small-set search and explicitly approximate larger-set search. |
-| 🧪 **Evaluation** | Strict paired task/replicate matching, rescues/regressions, exact McNemar where appropriate, clustered bootstrap, paired Bayesian useful-effect analysis, effect sizes, p50/p95 latency, efficiency, Pareto fronts, failure transitions, economic break-even and ablations. |
-| ⚙️ **Runtime** | Default-off, nonblocking bounded shadow work, task-level canary assignment, explicit activation receipt, separate probability/confidence thresholds, budgets, timeouts, circuit breaker, immutable state-scoped cache, hash-chained redacted logs. |
-| 🛠️ **Implementation** | Executable adapter scaffold, optional authorized worktree creation, exact-content diff plan and digest-approved local apply, stale-source guards, authorized test command runner, source-to-implementation/test/outcome receipt links. |
-| 📦 **Delivery** | Six Markdown reports, JSON/CSV inventory, effective YAML configuration, architecture/experiment/optimization JSON, optional Mermaid and calibration plot, examples, JSON schemas and tests. |
-
-## 🖥️ Command tour
-
-<details>
-<summary><b>🔍 Repository session, discovery and review</b></summary>
-
-`jev-integration-evaluator repository-run /absolute/repository` (or `python -m jev_integration_evaluator.repository_run /absolute/repository`) performs read-only static inspection. With a private external session, source-reviewed inventory and implementation specification, and separate exact-bundle scopes, the same command can journal the existing single-placement plan, baseline, apply, modified verification, status and owned rollback lifecycle. The fixed adapter also accepts a strictly recorded offline source review through `--agent-review`; it requires saved host policy, independently reviewed inventory and a fresh exact preparation scope. The review grants no provider or execution authority. See the [session contract](references/repository-session-command.md) and [dev11 validation](validation/REPOSITORY-SESSION-VALIDATION-1.3.0.dev11.md).
-
-The `repository-discovery` command builds the existing inventory from current Python source and accepts a separately authored semantic review. Opaque symbols can be nominated without renaming source or inventing inventory entries. Preparation and review recheck source, policy, parser and engine identity. Deterministic and hard-real-time exclusions apply to every generated candidate.
-
-```bash
-python -m jev_integration_evaluator repository-discovery TARGET --out NEW_EXTERNAL_REPORT.json
-python -m jev_integration_evaluator repository-discovery TARGET --stage prepare --capabilities REPORT.json --nominations NOMINATIONS.json --out NEW_EXTERNAL_PREPARED.json
-python -m jev_integration_evaluator repository-discovery TARGET --stage review --capabilities REPORT.json --prepared PREPARED.json --review SEMANTIC_REVIEW.json --out NEW_EXTERNAL_REVIEWED.json
-python -I scripts/run_capability_demo.py --out NEW_PRIVATE_DIRECTORY
-```
-
-`repository-discovery --stage conclude` adds a read-only A–M review for every enumerated file and seam. It binds the objective, source, configuration, policy and conclusion engine, and requires an independently retained review digest before a complete negative opinion can be reported. Missing or unresolved opinions remain in the denominator. The result is limited to the reviewed source scope and never certifies implementation, live connectivity, activation or benefit. See the [conclusion contract](references/repository-conclusion-v1.md).
-
-Read [the stage contracts](references/repository-discovery-v1.md) for exact input, external policy, private output and review requirements. Existing `discover-capabilities` and `nominate-candidate` commands retain their [published contracts](references/capabilities.md). New stages use the same discovery engine. **Native Windows discovery is unsupported; JS/TS coverage in this command remains explicitly incomplete.**
-
-Semantic reviews retain deterministic and hard-real-time exclusions. A review cannot clear a hard-real-time flag or downgrade a preferred/mandatory deterministic alternative. The whole review batch is validated before the inventory changes, and duplicate candidate IDs are rejected. Successful review preserves existing candidate references used by later trace analysis. See [the review boundary](references/review-gate-invariants.md) and [dev6 validation](validation/REVIEW-GATE-VALIDATION-1.3.0.dev6.md).
-
-</details>
-
-<details>
-<summary><b>🎯 Placement selection and source-scope outcomes</b></summary>
-
-The [placement selection contract](references/experimental-selection.md) can select a source-matched, semantically reviewed candidate for bounded **plan preparation** even when benefit and cost estimates are unknown. It keeps estimate-based optimization separate and reports why a candidate was rejected, needs review, lacks estimates, or is unsupported by the current implementation recipes. Use `python -m jev_integration_evaluator.selection` with a private reviewed envelope; the exact request requires external approval before preparation. Selection does not execute target code, authorize live spend or activation, or establish measured benefit. [Current validation](validation/SELECTION-VALIDATION-1.3.0.dev7.md) uses synthetic host wiring.
-
-`repository-placement context` reconstructs current discovery and semantic review, then distinguishes incomplete analysis, absent candidates, unsupported shapes, deterministic rejection, and a separately reviewed negative conclusion covering **every enumerated source file and seam**. That conclusion is limited to the declared policy scope; it is neither universal absence nor measured benefit. The command also offers review-only experimental set selection and revalidation, without generating a bundle or authorizing execution. See the [source-scope contract](references/placement-selection-v1.md) and [dev8 validation](validation/SCOPE-OUTCOME-VALIDATION-1.3.0.dev8.md).
-
-The repository placement selector blocks an approved candidate when its exact seam or entire source file has a negative scope judgment. A useful judgment elsewhere cannot override that conflict. The result retains the full requested denominator and asks for reconciliation; it does not authorize execution or change implementation coverage. See [dev10 validation](validation/SCOPE-CONFLICT-VALIDATION-1.3.0.dev10.md).
-
-The dev7 single-candidate selector remains the path into existing Python plan preparation after exact external request approval. Repository-scope review is a separate input; callers must reconcile any conflicting reviews before planning. The durable end-to-end repository session and general point-at-a-repository command remain open work.
-
-</details>
-
-<details>
-<summary><b>🛠️ Executable implementation (Python A–M recipes)</b></summary>
-
-This development build implements **A–M Python host transformations** for the explicitly bounded `module-tail-call-v1` source shape. A strict source-matched binding spec drives generated host edits, default-off runtime wiring, exact reviewed apply, actual host-entry verification, externally anchored status and owned-byte rollback. It does not ask the caller to write the replacement function. The thirteen synthetic examples and the complete CLI demo exercise the edited hosts, not just adapter methods.
-
-```bash
-python -m jev_integration_evaluator implementation-recipes --json
-python scripts/run_implementation_demo.py --out ../jev-implementation-demo
-```
-
-Read [the executable support matrix and lifecycle](references/executable-integrations.md) before using a recipe. It documents mandatory existing host bindings, the strict source/registry shapes, the exact CLI flags, local receipt trust boundaries, interrupted recovery and limits. `examples/implementation/` contains real source-matched binding examples. Analysis and plan/status commands do not execute target code. Mutation and host verification require their distinct scopes.
-
-The verifier demonstrates **synthetic host wiring**, not application benefit or production activation. Its test runtime is deliberately injected; it does not certify a real provider/bootstrap. Unsupported Python shapes are rejected before mutation. No Node runtime is needed for Python rewriting.
-
-**Failure accounting and source fidelity.** Probe observations have a strict, mirrored contract: null, incomplete, malformed or out-of-bound observations cannot pass a baseline, establish host wiring or erase scheduled failures. Missing authorized runners are recorded as `not_run`; a successful probe cannot substitute for a required command that did not execute. Receipt loading checks the complete ordered case/mode schedule, counts, observations and command identities against the reviewed specification. Baseline and modified verification write durable start markers before execution — if the process is interrupted, status reports `blocked_recovery`, and an older passing baseline cannot authorize apply after that interrupted attempt. Fresh authorized verification or an exact owned-byte rollback can recover. Command status must agree with its exit code, and receipt output stays within the reader's size limit while retaining every scheduled case. UTF-8 source cookies are validated before transformation, and generated imports stay outside unrelated decorated definitions, including multiline decorators. Decorated **selected seams** and non-UTF-8 source remain unsupported.
-
-**Host-effect boundary.** Host-owned exceptions are never model routing instructions: after an executor, finisher or completed-result callback starts, fallback cannot replay it. Runtime/coordinator ownership tombstones survive garbage collection, so constructing replacements cannot reset a workflow's charged work. Parameter shadowing and Python exception/match captures are rejected before mutation when they make bindings ambiguous. Every verification copy must match the reviewed phase bytes and modes; a final check includes the generated adapter, including after an authorized command exits successfully. Receipts expose `file_identity_valid` as evidence metadata, never execution or activation authority.
-
-The [dev3](validation/SAFETY-VALIDATION-1.3.0.dev3.md) and [dev2](validation/SAFETY-VALIDATION-1.3.0.dev2.md) validation records are retained as historical evidence alongside v1.1/v1.2 validation; current qualification is recorded separately.
-
-</details>
-
-<details>
-<summary><b>🟨 JavaScript/TypeScript backend</b></summary>
-
-The separate [JavaScript/TypeScript backend](references/javascript-typescript-backend-v1.md) implements one bounded recipe C shape in flat ESM, CommonJS and TypeScript hosts. `js-support`, `js-plan`, `js-verify`, `js-apply`, `js-status`, `js-recover` and `js-rollback` use reviewed source hashes, an owner-private bundle, pinned trusted tooling and exact external receipt anchors. The [support matrix](validation/JAVASCRIPT-TYPESCRIPT-SUPPORT.md) lists all A–M recipes and current synthetic qualification. The repository path corpus has not been rerun as a connected JS/TS host, and all other A–M patterns remain analysis-only in JS/TS.
-
-</details>
-
-<details>
-<summary><b>🧪 Evidence lifecycle (v1.1) and multi-placement operations (v1.2)</b></summary>
-
-**Retained from 1.1:**
-
-| Improvement | What the running code checks |
-|---|---|
-| Version-aware rescans | Source, configuration and analysis settings; changed boundaries/callers; no silent approval reuse. |
-| Frozen downstream studies | Full task schedule, split leakage, exact treatment identity and required metrics, including failures missing from both arms. |
-| Held-out acceptance risk | Frozen per-label floors, untouched holdout identities, exact error upper limits, subgroup checks and a synthetic-evidence block. |
-| Rubric robustness | Five original/retest/order/label-binding probes with order-aware request/cache identity and explicit failed-probe accounting. |
-| Runtime lifecycle | Stricter per-action gates, expiring receipts, revocation and in-flight suspension checks; strict factories for newly generated adapters. |
-| Evidence integrity | Audit-head/length checkpoints and exact release file-set validation. |
-
-**New in 1.2:**
-
-| Improvement | Implemented behavior |
-|---|---|
-| Robust placement selection | Complete explicit scenarios; prerequisites/conflicts; worst-case utility, minimal sets and minimax regret; no unmeasured positive synergy. |
-| Every-gate evidence | Current source review, exact question-role/rubric binding, recomputed raw holdouts for every gate, cross-stage leakage checks and allocated alpha budgets. |
-| Shared workflow budgets | One atomic process-local ledger across placements; nonrefundable call/cost reservations, bounded concurrency, closed-task tombstones and overrun suspension. |
-| Exact runtime approval | New factories bind the complete configuration, question roles, canary scope and shared limits to an expiring receipt; old approvals cannot silently authorize new exposure/settings. |
-| Complete canary windows | Frozen task/arm/cohort schedules, honest unknowns, safety incidents retained in incomplete records, cost/latency/failure/fallback/action-mix limits and opt-in suspend-only host integration. |
-| Runtime corrections | Copy request state/questions; cache only after successful audit and final checks; do not count cached inference tokens as new tokens. |
-
-```bash
-# Each requires a new or empty output directory. All model/study responses are synthetic.
-python scripts/run_v11_demo.py --out ../jev-v11-demo   # 19 CLI operations
-python scripts/run_v12_demo.py --out ../jev-v12-demo   # 17 CLI operations, zero network requests
-```
-
-The v1.1 demo exercises rescan/diff, a frozen paired study, frozen held-out threshold validation, five robustness probes, and audit checkpoints. It explicitly verifies that synthetic holdout results cannot qualify for activation. `diff` and `threshold-check` emit readable `.report.md` sidecars beside their JSON results, and `--enforce` exits 3 when activation evidence is not supported, including every synthetic-only result. The v1.2 demo's two-gate study and monitoring outcomes are explicitly synthetic and cannot authorize adoption.
-
-```bash
-python -m jev_integration_evaluator diff --before previous/jev-opportunities.json \
-  --after current/jev-opportunities.json --out change-review.json
-python -m jev_integration_evaluator study-freeze --spec study-spec.json --out frozen-study.json
-python -m jev_integration_evaluator threshold-check --plan frozen-threshold.json \
-  --input untouched-holdout.jsonl --out holdout-report.json --enforce
-```
-
-See `CHANGELOG.md`, `references/lifecycle-and-evidence.md` and `references/operational-evidence-v1.2.md` for complete commands, input contracts, runtime examples and migration. Existing commands and v1.1 behavior remain supported; shared budgets are opt-in and require the same coordinator instance across participating routers. Use the reference guides to create genuine input contracts; template/example identities are not production evidence. No live model benefit is claimed.
-
-</details>
-
-## 🎬 Run the entirely offline demonstration
-
-From the extracted skill directory after installing its Python dependencies:
+Want to see everything working first? Run the bundled offline demo:
 
 ```bash
 python -m jev_integration_evaluator scan --repo examples/coding-agent --out demo/agent
-python -m jev_integration_evaluator scan --repo examples/generic-service --out demo/deterministic
 python examples/run_demo.py --out demo/runtime
-python -m jev_integration_evaluator replay --input examples/research/decisions.jsonl --fixtures examples/research/fixture-responses.json --out demo/replay.json
-python -m jev_integration_evaluator compare --baseline examples/research/baseline.jsonl --jev examples/research/router-verifier.jsonl --out demo/results.json
-python -m jev_integration_evaluator calibrate --input examples/research/calibration-test.jsonl --out demo/calibration.json
-python -m jev_integration_evaluator ablate --baseline examples/research/baseline.jsonl --variants examples/research/variants.json --out demo/ablations.json
-python -m pytest -q
-python scripts/validate_package.py
+python -m pytest -q && python scripts/validate_package.py
 ```
 
 > [!WARNING]
-> **Every model response and study outcome in `examples/research` is synthetic.** The examples establish that the tools execute and check contracts; they do not establish a live-model improvement. Synthetic results cannot produce a keep recommendation. The original runtime demonstration proposes a typed action but executes zero actions and makes zero remote requests. The v1.2 runtime demonstration is shadow-only and returns baseline proposals.
+> Every model response in `examples/` is **synthetic**. Demos prove the tools work; they never prove a live model helps.
 
-## 📄 Output files
+## 🗺️ How it works
 
-A scan writes:
-
-```text
-📁 analysis/
-├── JEV_OPPORTUNITIES.md      # ranked inventory
-├── JEV_ARCHITECTURE.md       # enclosing functions, callers, data flow
-├── JEV_INTEGRATION_PLAN.md   # per-candidate design
-├── JEV_EXPERIMENT_PLAN.md    # pre-registered study design
-├── JEV_RISK_ANALYSIS.md      # failure modes and mitigations
-├── JEV_RESULTS.md            # explicitly "no experiment run" until one is
-├── jev-opportunities.json / .csv
-├── jev-config.yaml           # effective configuration
-├── architecture.json / architecture.mmd
-├── experiment-plan.json
-└── jev-placement-sets.json
+```mermaid
+flowchart LR
+    A["🔍 Scan"] --> B["🧑‍⚖️ Review"] --> C["🎯 Select"] --> D["🛠️ Implement"] --> E["🧪 Experiment"] --> F{"⚖️ Decide"}
+    F -->|"keep"| G["Deploy<br/>(your call, not the tool's)"]
+    F -->|"modify · disable ·<br/>needs more evidence"| A
+    B -.-> H["🚫 No useful placement<br/>(a valid answer)"]
 ```
 
-The initial results report explicitly says no experiment was run. Supply a real comparison result to `report --results results.json` to include measured outcomes. Scores and optimizer estimates are never presented as observed model performance.
+Each stage rechecks source identity and requires its own explicit authorization — no stage unlocks the next one automatically.
 
-## 🔌 Live JEV integration
+## 📚 Learn more
 
-The HTTP adapter follows the official `/v1/systemone` structured-question API and pins `jev-1.13.0` by default. See the dated primary-source record in `references/sources.md` and reverify the contract before changing the pin. Noul is a yes-probability, Choice/Score confidence is a distinct provider statistic, and neither proves that host policy should authorize an action.
+| I want to… | Read |
+|---|---|
+| Follow the full staged workflow | [`SKILL.md`](SKILL.md) |
+| Answer intake questions once, up front | [`ONBOARDING.md`](ONBOARDING.md) |
+| Discover and review candidates in a repo | [`references/repository-discovery-v1.md`](references/repository-discovery-v1.md) |
+| Understand the 13 A–M placement patterns | [`references/placement-patterns.md`](references/placement-patterns.md) |
+| Pick a placement to prepare | [`references/experimental-selection.md`](references/experimental-selection.md) · [`references/placement-selection-v1.md`](references/placement-selection-v1.md) |
+| Generate and apply a reviewed code change | [`references/executable-integrations.md`](references/executable-integrations.md) |
+| Modify JavaScript/TypeScript hosts | [`references/javascript-typescript-backend-v1.md`](references/javascript-typescript-backend-v1.md) |
+| Run rigorous before/after experiments | [`references/experimental-methodology.md`](references/experimental-methodology.md) · [`references/lifecycle-and-evidence.md`](references/lifecycle-and-evidence.md) |
+| Operate multiple placements with budgets and canaries | [`references/operational-evidence-v1.2.md`](references/operational-evidence-v1.2.md) |
+| Connect to the live JEV API | [Live integration](#-going-live) below · [`references/security-and-privacy.md`](references/security-and-privacy.md) |
+| See what each release validated | [`CHANGELOG.md`](CHANGELOG.md) · [`validation/`](validation/) |
 
-No key is needed for local scans or the offline fixtures. To deliberately transmit approved, minimized evidence, set `TYPESAFE_API_KEY` in the process environment and explicitly authorize network egress. Remote replay additionally requires a conservative cost-per-call bound and total budget. No current price is silently assumed.
+Every command also documents itself: `python -m jev_integration_evaluator --help`.
+
+## 🔌 Going live
+
+Local scans and demos need no key. To deliberately send approved, minimized decision evidence to the real API (`/v1/systemone`, pinned to `jev-1.13.0`), set `TYPESAFE_API_KEY` and pass explicit network and budget flags:
 
 ```bash
-# This transmits approved decision states; do not use raw production secrets.
 python -m jev_integration_evaluator replay --input approved-decisions.jsonl --allow-network \
   --max-calls 5 --max-total-cost 0.01 --cost-upper-bound-per-call 0.002 \
   --out approved-replay-results.json
 ```
 
-Newly generated adapters require an expiring receipt bound to the exact model, rubric, question roles, full runtime configuration, thresholds, canary scope and shared-budget limits, with independently validated held-out evidence. Existing direct constructors retain legacy defaults for compatibility. New scaffold factories also require issue/expiry timestamps and order-sensitive rubric identity; legacy direct constructors retain optional migration. The legacy `scaffold` command remains a proposal-adapter generator. For a supported, reviewed source shape, use `implement-plan` to derive the actual call-site edit and run the connected lifecycle. Unsupported shapes require separate implementation, not an automatic broad textual replacement. See `references/executable-integrations.md` and `references/integration-playbook.md`.
+No price is silently assumed, and a model answer is never treated as permission to act — your host policy stays in charge.
 
-## 🤖 Agent installation
+## ⚠️ Honest limits
 
-Copy this entire directory into an agent's explicitly configured skill directory; keep `SKILL.md`, the Python package, schemas and references together. Agent runners with skill discovery can read the frontmatter and follow the staged workflow; runners without discovery can be directed to read `SKILL.md` and invoke the CLI. No runner configuration is modified by this package. Install the Python package in the execution environment separately when invoking it outside the skill directory.
+- **No live-model benefit has been measured** for this build. All validation to date uses synthetic fixtures and mocked HTTP.
+- Static analysis can't see every dynamic call, callback, or generated file. A partial scan is not proof a repo has no opportunities.
+- Code changes are supported for **bounded, documented Python shapes** (and one JS/TS shape); everything else is analysis-only and says so.
+- Native Windows repository discovery is unsupported — use Linux, macOS, or WSL for that command.
+- The test runner is not a sandbox; use an isolated environment for untrusted projects.
 
-`ONBOARDING.md` defines progressive intake. `AGENTS.md` defines contributor and execution boundaries. `BRANDING.md` explains the disclosed CompleteTech text-only starter, customer overrides and unbranded mode. No proprietary logo or font is bundled, and the package does not claim TypeSafe affiliation.
-
-## ⚠️ Support boundaries
-
-> [!NOTE]
-> Do not treat a partial scan as proof that a repository has no opportunities.
-
-- Static analysis cannot recover every reflective/dynamic call, macro, callback, generated source or deployment effect. The Python parser includes module-level statements; native JavaScript/TypeScript analysis focuses on function, method and arrow scopes. Unsupported-language and unavailable-parser results are review-only.
-- A socket timeout and bounded thread pool are not hard real-time guarantees. The test runner is not a security sandbox; use an isolated runner for untrusted projects.
-- Externally retained hash/length checkpoints detect mismatching audit prefixes, but hash chains do not authenticate an adversarial writer. Frozen local manifests cannot prove an untouched holdout or independent trials; their statistical assumptions remain explicit. API fixtures and receipts can be forged by an untrusted editor; authorization and independent experiment review remain host responsibilities.
-- The [independent path corpus](validation/PATH-CORPUS-CURRENT-SUPPORT.md) records six source-hashed synthetic hosts and a connected offline host test. Its generated support record distinguishes public path inspection from the review, plan, baseline, apply and modified verification exercised by the trusted-host synthetic verifier. **Installed application startup, target-native verification, JS/TS implementation and live provider benefit remain unrun.**
-- Development validation is in [the dev11 repository-session report](validation/REPOSITORY-SESSION-VALIDATION-1.3.0.dev11.md), with supplied-fragment and full integration qualification distinguished. Earlier validation records are retained as historical evidence; they are not measurements for this build. Live JEV accuracy, cost, latency and calibration were not measured during package construction. The tested model interface uses mocked HTTP and exact local fixtures.
+Full boundaries, trust assumptions, and validation records: [`references/`](references/) and [`validation/`](validation/).
 
 ## 📜 License
 
-Code and authored documentation are **MIT licensed**. Names and marks are not transferred by the code license. The user-supplied specification is retained as provenance, not relicensed as a third-party brand asset. See [LICENSE](LICENSE) and [BRANDING.md](BRANDING.md).
+MIT for code and authored docs — see [`LICENSE`](LICENSE) and [`BRANDING.md`](BRANDING.md). No affiliation with TypeSafe is claimed.
 
 ---
 
