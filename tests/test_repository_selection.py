@@ -230,6 +230,12 @@ def test_whole_source_review_negative_is_exposed_and_revalidated(tmp_path):
                  "report": report, "prepared": prepared, "semantic_review": semantic,
                  "settings": cfg, "scope_review": scope, "selection_review": None}
     from jev_integration_evaluator.repository_selection import assess_selection
+    frozen = json.loads(cap._json(selection))
+    reconstructed = bridge.prepare_nominated_inventory(
+        root, frozen["report"], frozen["prepared"]["nominations"],
+        frozen["settings"], policy=selected_policy)
+    assert reconstructed == frozen["prepared"], [
+        key for key in reconstructed if reconstructed[key] != frozen["prepared"][key]]
     assert selected_policy == cap.DiscoveryPolicy.from_json(report["policy"])
     assert assess_selection(root, selection, policy=selected_policy)["status"] == "no_useful_placement"
     with pytest.raises(cap.CapabilityError, match="selection_policy_differs_from_session"):
