@@ -17,6 +17,14 @@ Compare the generated JSON with `validation/path-corpus-support-v1.json` after
 reviewing changes to both host source and oracle. Keep unrun paths explicit;
 the trusted-host synthetic verifier does not qualify installed startup.
 
+For the bounded JS/TS backend, use native POSIX with trusted Node and pinned
+TypeScript 5.8.3 outside the target. Run `python -m pytest -q
+tests/test_js_lifecycle.py tests/test_js_backend_trusted.py tests/test_js_entrypoint.py`
+and `node --test tests/js_transform.test.cjs tests/native_js_runtime.test.cjs`.
+Also run the installed-wheel lifecycle test, full suite, package validation
+and offline demos. Record exact Node/compiler identities and unsupported A–M
+recipes; never load target plugins or compiler configuration during planning.
+
 Keep configuration strict, stable CLI errors actionable, archives free of credentials/build caches, and citations to primary upstream API documentation dated. Changes to confidence semantics, threshold activation, budgets, authorization, cache keys, paired matching and statistical assumptions require focused tests and a version note. Re-generate release checksums only after tests and documentation are final.
 
 For executable-integration changes, also run `python scripts/run_implementation_demo.py --out NEW_PRIVATE_DIRECTORY` and the installed-wheel host test. Keep the support matrix and all strict implementation schema copies current. Do not publish private target bundles. Record actual interpreters/platforms; unrun CI jobs and live activation are not local validation results.

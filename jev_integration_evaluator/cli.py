@@ -179,6 +179,29 @@ def parser():
     s=common("implement-rollback", "Restore only matching integration-owned bytes, including interrupted applications")
     s.add_argument("--repo",required=True); s.add_argument("--bundle",required=True)
     s.add_argument("--approve",required=True,help="Separately reviewed rollback digest returned by status")
+    s=common("js-plan", "Prepare a reviewed native JavaScript recipe C bundle without target execution")
+    s.add_argument("--repo",required=True); s.add_argument("--spec",required=True)
+    s.add_argument("--bundle",required=True); s.add_argument("--tooling",required=True)
+    common("js-support", "Report bounded JS/TS A-M support without inspecting a target")
+    s=common("js-verify", "Execute an explicitly authorized bounded JS/TS entrypoint schedule")
+    s.add_argument("--repo",required=True); s.add_argument("--bundle",required=True)
+    s.add_argument("--tooling",required=True); s.add_argument("--cases",required=True)
+    s.add_argument("--phase",choices=["baseline","modified"],required=True)
+    s.add_argument("--approve-execution",action="store_true"); s.add_argument("--baseline-sha256")
+    s=common("js-apply", "Apply an exact reviewed JS/TS bundle after anchored baseline")
+    s.add_argument("--repo",required=True); s.add_argument("--bundle",required=True)
+    s.add_argument("--tooling",required=True); s.add_argument("--approve",required=True)
+    s.add_argument("--baseline-sha256",required=True)
+    s=common("js-status", "Read-only JS/TS owned file and receipt status")
+    s.add_argument("--repo",required=True); s.add_argument("--bundle",required=True)
+    s.add_argument("--tooling",required=True); s.add_argument("--trusted-modified-sha256")
+    s=common("js-recover", "Reconcile an interrupted JS/TS phase from exact owned bytes/receipt")
+    s.add_argument("--repo",required=True); s.add_argument("--bundle",required=True)
+    s.add_argument("--tooling",required=True); s.add_argument("--operation",choices=["baseline","apply","modified"],required=True)
+    s.add_argument("--trusted-receipt-sha256")
+    s=common("js-rollback", "Restore only matching JS/TS owned bytes")
+    s.add_argument("--repo",required=True); s.add_argument("--bundle",required=True)
+    s.add_argument("--tooling",required=True); s.add_argument("--approve",required=True)
     return p
 
 
@@ -211,6 +234,28 @@ def execute(args):
     if cmd=="implement-rollback":
         from .integrations.lifecycle import rollback_implementation
         return rollback_implementation(args.repo,args.bundle,args.approve)
+    if cmd.startswith("js-"):
+        from .integrations import js_lifecycle as js
+        if cmd=="js-support":
+            from .integrations.js_backend import js_support_matrix
+            return js_support_matrix()
+        if cmd=="js-plan":
+            return js.plan_js(args.repo,read_json(args.spec),args.bundle,tooling_dir=args.tooling)
+        if cmd=="js-verify":
+            return js.verify_js(args.repo,args.bundle,args.phase,read_json(args.cases),
+                                tooling_dir=args.tooling,approve_execution=args.approve_execution,
+                                baseline_sha256=args.baseline_sha256)
+        if cmd=="js-apply":
+            return js.apply_js(args.repo,args.bundle,args.approve,
+                               baseline_sha256=args.baseline_sha256,tooling_dir=args.tooling)
+        if cmd=="js-status":
+            return js.status_js(args.repo,args.bundle,tooling_dir=args.tooling,
+                                trusted_modified_sha256=args.trusted_modified_sha256)
+        if cmd=="js-recover":
+            return js.recover_js(args.repo,args.bundle,args.operation,tooling_dir=args.tooling,
+                                 trusted_receipt_sha256=args.trusted_receipt_sha256)
+        if cmd=="js-rollback":
+            return js.rollback_js(args.repo,args.bundle,args.approve,tooling_dir=args.tooling)
     if cmd in ("scan","architecture"):
         from .scanner import scan_repo
         from .reports import write_reports
