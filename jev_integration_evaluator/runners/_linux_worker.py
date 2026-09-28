@@ -186,10 +186,10 @@ def main() -> int:
         dependency_path = request.get('dependency_path')
         if dependency_path not in (None, '/deps'):
             raise RuntimeError('unsupported_dependency_path')
-        sys.path[:] = ['/host'] + ([dependency_path] if dependency_path else [])
         sys.argv[:] = ['/host/' + entry] + args
         sys.dont_write_bytecode = True
         _seccomp(library)
+        sys.path[:] = ['/host'] + ([dependency_path] if dependency_path else [])
         # These checks are real syscalls after enforcement, not an audit hook.
         ctypes.set_errno(0)
         if libc.socket(2, 1, 0) != -1 or ctypes.get_errno() != errno.EPERM:
