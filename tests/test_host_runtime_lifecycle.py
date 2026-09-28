@@ -383,8 +383,10 @@ def test_actual_generated_host_uses_startup_router_without_probe_replacement(tmp
         loader.loader.exec_module(module)
         adapter_module = sys.modules[adapter_name]
         client = SyntheticClient(spec['verification']['cases'][0]['assessment_label'])
-        wrong = copy.deepcopy(plan)
-        wrong['files'][0]['sha256'] = hashlib.sha256(b'wrong').hexdigest()
+        rogue = tmp_path / 'unreviewed.lock'
+        rogue.write_text('offline-test==1.0\n', encoding='utf-8')
+        wrong = {'files': [{'path': str(rogue.resolve()),
+                            'sha256': hashlib.sha256(rogue.read_bytes()).hexdigest()}]}
         with pytest.raises(LifecycleError, match='reviewed_dependency_plan_mismatch'):
             module.start_jev_runtime(budget_limits=LIMITS, audit_log=SyntheticAudit(),
                                      dependency_plan=wrong, client=client)
