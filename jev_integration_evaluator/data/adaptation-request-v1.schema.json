@@ -82,6 +82,7 @@
         "reviewer",
         "reason",
         "source_sha256",
+        "adapter_file",
         "adapter_sha256"
       ],
       "properties": {
@@ -96,6 +97,10 @@
         "source_sha256": {
           "type": "string",
           "pattern": "^[0-9a-f]{64}$"
+        },
+        "adapter_file": {
+          "type": "string",
+          "minLength": 1
         },
         "adapter_sha256": {
           "type": "string",

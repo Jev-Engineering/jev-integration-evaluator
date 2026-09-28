@@ -19,9 +19,14 @@ and binding review, exact inventory/source/statement identities, and unchanged
 bytes for every scanned source/configuration file. It returns an exact proposed
 source edit and its hash without writing or importing target code. The
 `adaptation-request-v1` schema is mirrored under `schemas/` and packaged data.
-The caller must independently review the adapter code identified in the
-binding review and bind that code's actual bytes before any apply operation.
+The current preparatory path requires one existing unambiguous static import of
+the flat `adapter_name.py` module. The adapter file must be scanned and its
+exact bytes named in the binding review. The caller must independently review
+that code before any apply operation.
 An adapter hash in an untrusted request is not an approval.
+The inventory and review digests must be retained and authenticated outside
+the target and private preparation directory; locally matching JSON files
+cannot authenticate each other.
 
 The synthetic structural tests execute the original and proposed method or
 async function with an inert local adapter. They check receiver state, effect

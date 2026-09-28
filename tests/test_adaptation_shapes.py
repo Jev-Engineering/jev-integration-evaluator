@@ -154,17 +154,21 @@ def test_source_and_anchor_drift_rejected():
 
 
 def test_reviewed_preparation_rechecks_complete_snapshot_and_review(tmp_path):
-    source = METHOD.replace('class Worker:', 'class Worker:')
+    source = 'import adapter\n' + METHOD
     path = tmp_path / 'worker.py'
     path.write_bytes(source.encode())
+    adapter_path = tmp_path / 'adapter.py'
+    adapter_path.write_bytes(b'def invoke(original, request):\n    return original(request)\n')
+    adapter_sha = hashlib.sha256(adapter_path.read_bytes()).hexdigest()
     file_sha = hashlib.sha256(source.encode()).hexdigest()
-    statement = ast.parse(source).body[0].body[-1].body[-1]
+    statement = ast.parse(source).body[1].body[-1].body[-1]
     anchor = digest(ast.dump(statement, annotate_fields=True, include_attributes=False))
     analysis = {'synthetic': True}
     source_record = {'file': 'worker.py', 'symbol': 'Worker.run', 'source_sha256': 'a'*64,
                      'file_sha256': file_sha, 'anchor_sha256': anchor}
     inventory = {'analysis_identity': analysis, 'scan_fingerprint': digest(analysis),
-                 'files': [{'file': 'worker.py', 'sha256': file_sha}], 'configuration_evidence': [],
+                 'files': [{'file': 'worker.py', 'sha256': file_sha},
+                           {'file': 'adapter.py', 'sha256': adapter_sha}], 'configuration_evidence': [],
                  'candidates': [{'candidate_id': 'synthetic-c', 'source': {k: source_record[k] for k in
                                 ('file', 'symbol', 'source_sha256', 'file_sha256')}, 'tier': 1,
                                 'pattern': 'C', 'semantic_review': {'approved': True, 'reviewer': 'test',
@@ -173,12 +177,17 @@ def test_reviewed_preparation_rechecks_complete_snapshot_and_review(tmp_path):
                'candidate_id': 'synthetic-c', 'inventory_sha256': digest(inventory),
                'inventory_fingerprint': digest(analysis), 'source': source_record,
                'binding_review': {'reviewer': 'test', 'reason': 'synthetic binding review',
-                                  'source_sha256': 'a'*64, 'adapter_sha256': 'b'*64},
+                                  'source_sha256': 'a'*64, 'adapter_file': 'adapter.py',
+                                  'adapter_sha256': adapter_sha},
                'adapter_name': 'adapter'}
     result = prepare_reviewed_shape(tmp_path, inventory, request)
     assert result['candidate_id'] == 'synthetic-c'
     assert result['new_sha256'] != file_sha
     assert path.read_bytes() == source.encode()
+    adapter_path.write_bytes(b'changed\n')
+    with pytest.raises(InputError, match='snapshot'):
+        prepare_reviewed_shape(tmp_path, inventory, request)
+    adapter_path.write_bytes(b'def invoke(original, request):\n    return original(request)\n')
     path.write_bytes((source + '\n').encode())
     with pytest.raises(InputError, match='snapshot'):
         prepare_reviewed_shape(tmp_path, inventory, request)

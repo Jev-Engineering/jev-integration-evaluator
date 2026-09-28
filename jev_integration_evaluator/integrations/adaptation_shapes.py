@@ -57,10 +57,11 @@ REVIEWED_REQUEST_SCHEMA = {
                    | {'file': {'type': 'string', 'minLength': 1},
                       'symbol': {'type': 'string', 'minLength': 1}}},
         'binding_review': {'type': 'object', 'additionalProperties': False,
-                           'required': ['reviewer', 'reason', 'source_sha256', 'adapter_sha256'],
+                           'required': ['reviewer', 'reason', 'source_sha256', 'adapter_file', 'adapter_sha256'],
                            'properties': {'reviewer': {'type': 'string', 'minLength': 1},
                                           'reason': {'type': 'string', 'minLength': 1},
                                           'source_sha256': {'type': 'string', 'pattern': '^[0-9a-f]{64}$'},
+                                          'adapter_file': {'type': 'string', 'minLength': 1},
                                           'adapter_sha256': {'type': 'string', 'pattern': '^[0-9a-f]{64}$'}}},
         'adapter_name': {'type': 'string', 'pattern': '^[A-Za-z_][A-Za-z_0-9]*$'},
     },
@@ -219,6 +220,13 @@ def prepare_reviewed_shape(root: Path, inventory: dict, request: dict) -> dict:
     if binding['source_sha256'] != source['source_sha256']:
         raise InputError('Binding review differs from selected source')
     root = Path(root).resolve(strict=True)
+    adapter_records = [row for row in inventory.get('files', [])
+                       if row.get('file') == binding['adapter_file']
+                       and row.get('sha256') == binding['adapter_sha256']]
+    if len(adapter_records) != 1 or binding['adapter_file'] == source['file']:
+        raise InputError('Reviewed adapter must be a distinct scanned source file')
+    if binding['adapter_file'] != request['adapter_name'] + '.py' or '/' in source['file']:
+        raise UnsupportedShape('Preparation currently requires a flat statically imported adapter module')
     for row in inventory.get('files', []) + inventory.get('configuration_evidence', []):
         path = safe_child(root, row['file'])
         if not path.is_file() or file_hash(path) != row['sha256']:
@@ -226,6 +234,15 @@ def prepare_reviewed_shape(root: Path, inventory: dict, request: dict) -> dict:
     path = safe_child(root, source['file'])
     if not path.is_file() or file_hash(path) != source['file_sha256']:
         raise InputError('Selected source changed')
+    try:
+        tree = ast.parse(path.read_bytes().decode('utf-8'))
+    except (UnicodeError, SyntaxError):
+        raise UnsupportedShape('Selected adaptation source is not valid UTF-8 Python') from None
+    imports = [node for node in tree.body if isinstance(node, ast.Import)
+               and len(node.names) == 1 and node.names[0].name == request['adapter_name']
+               and node.names[0].asname is None]
+    if len(imports) != 1 or len(_module_bindings(tree).get(request['adapter_name'], [])) != 1:
+        raise UnsupportedShape('Adapter must be one unambiguous existing static module import')
     proposal = prepare_shape(path.read_bytes(), shape=request['strategy']['shape'],
                              symbol=source['symbol'], source_sha256=source['file_sha256'],
                              anchor_sha256=source['anchor_sha256'], adapter_name=request['adapter_name'])
