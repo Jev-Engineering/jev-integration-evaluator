@@ -1,11 +1,11 @@
-# JavaScript and TypeScript backend qualification plan
+# JavaScript and TypeScript backend v1
 
 This document records the bounded implementation contract for issue #14.
 The executable `js-*` commands support recipe C on a POSIX filesystem with
 trusted Node and pinned TypeScript 5.8.3 tooling outside the target. The
 synthetic support evidence is in `validation/JAVASCRIPT-TYPESCRIPT-SUPPORT.md`.
 
-## First source shapes
+## Supported bounded source shapes
 
 | Host module | Selected seam | Required checks |
 | --- | --- | --- |
@@ -13,7 +13,7 @@ synthetic support evidence is in `validation/JAVASCRIPT-TYPESCRIPT-SUPPORT.md`.
 | CommonJS JavaScript | One top-level `async` function assigned once to `module.exports` or an exact named export | Export identity, unique binding, source hash, and actual entrypoint execution |
 | TypeScript | The ESM async shape with an explicitly declared request/result type that the trusted compiler can transpile without a target configuration | Syntax diagnostics, controlled emit, source hash, and actual emitted entrypoint execution |
 
-The first implementation must reject dynamic imports, decorators, nested selected
+The implementation rejects dynamic imports, decorators, nested selected
 functions, branches inside the selected seam, multiple call sites, reassignment,
 getter exports, top-level side effects that alter the selected binding, and
 unsupported compiler syntax before a target write. Support for one shape cannot
@@ -67,8 +67,8 @@ observed benefit or activation authority.
    contention, receipt tampering, source drift, import collision, rollback, and
    installed-package behavior on the actually supported platform.
 
-The support matrix must list implemented A-M recipes individually; all other
-recipes and module shapes remain explicit unsupported results.
+The `js-support` matrix lists implemented A–M recipes individually; all other
+recipes and module shapes return explicit unsupported results.
 
 ## Owned bundle commands
 

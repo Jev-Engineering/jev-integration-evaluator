@@ -1,5 +1,12 @@
 # Experimental placement selection — local implementation checkpoint
 
+**Historical checkpoint:** Open-issue and "remaining delivery work" statements
+below describe the issue #7 development checkpoint, not the final roadmap
+state. The [final acceptance ledger](../roadmap-acceptance-ledger.json) was
+published in [PR #39](https://github.com/Jev-Engineering/jev-integration-evaluator/pull/39).
+For current bounded composite support see
+[composite transactions](composite-transactions-v1.md).
+
 Tracking issue: [#7](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/7), under [epic #3](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/3).
 
 This additive checkpoint distinguishes **reviewed experimental preparation** from **optimization conditional on supplied estimates**. It is not the repository command in issue #4, an agent review implementation, a new source recipe, or an activation gate. Issue #7 and the epic remain open until their integration, review, qualification, and merge requirements are satisfied.
@@ -79,7 +86,7 @@ Malformed, stale, inconsistent, over-budget, or unsupported input contracts rais
 
 An inventory is limited to 16,000,000 canonical JSON bytes, 2,000 candidates, and 10,000 pairwise interactions. A request is limited to 262,144 bytes and a preparation specification to 2,000,000 bytes. Optimization is limited to 64 reviewed candidates, exact enumeration up to 12, and a beam width of 128 thereafter. The existing optimizer labels heuristic output rather than asserting optimality.
 
-Interactions are limited to explicitly typed pairwise conflicts and conditional utility effects. Unknown dependency/constraint fields and duplicate unordered pairs are rejected, not silently ignored or double-counted. Declared measured interaction effects require provenance; a label and provenance string still do not independently certify a measurement. Composite placement dependencies and implementation transactions remain issue #13 work.
+Interactions are limited to explicitly typed pairwise conflicts and conditional utility effects. Unknown dependency/constraint fields and duplicate unordered pairs are rejected, not silently ignored or double-counted. Declared measured interaction effects require provenance; a label and provenance string still do not independently certify a measurement. The separate bounded composite implementation transaction is documented in [composite transactions v1](composite-transactions-v1.md); it does not add composite dependency reasoning to this selector.
 
 ## CLI and thin script
 

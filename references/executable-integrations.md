@@ -12,11 +12,14 @@ inventory, binding specification or this engine's source/recipe validation.
 
 The supported seam is `module-tail-call-v1`: a synchronous, undecorated, top-level function in a Python module. It has one required input parameter, an optional docstring/comments, and one return of an existing named baseline function called with that unchanged parameter. The legacy binding uses a flat module at the target root. The optional separately versioned `package_binding: {"version":"1.0","namespace":false,"module":"pkg.host"}` permits regular `pkg/host.py` and `src/pkg/host.py` layouts; `namespace:true` permits explicitly declared namespace directories. The declared dotted module must match the selected source path. The generated adapter sits beside the host module and uses a relative import. The source invocation must place the repository root, or `src` for a src layout, on the Python import path. Installed packaging must expose that same dotted module. Qualified host symbols, bindings, the baseline function, and the observed entry point must be unambiguous module-level functions with the declared arities. Host bindings and registry symbols remain host owned.
 
-Separate structural preparation for a bounded instance method and async tail
-call is documented in [Python adaptation preparation v1](python-adaptation-v1.md).
-It returns a reviewed byte proposal and has no executable recipe or apply
-authority yet. The existing recipe support matrix and verifier continue to
-describe only `module-tail-call-v1`.
+The original `implement-*` recipe support matrix and verifier describe only
+`module-tail-call-v1`. [Python adaptation v1](python-adaptation-v1.md) has a
+separate, source-bound method/async preparation and one-source
+plan/apply/verify/status/rollback lifecycle. Its method and async shapes do not
+become original Python recipes. Applying prerequisite helper edits requires a
+complete fresh scan, source review and binding review before planning from the
+changed source. The adaptation path still requires an existing reviewed adapter;
+its async shape has no qualified active JEV runtime bridge.
 
 Package binding resolution reads and parses source only. It follows direct, static, package-local `from ... import ...` chains, including re-exports, and records SHA-256 identities for every selected module and package initializer. Cycles, wildcard imports, multiple stores, dynamic exports, external initializer imports, missing regular initializers, non-UTF-8 declarations, and side-effecting package initializers fail before a bundle is written. The manifest lists `contributing_sources` and exact `qualified_bindings`; changes to any listed module invalidate the plan. A namespace package must be explicitly declared in the spec. Planning never imports a target module or executes package hooks. The synthetic runner checks that the imported package and selected host module come from its copied reviewed bytes before executing a case; a preexisting same-name package fails rather than being used.
 
@@ -51,7 +54,7 @@ Every row below has an actual source transformation and edited-host execution te
 | `python.L` | Explicitly map same/related/different/uncertain; compare the graph revision and require current approval immediately before mutation. | Uncertainty cannot merge; a late revision/approval change causes zero mutation calls. |
 | `python.M` | Check supplied claims/evidence and independent host checks, then return accept/inspect/revise. | No answer generation/revision happens inside this recipe. |
 
-Unsupported transformations include methods, nested scopes, decorators, async functions, generators, branching or multiple-statement seams, multiple candidate sites in one function, changed signatures, recursive seams, BOM/non-UTF-8/bare-CR files, dynamic registry construction, ambiguous or cyclic imports, undeclared package layouts, and other languages. JavaScript/TypeScript remain **analysis only**. Python rewriting does not need Node. Multiple recipes modifying the same file are not composed: their old-source hashes conflict, with zero duplicate imports/wrappers. Re-scan and review a new plan after any intervening change.
+The original Python `implement-*` engine does not transform methods, nested scopes, decorators, async functions, generators, branching or multiple-statement seams, multiple candidate sites in one function, changed signatures, recursive seams, BOM/non-UTF-8/bare-CR files, dynamic registry construction, ambiguous or cyclic imports, undeclared package layouts, or other languages. The separate [method/async adaptation lifecycle](python-adaptation-v1.md) supports only its versioned shapes. A separate [JavaScript/TypeScript backend](javascript-typescript-backend-v1.md) supports recipe C for flat ESM, CommonJS and TypeScript async hosts under its stated Linux-only synthetic qualification; other JS/TS patterns and shapes remain unsupported for rewriting. Python rewriting does not need Node. Independent legacy single-placement plans modifying the same file conflict on old-source hashes. The [bounded composite transaction](composite-transactions-v1.md) can combine two distinct top-level Python function edits in one reviewed snapshot; it does not support arbitrary same-file rewrites. Re-scan and review a new plan after any intervening change.
 
 This release does not implement an OS security sandbox or distributed budget limiter. Qualification evidence is for the interpreter/platform recorded by the local tests, not every advertised Python interpreter or Windows. Existing Windows permission/symlink constraints are not waived; platform failures must be reported, not suppressed.
 

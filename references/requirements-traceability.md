@@ -96,7 +96,7 @@ This extends, rather than replaces, the original section-by-section map. No scor
 | Actual commands, scripts and offline demo | `cli.py`, `scripts/implement_*.py`, `scripts/implementation_recipes.py`, `scripts/run_implementation_demo.py` | `test_executable_cli.py`; nonzero failure/blocked exits, complete CLI lifecycle |
 | Installation, strict data discovery and release parity | Packaged implementation schemas and factory imports | `test_executable_wheel.py`, `validate_package.py`; installed-wheel host lifecycle |
 | Synthetic source-matched specifications | `examples/implementation/a` through `m` and `implementation_fixtures.py` | Real scans/reviews; no final replacement function supplied by caller |
-| Support/activation boundaries | `references/executable-integrations.md` | Flat Python modules and explicit registries only; synthetic tests, not live/provider/bootstrap/benefit certification; JS/TS rewriting unsupported |
+| Support/activation boundaries | `references/executable-integrations.md` | Original Python recipes use bounded top-level synchronous shapes and explicit registries; separate method/async adaptation and JS/TS recipe C have their own limited lifecycles; synthetic tests do not certify installed hosts, live provider connectivity, activation or benefit |
 
 Repository publication, signed commits, external review/CI and merge are delivery actions, not capabilities inferred from a local plan or test receipt. Consult the current delivery report for actions actually performed.
 

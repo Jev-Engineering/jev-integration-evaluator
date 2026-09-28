@@ -16,7 +16,13 @@ def cli(*args):
 def test_all_command_entry_points_and_catalog():
     catalog=cli('implementation-recipes','--json')
     assert catalog.returncode==0
-    assert {r['id'] for r in json.loads(catalog.stdout)['recipes']}=={'python.'+p for p in 'ABCDEFGHIJKLM'}
+    payload=json.loads(catalog.stdout)
+    assert payload['schema_version']=='1.0' and payload['language']=='python'
+    assert {r['id'] for r in payload['recipes']}=={'python.'+p for p in 'ABCDEFGHIJKLM'}
+    unsupported=' '.join(payload['unsupported'])
+    assert 'JavaScript/TypeScript rewriting (analysis only)' not in unsupported
+    assert 'separate JS/TS backend supports only bounded recipe C' in unsupported
+    assert 'separately versioned method/async adaptation' in unsupported
     for name in ('implementation-recipes','implement-plan','implement-apply','implement-verify','implement-status','implement-rollback'):
         result=subprocess.run([sys.executable,str(ROOT/'scripts'/(name.replace('-','_')+'.py')),'--help'],capture_output=True,text=True,timeout=20)
         assert result.returncode==0 and name in result.stdout
