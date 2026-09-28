@@ -264,6 +264,19 @@ def transform(root: Path, spec: dict) -> dict:
     except (UnicodeError, SyntaxError):
         raise InputError('Source must be valid UTF-8 Python') from None
     found = _module_bindings(tree)
+    lifecycle = spec.get('host_lifecycle')
+    if lifecycle is not None:
+        names = [lifecycle[k] for k in ('startup', 'shutdown', 'complete_task')]
+        if (lifecycle['kind'] != 'module-startup-v1' or len(set(names)) != 3
+                or any(keyword.iskeyword(name) or len(name) > 128 for name in names)
+                or any(name in found or name in spec['bindings'].values() for name in names)
+                or any(isinstance(node, ast.If) and isinstance(node.test, ast.Compare)
+                       and isinstance(node.test.left, ast.Name) and node.test.left.id == '__name__'
+                       for node in tree.body)):
+            raise UnsupportedShape('Unsupported host lifecycle name or module entrypoint')
+        runtime_nodes = found.get(spec['bindings']['runtime'], [])
+        if len(runtime_nodes) != 1 or not isinstance(runtime_nodes[0], ast.FunctionDef) or runtime_nodes[0] not in tree.body:
+            raise UnsupportedShape('Host lifecycle requires a local top-level runtime binding')
     f = _function(tree, found, spec['source']['symbol'], 1)
     body = f.body[:]
     if body and isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant) and isinstance(body[0].value.value, str):
@@ -373,8 +386,17 @@ def transform(root: Path, spec: dict) -> dict:
             break
     import_prefix = '.' if package_contract is not None else ''
     import_line = f'from {import_prefix}{spec["output"]["module"]} import invoke as {alias}'.encode() + newline
+    if lifecycle is not None:
+        adapter_alias = '_jev_adapter_' + digest(spec)[:16]
+        if adapter_alias in found:
+            raise InputError('Generated adapter alias conflicts with an existing symbol')
+        adapter_import = (f'from . import {spec["output"]["module"]} as {adapter_alias}' if package_contract is not None
+                          else f'import {spec["output"]["module"]} as {adapter_alias}')
+        import_line += adapter_import.encode() + newline
     changed = changed[:insertion] + import_line + changed[insertion:]
     host = changed.decode('utf-8')
+    if lifecycle is not None:
+        host += _host_lifecycle(lifecycle, spec['bindings']['runtime'], adapter_alias, spec['candidate_id'])
     ast.parse(host, filename=rel)
     runtime_spec = {k: spec[k] for k in ('candidate_id', 'experiment_id', 'source', 'recipe', 'questions',
                                         'primary_question', 'evidence_question', 'label_actions', 'runtime', 'policy')}
@@ -392,7 +414,47 @@ def transform(root: Path, spec: dict) -> dict:
         result['package_binding'] = package_contract
         result['contributing_sources'] = resolver.dependencies
         result['qualified_bindings'] = qualified_bindings
+    if lifecycle is not None:
+        result['host_lifecycle'] = lifecycle
     return result
+
+
+def _host_lifecycle(names, binding, adapter_alias, candidate_id):
+    marker = '_jev_host_' + digest((names, binding, candidate_id))[:16]
+    return f'''
+{marker} = None
+{marker}_started = False
+
+def {names['startup']}(*, budget_limits, audit_log, dependency_plan, client=None,
+                       egress_grant=None, startup_mode='off', enable_experiment=False):
+    """Construct this reviewed module's process-local runtime exactly once."""
+    from jev_integration_evaluator.integrations.runtime_lifecycle import HostRuntimeLifecycle
+    global {marker}, {marker}_started, {binding}
+    if {marker}_started:
+        raise RuntimeError('host_runtime_already_started')
+    if type(enable_experiment) is not bool or (enable_experiment and startup_mode != 'shadow'):
+        raise ValueError('synthetic_shadow_authority_required')
+    runtime = HostRuntimeLifecycle({{{candidate_id!r}: {adapter_alias}}},
+        budget_limits=budget_limits, audit_log=audit_log, dependency_plan=dependency_plan,
+        client=client, egress_grant=egress_grant, startup_mode=startup_mode)
+    {binding} = runtime.runtime_binding({candidate_id!r})
+    {adapter_alias}.ENABLED = enable_experiment
+    {marker} = runtime
+    {marker}_started = True
+    return runtime
+
+def {names['complete_task']}(task_id):
+    if {marker} is None:
+        raise RuntimeError('host_runtime_not_started')
+    {marker}.complete_task(task_id)
+
+def {names['shutdown']}():
+    global {marker}
+    if {marker} is not None:
+        {adapter_alias}.ENABLED = False
+        {marker}.close()
+        {marker} = None
+'''
 
 
 def _adapter(spec):

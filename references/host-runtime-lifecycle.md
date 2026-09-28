@@ -1,28 +1,29 @@
-# Host-owned runtime lifecycle (issue #12 checkpoint)
+# Host-owned runtime lifecycle
 
 `HostRuntimeLifecycle` is a process-local startup object for reviewed generated
-Python adapters. The application imports its adapter modules, constructs one
-lifecycle at startup, installs `runtime_binding(candidate_id)` as each existing
-host runtime callback, calls `complete_task(task_id)` only after the whole task
-is finished, and calls `close()` at shutdown. The callback returns the same
+Python adapters. A reviewed `host_lifecycle` contract for the supported
+`module-startup-v1` shape adds named startup, task-completion and shutdown
+functions to the edited host module. The application calls those functions;
+generated startup constructs the lifecycle and installs its runtime callback
+within the edited module. Task completion closes the task after its final
+action, and shutdown closes the lifecycle. The callback returns the same
 router for each decision. All placements share one `BudgetCoordinator` and one
 canary scope. A forked process cannot reuse the object. The exact generated
 adapter specification is hashed at startup and checked before each callback.
 
 ```python
-# Host-owned startup, after loading reviewed generated adapter modules.
-with HostRuntimeLifecycle(
-    {adapter.SPEC['candidate_id']: adapter},
+# Edited application's startup path, using the reviewed generated function.
+runtime = host_module.start_jev_runtime(
     budget_limits=reviewed_process_limits,
     audit_log=host_audit,
     dependency_plan=reviewed_dependency_file_hashes,
     client=offline_fixture_client,
-) as runtime:
-    host_module.runtime = runtime.runtime_binding(adapter.SPEC['candidate_id'])
-    # The application runs its own task loop. The adapter flag remains off
-    # until a separately reviewed synthetic experiment deliberately enables it.
+)
+try:
     run_host_task_loop()
-    runtime.complete_task(stable_task_id)
+    host_module.finish_jev_task(stable_task_id)
+finally:
+    host_module.stop_jev_runtime()
 ```
 
 Startup requires an exact dependency plan containing absolute paths and SHA-256
@@ -40,8 +41,9 @@ restores their preimages. It does not authorize package installation or
 environment preparation. The supplied audit sink must be host owned.
 
 The default startup mode is `off`. `shadow` is allowed only with an offline
-synthetic client; the generated adapter's own `ENABLED` switch remains off until
-the host deliberately selects its experimental path. Active and canary startup
+synthetic client and `enable_experiment=True` in the explicit startup call.
+Startup is one-shot per process; shutdown does not reset the budget for a new
+startup. Active and canary startup
 are unsupported here. A remote TypeSafe client is created only with an explicit
 exact endpoint, `env:TYPESAFE_API_KEY` credential reference and bounded cost
 reservation; absent credential or bad endpoint fails with a fixed diagnostic.
@@ -52,8 +54,9 @@ charges the shared coordinator even on transport failure or deadline, and
 returns only a redacted status. This does not grant active treatment or prove
 benefit. Do not put key values or raw target requests in config or diagnostics.
 
-This checkpoint tests a transformed synthetic host through its actual generated
-adapter and a startup-installed callback in both off and offline shadow mode.
+The tests import the edited synthetic host and call its generated startup,
+entrypoint, task-completion and shutdown functions in both off and offline
+shadow mode, with no verifier callback replacement.
 It also tests lifecycle ownership, task tombstones, cross-thread shared budgets,
 dependency drift, reviewed lock/config planning and rollback, and startup
 failure. It does not yet prove repository-run

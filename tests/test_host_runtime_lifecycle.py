@@ -347,6 +347,8 @@ def test_synthetic_shadow_is_explicit_and_active_is_rejected(tmp_path):
 def test_actual_generated_host_uses_startup_router_without_probe_replacement(tmp_path, mode):
     root = tmp_path / 'target'
     inventory, spec = fixture(root, 'C', tag='lifecycle_' + mode)
+    spec['host_lifecycle'] = {'kind': 'module-startup-v1', 'startup': 'start_jev_runtime',
+                              'shutdown': 'stop_jev_runtime', 'complete_task': 'finish_jev_task'}
     derived = transform(root, spec)
     for change in derived['changes']:
         (root / change['file']).write_text(change['new_content'], encoding='utf-8', newline='')
@@ -361,13 +363,10 @@ def test_actual_generated_host_uses_startup_router_without_probe_replacement(tmp
         adapter_module = sys.modules[adapter_name]
         _, plan = inputs(tmp_path / 'dependencies')
         client = SyntheticClient(spec['verification']['cases'][0]['assessment_label'])
-        with HostRuntimeLifecycle({spec['candidate_id']: adapter_module},
-                budget_limits=LIMITS, audit_log=SyntheticAudit(),
-                dependency_plan=plan, client=client, startup_mode=mode) as host:
-            # The application performs this assignment at startup. The verifier
-            # neither substitutes a router callback per call nor grants active mode.
-            module.__dict__[spec['bindings']['runtime']] = host.runtime_binding(spec['candidate_id'])
-            adapter_module.ENABLED = True
+        host = module.start_jev_runtime(budget_limits=LIMITS, audit_log=SyntheticAudit(),
+                                        dependency_plan=plan, client=client, startup_mode=mode,
+                                        enable_experiment=(mode == 'shadow'))
+        try:
             request = copy.deepcopy(spec['verification']['cases'][0]['request'])
             entry = module.__dict__[spec['verification']['entry_point']]
             first = entry(copy.deepcopy(request))
@@ -376,8 +375,13 @@ def test_actual_generated_host_uses_startup_router_without_probe_replacement(tmp
             router = host.router(spec['candidate_id'], request)
             assert router is host.router(spec['candidate_id'], request)
             assert router.config['mode'] == mode
-            host.complete_task(request[spec['runtime']['task_field']])
+            module.finish_jev_task(request[spec['runtime']['task_field']])
             assert host.coordinator.snapshot()['closed_tasks'] == 1
+            with pytest.raises(RuntimeError, match='host_runtime_already_started'):
+                module.start_jev_runtime(budget_limits=LIMITS, audit_log=SyntheticAudit(),
+                                         dependency_plan=plan, client=client)
+        finally:
+            module.stop_jev_runtime()
         assert router.closed
         if mode == 'off':
             assert client.calls == 0
@@ -389,9 +393,23 @@ def test_actual_generated_host_uses_startup_router_without_probe_replacement(tmp
         sys.modules.pop(adapter_name, None)
 
 
+def test_generated_host_lifecycle_rejects_collision_and_keyword(tmp_path):
+    root = tmp_path / 'target'
+    _, spec = fixture(root, 'C', tag='lifecycle_reject')
+    spec['host_lifecycle'] = {'kind': 'module-startup-v1', 'startup': spec['bindings']['runtime'],
+                              'shutdown': 'stop_jev_runtime', 'complete_task': 'finish_jev_task'}
+    with pytest.raises(Exception, match='Unsupported host lifecycle'):
+        transform(root, spec)
+    spec['host_lifecycle']['startup'] = 'class'
+    with pytest.raises(Exception, match='Unsupported host lifecycle'):
+        transform(root, spec)
+
+
 def test_reviewed_lock_and_config_edits_are_owned_and_rollback(tmp_path):
     root = tmp_path / 'target'
     inventory, spec = fixture(root, 'C', tag='runtime_files')
+    spec['host_lifecycle'] = {'kind': 'module-startup-v1', 'startup': 'start_jev_runtime',
+                              'shutdown': 'stop_jev_runtime', 'complete_task': 'finish_jev_task'}
     originals = {
         'requirements.lock': 'jev-integration-evaluator==1.3.0.dev1\n',
         'runtime.json': '{"jev_runtime":{"mode":"off","credential_ref":null}}\n',
@@ -435,6 +453,8 @@ def test_reviewed_lock_and_config_edits_are_owned_and_rollback(tmp_path):
     assert planned['status'] == 'planned'
     plan = __import__('json').loads((bundle / 'implementation-plan.json').read_text())
     assert set(originals) <= {row['file'] for row in plan['owned_files']}
+    manifest = __import__('json').loads((bundle / 'implementation-manifest.json').read_text())
+    assert manifest['host_lifecycle'] == spec['host_lifecycle']
     assert all((root / name).read_text() == content for name, content in originals.items())
     baseline = verify_implementation(root, bundle, 'baseline', approve_execution=True)
     assert baseline['status'] == 'baseline_passed'

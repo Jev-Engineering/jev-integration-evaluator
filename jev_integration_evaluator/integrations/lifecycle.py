@@ -153,6 +153,8 @@ def _load(root, bundle, *, current_engine=False):
         raise InputError('Implementation manifest differs from the reviewed discovery/binding')
     if spec.get('package_binding') != manifest.get('package_binding'):
         raise InputError('Package binding contract differs from the reviewed specification')
+    if spec.get('host_lifecycle') != manifest.get('host_lifecycle'):
+        raise InputError('Host lifecycle differs from the reviewed specification')
     if spec.get('package_binding') and spec['source']['file'] not in manifest.get('contributing_sources', {}):
         raise InputError('Package manifest omits the selected source dependency')
     if spec.get('package_binding') and set(manifest.get('qualified_bindings', {})) != set(spec['bindings']):
