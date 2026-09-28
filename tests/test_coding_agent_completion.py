@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 import pytest
-from jsonschema import validate
+from jsonschema import ValidationError, validate
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -194,6 +194,20 @@ def test_calibration_report_schema_and_holdout_gate():
     report = study.evaluate("calibration")
     schema = json.loads((ROOT / "schemas" / "coding-agent-completion-report-v1.schema.json").read_text())
     validate(report, schema)
+    for field in ("synthetic_p50_latency_ms", "synthetic_p95_latency_ms", "missing_latency_observations", "local_runner_wall_time_ms_total"):
+        mutated = copy.deepcopy(report)
+        del mutated["summary"]["jev"][field]
+        with pytest.raises(ValidationError):
+            validate(mutated, schema)
+    for field in ("missing_latency_observations", "local_runner_wall_time_ms"):
+        mutated = copy.deepcopy(report)
+        del mutated["rows"][0]["arms"]["jev"][field]
+        with pytest.raises(ValidationError):
+            validate(mutated, schema)
+    mutated = copy.deepcopy(report)
+    del mutated["local_fixture_wall_time_ms"]
+    with pytest.raises(ValidationError):
+        validate(mutated, schema)
     assert len(report["rows"]) == 8
     assert all(summary["denominator"] == 8 for summary in report["summary"].values())
     assert sum(report["arm_order_counts"].values()) == 8

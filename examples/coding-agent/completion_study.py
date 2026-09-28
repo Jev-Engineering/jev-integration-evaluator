@@ -27,6 +27,7 @@ FILES = {
     "scorer": DATA / "scorer-labels.json",
     "assessments": DATA / "assessments.json",
     "policy": DATA / "policy.json",
+    "report_schema": HERE.parent.parent / "schemas" / "coding-agent-completion-report-v1.schema.json",
 }
 
 
