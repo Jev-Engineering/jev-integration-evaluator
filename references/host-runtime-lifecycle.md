@@ -52,6 +52,9 @@ environment preparation. The supplied audit sink must be host owned.
 
 The default startup mode is `off`. `shadow` is allowed only with an offline
 synthetic client and `enable_experiment=True` in the explicit startup call.
+Off-mode startup can omit `client` and provider credentials; the generated
+runtime uses a no-egress placeholder whose evaluation method fails with a
+fixed diagnostic. This permits application startup without provider access.
 Startup is one-shot per process; shutdown does not reset the budget for a new
 startup. Active and canary startup
 are unsupported here. A remote TypeSafe client is created only with an explicit

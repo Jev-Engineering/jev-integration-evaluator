@@ -70,7 +70,7 @@ if 'host_lifecycle' in spec:
     runtime=host.start_jev_runtime(budget_limits=dict(max_calls_per_task=2,max_cost_per_task=2,
         max_total_calls=2,max_total_cost=2,max_in_flight=1,max_tasks=2),
         audit_log=SyntheticAudit(),dependency_plan=dependency_plan,
-        client=SyntheticClient(spec['verification']['cases'][0]['assessment_label']))
+        client=None)
     request=spec['verification']['cases'][0]['request']
     entry=getattr(host,spec['verification']['entry_point'])
     assert entry(request)==entry(request)

@@ -23,6 +23,15 @@ class LifecycleError(InputError):
     """A fixed diagnostic code; no target data or credential is included."""
 
 
+class _NoEgressClient:
+    """Default-off placeholder. Any attempted evaluation fails before I/O."""
+    is_remote = False
+    evidence_type = 'none'
+
+    def evaluate(self, *_args, **_kwargs):
+        raise LifecycleError('provider_unavailable_without_egress')
+
+
 def _sha(path: Path) -> str:
     h = hashlib.sha256()
     with path.open('rb') as source:
@@ -59,8 +68,9 @@ class HostRuntimeLifecycle:
     """One workflow, one coordinator, one router per placement, one task ledger.
 
     ``adapters`` are reviewed generated modules exposing SPEC/create_router.
-    ``client`` is a host-supplied offline client by default. Remote creation
-    requires a separately supplied exact egress grant at startup.
+    Off-mode startup without ``client`` uses a no-egress placeholder. Shadow
+    requires a host-supplied synthetic client. Remote creation requires a
+    separately supplied exact egress grant at startup.
     """
 
     def __init__(self, adapters: dict[str, Any], *, budget_limits: dict[str, Any],
@@ -77,7 +87,9 @@ class HostRuntimeLifecycle:
         if any(type(name) is not str or not name for name in adapters):
             raise LifecycleError('invalid_runtime_startup')
         check_dependency_plan(dependency_plan)
-        if client is None:
+        if client is None and egress_grant is None and startup_mode == 'off':
+            client = _NoEgressClient()
+        elif client is None:
             if (type(egress_grant) is not dict or
                     set(egress_grant) != {'endpoint', 'credential_ref', 'cost_upper_bound'}
                     or egress_grant['credential_ref'] != 'env:TYPESAFE_API_KEY'

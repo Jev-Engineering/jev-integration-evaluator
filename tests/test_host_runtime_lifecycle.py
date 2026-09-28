@@ -122,9 +122,17 @@ def test_dependency_drift_and_unsafe_startup_fail_closed(tmp_path):
     with pytest.raises(LifecycleError, match='dependency_plan_drift'):
         check_dependency_plan(plan)
     _, fresh_plan = inputs(tmp_path / 'fresh')
+    with HostRuntimeLifecycle({'a': adapter('a')}, budget_limits=LIMITS,
+                              audit_log=AUDIT, dependency_plan=fresh_plan) as disabled:
+        assert disabled.router('a', {'task_id': 'off'}) is disabled.router('a', {'task_id': 'off'})
+        with pytest.raises(LifecycleError, match='provider_unavailable_without_egress'):
+            disabled._client.evaluate({}, {}, 'synthetic', 1)
+        with pytest.raises(LifecycleError, match='provider_probe_unavailable'):
+            disabled.connectivity_probe_plan()
     with pytest.raises(LifecycleError, match='explicit_egress_authority_required'):
         HostRuntimeLifecycle({'a': adapter('a')}, budget_limits=LIMITS,
-                             audit_log=AUDIT, dependency_plan=fresh_plan)
+                             audit_log=AUDIT, dependency_plan=fresh_plan,
+                             startup_mode='shadow')
     with pytest.raises(LifecycleError, match='distributed_coordinator_unsupported'):
         lifecycle(tmp_path / 'distributed', process_model='multiprocess')
 
@@ -402,7 +410,8 @@ def test_actual_generated_host_uses_startup_router_without_probe_replacement(tmp
                                      dependency_plan={'files': [{'path': [], 'sha256': 'x'}]},
                                      client=client)
         host = module.start_jev_runtime(budget_limits=LIMITS, audit_log=SyntheticAudit(),
-                                        dependency_plan=plan, client=client, startup_mode=mode,
+                                        dependency_plan=plan, client=(client if mode == 'shadow' else None),
+                                        startup_mode=mode,
                                         enable_experiment=(mode == 'shadow'))
         try:
             request = copy.deepcopy(spec['verification']['cases'][0]['request'])
