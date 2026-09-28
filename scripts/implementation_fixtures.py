@@ -17,7 +17,7 @@ from jev_integration_evaluator.scoring import apply_reviews
 from jev_integration_evaluator.integrations.recipes import RECIPES, anchor_hash
 
 
-def fixture(root: Path, pattern='C', *, tag=None, crlf=False, layout='flat'):
+def fixture(root: Path, pattern='C', *, tag=None, crlf=False, layout='flat', native_probe=False):
     root.mkdir(parents=True, exist_ok=True)
     tag = tag or ('scenario_' + pattern.lower())
     recipe = RECIPES['python.'+pattern]
@@ -35,7 +35,8 @@ def fixture(root: Path, pattern='C', *, tag=None, crlf=False, layout='flat'):
                               dict(id='work',text='current work'),dict(id='old',text='obsolete')]
     source = ['# -*- coding: utf-8 -*-', '"""Synthetic café host; no live model, service or database."""',
               'from __future__ import annotations', 'from threading import RLock',
-              'from jev_integration_evaluator.runtime import HostGate', 'LOCK = RLock()',
+              ('class HostGate:\n    def __init__(self, actions, **kwargs):\n        self.actions = actions'
+               if native_probe else 'from jev_integration_evaluator.runtime import HostGate'), 'LOCK = RLock()',
               'STATE = '+repr(state), 'RECORDS = '+repr(records)]
     def define(name,args,body):
         source.append('\ndef '+name+'('+args+'):\n'+''.join('    '+line+'\n' for line in body.splitlines()))
@@ -141,6 +142,18 @@ def fixture(root: Path, pattern='C', *, tag=None, crlf=False, layout='flat'):
         if layout != 'namespace': (root/parent/'__init__.py').write_text('"""Synthetic host package."""\n',encoding='utf-8')
         filename=parent+'/'+filename
     (root/filename).write_bytes(text.encode('utf-8'))
+    if native_probe:
+        if pattern != 'C' or layout != 'flat':
+            raise ValueError('Native fixture probe supports only flat pattern C')
+        (root/'entry.py').write_text(
+            'import json, sys\nimport '+Path(filename).stem+' as host\nimport toy_package\n'
+            'mode = sys.argv[1]\n'
+            'result = host.'+entry+'({"task_id":"fixture-task","evidence":["supplied"]})\n'
+            'assessments = 1 if mode == "shadow" and toy_package.marker() == "approved" else 0\n'
+            'print(json.dumps({"reached": True, "result": result, "effects": host.STATE["effects"], '
+            '"state": {"blocked": host.STATE["blocked"]}, "assessments": assessments, '
+            '"dependency_origin": toy_package.__file__}, sort_keys=True), flush=True)\n',
+            encoding='utf-8')
     cfg=load_config();cfg['repository']['typescript_ast']=False
     inventory=scan_repo(root,cfg)
     candidate=next(c for c in inventory['candidates'] if c['source']['symbol']==seam)
