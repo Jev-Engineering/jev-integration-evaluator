@@ -65,3 +65,29 @@ def test_source_dependency_hash_changes(tmp_path):
     after = StaticBindings(tmp_path, 'pkg/host.py')
     after.resolve('callback')
     assert before.dependencies['pkg/other.py'] != after.dependencies['pkg/other.py']
+
+
+def test_contributing_module_declared_non_utf8_is_rejected(tmp_path):
+    write(tmp_path, 'pkg/__init__.py', '')
+    write(tmp_path, 'pkg/host.py', 'from .other import callback\n')
+    write(tmp_path, 'pkg/other.py', '# coding: latin-1\ndef callback(request):\n    return request\n')
+    with pytest.raises(UnsupportedShape, match='declare UTF-8'):
+        StaticBindings(tmp_path, 'pkg/host.py').resolve('callback')
+
+
+def test_static_reexport_chain_records_every_module(tmp_path):
+    write(tmp_path, 'pkg/__init__.py', 'from .exports import callback\n')
+    write(tmp_path, 'pkg/host.py', 'from . import callback\n')
+    write(tmp_path, 'pkg/exports.py', 'from .functions import callback\n')
+    write(tmp_path, 'pkg/functions.py', 'def callback(request):\n    return request\n')
+    resolver = StaticBindings(tmp_path, 'pkg/host.py')
+    assert resolver.resolve('callback')[:2] == ('pkg/functions.py', 'callback')
+    assert set(resolver.dependencies) == {'pkg/__init__.py', 'pkg/host.py', 'pkg/exports.py', 'pkg/functions.py'}
+
+
+def test_dynamic_namespace_rebinding_rejected(tmp_path):
+    write(tmp_path, 'pkg/__init__.py', '')
+    write(tmp_path, 'pkg/host.py', 'from .other import callback\nglobals()["callback"] = None\n')
+    write(tmp_path, 'pkg/other.py', 'def callback(request):\n    return request\n')
+    with pytest.raises(UnsupportedShape, match='Dynamic module binding'):
+        StaticBindings(tmp_path, 'pkg/host.py').resolve('callback')

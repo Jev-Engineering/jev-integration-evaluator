@@ -17,7 +17,7 @@ from jev_integration_evaluator.scoring import apply_reviews
 from jev_integration_evaluator.integrations.recipes import RECIPES, anchor_hash
 
 
-def fixture(root: Path, pattern='C', *, tag=None, crlf=False):
+def fixture(root: Path, pattern='C', *, tag=None, crlf=False, layout='flat'):
     root.mkdir(parents=True, exist_ok=True)
     tag = tag or ('scenario_' + pattern.lower())
     recipe = RECIPES['python.'+pattern]
@@ -132,7 +132,15 @@ def fixture(root: Path, pattern='C', *, tag=None, crlf=False):
     else:define(entry,'request','return '+seam+'(request)')
     text='\n'.join(source)+'\n'
     if crlf:text=text.replace('\n','\r\n')
-    filename='host_'+tag+'.py';(root/filename).write_bytes(text.encode('utf-8'))
+    filename='host_'+tag+'.py'
+    if layout not in ('flat', 'package', 'src', 'namespace'):
+        raise ValueError('Unsupported synthetic fixture layout')
+    if layout != 'flat':
+        parent = 'src/fixture_pkg' if layout in ('src', 'namespace') else 'fixture_pkg'
+        (root/parent).mkdir(parents=True, exist_ok=True)
+        if layout != 'namespace': (root/parent/'__init__.py').write_text('"""Synthetic host package."""\n',encoding='utf-8')
+        filename=parent+'/'+filename
+    (root/filename).write_bytes(text.encode('utf-8'))
     cfg=load_config();cfg['repository']['typescript_ast']=False
     inventory=scan_repo(root,cfg)
     candidate=next(c for c in inventory['candidates'] if c['source']['symbol']==seam)
@@ -205,7 +213,9 @@ def fixture(root: Path, pattern='C', *, tag=None, crlf=False):
           'primary_question':'decision','evidence_question':'sufficient','label_actions':labels,'policy':policy,
           'runtime':{'configuration':cfg['runtime'],'policy_version':'fixture-v1','canary_scope':'synthetic-'+tag,'task_field':'task_id','max_evidence_bytes':96000,
                      'cost_upper_bound':0.0,'ownership':'stable_host','coordinator':'shared_process_local','task_completion':'host_owned','audit':'required','immutable_cache':False},
-          'output':{'module':'_generated_'+tag,'permitted_edits':[filename,'_generated_'+tag+'.py'],'feature_flag_default':False,'dependencies':['jev-integration-evaluator>=1.3.0.dev1']},
+          'output':{'module':'_generated_'+tag,'permitted_edits':[filename,(Path(filename).parent/('_generated_'+tag+'.py')).as_posix() if layout!='flat' else '_generated_'+tag+'.py'],'feature_flag_default':False,'dependencies':['jev-integration-evaluator>=1.3.0.dev1']},
           'verification':{'classification':'synthetic','entry_point':entry,'effect_symbols':effects,'cases':cases,'timeout_s':20,'baseline_command':[],'modified_command':[]},
           'authorization_context':{'reference':'explicit offline demonstration request','scopes':['synthetic_workspace_only'],'not_authority':True}}
+    if layout!='flat': spec['package_binding']={'version':'1.0','namespace':layout=='namespace',
+                                                'module':'fixture_pkg.'+Path(filename).stem}
     return inventory,spec

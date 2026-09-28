@@ -12,12 +12,14 @@ import copy
 from dataclasses import asdict
 from datetime import datetime, timedelta, timezone
 import importlib.util
+import importlib
 from pathlib import Path
 import sys
 
 from ..budget import BudgetCoordinator
 from ..io import digest, canonical, read_json, write_json
 from ..robustness import request_fingerprint
+from .package_bindings import module_layout
 
 
 def _plain(value, depth=0):
@@ -80,20 +82,28 @@ def run(payload):
     sys.addaudithook(deny_network)
     # Isolated interpreter; trusted evaluator imported first. Target modules are
     # appended, not allowed to shadow the tool or standard-library search roots.
+    package_contract = spec.get('package_binding')
     sys.path.append(str(root))
+    if package_contract and spec['source']['file'].startswith('src/'):
+        sys.path.append(str(root / 'src'))
     source = root / spec['source']['file']
-    loader_spec = importlib.util.spec_from_file_location(source.stem, source)
-    module = importlib.util.module_from_spec(loader_spec)
-    sys.modules[source.stem] = module
-    loader_spec.loader.exec_module(module)
+    if package_contract:
+        _, module_name, _ = module_layout(root, spec['source']['file'], namespace=package_contract['namespace'])
+        module = importlib.import_module(module_name)
+    else:
+        loader_spec = importlib.util.spec_from_file_location(source.stem, source)
+        module = importlib.util.module_from_spec(loader_spec)
+        sys.modules[source.stem] = module
+        loader_spec.loader.exec_module(module)
     for name, value in case['initial_globals'].items():
         if name.startswith('__') or name not in module.__dict__ or not _plain(module.__dict__[name]):
             raise ValueError('Fixture initialization may only replace existing JSON data globals')
         module.__dict__[name] = copy.deepcopy(value)
-    adapter_path = root / (spec['output']['module'] + '.py')
+    adapter_path = root / (spec['output']['module'] + '.py') if not package_contract else source.parent / (spec['output']['module'] + '.py')
     router, client = None, SyntheticClient(case['assessment_label'])
     if mode != 'baseline':
-        adapter = sys.modules.get(spec['output']['module'])
+        adapter_name = spec['output']['module'] if not package_contract else module_name.rpartition('.')[0] + '.' + spec['output']['module']
+        adapter = sys.modules.get(adapter_name)
         if adapter is None: raise ValueError('Modified host did not import its generated adapter')
         adapter.ENABLED = mode != 'off'
         if mode in ('shadow', 'active'):
@@ -106,6 +116,9 @@ def run(payload):
     calls, adapter_calls, handler_calls = Counter(), 0, 0
     trace, trace_truncated = [], False
     roles = {name:role for role,name in spec['bindings'].items()}
+    profile_sources = {str(source)}
+    if package_contract:
+        profile_sources.update(str(root / rel) for rel in payload.get('contributing_sources', {}))
     traced_roles = {'items','generate','retain','observe','postcondition','finish','gate','validate','risk','revision','reserve_retry','effect_state','ownership','verify_child','checks','verify_claims'}
     handler_name = '_action_' + spec['recipe']['id'].split('.')[-1].lower()
     host_runtime_path = str(Path(__file__).with_name('host.py'))
@@ -113,7 +126,7 @@ def run(payload):
         nonlocal adapter_calls, handler_calls, trace_truncated
         if event not in ('call','return'): return
         filename, name = frame.f_code.co_filename, frame.f_code.co_name
-        if filename == str(source):
+        if filename in profile_sources:
             if event == 'call': calls[name] += 1
             role = roles.get(name)
             if role in traced_roles:

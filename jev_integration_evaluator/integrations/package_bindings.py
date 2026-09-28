@@ -7,8 +7,11 @@ guess whether an absent ``__init__.py`` denotes a namespace package.
 from __future__ import annotations
 
 import ast
+import codecs
+import io
 import keyword
 import re
+import tokenize
 from pathlib import Path
 
 from ..io import InputError, file_hash, safe_child
@@ -48,6 +51,7 @@ class StaticBindings:
         self.import_root, self.module, initializers = module_layout(self.root, source, namespace=namespace)
         self.namespace = namespace
         self.dependencies: dict[str, str] = {}
+        self._read(source)
         for rel in initializers:
             tree = self._read(rel)
             for node in tree.body:
@@ -73,6 +77,12 @@ class StaticBindings:
         raw = p.read_bytes()
         if len(raw) > 2_000_000 or raw.startswith(b'\xef\xbb\xbf'):
             raise UnsupportedShape('Unsupported static binding module encoding or size: ' + rel)
+        try:
+            declared, _ = tokenize.detect_encoding(io.BytesIO(raw).readline)
+            if codecs.lookup(declared).name != 'utf-8':
+                raise UnsupportedShape('Static binding module must declare UTF-8: ' + rel)
+        except (SyntaxError, LookupError):
+            raise UnsupportedShape('Invalid static binding module encoding: ' + rel) from None
         try: tree = ast.parse(raw.decode('utf-8'), filename=rel)
         except (SyntaxError, UnicodeError): raise UnsupportedShape('Invalid UTF-8 Python binding module: ' + rel) from None
         self.dependencies[rel] = file_hash(p)
@@ -82,11 +92,42 @@ class StaticBindings:
         """Resolve an exported top-level function; cycles and ambiguous stores fail."""
         return self._resolve(self.module, name, ())
 
+    def resolve_from(self, module: str, name: str) -> tuple[str, str, ast.FunctionDef]:
+        return self._resolve(module, name, ())
+
+    def tree_for(self, rel: str) -> ast.Module:
+        return self._read(rel)
+
+    def module_for(self, rel: str) -> str:
+        stem = rel.removesuffix('/__init__.py').removesuffix('.py')
+        if self.import_root: stem = stem.removeprefix(self.import_root + '/')
+        return stem.replace('/', '.')
+
     def _resolve(self, module: str, name: str, visiting: tuple[tuple[str, str], ...]):
         key = (module, name)
         if key in visiting: raise UnsupportedShape('Cyclic static binding: ' + module + ':' + name)
+        parts = module.split('.')
+        for depth in range(1, len(parts)):
+            init = '/'.join(filter(None, (self.import_root, *parts[:depth], '__init__.py')))
+            path = safe_child(self.root, init)
+            if not path.is_file():
+                if self.namespace: continue
+                raise UnsupportedShape('Missing regular package initializer: ' + init)
+            initializer = self._read(init)
+            for statement in initializer.body:
+                if isinstance(statement, (ast.ImportFrom, ast.Pass)): continue
+                if isinstance(statement, ast.Expr) and isinstance(statement.value, ast.Constant) and isinstance(statement.value.value, str):
+                    continue
+                raise UnsupportedShape('Dynamic package initializer requires separate review: ' + init)
         rel = self._rel(module)
         tree = self._read(rel)
+        for statement in tree.body:
+            if isinstance(statement, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                continue
+            if any(isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+                   and node.func.id in {'exec', 'eval', 'globals', 'locals', 'setattr', '__import__'}
+                   for node in ast.walk(statement)):
+                raise UnsupportedShape('Dynamic module binding expression: ' + module)
         # Count all module-scope writes, including conditional rebinding. Function
         # bodies do not change the module namespace during import.
         from .recipes import _module_bindings
@@ -103,7 +144,7 @@ class StaticBindings:
         if len(aliases) != 1 or node.module is None and node.level == 0:
             raise UnsupportedShape('Ambiguous static import: ' + module + ':' + name)
         if node.level:
-            package = module.split('.')[:-1]
+            package = module.split('.') if rel.endswith('/__init__.py') else module.split('.')[:-1]
             if node.level > len(package):
                 raise UnsupportedShape('Relative import escapes declared package: ' + module)
             target = package[:len(package) - node.level + 1]

@@ -14,6 +14,7 @@ import sys
 from ..io import InputError, canonical, digest, safe_child
 from ..implementation import FORBIDDEN
 from .errors import UnsupportedShape, MissingBinding
+from .package_bindings import StaticBindings, module_layout
 
 COMMON = dict(runtime=1, evidence=1, baseline_action=1, registry=1, gate=2, validate=2, blocked=2, guard=1)
 
@@ -54,7 +55,7 @@ def recipe_catalog() -> dict:
         for r in RECIPES.values()],
         'unsupported': ['JavaScript/TypeScript rewriting (analysis only)', 'other languages',
                         'methods, nested scopes, decorators, async functions, generators',
-                        'branches, multiple statements/call sites, changed signatures, imported/aliased bindings',
+                        'branches, multiple statements/call sites, changed signatures, dynamic or ambiguous imports',
                         'non-JSON verification return values; untrusted execution without external isolation']}
 
 
@@ -120,11 +121,15 @@ def _module_bindings(tree: ast.Module) -> dict[str, list[ast.AST]]:
     return found
 
 
-def _function(tree, found, name, arity):
+def _function(tree, found, name, arity, resolver=None, module=None):
     nodes = found.get(name, [])
-    if len(nodes) != 1 or not isinstance(nodes[0], ast.FunctionDef) or nodes[0] not in tree.body:
+    if len(nodes) != 1:
         raise MissingBinding('Missing or ambiguous top-level function binding: ' + name)
     f = nodes[0]
+    if isinstance(f, ast.ImportFrom) and resolver is not None:
+        _, _, f = resolver.resolve_from(module or resolver.module, name)
+    elif not isinstance(f, ast.FunctionDef) or f not in tree.body:
+        raise MissingBinding('Missing or ambiguous top-level function binding: ' + name)
     if (f.decorator_list or f.args.vararg or f.args.kwarg or f.args.kwonlyargs or f.args.defaults
             or len(f.args.posonlyargs + f.args.args) != arity
             or any(isinstance(n, (ast.Yield, ast.YieldFrom, ast.Await)) for n in ast.walk(f))):
@@ -132,8 +137,12 @@ def _function(tree, found, name, arity):
     return f
 
 
-def _literal_registry(tree, found, function_name):
-    function = _function(tree, found, function_name, 1)
+def _literal_registry(tree, found, function_name, resolver=None, module=None):
+    function = _function(tree, found, function_name, 1, resolver, module)
+    if resolver is not None and isinstance(found.get(function_name, [None])[0], ast.ImportFrom):
+        rel, _, _ = resolver.resolve_from(module or resolver.module, function_name)
+        tree = resolver.tree_for(rel)
+        found = _module_bindings(tree)
     body = function.body
     if body and isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant) and isinstance(body[0].value.value, str): body = body[1:]
     if len(body) != 1 or not isinstance(body[0], ast.Return):
@@ -159,27 +168,33 @@ def _literal_registry(tree, found, function_name):
     return dict(zip(keys, value.values))
 
 
-def _validate_registry_contract(tree, found, spec):
-    registry = _literal_registry(tree, found, spec['bindings']['registry'])
+def _validate_registry_contract(tree, found, spec, resolver=None):
+    registry = _literal_registry(tree, found, spec['bindings']['registry'], resolver)
+    registry_tree, registry_found, registry_module = tree, found, resolver.module if resolver else None
+    if resolver is not None and isinstance(found.get(spec['bindings']['registry'], [None])[0], ast.ImportFrom):
+        rel, _, _ = resolver.resolve(spec['bindings']['registry'])
+        registry_tree = resolver.tree_for(rel)
+        registry_found = _module_bindings(registry_tree)
+        registry_module = resolver.module_for(rel)
     mapped = {v for v in spec['label_actions'].values() if v is not None}
     if not mapped <= set(registry): raise InputError('Assessment translation references an unregistered host consequence')
     pattern = spec['recipe']['id'].split('.')[-1]
     if pattern in ('A','B','C','I','J','L'):
         for value in registry.values():
             if not isinstance(value, ast.Name): raise InputError('Action registry values must name existing functions')
-            _function(tree, found, value.id, 1)
+            _function(registry_tree, registry_found, value.id, 1, resolver, registry_module)
     elif pattern in ('D','G','H'):
         try: values = {k: ast.literal_eval(v) for k,v in registry.items()}
         except (ValueError,TypeError,RecursionError): raise InputError('Selection/plan registry must contain explicit finite ID lists') from None
         if any(not isinstance(v,(list,tuple)) or not all(isinstance(x,str) for x in v) or len(v)!=len(set(v)) for v in values.values()):
             raise InputError('Selection/plan options must be unique finite ID lists')
         if pattern == 'G':
-            steps = _literal_registry(tree, found, spec['bindings']['step_registry'])
+            steps = _literal_registry(tree, found, spec['bindings']['step_registry'], resolver)
             if any(not 1 <= len(v) <= spec['policy']['max_steps'] or not set(v) <= set(steps) for v in values.values()):
                 raise InputError('Plan option exceeds bounds or references an unknown step')
             for value in steps.values():
                 if not isinstance(value, ast.Name): raise InputError('Step registry must contain existing callable symbols')
-                _function(tree, found, value.id, 1)
+                _function(registry_tree, registry_found, value.id, 1, resolver, registry_module)
     else:
         try: values = {k:ast.literal_eval(v) for k,v in registry.items()}
         except (ValueError,TypeError,RecursionError): raise InputError('Disposition registry must contain literal values') from None
@@ -210,12 +225,23 @@ def transform(root: Path, spec: dict) -> dict:
     if missing: raise MissingBinding('Missing bindings: ' + ', '.join(sorted(missing)))
     if extra: raise InputError('Unexpected recipe bindings: ' + ', '.join(sorted(extra)))
     rel = spec['source']['file']
-    if not re.fullmatch(r'[A-Za-z_][A-Za-z_0-9]*\.py', rel) or keyword.iskeyword(Path(rel).stem):
-        raise UnsupportedShape('Unsupported source shape: use a flat Python module at the target root')
+    package_contract = spec.get('package_binding')
+    if package_contract is None:
+        if not re.fullmatch(r'[A-Za-z_][A-Za-z_0-9]*\.py', rel) or keyword.iskeyword(Path(rel).stem):
+            raise UnsupportedShape('Unsupported source shape: use a flat Python module at the target root')
+        resolver = None
+        module_name = Path(rel).stem
+        output = spec['output']['module'] + '.py'
+    else:
+        if package_contract['version'] != '1.0': raise UnsupportedShape('Unsupported package binding contract')
+        _, module_name, _ = module_layout(root, rel, namespace=package_contract['namespace'])
+        if package_contract['module'] != module_name:
+            raise UnsupportedShape('Declared package module differs from selected source path')
+        resolver = StaticBindings(root, rel, namespace=package_contract['namespace'])
+        output = (Path(rel).parent / (spec['output']['module'] + '.py')).as_posix()
     reserved_modules = set(sys.stdlib_module_names) | {'jev_integration_evaluator','jsonschema','yaml'}
     if Path(rel).stem in reserved_modules or spec['output']['module'] in reserved_modules:
         raise UnsupportedShape('Unsupported module import collision with trusted runtime/standard-library names')
-    output = spec['output']['module'] + '.py'
     if keyword.iskeyword(spec['output']['module']) or FORBIDDEN.search(rel) or FORBIDDEN.search(output):
         raise InputError('Protected or invalid implementation output path')
     p, new_module = safe_child(root, rel), safe_child(root, output)
@@ -248,33 +274,39 @@ def transform(root: Path, spec: dict) -> dict:
         raise UnsupportedShape('Unsupported call: one unchanged input parameter and a named baseline function required')
     if anchor_hash(statement) != spec['source']['anchor_sha256']:
         raise InputError('AST statement anchor differs from the reviewed binding')
-    _function(tree, found, spec['verification']['entry_point'], 1)
+    _function(tree, found, spec['verification']['entry_point'], 1, resolver)
     for effect in spec['verification']['effect_symbols']:
-        nodes = found.get(effect, [])
-        if len(nodes) != 1 or not isinstance(nodes[0], ast.FunctionDef) or nodes[0] not in tree.body:
-            raise InputError('Effect observation must identify an existing top-level function')
+        try:
+            nodes = found.get(effect, [])
+            if len(nodes) != 1: raise MissingBinding('Ambiguous effect')
+            if resolver is not None and isinstance(nodes[0], ast.ImportFrom):
+                resolver.resolve(effect)
+            elif not isinstance(nodes[0], ast.FunctionDef) or nodes[0] not in tree.body:
+                raise MissingBinding('Missing effect')
+        except (MissingBinding, UnsupportedShape):
+            raise InputError('Effect observation must identify an existing unambiguous top-level function') from None
     original = call.func.id
     if parameter in {original, *spec['bindings'].values()}:
         raise UnsupportedShape('Unsupported seam: a parameter shadows a required module symbol')
-    _function(tree, found, original, 1)
+    _function(tree, found, original, 1, resolver)
     if original == f.name: raise UnsupportedShape('Unsupported recursive seam')
     for role, arity in r.bindings.items():
-        _function(tree, found, spec['bindings'][role], arity)
+        _function(tree, found, spec['bindings'][role], arity, resolver)
         if spec['bindings'][role] == f.name:
             raise InputError('A host binding cannot recursively invoke the selected seam')
-    registered_actions = _validate_registry_contract(tree, found, spec)
+    registered_actions = _validate_registry_contract(tree, found, spec, resolver)
     # Bind effect observation to the parsed executable registry, not a caller-selected
     # irrelevant function whose zero calls could conceal an actual side effect.
     pattern = r.id.split('.')[-1]
     observed = set(spec['verification']['effect_symbols'])
     if pattern in ('A','B','C','I','J','L'):
-        expected_effects = {v.id for v in _literal_registry(tree, found, spec['bindings']['registry']).values()}
+        expected_effects = {v.id for v in _literal_registry(tree, found, spec['bindings']['registry'], resolver).values()}
     elif pattern == 'G':
-        expected_effects = {v.id for v in _literal_registry(tree, found, spec['bindings']['step_registry']).values()}
+        expected_effects = {v.id for v in _literal_registry(tree, found, spec['bindings']['step_registry'], resolver).values()}
     elif pattern in ('D','H'):
         expected_effects = {spec['bindings']['generate' if pattern=='D' else 'retain']}
     elif pattern == 'E':
-        baseline = _function(tree, found, original, 1)
+        baseline = _function(tree, found, original, 1, resolver)
         statements = baseline.body[:]
         if statements and isinstance(statements[0], ast.Expr) and isinstance(statements[0].value, ast.Constant) and isinstance(statements[0].value.value, str):
             statements = statements[1:]
@@ -286,7 +318,7 @@ def transform(root: Path, spec: dict) -> dict:
             raise UnsupportedShape('Unsupported post-action baseline: one named executor tail call is required')
         if operation.func.id == argument:
             raise UnsupportedShape('Unsupported post-action baseline: a parameter shadows the executor')
-        _function(tree, found, operation.func.id, 1)
+        _function(tree, found, operation.func.id, 1, resolver)
         expected_effects = {operation.func.id}
     else:
         expected_effects = observed  # F observes its bounded caller loop; K/M return dispositions only.
@@ -325,7 +357,8 @@ def transform(root: Path, spec: dict) -> dict:
                                   and offsets[token.start[0] - 1] >= insertion)
             insertion = max(insertion, offsets[first_line - 1])
             break
-    import_line = f'from {spec["output"]["module"]} import invoke as {alias}'.encode() + newline
+    import_prefix = '.' if package_contract is not None else ''
+    import_line = f'from {import_prefix}{spec["output"]["module"]} import invoke as {alias}'.encode() + newline
     changed = changed[:insertion] + import_line + changed[insertion:]
     host = changed.decode('utf-8')
     ast.parse(host, filename=rel)
@@ -334,11 +367,15 @@ def transform(root: Path, spec: dict) -> dict:
     runtime_spec['registered_action_ids'] = registered_actions
     adapter = _adapter(runtime_spec)
     ast.parse(adapter, filename=output)
-    return {'changes': [{'file': rel, 'new_content': host}, {'file': output, 'new_content': adapter}],
-            'entry_point': f'{Path(rel).stem}:{f.name}', 'baseline_symbol': original,
-            'adapter_symbol': f'{spec["output"]["module"]}:invoke', 'binding_digest': digest(spec['bindings']),
+    result = {'changes': [{'file': rel, 'new_content': host}, {'file': output, 'new_content': adapter}],
+            'entry_point': f'{module_name}:{f.name}', 'baseline_symbol': original,
+            'adapter_symbol': f'{module_name.rpartition(".")[0] + "." if package_contract else ""}{spec["output"]["module"]}:invoke', 'binding_digest': digest(spec['bindings']),
             'source_shape': r.shape, 'recipe_contract': r.contract,
             'required_bindings': sorted(r.bindings), 'imports_resolved_by': 'installed evaluator wheel when enabled'}
+    if resolver is not None:
+        result['package_binding'] = package_contract
+        result['contributing_sources'] = resolver.dependencies
+    return result
 
 
 def _adapter(spec):

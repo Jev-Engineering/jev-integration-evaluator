@@ -107,7 +107,9 @@ def _probe(root, bundle, plan, spec, case, mode):
             if file_hash(dest) != expected_hash:
                 raise InputError('Isolated probe copy differs from the reviewed phase hash')
         request, output = scratch / 'request.json', scratch / 'result.json'
-        write_json(request, {'root':str(work),'spec':spec,'case':case,'mode':mode})
+        write_json(request, {'root':str(work),'spec':spec,'case':case,'mode':mode,
+                             'contributing_sources':{rel:row['sha256'] for rel,row in plan['discovery_files'].items()
+                                                     if rel.endswith('.py')}})
         trusted_root = str(Path(__file__).resolve().parents[2])
         bootstrap = 'import sys;sys.path.insert(0,' + repr(trusted_root) + ');from jev_integration_evaluator.integrations.probe import main;main()'
         command = [sys.executable,'-I','-c',bootstrap,str(request),str(output)]
