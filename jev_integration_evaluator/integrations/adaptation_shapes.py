@@ -234,21 +234,38 @@ def prepare_reviewed_shape(root: Path, inventory: dict, request: dict) -> dict:
     path = safe_child(root, source['file'])
     if not path.is_file() or file_hash(path) != source['file_sha256']:
         raise InputError('Selected source changed')
+    validate_static_adapter_import(path.read_bytes(), request['adapter_name'])
+    adapter_path = safe_child(root, binding['adapter_file'])
+    validate_adapter_callback(adapter_path.read_bytes(), request['strategy']['shape'])
+    proposal = prepare_shape(path.read_bytes(), shape=request['strategy']['shape'],
+                             symbol=source['symbol'], source_sha256=source['file_sha256'],
+                             anchor_sha256=source['anchor_sha256'], adapter_name=request['adapter_name'])
+    proposal['candidate_id'] = request['candidate_id']
+    proposal['source_file'] = source['file']
+    proposal['review_digest'] = digest({'semantic_review': review, 'binding_review': binding})
+    proposal['request_digest'] = digest(request)
+    return proposal
+
+
+def validate_static_adapter_import(raw: bytes, adapter_name: str) -> None:
     try:
-        tree = ast.parse(path.read_bytes().decode('utf-8'))
+        tree = ast.parse(raw.decode('utf-8'))
     except (UnicodeError, SyntaxError):
         raise UnsupportedShape('Selected adaptation source is not valid UTF-8 Python') from None
     imports = [node for node in tree.body if isinstance(node, ast.Import)
-               and len(node.names) == 1 and node.names[0].name == request['adapter_name']
+               and len(node.names) == 1 and node.names[0].name == adapter_name
                and node.names[0].asname is None]
-    if len(imports) != 1 or len(_module_bindings(tree).get(request['adapter_name'], [])) != 1:
+    if len(imports) != 1 or len(_module_bindings(tree).get(adapter_name, [])) != 1:
         raise UnsupportedShape('Adapter must be one unambiguous existing static module import')
-    adapter_path = safe_child(root, binding['adapter_file'])
+
+
+def validate_adapter_callback(raw: bytes, shape: str) -> None:
+    """Check only syntax and obvious placeholders; policy still needs review."""
     try:
-        adapter_tree = ast.parse(adapter_path.read_bytes().decode('utf-8'))
+        adapter_tree = ast.parse(raw.decode('utf-8'))
     except (UnicodeError, SyntaxError):
         raise UnsupportedShape('Reviewed adapter is not valid UTF-8 Python') from None
-    callback_name = 'invoke_async' if request['strategy']['shape'] == 'async-module-tail-call-v1' else 'invoke'
+    callback_name = 'invoke_async' if shape == 'async-module-tail-call-v1' else 'invoke'
     callback_type = ast.AsyncFunctionDef if callback_name == 'invoke_async' else ast.FunctionDef
     if len(_module_bindings(adapter_tree).get(callback_name, [])) != 1:
         raise UnsupportedShape('Missing or ambiguous reviewed adapter callback')
@@ -261,11 +278,3 @@ def prepare_reviewed_shape(root: Path, inventory: dict, request: dict) -> dict:
              and isinstance(callback.body[0].value, ast.Constant)
              and callback.body[0].value.value in (None, True, False))):
         raise UnsupportedShape('Placeholder or constant adapter callback is unsupported')
-    proposal = prepare_shape(path.read_bytes(), shape=request['strategy']['shape'],
-                             symbol=source['symbol'], source_sha256=source['file_sha256'],
-                             anchor_sha256=source['anchor_sha256'], adapter_name=request['adapter_name'])
-    proposal['candidate_id'] = request['candidate_id']
-    proposal['source_file'] = source['file']
-    proposal['review_digest'] = digest({'semantic_review': review, 'binding_review': binding})
-    proposal['request_digest'] = digest(request)
-    return proposal

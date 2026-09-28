@@ -9,13 +9,15 @@ import hashlib
 import os
 from pathlib import Path
 import stat
+import difflib
 
 from ..implementation import make_patch_plan, apply_patch_plan
 from ..contracts import validate_contract
 from ..io import InputError, canonical, digest, file_hash, read_json, safe_child, write_json
 from ..runners.isolated_python import RunnerError, inspect_receipt
 from ..runners.observations import inspect_baseline_postconditions, inspect_lifecycle_postconditions
-from .adaptation_shapes import prepare_reviewed_shape
+from .adaptation_shapes import (prepare_reviewed_shape, prepare_shape,
+                                validate_adapter_callback, validate_static_adapter_import)
 from .lifecycle import (_bundle_dir, _inspect_file, _journal, _lock, _record,
                         _root_identity, _sync_dir, engine_identity)
 
@@ -38,12 +40,22 @@ def _load(root, bundle, *, current_engine=False):
     root, bundle = Path(root).resolve(strict=True), _bundle_dir(bundle)
     if bundle == root or bundle.is_relative_to(root):
         raise InputError('Adaptation bundle must remain outside target')
+    if os.name == 'posix' and (stat.S_IMODE(bundle.stat().st_mode) != 0o700
+                                or bundle.stat().st_uid != os.geteuid()):
+        raise InputError('Unsafe adaptation bundle ownership or mode')
+    for name in ('adaptation-plan.json', 'patch-plan.json', 'adaptation-request.json',
+                 'reviewed-inventory.json', 'preimage.utf8'):
+        path = safe_child(bundle, name)
+        if (not path.is_file() or (os.name == 'posix' and
+                (stat.S_IMODE(path.stat().st_mode) != 0o600 or path.stat().st_uid != os.geteuid()))):
+            raise InputError('Unsafe adaptation artifact ownership or mode')
     plan = read_json(safe_child(bundle, 'adaptation-plan.json'))
     patch = read_json(safe_child(bundle, 'patch-plan.json'))
     request = read_json(safe_child(bundle, 'adaptation-request.json'))
     inventory = read_json(safe_child(bundle, 'reviewed-inventory.json'))
     validate_contract(plan, 'adaptation-plan-v1')
     validate_contract(request, 'adaptation-request-v1')
+    validate_contract(patch, 'patch-plan')
     if (plan.get('kind') != 'adaptation-plan-v1' or plan.get('schema_version') != '1.0'
             or set(plan) != {'kind', 'schema_version', 'root_identity', 'engine_identity',
                              'request_sha256', 'inventory_sha256', 'patch_sha256', 'owned_file',
@@ -65,10 +77,51 @@ def _load(root, bundle, *, current_engine=False):
             or (os.name == 'posix' and stat.S_IMODE(preimage.stat().st_mode) != 0o600)
             or hashlib.sha256(preimage.read_bytes()).hexdigest() != plan['owned_file']['old_sha256']):
         raise InputError('Adaptation preimage mismatch')
+    source, binding = request['source'], request['binding_review']
+    matches = [candidate for candidate in inventory.get('candidates', [])
+               if candidate.get('candidate_id') == request['candidate_id']]
+    if (len(matches) != 1 or matches[0].get('tier') == 0
+            or matches[0].get('pattern') == 'NONE'
+            or matches[0].get('hard_real_time') is True
+            or matches[0].get('deterministic_alternative') in ('mandatory', 'preferred')
+            or any(matches[0].get('source', {}).get(k) != source[k] for k in
+                   ('file','symbol','source_sha256','file_sha256'))
+            or matches[0].get('semantic_review', {}).get('approved') is not True
+            or not matches[0]['semantic_review'].get('reviewer')
+            or not matches[0]['semantic_review'].get('reason')
+            or matches[0]['semantic_review'].get('source_sha256') != source['source_sha256']
+            or inventory.get('scan_fingerprint') != request['inventory_fingerprint']
+            or digest(inventory.get('analysis_identity')) != request['inventory_fingerprint']
+            or len([entry for entry in inventory.get('files', []) if entry.get('file') == source['file']
+                    and entry.get('sha256') == source['file_sha256']]) != 1
+            or len([entry for entry in inventory.get('files', []) if entry.get('file') == binding['adapter_file']
+                    and entry.get('sha256') == binding['adapter_sha256']]) != 1
+            or plan['owned_file']['file'] != source['file']
+            or plan['owned_file']['old_sha256'] != source['file_sha256']
+            or plan['adapter_file'] != binding['adapter_file']
+            or plan['adapter_sha256'] != binding['adapter_sha256']
+            or binding['source_sha256'] != source['source_sha256']
+            or patch.get('candidate_ids') != [request['candidate_id']]
+            or patch.get('repository_identity') != digest(str(root))):
+        raise InputError('Adaptation plan differs from reviewed source or binding')
+    regenerated = prepare_shape(preimage.read_bytes(), shape=request['strategy']['shape'],
+                                symbol=source['symbol'], source_sha256=source['file_sha256'],
+                                anchor_sha256=source['anchor_sha256'], adapter_name=request['adapter_name'])
+    validate_static_adapter_import(preimage.read_bytes(), request['adapter_name'])
+    original = preimage.read_bytes().decode('utf-8')
+    proposed = regenerated['new_content']
+    expected_diff = ''.join(difflib.unified_diff(
+        original.splitlines(keepends=True), proposed.splitlines(keepends=True),
+        fromfile='a/'+source['file'], tofile='b/'+source['file']))
+    if (patch['changes'][0].get('new_content') != proposed
+            or patch['changes'][0].get('diff') != expected_diff
+            or plan['owned_file']['new_sha256'] != regenerated['new_sha256']):
+        raise InputError('Adaptation patch differs from deterministic reviewed shape')
     adapter = safe_child(root, plan['adapter_file'])
     if (not adapter.is_file() or file_hash(adapter) != plan['adapter_sha256']
             or stat.S_IMODE(adapter.stat().st_mode) != plan['adapter_mode']):
         raise InputError('Reviewed adapter changed')
+    validate_adapter_callback(adapter.read_bytes(), request['strategy']['shape'])
     for entry in inventory.get('files', []) + inventory.get('configuration_evidence', []):
         if entry['file'] == plan['owned_file']['file']:
             continue
@@ -126,6 +179,7 @@ def plan_adaptation(root, inventory, request, bundle):
     os.chmod(p, 0o600)
     _sync_dir(bundle)
     return {'status': 'planned', 'contract_digest': plan['contract_digest'],
+            'rollback_digest': rollback_digest(plan['contract_digest']),
             'patch_digest': patch['plan_digest'], 'source_sha256': owned['old_sha256'],
             'new_sha256': owned['new_sha256']}
 
@@ -224,9 +278,14 @@ def adaptation_status(root, bundle):
     return {'status': 'blocked_recovery', 'reason': 'interrupted_or_inconsistent_adaptation'}
 
 
-def rollback_adaptation(root, bundle, approved_plan_sha256):
+def rollback_digest(contract_digest):
+    return digest({'operation': 'restore_owned_adaptation_preimage',
+                   'contract_digest': contract_digest})
+
+
+def rollback_adaptation(root, bundle, approved_rollback_sha256):
     root, bundle, plan, _, request, _ = _load(root, bundle)
-    if approved_plan_sha256 != plan['contract_digest']:
+    if approved_rollback_sha256 != rollback_digest(plan['contract_digest']):
         raise InputError('Exact adaptation rollback approval required')
     with _lock(bundle):
         row = plan['owned_file']

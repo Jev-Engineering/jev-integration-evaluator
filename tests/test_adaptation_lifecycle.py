@@ -1,6 +1,8 @@
 """Synthetic local state tests; native receipt security is tested by runner suites."""
 import ast
 import hashlib
+import json
+import os
 import stat
 from pathlib import Path
 
@@ -41,8 +43,8 @@ def _fixture(tmp_path):
     inventory = {'analysis_identity': analysis, 'scan_fingerprint': digest(analysis),
                  'files': [{'file': 'host.py', 'sha256': source_sha},
                            {'file': 'adapter.py', 'sha256': adapter_sha}], 'configuration_evidence': [],
-                 'candidates': [{'candidate_id': 'c', 'source': {k:source[k] for k in
-                                 ('file', 'symbol', 'source_sha256', 'file_sha256')},
+                 'candidates': [{'candidate_id': 'c', 'source': {**{k:source[k] for k in
+                                 ('file', 'symbol', 'source_sha256', 'file_sha256')}, 'line': 7},
                                  'pattern': 'C', 'tier': 1,
                                  'semantic_review': {'approved': True, 'reviewer': 'test',
                                      'reason': 'synthetic review', 'source_sha256': 'a'*64}}]}
@@ -105,7 +107,7 @@ def test_adaptation_plan_apply_verify_and_owned_rollback(tmp_path, monkeypatch):
         trusted_baseline_receipt_sha256='1'*64, trusted_modified_receipt_sha256='2'*64)
     assert result['status'] == 'verified_fresh'
     assert life.adaptation_status(root, bundle)['status'] == 'applied_unverified'
-    assert life.rollback_adaptation(root, bundle, plan['contract_digest'])['status'] == 'rolled_back'
+    assert life.rollback_adaptation(root, bundle, plan['rollback_digest'])['status'] == 'rolled_back'
     assert (root / 'host.py').read_bytes() == HOST.encode()
 
 
@@ -119,7 +121,7 @@ def test_interrupted_apply_blocks_status_and_restores_only_owned_bytes(tmp_path,
         _apply(root, bundle, plan, oracle, adapter_sha, monkeypatch)
     assert life.adaptation_status(root, bundle)['status'] == 'blocked_recovery'
     monkeypatch.undo()
-    assert life.rollback_adaptation(root, bundle, plan['contract_digest'])['status'] == 'rolled_back'
+    assert life.rollback_adaptation(root, bundle, plan['rollback_digest'])['status'] == 'rolled_back'
     assert (root / 'host.py').read_bytes() == HOST.encode()
 
 
@@ -133,7 +135,7 @@ def test_adapter_drift_blocks_apply_and_source_drift_blocks_rollback(tmp_path, m
     (root / 'host.py').write_text('unrelated edit\n')
     assert life.adaptation_status(root, bundle)['status'] == 'blocked_recovery'
     with pytest.raises(InputError, match='changed owned'):
-        life.rollback_adaptation(root, bundle, plan['contract_digest'])
+        life.rollback_adaptation(root, bundle, plan['rollback_digest'])
 
 
 def test_old_engine_bundle_allows_inspection_and_exact_rollback_only(tmp_path, monkeypatch):
@@ -144,7 +146,7 @@ def test_old_engine_bundle_allows_inspection_and_exact_rollback_only(tmp_path, m
         life.apply_adaptation(root, bundle, plan['contract_digest'], baseline_spec={},
             baseline_receipt={}, baseline_outputs={}, oracle=oracle,
             trusted_oracle_sha256='0'*64, trusted_baseline_receipt_sha256='1'*64)
-    assert life.rollback_adaptation(root, bundle, plan['contract_digest'])['status'] == 'rolled_back'
+    assert life.rollback_adaptation(root, bundle, plan['rollback_digest'])['status'] == 'rolled_back'
 
 
 def test_native_manifest_mode_mismatch_blocks_before_mutation(tmp_path):
@@ -156,3 +158,42 @@ def test_native_manifest_mode_mismatch_blocks_before_mutation(tmp_path):
             baseline_receipt={}, baseline_outputs={}, oracle=oracle,
             trusted_oracle_sha256='0'*64, trusted_baseline_receipt_sha256='1'*64)
     assert (root/'host.py').read_bytes() == HOST.encode()
+
+
+def test_self_consistent_forged_bundle_cannot_replace_reviewed_ast_edit(tmp_path):
+    root, bundle, plan, oracle, adapter_sha = _fixture(tmp_path)
+    patch_path, plan_path = bundle/'patch-plan.json', bundle/'adaptation-plan.json'
+    patch = json.loads(patch_path.read_text())
+    changed = patch['changes'][0]
+    changed['new_content'] = HOST + '\nprint("unreviewed effect")\n'
+    changed['new_sha256'] = _hash(changed['new_content'].encode())
+    patch['plan_digest'] = digest({k:v for k,v in patch.items() if k!='plan_digest'})
+    patch_path.write_text(json.dumps(patch))
+    body = json.loads(plan_path.read_text())
+    body['owned_file']['new_sha256'] = changed['new_sha256']
+    body['patch_sha256'] = digest(patch)
+    body['contract_digest'] = digest({k:v for k,v in body.items() if k!='contract_digest'})
+    plan_path.write_text(json.dumps(body))
+    with pytest.raises(InputError, match='deterministic reviewed shape'):
+        life.apply_adaptation(root, bundle, body['contract_digest'], baseline_spec={},
+            baseline_receipt={}, baseline_outputs={}, oracle=oracle,
+            trusted_oracle_sha256='0'*64, trusted_baseline_receipt_sha256='1'*64)
+    assert (root/'host.py').read_bytes() == HOST.encode()
+
+
+def test_apply_digest_cannot_authorize_rollback(tmp_path, monkeypatch):
+    root, bundle, plan, oracle, adapter_sha = _fixture(tmp_path)
+    _apply(root, bundle, plan, oracle, adapter_sha, monkeypatch)
+    with pytest.raises(InputError, match='rollback approval'):
+        life.rollback_adaptation(root, bundle, plan['contract_digest'])
+    assert life.adaptation_status(root, bundle)['status'] == 'applied_unverified'
+    assert life.rollback_adaptation(root, bundle, plan['rollback_digest'])['status'] == 'rolled_back'
+
+
+@pytest.mark.skipif(os.name != 'posix', reason='POSIX bundle mode boundary')
+def test_private_bundle_mode_drift_is_rejected(tmp_path):
+    root, bundle, plan, oracle, adapter_sha = _fixture(tmp_path)
+    artifact = bundle/'patch-plan.json'
+    artifact.chmod(0o644)
+    with pytest.raises(InputError, match='Unsafe adaptation artifact'):
+        life.adaptation_status(root, bundle)

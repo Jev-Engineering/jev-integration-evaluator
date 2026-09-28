@@ -177,5 +177,5 @@ def test_native_edited_host_reachability_parity_and_anchored_lifecycle(tmp_path,
             assert observed['effects'] == [] and observed['state']['count'] == 0
             assert observed['assessments'] == 0
     assert life.adaptation_status(root,bundle)['status']=='applied_unverified'
-    assert life.rollback_adaptation(root,bundle,plan['contract_digest'])['status']=='rolled_back'
+    assert life.rollback_adaptation(root,bundle,plan['rollback_digest'])['status']=='rolled_back'
     assert (root/'host.py').read_bytes()==source.encode()

@@ -48,6 +48,10 @@ need a fresh source scan and candidate/binding reviews after their changes.
 target. It owns only the selected source file and retains its UTF-8 preimage.
 The plan binds both source and existing adapter modes as well as their bytes;
 native baseline and modified manifests must match those modes.
+Loading the bundle rechecks private ownership and modes, reviewed candidate
+and adapter identities, and regenerates the edit and diff from the archived
+preimage. A self-consistent rewrite of local plan and patch files cannot
+substitute a different source edit.
 `apply_adaptation` requires externally approved exact plan identity and an
 externally anchored native baseline receipt with independent pre-edit
 postconditions. It refuses source or adapter drift, then writes through the
@@ -57,7 +61,7 @@ oracle bound to repository, review context and bundle. It reports fresh
 verification only after actual edited-host execution; a later read-only status
 returns `applied_unverified` because local journal entries do not authenticate
 private output bytes. An interrupted apply returns `blocked_recovery`; exact
-owned-byte rollback remains available. These calls do not run the target,
+owned-byte rollback requires a separate operation-bound digest. These calls do not run the target,
 allocate execution authority or confer deployment/activation approval.
 
 The privileged hosted synthetic tests run both method and async edited hosts
