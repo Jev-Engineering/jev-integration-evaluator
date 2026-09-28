@@ -1,0 +1,20 @@
+{
+  "study_id":"graph-identity-synthetic-v1",
+  "seed":4401,
+  "independent_unit":"one entity pair in a fresh in-memory graph",
+  "splits":{"calibration":["c01","c02","c03","c04"],"holdout":["h01","h02","h03","h04","h05","h06","h07","h08","h09","h10","h11","h12","h13","h14","h15","h16"]},
+  "identity_criteria":"Matching nonempty registry IDs within the same jurisdiction is sufficient for the deterministic baseline. Different IDs are a conflict. Name similarity alone never suffices for that baseline. Independent synthetic adjudications in labels.v1.json define truth; those labels are never passed to a comparator.",
+  "allowed_evidence":["name","jurisdiction","registry_id","provenance"],
+  "comparators":{
+    "current":"Recorded injected classifier response in assessments.v1.json, including wrong and uncertain answers; no model call.",
+    "deterministic":"same only for equal nonempty registry IDs and equal jurisdiction; different for unequal nonempty IDs or unequal jurisdictions; uncertain otherwise.",
+    "jev":"Recorded bounded same/related/different/uncertain assessment in assessments.v1.json; timeout/malformed map to uncertain and are counted as failures. No provider call."
+  },
+  "rubric_id":"synthetic-identity-rubric-v1",
+  "policy_id":"host-approval-revision-atomic-v1",
+  "assignment":"Every holdout pair runs once under each comparator in separate fresh graph instances, order current/deterministic/jev; seed retained for dataset generation identity, no random assignment.",
+  "resource_model":{"jev_per_case_simulated_usd":0.0005,"jev_per_case_simulated_ms":10,"current_per_case_simulated_usd":0,"deterministic_per_case_simulated_usd":0,"wall_clock":"measure locally, separately from simulated numbers"},
+  "thresholds":{"max_wrong_merges":0,"max_wrong_merge_wilson_95_upper":0.20,"max_missed_eligible_true_merges_fraction":0.25,"max_abstention_fraction":0.40,"max_failures":0,"max_simulated_cost_usd":0.01,"max_simulated_latency_ms_per_case":50,"minimum_missed_merge_reduction_vs_each_baseline":1},
+  "stop_rule":"Evaluate all 16 scheduled holdout pairs for every arm, including failures and denied/stale cases. Reject JEV if any safety/resource threshold fails; otherwise adopt only if the minimum improvement threshold passes. No optional stopping or retries.",
+  "interpretation":"An adopt result here would support only another controlled study, never live graph mutation or activation."
+}
