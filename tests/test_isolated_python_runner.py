@@ -130,6 +130,60 @@ def test_missing_or_different_interpreter_is_rejected_before_target_launch(tmp_p
     assert result.receipt['cases'][0]['outcome'] == 'target_interpreter_drift'
 
 
+def test_edited_host_bootstrap_off_shadow_parity_uses_installed_package(tmp_path):
+    _, deps, _, selected = installed_fixture(tmp_path)
+    (deps / 'toy_package' / '__init__.py').write_text(
+        'def judge(value): return "accepted:" + value\n')
+    entry = '''import sys
+from runtime import bootstrap
+runtime = bootstrap()
+answer = runtime.decide('x', sys.argv[1])
+runtime.close()
+print(answer, runtime.effects, runtime.assessments, runtime.closed, runtime.origin(), flush=True)
+'''
+    common = '''import toy_package
+class Runtime:
+    def __init__(self):
+        self.effects = 0
+        self.assessments = 0
+        self.closed = False
+    def origin(self): return toy_package.__file__
+    def close(self): self.closed = True
+def bootstrap(): return Runtime()
+'''
+    baseline_body = '''    def decide(self, value, mode):
+        self.effects += 1
+        return 'baseline:' + value
+'''
+    edited_body = '''    def decide(self, value, mode):
+        self.effects += 1
+        if mode == 'shadow':
+            assert toy_package.judge(value) == 'accepted:' + value
+            self.assessments += 1
+        return 'baseline:' + value
+'''
+    schedule = [{'case_id': mode, 'entry': 'entry.py', 'argv': [mode]}
+                for mode in ('off', 'shadow')]
+    outputs = {}
+    for phase, body in [('baseline', baseline_body), ('edited', edited_body)]:
+        host_root = tmp_path / phase
+        host_root.mkdir()
+        (host_root / 'entry.py').write_text(entry)
+        (host_root / 'runtime.py').write_text(common.replace('def bootstrap():', body + 'def bootstrap():'))
+        spec = runner.prepare_spec(host_root, ['entry.py', 'runtime.py'], schedule,
+                                   target_environment=selected)
+        result = run(host_root, spec)
+        assert result.receipt['scheduled'] == result.receipt['recorded'] == 2
+        for mode in ('off', 'shadow'):
+            assert_zero(result, case=mode)
+            outputs[(phase, mode)] = result.private_outputs[mode][0]
+    origin = b'/deps/toy_package/__init__.py\n'
+    assert outputs[('baseline', 'off')] == b'baseline:x 1 0 True ' + origin
+    assert outputs[('edited', 'off')] == outputs[('baseline', 'off')]
+    assert outputs[('baseline', 'shadow')] == outputs[('baseline', 'off')]
+    assert outputs[('edited', 'shadow')] == b'baseline:x 1 1 True ' + origin
+
+
 def test_real_bootstrap_off_shadow_no_replacement_callback(tmp_path):
     source = '''import sys
 from runtime import bootstrap
