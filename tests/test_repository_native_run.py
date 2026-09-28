@@ -11,6 +11,7 @@ import pytest
 
 from jev_integration_evaluator import capabilities as cap
 from jev_integration_evaluator import repository_run as session
+from jev_integration_evaluator.integrations import lifecycle as engine
 from jev_integration_evaluator.runners import isolated_python as runner
 from scripts.implementation_fixtures import fixture
 
@@ -166,11 +167,16 @@ def test_native_session_executes_edited_host_with_anchored_private_proofs(tmp_pa
     scope['grants'] = session.ZERO_GRANTS.copy()
     resumed = session.run_repository(root, output, scope=scope, native_contract=contract)
     assert resumed['status'] == 'verified' and resumed['attempts'] == verified['attempts']
+    assert resumed['target_executed'] is False
     archive = output / verified['retained_schedules'][-1]['private_output_file']
     archive.write_bytes(archive.read_bytes() + b' ')
     blocked = session.run_repository(root, output, scope=scope, native_contract=contract)
     assert blocked['status'] == 'blocked_recovery'
     assert blocked['attempts'] == verified['attempts']
+    scope['grants'] = {**session.ZERO_GRANTS, 'rollback': True}
+    scope['rollback_digest'] = engine.rollback_digest(plan)
+    rolled_back = session.run_repository(root, output, scope=scope, recover=True)
+    assert rolled_back['status'] == 'rolled_back'
 
 
 @pytest.mark.skipif(sys.platform != 'linux' or os.geteuid() != 0,

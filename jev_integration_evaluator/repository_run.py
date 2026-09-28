@@ -234,9 +234,11 @@ def _scope(value: Any, state: dict, head: str | None, existing: bool) -> dict | 
             and any(value["grants"][k] for k in ("baseline", "apply", "modified"))
             and value.get("native_contract_sha256") is None):
         raise SessionError("native_contract_anchor_required")
-    if (state.get("execution_backend") is not None and
+    established_backend = state.get("execution_backend") or (
+        "trusted_host" if any(state["receipts"].values()) else None)
+    if (established_backend is not None and
             any(value["grants"][k] for k in ("baseline", "apply", "modified")) and
-            value["execution_environment"] != state["execution_backend"]):
+            value["execution_environment"] != established_backend):
         raise SessionError("session_execution_backend_cannot_change")
     return value
 
@@ -943,7 +945,7 @@ def _run_native_lifecycle(journal: Journal, root: Path, bundle: Path, plan: dict
         if not report["postconditions_satisfied"]:
             return _summary(journal, "blocked_recovery", "review_native_postcondition_failure")
         return _summary(journal, "verified", "software_wiring_only_no_activation",
-                        target_executed=True, native_postconditions=report)
+                        target_executed=False, native_postconditions=report)
     if state["stage"] in ("planned", "baseline_failed"):
         phase = "baseline"
     elif state["stage"] == "baseline_passed":
@@ -1085,7 +1087,7 @@ def run_repository(repo: str | Path, session: str | Path, *, context: dict | Non
             os.close(identity_fd)
             if cap._digest([str(root), identity.st_dev, identity.st_ino]) != state["repository_identity"]:
                 raise SessionError("repository_identity_changed")
-        if journal.native_archive_invalid:
+        if journal.native_archive_invalid and not (recover or cancel):
             return _summary(journal, "blocked_recovery", "inspect_native_contract_and_private_archive")
         if proposal is not None:
             if proposal["adapter"] != journal.state["context"]["adapter"]:
@@ -1235,6 +1237,7 @@ def run_repository(repo: str | Path, session: str | Path, *, context: dict | Non
             return _summary(journal, "blocked_recovery", "supply_exact_owned_rollback_scope")
         if state.get("execution_backend") == "isolated" or (
                 state.get("execution_backend") is None and checked_scope is not None
+                and not any(state["receipts"].values())
                 and checked_scope["execution_environment"] == "isolated"):
             try:
                 return _run_native_lifecycle(journal, root, bundle_path, plan, checked_scope,

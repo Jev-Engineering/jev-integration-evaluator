@@ -1,9 +1,10 @@
-# Repository session command — partial issue #4
+# Repository session command — issue #4 with opt-in issue #8 draft
 
-Contract versions: `repository-session-v1`, `repository-run-context-v1`, and
-`repository-run-scope-v1`, all schema version `1.0`. This is a local contribution
-for issue #4, not completion of issue #4 or epic #3. The historical supplied
-checkpoint was tested on an assembled source tree; this release has its own
+Contract versions: `repository-session-v1` and `repository-run-context-v1` remain
+schema version `1.0`; `repository-run-scope-v1` also accepts opt-in `1.1` for
+isolated native execution. The merged issue #4 session is the durable foundation
+for this opt-in issue #8 draft. The historical supplied checkpoint was tested on
+an assembled source tree; this release has its own
 qualification in `validation/REPOSITORY-SESSION-VALIDATION-1.3.0.dev11.md`.
 
 ## Commands and trust boundary
@@ -137,6 +138,31 @@ No prior bundle grant authorizes a new bundle. This is caller-reviewed replannin
 not automatic semantic drafting or a model-issued approval.
 
 ## Authorization and receipts
+
+### Opt-in isolated native execution
+
+An external caller can prepare a native-readable bundle with an isolated
+schema-`1.1` preparation scope. Newly created owned Python source is mode 0644;
+the compatible legacy planner continues to create mode-0600 private source.
+After reviewing that exact bundle, the caller supplies a separately anchored
+`repository-native-contract-v1` containing baseline and modified runner specs
+and a `native-postconditions-v1` oracle. Use `--native-contract` alongside the
+private `--session` and a fresh schema-`1.1` `--scope`. The scope binds the
+contract and oracle hashes to repository/context/bundle, exact session head and
+operation grant. Baseline, apply and modified phases each return a checkpoint;
+the next invocation supplies the externally retained head and prior receipt and
+private output digests. One scope cannot silently replay an interrupted target.
+
+The native path never calls the legacy verifier or writes a legacy baseline or
+verification receipt. Apply rechecks an anchored, complete native baseline
+schedule and expected host state before editing owned bytes. Modified status
+rechecks the full baseline/off/shadow schedule, selected interpreter/dependency
+identity, source bytes and independently authored expected effects. Raw output
+stays in exclusive 0600 files under the owner-private session; public results
+contain only receipt references and bounded postcondition rows. A missing or
+altered archive yields `blocked_recovery` and no target replay. This path is
+synthetic qualification only until the hosted gate and independent security
+review finish; it grants no runtime activation or provider access.
 
 Scope is external to the target and independent of the agent response. The strict
 scope contract identifies repository, context, bundle, caller reference, execution

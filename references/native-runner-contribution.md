@@ -1,4 +1,4 @@
-# Standalone native runner contribution — NOT an issue #8 completion
+# Native runner and repository session draft — issue #8 qualification pending
 
 Contribution contract: `linux-chroot-seccomp-python-ro-v1` / schema `1.0`.
 The opt-in `1.1` contract adds a selected installed environment with an
@@ -23,10 +23,12 @@ interpreter, libseccomp, worker, supervisor, and runtime-closure identity to
 `validation/native-runner-environment-lock.json` before executing required
 privileged cases. A changed hosted image or source byte requires review and a
 new lock; a green generic test matrix cannot substitute for this job.
-This is an unmerged, opt-in backend contribution. It is not connected to the
-repository command/session, existing implementation verification receipts, or
-TypeSafe runtime bootstrap. It neither replaces the existing probe nor changes
-any existing recipe, validator, source file, release version, or activation gate.
+The runner remains opt-in. The repository command now has a separate isolated
+session path using `repository-run-scope-v1` schema `1.1` and a
+`repository-native-contract-v1` contract. Legacy `1.0` scopes, verifier receipts,
+and trusted-host execution remain available. No native receipt is copied into a
+legacy verifier field. This draft does not connect TypeSafe runtime bootstrap or
+authorize activation.
 
 ## Execution model and scope
 
@@ -73,9 +75,10 @@ interpreter, install a dependency, or fall back to unsandboxed execution.
 
 ## Supported execution in this checkpoint
 
-Only the tested Linux x86-64, privileged-launcher, CPython 3.13.5 environment is
-qualified locally. `validation/environment.json` records the exact kernel and
-runtime identities. Targets are explicitly scoped synthetic Python scripts with
+Only the pinned ephemeral Linux x86-64, privileged-launcher, CPython 3.13.5
+environment is qualified for the standalone runner. The repository session
+integration still requires its own passing hosted and independent review gates.
+Targets are explicitly scoped synthetic Python scripts with
 builtins, trusted preloaded modules, and explicitly supplied source dependencies.
 The script's actual `__main__` runs; the worker does not replace its runtime
 factory. A hand-authored fixture tests real startup, baseline-equivalent off/
@@ -89,7 +92,7 @@ versions, writable target filesystems, spawned processes or threads, sockets,
 provider connectivity, nonidentical target interpreter builds, compiled
 dependencies, arbitrary framework or
 stdlib dependency discovery, ESM/CommonJS/TypeScript execution, generated JEV
-recipe wiring, durable repository sessions, composite transactions and production
+recipe shadow activation, arbitrary installed-host compatibility, composite transactions and production
 activation are not qualified by this contribution. There is no automatic host
 fallback. The standalone wheel test qualifies only this contribution's packaging,
 not the complete evaluator wheel or an installed real-world host application.
@@ -127,8 +130,9 @@ entry reachability, result, effects, state, assessment count and dependency
 origin against exact source-bound expected values, then checks baseline/off/
 shadow parity. Every scheduled failure or unrun case remains a report row.
 The returned postcondition report still declares `integration_verified=false`:
-session dispatch must authenticate host oracle ownership, repository context,
-bundle, phase, attempt and anchors before promotion.
+session dispatch checks repository/context/bundle, source phase, attempt and
+anchors before reporting a verified synthetic session. Oracle authorship and
+scope principal authentication remain external trust responsibilities.
 The runner-owned `private_archive` helper writes bounded raw outputs once to a
 private 0700 directory as an exclusive 0600 file, fsyncs file and directory,
 and returns its digest for external retention with the phase and attempt. A
@@ -136,11 +140,14 @@ readback requires the exact external receipt and archive digests, checks every
 scheduled case against receipt output hashes, and rejects missing, changed or
 wrong-phase archives. It never retries a target to regenerate lost output.
 
-The CLI creates an exclusive private receipt path and fsyncs a
+The standalone CLI creates an exclusive private receipt path and fsyncs a
 `started_uncompleted` marker before execution. It refuses to reuse or overwrite
-that path. Interruption cannot turn it into a passed receipt. This is **not** the
-resumable session/journal contract required by issue #4: no automatic resume is
-implemented here, and an interrupted attempt must not simply be reexecuted.
+that path. Interruption cannot turn it into a passed receipt. The separate
+repository session uses the merged issue #4 journal and exact-head scope. Each
+native phase writes its receipt and private output archive before journal
+completion. A pending phase can be adopted only with separately retained exact
+receipt and archive digests plus the same contract/oracle anchor; missing or
+altered output blocks recovery without replay.
 
 ## API and command
 
@@ -184,18 +191,21 @@ invalid input/authority/I/O; exit 3 preserves unsuccessful scheduled execution.
 Do not run this against arbitrary third-party or production targets. Do not
 install credentials or elevate privileges just to make a missing backend pass.
 
-## Required integration before issue closure
+## Required qualification before issue closure
 
-Connect this backend to the versioned session and native verification contracts,
-authenticated scopes, trusted existing receipt provenance and independent host
-observation/postcondition adapters. Exercise the real edited JEV entrypoints,
-actual TypeSafe lifecycle, baseline/off/shadow schedules, environment/assets,
-source-phase snapshots and every applicable issue acceptance criterion. Keep the
-existing synthetic/trusted-host modes accurately labeled. Run the full evaluator
-regressions, required demos, release/checksum validation, installed evaluator and
-host artifacts, and hosted Python/TypeScript matrices. Obtain independent review,
-create verified signed commits, publish, merge normally, verify post-merge state,
-and synchronize the actual workspace. No step is implied by this checkpoint.
+The repository session now dispatches isolated baseline and modified schedules
+from a reviewed native contract, uses a distinct native baseline gate for apply,
+and retains private output archives with bounded attempts. The hosted synthetic
+session fixture calls an actual edited host entrypoint, reads a selected pure
+Python dependency from `/deps`, and checks baseline/off/shadow effects and state.
+Its shadow assessment is a deliberately separate synthetic probe; it does not
+prove generated JEV router activation or TypeSafe provider wiring.
+
+Complete the passing hosted session and crash/recovery gate, full evaluator
+regressions, demos, release/checksum validation, installed artifact checks and
+independent security review. Validate any proposed real host's interpreter and
+dependency closure separately before use. Do not treat a schema-valid oracle or
+local journal as a substitute for an authenticated external reviewer or anchor.
 
 ## Primary technical references
 
