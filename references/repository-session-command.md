@@ -87,6 +87,40 @@ python -m jev_integration_evaluator.repository_run /absolute/target \
   --stop-after plan
 ```
 
+The optional `--selection /caller/selection.json` accepts the mirrored
+`repository-run-selection-v1` contract. `inventory-selection-v1` records a
+reviewed inventory and a `placement-selection-request`; a separately supplied
+`--approved-selection-sha256` is required for an experimental choice. The
+digest inside a JSON proposal cannot approve itself. `source-selection-v1`
+records the source-wide report, nomination preparation, semantic review,
+settings, optional complete scope review, and optional experimental selection
+review. Its report discovery policy must exactly match the session context
+policy; a report prepared with different bounds requires a matching caller
+context. Selection is recorded before planning or effects, preserving decision
+order. Both selectors are recomputed against current source before use and on
+every resume. The original input is fsynced into a private session archive;
+the journal records its hash, outcome, selector path, and review digest. A
+changed source or review returns `stale_selection` and requires a fresh run.
+For the inventory selector, a pending `selection_review_required` record can
+accept the exact externally supplied request digest later in the same run,
+before any effect or planning attempt; the journal preserves both decisions.
+The original objective and saved answers remain in the same immutable context.
+
+Selection statuses remain distinct: empty discovery, deterministic exclusion,
+unsupported source, missing estimates, an experimental choice, and optimization
+under declared estimates are not interchangeable. A complete negative from the
+source-wide review is reported as `no_useful_placement`; a negative from the
+older inventory selector is limited to `no_useful_placement_within_reviewed_inventory`.
+An empty caller-supplied legacy inventory is reported as
+`no_candidates_in_supplied_inventory`, not as repository-wide absence.
+When the caller also supplies a reviewed implementation response, its inventory,
+candidate and reviewed specification must match the selected inputs before the
+ordinary planner runs. Multiple selected candidates still require the separate
+composite transaction qualification. Selection records carry no effect authority:
+private preparation, execution and mutation still require their own fresh exact
+scope and externally retained session head. Neither selector makes a measured
+benefit or adoption claim.
+
 The context contains an optional objective, saved answers, explicit resource
 bounds, discovery policy, and either the compatible `recorded-reviewed-input-v1`
 or request-bound `recorded-reviewed-input-v2` adapter.

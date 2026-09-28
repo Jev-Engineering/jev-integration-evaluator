@@ -240,6 +240,12 @@ def select_placement(inventory: dict, request: dict, *,
         "live_spend_authorized": False, "runtime_activation_authorized": False,
         "benefit_demonstrated": False, "adoption_recommendation": None,
     }
+    if request["mode"] == "optimize" and not complete:
+        # Optimization over an incomplete inventory could otherwise overwrite
+        # the coverage result with an apparent supported recommendation.
+        result = seal(result)
+        _validate(result, "placement-selection")
+        return result
     if request["mode"] == "experimental":
         row = next(r for r in rows if r["candidate_id"] == selected_id)
         result["status"] = row["review_status"]

@@ -12,6 +12,8 @@
     "code": {
       "enum": [
         "approve_exact_owned_rollback_digest",
+        "qualify_composite_transaction",
+        "refresh_source_review_and_selection",
         "inspect_bundle_receipts_and_owned_source",
         "inspect_native_archive_and_external_anchor_before_retry",
         "inspect_native_contract_and_private_archive",
@@ -43,6 +45,7 @@
         "review_prepared_bindings_and_source_shape",
         "review_preserved_output_and_explicitly_request_bounded_retry",
         "review_repository_conclusion_and_missing_opinions",
+        "review_selection_outcome",
         "review_retained_failure_and_explicitly_request_bounded_retry",
         "review_retained_native_schedule_and_postconditions",
         "review_retained_schedule_and_independent_assertions",

@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:repository-run-selection-v1:1.0",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {"const": "1.0"},
+        "kind": {"const": "inventory-selection-v1"},
+        "inventory": {"type": "object"},
+        "request": {"type": "object"}
+      },
+      "required": ["schema_version", "kind", "inventory", "request"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {"const": "1.0"},
+        "kind": {"const": "source-selection-v1"},
+        "report": {"type": "object"},
+        "prepared": {"type": "object"},
+        "semantic_review": {"type": "object"},
+        "settings": {"type": "object"},
+        "scope_review": {"anyOf": [{"type": "object"}, {"type": "null"}]},
+        "selection_review": {"anyOf": [{"type": "object"}, {"type": "null"}]}
+      },
+      "required": ["schema_version", "kind", "report", "prepared", "semantic_review", "settings", "scope_review", "selection_review"],
+      "additionalProperties": false
+    }
+  ]
+}
