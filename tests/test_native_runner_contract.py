@@ -50,6 +50,10 @@ def test_versioned_target_contract_and_mirrors_are_strict():
     left = json.loads((ROOT / 'schemas/native-runner-spec-v1.schema.json').read_text())
     right = json.loads((ROOT / 'jev_integration_evaluator/data/native-runner-spec-v1.schema.json').read_text())
     assert left == right
+    for name in ('native-postconditions-v1', 'native-postcondition-report-v1',
+                 'native-private-output-v1'):
+        assert json.loads((ROOT / 'schemas' / (name + '.schema.json')).read_text()) == json.loads(
+            (ROOT / 'jev_integration_evaluator/data' / (name + '.schema.json')).read_text())
     jsonschema.validate(spec, left)
     bad = copy.deepcopy(spec)
     bad['target_environment']['files'].append(

@@ -185,6 +185,8 @@ def test_private_output_archive_is_exclusive_anchored_and_phase_bound(tmp_path):
     digest = write_private_output_archive(path, root, spec, result.receipt,
                                           result.private_outputs, phase='baseline', attempt=1,
                                           trusted_receipt_sha256=result.receipt_sha256)
+    jsonschema.validate(json.loads(path.read_text()), json.loads((Path(__file__).resolve().parents[1] /
+        'schemas/native-private-output-v1.schema.json').read_text()))
     restored = read_private_output_archive(path, root, spec, result.receipt,
                                            phase='baseline', attempt=1,
                                            trusted_receipt_sha256=result.receipt_sha256,

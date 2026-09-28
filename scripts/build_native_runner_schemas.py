@@ -110,18 +110,26 @@ observation_report=obj({'schema_version':const('1.0'),'kind':const('native-postc
         'execution_outcome':{'type':'string'},'postcondition_matched':{'type':'boolean'}})},
     'parity_matched':{'type':'boolean'},'postconditions_satisfied':{'type':'boolean'},
     'integration_verified':const(False),'activation_eligible':const(False)})
+encoded_output={'anyOf':[{'type':'null'},
+                         {'type':'string','pattern':'^[A-Za-z0-9+/]*={0,2}$'}]}
+private_archive=obj({'schema_version':const('1.0'),'kind':const('native-private-output-v1'),
+    'phase':{'enum':['baseline','modified']},'attempt':integer(1,3),
+    'receipt_sha256':HEX,
+    'cases':{'type':'array','minItems':1,'maxItems':64,'items':obj({
+        'case_id':ID,'stdout_b64':encoded_output,'stderr_b64':encoded_output})}})
 
 
 def main():
     for name,value in [('native-runner-spec-v1',spec),('native-runner-receipt-v1',receipt),
                        ('native-postconditions-v1',oracle),
-                       ('native-postcondition-report-v1',observation_report)]:
+                       ('native-postcondition-report-v1',observation_report),
+                       ('native-private-output-v1',private_archive)]:
         value={'$schema':'https://json-schema.org/draft/2020-12/schema',
                'title':name,'description':'Runner-only contribution. Cross-artifact semantic validation is mandatory.',**value}
         data=(json.dumps(value,sort_keys=True,indent=2)+'\n').encode()
         for folder in [ROOT/'schemas',ROOT/'jev_integration_evaluator'/'data']:
             folder.mkdir(parents=True,exist_ok=True)
             (folder/(name+'.schema.json')).write_bytes(data)
-    print('Wrote four mirrored native-runner contracts.')
+    print('Wrote five mirrored native-runner contracts.')
 
 if __name__=='__main__':main()
