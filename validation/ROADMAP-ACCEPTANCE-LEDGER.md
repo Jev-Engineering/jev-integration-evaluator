@@ -1,10 +1,19 @@
 # Repository roadmap acceptance ledger
 
-The machine-readable [ledger](../roadmap-acceptance-ledger.json) captures the live
-GitHub acceptance text for epic #3 and children #4–#15 at the recorded snapshot.
-It records issue checkbox state separately from verified evidence. An unchecked
-item is open; a checked item still needs source, test, review and merge evidence
-before it can be credited in a release audit.
+The machine-readable [final ledger](../roadmap-acceptance-ledger.json) records
+the 2026-09-28 GitHub acceptance snapshot for epic #3 and children #4–#15,
+separating issue checkbox state from verified evidence. It was published by
+[PR #39](https://github.com/Jev-Engineering/jev-integration-evaluator/pull/39);
+the [epic #3 acceptance record](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/3)
+links the closure. Its scope is the stated supported implementation and
+synthetic qualification, not installed application operation, provider
+connectivity, activation or measured benefit.
+
+## Historical planning audit at `fa44cf7c` (before final ledger publication)
+
+The table below preserves an earlier issue state. Its "Current state" column
+meant current **at that planning audit**, not current at the final ledger
+snapshot or today. Use the linked final ledger for the later acceptance evidence.
 
 | Issue | Current state | Native open prerequisites | Workstream |
 | --- | --- | --- | --- |
@@ -30,7 +39,7 @@ but no independent approval or privileged native-runner qualification. The
 repository session's secure filesystem requires POSIX;
 native Windows tests that fail this prerequisite are not acceptance evidence.
 
-Each issue remains open until its requirements have fresh, revision-bound
+At that planning audit, each issue still required fresh, revision-bound
 qualification, independent review, signed publication, normal merge and
-post-merge readback. Missing evidence is recorded as `unverified` in the JSON
-ledger rather than inferred from issue checkboxes or historical validation.
+post-merge readback. The final JSON ledger records the later evidence per
+criterion; historical unchecked boxes cannot be used as present issue state.

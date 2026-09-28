@@ -1,4 +1,11 @@
-# Python adaptation preparation v1
+# Python adaptation preparation and lifecycle v1
+
+This is a separately versioned, source-bound path for the two shapes below. It
+does not widen the original `implementation-recipes` Python A–M catalog. The
+native one-source plan/apply/verify/status/rollback lifecycle is described
+below. Its synthetic edited-host checks do not establish an installed
+application, live provider connection, authorized operation, or measured
+benefit.
 
 `instance-method-tail-call-v1` and `async-module-tail-call-v1` are separate
 structural preparation contracts. They do not change the existing
@@ -71,9 +78,10 @@ case observations and unchanged entrypoint hashes and modes. `apply_prerequisite
 regenerates the plan before comparing it to an externally approved digest.
 Its only successful state is `applied_requires_rescan`: the previous inventory,
 source review and binding review become stale, and no recipe may be applied
-from them. A complete new scan, #6 review and independent behavioral checks
-are required before the new helpers can be used. This path does not implement
-an absent approval, lock, permission or verification callback. The patch
+from them. A complete new scan, #6 source review, new binding review and
+independent behavioral checks are required before the new helpers can be used.
+This path does not implement an absent approval, lock, permission or verification
+callback. The patch
 engine guards exact source bytes and reverts ordinary write errors. Apply
 creates a new private recovery bundle outside the target, archives exact
 preimages and modes, fsyncs them before the first write, and journals every
