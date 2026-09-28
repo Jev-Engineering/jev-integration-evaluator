@@ -1,0 +1,13 @@
+{
+  "study_id":"rag-claim-47-v1",
+  "policy_id":"claim-host-disposition-v1",
+  "rubric":"registered per-claim supported, contradicted, unsupported, uncertain; assessment evidence IDs must be checked citations for that claim; semantic labels are advisory and host controls final disposition",
+  "generator_id":"structured-fixed-draft-v1",
+  "arms":["historical","generic_classifier_counterfactual","deterministic","jev"],
+  "limits":{"max_passages":32,"max_claims":4,"max_citations_per_claim":3,"max_generator_calls_per_case":1,"max_assessor_calls_per_case":1,"max_simulated_assessor_latency_ms":100,"max_simulated_assessor_cost_usd":0.001},
+  "minimum_useful_effect":{"answer_success_gain_over_deterministic":0.2,"max_unsafe_claims_delivered":0,"max_additional_supported_claims_blocked":0,"max_failed_or_missing_assessments":0,"max_audit_failures":0,"max_resource_violations":0,"max_material_conflict_omissions":0},
+  "stop_rule":"All fifteen new holdout cases run once in fixed order under all four arms; no early stop, no post-result tuning, and every scheduled failure remains in the denominator. Synthetic screen pass never authorizes adoption.",
+  "assignment_unit":"case",
+  "seed":4701,
+  "latency_cost_semantics":"Fixture-assigned assessor latency/cost only; both are simulated and capped per case. Local Python elapsed time is separately measured; actual model latency and price are unknown. A timed-out, failed or late call still consumes its assigned simulated resource."
+}

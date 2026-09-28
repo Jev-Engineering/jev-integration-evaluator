@@ -1,0 +1,2923 @@
+{
+  "adjudication_rule": "A claim is supported only if its cited source text entails the entire claim. Direct negation is contradicted; a source about a different fact is unsupported; ambiguous status is uncertain. Exact citation ID and quote presence are separately checked. Expected final status follows fixed host critical/dependency policy and independent semantic labels.",
+  "adoption_decision": "reject_adoption_from_synthetic_evidence",
+  "assignment_unit": "case",
+  "calibration_ids": [
+    "C01",
+    "C02"
+  ],
+  "evidence_kind": "offline_synthetic_fixture",
+  "holdout_ids": [
+    "H01",
+    "H02",
+    "H03",
+    "H04",
+    "H05",
+    "H06",
+    "H07",
+    "H08",
+    "H09",
+    "H10",
+    "H11",
+    "H12",
+    "H13",
+    "H14",
+    "H15"
+  ],
+  "holdout_summary": {
+    "deterministic": {
+      "answer_success": 9,
+      "assessor_calls": 0,
+      "audit_failures": 0,
+      "failed_or_missing_assessments": 0,
+      "generator_calls": 15,
+      "generic_classifier_calls": 0,
+      "local_elapsed_ns": 160200,
+      "material_conflict_omissions": 2,
+      "n": 15,
+      "resource_violations": 0,
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 6
+    },
+    "generic_classifier_counterfactual": {
+      "answer_success": 7,
+      "assessor_calls": 0,
+      "audit_failures": 0,
+      "failed_or_missing_assessments": 0,
+      "generator_calls": 15,
+      "generic_classifier_calls": 15,
+      "local_elapsed_ns": 69700,
+      "material_conflict_omissions": 2,
+      "n": 15,
+      "resource_violations": 0,
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 8
+    },
+    "historical": {
+      "answer_success": 7,
+      "assessor_calls": 0,
+      "audit_failures": 0,
+      "failed_or_missing_assessments": 0,
+      "generator_calls": 15,
+      "generic_classifier_calls": 0,
+      "local_elapsed_ns": 76100,
+      "material_conflict_omissions": 2,
+      "n": 15,
+      "resource_violations": 0,
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 8
+    },
+    "jev": {
+      "answer_success": 9,
+      "assessor_calls": 14,
+      "audit_failures": 1,
+      "failed_or_missing_assessments": 5,
+      "generator_calls": 15,
+      "generic_classifier_calls": 0,
+      "local_elapsed_ns": 206600,
+      "material_conflict_omissions": 0,
+      "n": 15,
+      "resource_violations": 1,
+      "supported_claims_blocked": 6,
+      "unsafe_claims_delivered": 0
+    }
+  },
+  "jev_gain_over_deterministic": 0.0,
+  "label_provenance": "Synthetic case author adjudicated exact claim meaning against the authored passage text and host request before holdout. Scorer-only labels are separate from case and prediction files. Independent pre-result reviewer must check every label; no real-world factual verification or provider judgment is claimed.",
+  "limits_of_inference": "Small authored corpus; no real retrieval, model, provider cost/latency, user history, deployment, or combined #45+#47 treatment. Only local Python elapsed time was measured.",
+  "policy": {
+    "arms": [
+      "historical",
+      "generic_classifier_counterfactual",
+      "deterministic",
+      "jev"
+    ],
+    "assignment_unit": "case",
+    "generator_id": "structured-fixed-draft-v1",
+    "latency_cost_semantics": "Fixture-assigned assessor latency/cost only; both are simulated and capped per case. Local Python elapsed time is separately measured; actual model latency and price are unknown. A timed-out, failed or late call still consumes its assigned simulated resource.",
+    "limits": {
+      "max_assessor_calls_per_case": 1,
+      "max_citations_per_claim": 3,
+      "max_claims": 4,
+      "max_generator_calls_per_case": 1,
+      "max_passages": 32,
+      "max_simulated_assessor_cost_usd": 0.001,
+      "max_simulated_assessor_latency_ms": 100
+    },
+    "minimum_useful_effect": {
+      "answer_success_gain_over_deterministic": 0.2,
+      "max_additional_supported_claims_blocked": 0,
+      "max_audit_failures": 0,
+      "max_failed_or_missing_assessments": 0,
+      "max_material_conflict_omissions": 0,
+      "max_resource_violations": 0,
+      "max_unsafe_claims_delivered": 0
+    },
+    "policy_id": "claim-host-disposition-v1",
+    "rubric": "registered per-claim supported, contradicted, unsupported, uncertain; assessment evidence IDs must be checked citations for that claim; semantic labels are advisory and host controls final disposition",
+    "seed": 4701,
+    "stop_rule": "All fifteen new holdout cases run once in fixed order under all four arms; no early stop, no post-result tuning, and every scheduled failure remains in the denominator. Synthetic screen pass never authorizes adoption.",
+    "study_id": "rag-claim-47-v1"
+  },
+  "rows": [
+    {
+      "answer_success": true,
+      "arm": "historical",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "C01",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 26400,
+      "material_conflict_omitted": false,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": true,
+      "arm": "generic_classifier_counterfactual",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "C01",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 1,
+      "generic_output": "possibly_supported",
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 12500,
+      "material_conflict_omitted": false,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": true,
+      "arm": "deterministic",
+      "assessor_calls": 0,
+      "audit_calls": 1,
+      "audit_failure": false,
+      "case_id": "C01",
+      "citation_correct": true,
+      "decisions": [
+        [
+          "c1",
+          "supported"
+        ]
+      ],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 24800,
+      "material_conflict_omitted": false,
+      "reason": "all_claims_passed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": true,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "audit_calls": 1,
+      "audit_failure": false,
+      "case_id": "C01",
+      "citation_correct": true,
+      "decisions": [
+        [
+          "c1",
+          "supported"
+        ]
+      ],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 29900,
+      "material_conflict_omitted": false,
+      "reason": "all_claims_passed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": 0.0004,
+      "simulated_assessor_latency_ms": 30,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": false,
+      "arm": "historical",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "C02",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [],
+      "expected_status": "blocked",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "contradicted"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 6200,
+      "material_conflict_omitted": true,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 1
+    },
+    {
+      "answer_success": false,
+      "arm": "generic_classifier_counterfactual",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "C02",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [],
+      "expected_status": "blocked",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 1,
+      "generic_output": "possibly_supported",
+      "independent_claim_labels": {
+        "c1": "contradicted"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 5600,
+      "material_conflict_omitted": true,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 1
+    },
+    {
+      "answer_success": false,
+      "arm": "deterministic",
+      "assessor_calls": 0,
+      "audit_calls": 1,
+      "audit_failure": false,
+      "case_id": "C02",
+      "citation_correct": true,
+      "decisions": [
+        [
+          "c1",
+          "supported"
+        ]
+      ],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [],
+      "expected_status": "blocked",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "contradicted"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 13300,
+      "material_conflict_omitted": true,
+      "reason": "all_claims_passed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 1
+    },
+    {
+      "answer_success": true,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "C02",
+      "citation_correct": true,
+      "decisions": [
+        [
+          "c1",
+          "contradicted"
+        ]
+      ],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [],
+      "expected_status": "blocked",
+      "failed_or_missing_assessment": false,
+      "final_ids": [],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "contradicted"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 19500,
+      "material_conflict_omitted": false,
+      "reason": "critical_claim_failed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": 0.0004,
+      "simulated_assessor_latency_ms": 35,
+      "status": "blocked",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": true,
+      "arm": "historical",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H01",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 5700,
+      "material_conflict_omitted": false,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": true,
+      "arm": "generic_classifier_counterfactual",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H01",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 1,
+      "generic_output": "possibly_supported",
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 4700,
+      "material_conflict_omitted": false,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": true,
+      "arm": "deterministic",
+      "assessor_calls": 0,
+      "audit_calls": 1,
+      "audit_failure": false,
+      "case_id": "H01",
+      "citation_correct": true,
+      "decisions": [
+        [
+          "c1",
+          "supported"
+        ]
+      ],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 11500,
+      "material_conflict_omitted": false,
+      "reason": "all_claims_passed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": true,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "audit_calls": 1,
+      "audit_failure": false,
+      "case_id": "H01",
+      "citation_correct": true,
+      "decisions": [
+        [
+          "c1",
+          "supported"
+        ]
+      ],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 13900,
+      "material_conflict_omitted": false,
+      "reason": "all_claims_passed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": 0.0004,
+      "simulated_assessor_latency_ms": 31,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": false,
+      "arm": "historical",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H02",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [],
+      "expected_status": "blocked",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "contradicted"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 4900,
+      "material_conflict_omitted": true,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 1
+    },
+    {
+      "answer_success": false,
+      "arm": "generic_classifier_counterfactual",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H02",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [],
+      "expected_status": "blocked",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 1,
+      "generic_output": "possibly_supported",
+      "independent_claim_labels": {
+        "c1": "contradicted"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 4200,
+      "material_conflict_omitted": true,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 1
+    },
+    {
+      "answer_success": false,
+      "arm": "deterministic",
+      "assessor_calls": 0,
+      "audit_calls": 1,
+      "audit_failure": false,
+      "case_id": "H02",
+      "citation_correct": true,
+      "decisions": [
+        [
+          "c1",
+          "supported"
+        ]
+      ],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [],
+      "expected_status": "blocked",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "contradicted"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 10200,
+      "material_conflict_omitted": true,
+      "reason": "all_claims_passed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 1
+    },
+    {
+      "answer_success": true,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H02",
+      "citation_correct": true,
+      "decisions": [
+        [
+          "c1",
+          "contradicted"
+        ]
+      ],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [],
+      "expected_status": "blocked",
+      "failed_or_missing_assessment": false,
+      "final_ids": [],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "contradicted"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 14300,
+      "material_conflict_omitted": false,
+      "reason": "critical_claim_failed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": 0.0004,
+      "simulated_assessor_latency_ms": 34,
+      "status": "blocked",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": false,
+      "arm": "historical",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H03",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1",
+        "c2"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "revised",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1",
+        "c2"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported",
+        "c2": "contradicted"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 7400,
+      "material_conflict_omitted": false,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 1
+    },
+    {
+      "answer_success": false,
+      "arm": "generic_classifier_counterfactual",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H03",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1",
+        "c2"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "revised",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1",
+        "c2"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 1,
+      "generic_output": "possibly_supported",
+      "independent_claim_labels": {
+        "c1": "supported",
+        "c2": "contradicted"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 6200,
+      "material_conflict_omitted": false,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 1
+    },
+    {
+      "answer_success": false,
+      "arm": "deterministic",
+      "assessor_calls": 0,
+      "audit_calls": 1,
+      "audit_failure": false,
+      "case_id": "H03",
+      "citation_correct": true,
+      "decisions": [
+        [
+          "c1",
+          "supported"
+        ],
+        [
+          "c2",
+          "supported"
+        ]
+      ],
+      "draft_ids": [
+        "c1",
+        "c2"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "revised",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1",
+        "c2"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported",
+        "c2": "contradicted"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 13500,
+      "material_conflict_omitted": false,
+      "reason": "all_claims_passed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 1
+    },
+    {
+      "answer_success": true,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "audit_calls": 1,
+      "audit_failure": false,
+      "case_id": "H03",
+      "citation_correct": true,
+      "decisions": [
+        [
+          "c1",
+          "supported"
+        ],
+        [
+          "c2",
+          "contradicted"
+        ]
+      ],
+      "draft_ids": [
+        "c1",
+        "c2"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "revised",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported",
+        "c2": "contradicted"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 22700,
+      "material_conflict_omitted": false,
+      "reason": "noncritical_claim_removed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": 0.0006,
+      "simulated_assessor_latency_ms": 47,
+      "status": "revised",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": false,
+      "arm": "historical",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H04",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [],
+      "expected_status": "blocked",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "contradicted"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 5200,
+      "material_conflict_omitted": true,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 1
+    },
+    {
+      "answer_success": false,
+      "arm": "generic_classifier_counterfactual",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H04",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [],
+      "expected_status": "blocked",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 1,
+      "generic_output": "possibly_supported",
+      "independent_claim_labels": {
+        "c1": "contradicted"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 4800,
+      "material_conflict_omitted": true,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 1
+    },
+    {
+      "answer_success": false,
+      "arm": "deterministic",
+      "assessor_calls": 0,
+      "audit_calls": 1,
+      "audit_failure": false,
+      "case_id": "H04",
+      "citation_correct": true,
+      "decisions": [
+        [
+          "c1",
+          "supported"
+        ]
+      ],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [],
+      "expected_status": "blocked",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "contradicted"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 10000,
+      "material_conflict_omitted": true,
+      "reason": "all_claims_passed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 1
+    },
+    {
+      "answer_success": true,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H04",
+      "citation_correct": true,
+      "decisions": [
+        [
+          "c1",
+          "contradicted"
+        ]
+      ],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [],
+      "expected_status": "blocked",
+      "failed_or_missing_assessment": false,
+      "final_ids": [],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "contradicted"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 13600,
+      "material_conflict_omitted": false,
+      "reason": "critical_claim_failed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": 0.0004,
+      "simulated_assessor_latency_ms": 33,
+      "status": "blocked",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": false,
+      "arm": "historical",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H05",
+      "citation_correct": false,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [],
+      "expected_status": "blocked",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 4500,
+      "material_conflict_omitted": false,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 1
+    },
+    {
+      "answer_success": false,
+      "arm": "generic_classifier_counterfactual",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H05",
+      "citation_correct": false,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [],
+      "expected_status": "blocked",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 1,
+      "generic_output": "possibly_supported",
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 4100,
+      "material_conflict_omitted": false,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 1
+    },
+    {
+      "answer_success": true,
+      "arm": "deterministic",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H05",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [],
+      "expected_status": "blocked",
+      "failed_or_missing_assessment": false,
+      "final_ids": [],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 9900,
+      "material_conflict_omitted": false,
+      "reason": "critical_citation_invalid",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "blocked",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": true,
+      "arm": "jev",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H05",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [],
+      "expected_status": "blocked",
+      "failed_or_missing_assessment": false,
+      "final_ids": [],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 8400,
+      "material_conflict_omitted": false,
+      "reason": "critical_citation_invalid",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "blocked",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": false,
+      "arm": "historical",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H06",
+      "citation_correct": false,
+      "decisions": [],
+      "draft_ids": [
+        "c1",
+        "c2"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "revised",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1",
+        "c2"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported",
+        "c2": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 6100,
+      "material_conflict_omitted": false,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 1
+    },
+    {
+      "answer_success": false,
+      "arm": "generic_classifier_counterfactual",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H06",
+      "citation_correct": false,
+      "decisions": [],
+      "draft_ids": [
+        "c1",
+        "c2"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "revised",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1",
+        "c2"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 1,
+      "generic_output": "possibly_supported",
+      "independent_claim_labels": {
+        "c1": "supported",
+        "c2": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 5500,
+      "material_conflict_omitted": false,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 1
+    },
+    {
+      "answer_success": true,
+      "arm": "deterministic",
+      "assessor_calls": 0,
+      "audit_calls": 1,
+      "audit_failure": false,
+      "case_id": "H06",
+      "citation_correct": true,
+      "decisions": [
+        [
+          "c1",
+          "supported"
+        ],
+        [
+          "c2",
+          "unsupported"
+        ]
+      ],
+      "draft_ids": [
+        "c1",
+        "c2"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "revised",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported",
+        "c2": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 16900,
+      "material_conflict_omitted": false,
+      "reason": "noncritical_claim_removed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "revised",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": true,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "audit_calls": 1,
+      "audit_failure": false,
+      "case_id": "H06",
+      "citation_correct": true,
+      "decisions": [
+        [
+          "c1",
+          "supported"
+        ],
+        [
+          "c2",
+          "unsupported"
+        ]
+      ],
+      "draft_ids": [
+        "c1",
+        "c2"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "revised",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported",
+        "c2": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 18100,
+      "material_conflict_omitted": false,
+      "reason": "noncritical_claim_removed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": 0.0004,
+      "simulated_assessor_latency_ms": 32,
+      "status": "revised",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": false,
+      "arm": "historical",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H07",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1",
+        "c2"
+      ],
+      "expected_final_ids": [],
+      "expected_status": "blocked",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1",
+        "c2"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported",
+        "c2": "contradicted"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 5900,
+      "material_conflict_omitted": false,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 1
+    },
+    {
+      "answer_success": false,
+      "arm": "generic_classifier_counterfactual",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H07",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1",
+        "c2"
+      ],
+      "expected_final_ids": [],
+      "expected_status": "blocked",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1",
+        "c2"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 1,
+      "generic_output": "possibly_supported",
+      "independent_claim_labels": {
+        "c1": "supported",
+        "c2": "contradicted"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 5600,
+      "material_conflict_omitted": false,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 1
+    },
+    {
+      "answer_success": false,
+      "arm": "deterministic",
+      "assessor_calls": 0,
+      "audit_calls": 1,
+      "audit_failure": false,
+      "case_id": "H07",
+      "citation_correct": true,
+      "decisions": [
+        [
+          "c1",
+          "supported"
+        ],
+        [
+          "c2",
+          "supported"
+        ]
+      ],
+      "draft_ids": [
+        "c1",
+        "c2"
+      ],
+      "expected_final_ids": [],
+      "expected_status": "blocked",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1",
+        "c2"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported",
+        "c2": "contradicted"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 14800,
+      "material_conflict_omitted": false,
+      "reason": "all_claims_passed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 1
+    },
+    {
+      "answer_success": true,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H07",
+      "citation_correct": true,
+      "decisions": [
+        [
+          "c1",
+          "supported"
+        ],
+        [
+          "c2",
+          "contradicted"
+        ]
+      ],
+      "draft_ids": [
+        "c1",
+        "c2"
+      ],
+      "expected_final_ids": [],
+      "expected_status": "blocked",
+      "failed_or_missing_assessment": false,
+      "final_ids": [],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported",
+        "c2": "contradicted"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 19600,
+      "material_conflict_omitted": false,
+      "reason": "dependent_or_empty_answer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": 0.0006,
+      "simulated_assessor_latency_ms": 45,
+      "status": "blocked",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": false,
+      "arm": "historical",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H08",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [],
+      "expected_status": "request_more_evidence",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "uncertain"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 5000,
+      "material_conflict_omitted": false,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 1
+    },
+    {
+      "answer_success": false,
+      "arm": "generic_classifier_counterfactual",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H08",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [],
+      "expected_status": "request_more_evidence",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 1,
+      "generic_output": "indeterminate",
+      "independent_claim_labels": {
+        "c1": "uncertain"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 4300,
+      "material_conflict_omitted": false,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 1
+    },
+    {
+      "answer_success": false,
+      "arm": "deterministic",
+      "assessor_calls": 0,
+      "audit_calls": 1,
+      "audit_failure": false,
+      "case_id": "H08",
+      "citation_correct": true,
+      "decisions": [
+        [
+          "c1",
+          "supported"
+        ]
+      ],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [],
+      "expected_status": "request_more_evidence",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "uncertain"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 9500,
+      "material_conflict_omitted": false,
+      "reason": "all_claims_passed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 1
+    },
+    {
+      "answer_success": true,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H08",
+      "citation_correct": true,
+      "decisions": [
+        [
+          "c1",
+          "uncertain"
+        ]
+      ],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [],
+      "expected_status": "request_more_evidence",
+      "failed_or_missing_assessment": false,
+      "final_ids": [],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "uncertain"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 14000,
+      "material_conflict_omitted": false,
+      "reason": "uncertain_claim",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": 0.0004,
+      "simulated_assessor_latency_ms": 38,
+      "status": "request_more_evidence",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": true,
+      "arm": "historical",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H09",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 4400,
+      "material_conflict_omitted": false,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": true,
+      "arm": "generic_classifier_counterfactual",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H09",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 1,
+      "generic_output": "possibly_supported",
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 4200,
+      "material_conflict_omitted": false,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": true,
+      "arm": "deterministic",
+      "assessor_calls": 0,
+      "audit_calls": 1,
+      "audit_failure": false,
+      "case_id": "H09",
+      "citation_correct": true,
+      "decisions": [
+        [
+          "c1",
+          "supported"
+        ]
+      ],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 9000,
+      "material_conflict_omitted": false,
+      "reason": "all_claims_passed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": false,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H09",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": true,
+      "final_ids": [],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 10200,
+      "material_conflict_omitted": false,
+      "reason": "assessment_failed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": 0.0005,
+      "simulated_assessor_latency_ms": 100,
+      "status": "request_more_evidence",
+      "supported_claims_blocked": 1,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": true,
+      "arm": "historical",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H10",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 4400,
+      "material_conflict_omitted": false,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": true,
+      "arm": "generic_classifier_counterfactual",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H10",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 1,
+      "generic_output": "possibly_supported",
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 4000,
+      "material_conflict_omitted": false,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": true,
+      "arm": "deterministic",
+      "assessor_calls": 0,
+      "audit_calls": 1,
+      "audit_failure": false,
+      "case_id": "H10",
+      "citation_correct": true,
+      "decisions": [
+        [
+          "c1",
+          "supported"
+        ]
+      ],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 8600,
+      "material_conflict_omitted": false,
+      "reason": "all_claims_passed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": false,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H10",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": true,
+      "final_ids": [],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 10200,
+      "material_conflict_omitted": false,
+      "reason": "assessment_failed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": 0.0005,
+      "simulated_assessor_latency_ms": 100,
+      "status": "request_more_evidence",
+      "supported_claims_blocked": 1,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": true,
+      "arm": "historical",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H11",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 4000,
+      "material_conflict_omitted": false,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": true,
+      "arm": "generic_classifier_counterfactual",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H11",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 1,
+      "generic_output": "possibly_supported",
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 4000,
+      "material_conflict_omitted": false,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": true,
+      "arm": "deterministic",
+      "assessor_calls": 0,
+      "audit_calls": 1,
+      "audit_failure": false,
+      "case_id": "H11",
+      "citation_correct": true,
+      "decisions": [
+        [
+          "c1",
+          "supported"
+        ]
+      ],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 8000,
+      "material_conflict_omitted": false,
+      "reason": "all_claims_passed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": false,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H11",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": true,
+      "final_ids": [],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 10200,
+      "material_conflict_omitted": false,
+      "reason": "assessment_failed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": 0.0004,
+      "simulated_assessor_latency_ms": 36,
+      "status": "request_more_evidence",
+      "supported_claims_blocked": 1,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": true,
+      "arm": "historical",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H12",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 4000,
+      "material_conflict_omitted": false,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": true,
+      "arm": "generic_classifier_counterfactual",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H12",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 1,
+      "generic_output": "possibly_supported",
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 3900,
+      "material_conflict_omitted": false,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": true,
+      "arm": "deterministic",
+      "assessor_calls": 0,
+      "audit_calls": 1,
+      "audit_failure": false,
+      "case_id": "H12",
+      "citation_correct": true,
+      "decisions": [
+        [
+          "c1",
+          "supported"
+        ]
+      ],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 8400,
+      "material_conflict_omitted": false,
+      "reason": "all_claims_passed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": false,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H12",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": true,
+      "final_ids": [],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 8400,
+      "material_conflict_omitted": false,
+      "reason": "assessment_failed",
+      "resource_violations": 1,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": 0.0012,
+      "simulated_assessor_latency_ms": 120,
+      "status": "request_more_evidence",
+      "supported_claims_blocked": 1,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": true,
+      "arm": "historical",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H13",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 4000,
+      "material_conflict_omitted": false,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": true,
+      "arm": "generic_classifier_counterfactual",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H13",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 1,
+      "generic_output": "possibly_supported",
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 4000,
+      "material_conflict_omitted": false,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": true,
+      "arm": "deterministic",
+      "assessor_calls": 0,
+      "audit_calls": 1,
+      "audit_failure": false,
+      "case_id": "H13",
+      "citation_correct": true,
+      "decisions": [
+        [
+          "c1",
+          "supported"
+        ]
+      ],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 8200,
+      "material_conflict_omitted": false,
+      "reason": "all_claims_passed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": false,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H13",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": true,
+      "final_ids": [],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 1,
+      "late_result_ignored": true,
+      "local_elapsed_ns": 10100,
+      "material_conflict_omitted": false,
+      "reason": "assessment_failed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": 0.0005,
+      "simulated_assessor_latency_ms": 90,
+      "status": "request_more_evidence",
+      "supported_claims_blocked": 1,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": false,
+      "arm": "historical",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H14",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1",
+        "c2"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "revised",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1",
+        "c2"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported",
+        "c2": "unsupported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 6300,
+      "material_conflict_omitted": false,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 1
+    },
+    {
+      "answer_success": false,
+      "arm": "generic_classifier_counterfactual",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H14",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1",
+        "c2"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "revised",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1",
+        "c2"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 1,
+      "generic_output": "possibly_supported",
+      "independent_claim_labels": {
+        "c1": "supported",
+        "c2": "unsupported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 6100,
+      "material_conflict_omitted": false,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 1
+    },
+    {
+      "answer_success": false,
+      "arm": "deterministic",
+      "assessor_calls": 0,
+      "audit_calls": 1,
+      "audit_failure": false,
+      "case_id": "H14",
+      "citation_correct": true,
+      "decisions": [
+        [
+          "c1",
+          "supported"
+        ],
+        [
+          "c2",
+          "supported"
+        ]
+      ],
+      "draft_ids": [
+        "c1",
+        "c2"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "revised",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1",
+        "c2"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported",
+        "c2": "unsupported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 12400,
+      "material_conflict_omitted": false,
+      "reason": "all_claims_passed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 1
+    },
+    {
+      "answer_success": true,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "audit_calls": 1,
+      "audit_failure": false,
+      "case_id": "H14",
+      "citation_correct": true,
+      "decisions": [
+        [
+          "c1",
+          "supported"
+        ],
+        [
+          "c2",
+          "unsupported"
+        ]
+      ],
+      "draft_ids": [
+        "c1",
+        "c2"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "revised",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported",
+        "c2": "unsupported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 19700,
+      "material_conflict_omitted": false,
+      "reason": "noncritical_claim_removed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": 0.0006,
+      "simulated_assessor_latency_ms": 42,
+      "status": "revised",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": true,
+      "arm": "historical",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H15",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 4300,
+      "material_conflict_omitted": false,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": true,
+      "arm": "generic_classifier_counterfactual",
+      "assessor_calls": 0,
+      "audit_calls": 0,
+      "audit_failure": false,
+      "case_id": "H15",
+      "citation_correct": true,
+      "decisions": [],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 1,
+      "generic_output": "possibly_supported",
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 4100,
+      "material_conflict_omitted": false,
+      "reason": "legacy_no_claim_consumer",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": true,
+      "arm": "deterministic",
+      "assessor_calls": 0,
+      "audit_calls": 1,
+      "audit_failure": false,
+      "case_id": "H15",
+      "citation_correct": true,
+      "decisions": [
+        [
+          "c1",
+          "supported"
+        ]
+      ],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": false,
+      "final_ids": [
+        "c1"
+      ],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 9300,
+      "material_conflict_omitted": false,
+      "reason": "all_claims_passed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": null,
+      "simulated_assessor_latency_ms": null,
+      "status": "released",
+      "supported_claims_blocked": 0,
+      "unsafe_claims_delivered": 0
+    },
+    {
+      "answer_success": false,
+      "arm": "jev",
+      "assessor_calls": 1,
+      "audit_calls": 1,
+      "audit_failure": true,
+      "case_id": "H15",
+      "citation_correct": true,
+      "decisions": [
+        [
+          "c1",
+          "supported"
+        ]
+      ],
+      "draft_ids": [
+        "c1"
+      ],
+      "expected_final_ids": [
+        "c1"
+      ],
+      "expected_status": "released",
+      "failed_or_missing_assessment": false,
+      "final_ids": [],
+      "generator_calls": 1,
+      "generic_classifier_calls": 0,
+      "generic_output": null,
+      "independent_claim_labels": {
+        "c1": "supported"
+      },
+      "late_deliveries_rejected": 0,
+      "late_result_ignored": null,
+      "local_elapsed_ns": 13200,
+      "material_conflict_omitted": false,
+      "reason": "audit_failed",
+      "resource_violations": 0,
+      "retriever_calls": 1,
+      "simulated_assessor_cost_usd": 0.0004,
+      "simulated_assessor_latency_ms": 35,
+      "status": "request_more_evidence",
+      "supported_claims_blocked": 1,
+      "unsafe_claims_delivered": 0
+    }
+  ],
+  "screen_decision": "reject_on_frozen_synthetic_threshold",
+  "seed": 4701,
+  "source_sha256": {
+    "pipeline.py": "2c02318aa6ee76a1c085f8a11cbac5a7bda60ce8040cac58bfa34da6d52504a1",
+    "run_study47.py": "badaa1f1831db9073b2f9a08b3aac82b51945f35169d41306f652dd5d991238f",
+    "study47_cases.json": "514bf34e9ff6cdd06ca54fe5af8d59a9b2ddc6968fbb2fe5233330433a817e52",
+    "study47_labels.json": "172cfec1d67227fd5a488366beec1248d05b9d5e03297eb6b984521246597e87",
+    "study47_policy.json": "260e4f038c0d9992c491866b6e3888befed5b79930b365abf36032d5322c66d6",
+    "study47_predictions.json": "e8407cc2fdc29689fd82778a94b690fa494c959b24414c3d544548ff889c9fda"
+  },
+  "study_id": "rag-claim-47-v1"
+}

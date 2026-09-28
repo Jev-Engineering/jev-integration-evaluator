@@ -1,0 +1,23 @@
+{
+  "study_id":"rag-claim-47-v1",
+  "adapter_id":"hand-authored-synthetic-claim-assessor-v1",
+  "responses":{
+    "C01":{"generic_output":"possibly_supported","jev":{"c1":["supported",["p1"]]},"latency_ms":30,"cost_usd":0.0004},
+    "C02":{"generic_output":"possibly_supported","jev":{"c1":["contradicted",["p1"]]},"latency_ms":35,"cost_usd":0.0004},
+    "H01":{"generic_output":"possibly_supported","jev":{"c1":["supported",["p1"]]},"latency_ms":31,"cost_usd":0.0004},
+    "H02":{"generic_output":"possibly_supported","jev":{"c1":["contradicted",["p1"]]},"latency_ms":34,"cost_usd":0.0004},
+    "H03":{"generic_output":"possibly_supported","jev":{"c1":["supported",["p1"]],"c2":["contradicted",["p2"]]},"latency_ms":47,"cost_usd":0.0006},
+    "H04":{"generic_output":"possibly_supported","jev":{"c1":["contradicted",["p1"]]},"latency_ms":33,"cost_usd":0.0004},
+    "H05":{"generic_output":"possibly_supported","jev":{"c1":["supported",["missing"]]},"latency_ms":0,"cost_usd":0},
+    "H06":{"generic_output":"possibly_supported","jev":{"c1":["supported",["p1"]]},"latency_ms":32,"cost_usd":0.0004},
+    "H07":{"generic_output":"possibly_supported","jev":{"c1":["supported",["p1"]],"c2":["contradicted",["p2"]]},"latency_ms":45,"cost_usd":0.0006},
+    "H08":{"generic_output":"indeterminate","jev":{"c1":["uncertain",["p1"]]},"latency_ms":38,"cost_usd":0.0004},
+    "H09":{"generic_output":"possibly_supported","failure":"missing","latency_ms":100,"cost_usd":0.0005},
+    "H10":{"generic_output":"possibly_supported","failure":"timeout","latency_ms":100,"cost_usd":0.0005},
+    "H11":{"generic_output":"possibly_supported","jev":{"c1":["approve",["p1"]]},"latency_ms":36,"cost_usd":0.0004},
+    "H12":{"generic_output":"possibly_supported","jev":{"c1":["supported",["p1"]]},"latency_ms":120,"cost_usd":0.0012},
+    "H13":{"generic_output":"possibly_supported","failure":"cancelled_late","latency_ms":90,"cost_usd":0.0005},
+    "H14":{"generic_output":"possibly_supported","jev":{"c1":["supported",["p1"]],"c2":["unsupported",["p2"]]},"latency_ms":42,"cost_usd":0.0006},
+    "H15":{"generic_output":"possibly_supported","jev":{"c1":["supported",["p1"]]},"latency_ms":35,"cost_usd":0.0004,"audit_failure":true}
+  }
+}

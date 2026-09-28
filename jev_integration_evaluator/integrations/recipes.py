@@ -58,8 +58,8 @@ def recipe_catalog() -> dict:
         {'id': r.id, 'version': r.version, 'title': r.title, 'status': 'implemented_bounded_shape',
          'source_shape': r.shape, 'bindings': r.bindings, 'verification_contract': r.contract}
         for r in RECIPES.values()],
-        'unsupported': ['JavaScript/TypeScript rewriting (analysis only)', 'other languages',
-                        'methods, nested scopes, decorators, async functions, generators',
+        'unsupported': ['JavaScript/TypeScript are outside this Python recipe catalog; the separate JS/TS backend supports only bounded recipe C in flat ESM, CommonJS and TypeScript async hosts with Linux-only synthetic qualification', 'other languages',
+                        'methods, nested scopes, decorators, async functions, generators in the original Python recipe engine; separately versioned method/async adaptation has its own lifecycle',
                         'branches, multiple statements/call sites, changed signatures, dynamic or ambiguous imports',
                         'non-JSON verification return values; untrusted execution without external isolation']}
 

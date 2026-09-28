@@ -1,5 +1,13 @@
 # Engineering prompt: executable JEV integrations
 
+**Historical specification:** This prompt describes the planned Python delivery
+at reviewed baseline `1cca65a0`. Its future-tense and JS/TS analysis-only
+statements are preserved as requirements history, not current support status.
+For delivered bounds see [Python executable integrations](executable-integrations.md),
+[JS/TS recipe C](javascript-typescript-backend-v1.md),
+[Python adaptation](python-adaptation-v1.md), and
+[bounded composite transactions](composite-transactions-v1.md).
+
 Status: reviewed implementation specification. The new commands and artifacts below are requirements for future code, not capabilities already shipped by this document.
 
 Reviewed baseline: `1cca65a06d36aa52d77bf28c595b1569a72066f6`. Recheck the actual checkout before making changes. All paths in this document are relative to the repository root.

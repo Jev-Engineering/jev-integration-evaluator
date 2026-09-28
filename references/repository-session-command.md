@@ -298,8 +298,10 @@ Cancellation preserves ownership, history and receipts and blocks normal resume.
 Explicit owned rollback remains available. The existing engine refuses changed
 owned bytes or modes, preserves unrelated concurrent edits, and never restores
 unowned paths. A rolled-back bundle stays historical; reapplication needs a fresh
-source review and run. A session lock is not cross-bundle repository coordination;
-composite transactions and cross-worktree ownership remain issue #13.
+source review and run. A session lock is not cross-bundle repository coordination.
+The separate [bounded composite transaction](composite-transactions-v1.md)
+has its own worktree lock, selected-set binding and recovery rules; this
+single-placement session does not silently become a composite run.
 
 ## Bounds and coverage
 

@@ -1,0 +1,24 @@
+{
+  "study_id":"rag-claim-47-v1",
+  "label_provenance":"Synthetic case author adjudicated exact claim meaning against the authored passage text and host request before holdout. Scorer-only labels are separate from case and prediction files. Independent pre-result reviewer must check every label; no real-world factual verification or provider judgment is claimed.",
+  "adjudication_rule":"A claim is supported only if its cited source text entails the entire claim. Direct negation is contradicted; a source about a different fact is unsupported; ambiguous status is uncertain. Exact citation ID and quote presence are separately checked. Expected final status follows fixed host critical/dependency policy and independent semantic labels.",
+  "labels":{
+    "C01":{"claims":{"c1":"supported"},"expected_status":"released","expected_ids":["c1"]},
+    "C02":{"claims":{"c1":"contradicted"},"expected_status":"blocked","expected_ids":[]},
+    "H01":{"claims":{"c1":"supported"},"expected_status":"released","expected_ids":["c1"]},
+    "H02":{"claims":{"c1":"contradicted"},"expected_status":"blocked","expected_ids":[]},
+    "H03":{"claims":{"c1":"supported","c2":"contradicted"},"expected_status":"revised","expected_ids":["c1"]},
+    "H04":{"claims":{"c1":"contradicted"},"expected_status":"blocked","expected_ids":[]},
+    "H05":{"claims":{"c1":"supported"},"expected_status":"blocked","expected_ids":[]},
+    "H06":{"claims":{"c1":"supported","c2":"supported"},"expected_status":"revised","expected_ids":["c1"]},
+    "H07":{"claims":{"c1":"supported","c2":"contradicted"},"expected_status":"blocked","expected_ids":[]},
+    "H08":{"claims":{"c1":"uncertain"},"expected_status":"request_more_evidence","expected_ids":[]},
+    "H09":{"claims":{"c1":"supported"},"expected_status":"released","expected_ids":["c1"]},
+    "H10":{"claims":{"c1":"supported"},"expected_status":"released","expected_ids":["c1"]},
+    "H11":{"claims":{"c1":"supported"},"expected_status":"released","expected_ids":["c1"]},
+    "H12":{"claims":{"c1":"supported"},"expected_status":"released","expected_ids":["c1"]},
+    "H13":{"claims":{"c1":"supported"},"expected_status":"released","expected_ids":["c1"]},
+    "H14":{"claims":{"c1":"supported","c2":"unsupported"},"expected_status":"revised","expected_ids":["c1"]},
+    "H15":{"claims":{"c1":"supported"},"expected_status":"released","expected_ids":["c1"]}
+  }
+}

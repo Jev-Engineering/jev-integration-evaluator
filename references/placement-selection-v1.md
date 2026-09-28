@@ -1,5 +1,11 @@
 # Source-reviewed placement outcomes and experimental selection
 
+**Historical component scope:** The issue #5/#7 development-status statements
+below describe this component when introduced. Later roadmap acceptance is
+recorded in the [final ledger](../roadmap-acceptance-ledger.json). The separate
+[composite transaction](composite-transactions-v1.md) now handles its bounded
+multi-placement mutation path.
+
 This source-revalidated repository-scope component distinguishes outcomes needed
 by issue #5 and offers read-only experimental set review for issue #7. It is not
 the durable repository implementation command, an executable recipe, an
@@ -21,8 +27,10 @@ pass the existing deterministic and hard-real-time exclusions, source-matched
 semantic review and supported-shape preflight. A rejected, unknown, conflicting
 or unsupported member blocks the entire set. The result retains every requested
 ID, its denominator and the failures; it never presents a partial set as a
-success. Multiple selected placements explicitly require the future composite
-implementation transaction. Selection does not compose or apply source edits.
+success. Multiple selected placements require the separate bounded
+[`implement-composite-*` transaction](composite-transactions-v1.md) where its
+source and ownership conditions are met. Selection does not compose or apply
+source edits.
 
 `revalidate_experimental_selection` reconstructs the complete decision and checks
 an independently retained selection digest before a consumer can use a saved
