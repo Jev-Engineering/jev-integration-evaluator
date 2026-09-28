@@ -120,6 +120,30 @@ def test_installed_dependency_drift_retains_scheduled_failure(tmp_path):
     runner.inspect_receipt(spec, result.receipt)
 
 
+def test_missing_installed_dependency_retains_scheduled_failure(tmp_path):
+    root, deps, spec, _ = installed_fixture(tmp_path)
+    (deps / 'toy_package' / '__init__.py').unlink()
+    result = run(root, spec)
+    assert result.receipt['scheduled'] == result.receipt['recorded'] == 1
+    assert result.receipt['cases'][0]['outcome'] == 'unsafe_or_missing_source'
+    assert result.private_outputs == {}
+
+
+def test_installed_sitecustomize_cannot_run_before_approved_entry(tmp_path):
+    root, deps, _, selected = installed_fixture(tmp_path)
+    (deps / 'sitecustomize.py').write_text('raise AssertionError("site hook ran")\n')
+    metadata = deps / 'sitecustomize-1.0.dist-info' / 'METADATA'
+    metadata.parent.mkdir()
+    metadata.write_text('Metadata-Version: 2.1\nName: sitecustomize\nVersion: 1.0\n')
+    selected['files'] += ['sitecustomize.py', 'sitecustomize-1.0.dist-info/METADATA']
+    selected['distributions'].append({'name': 'sitecustomize', 'version': '1.0',
+                                      'metadata_path': 'sitecustomize-1.0.dist-info/METADATA'})
+    spec = runner.prepare_spec(root, ['entry.py'],
+                               [{'case_id': 'installed', 'entry': 'entry.py', 'argv': []}],
+                               target_environment=selected)
+    assert_zero(run(root, spec), b'installed-dependency\n', case='installed')
+
+
 def test_missing_or_different_interpreter_is_rejected_before_target_launch(tmp_path):
     root, _, spec, selected = installed_fixture(tmp_path)
     selected['interpreter_path'] = str(tmp_path / 'missing-python')
