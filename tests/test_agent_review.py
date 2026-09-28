@@ -148,3 +148,21 @@ def test_opaque_name_host_offline_review(tmp_path):
                                  saved_answers=answers, trusted_verification=verification)
     assert result['status'] == 'reviewed_specification'
     assert result['spec']['source']['symbol'] == 'select_boundary_q7'
+
+
+def test_related_caller_test_and_host_policy_are_source_hashed(tmp_path):
+    inventory, binding, _, _, _ = prepared()
+    raw = (BASE / 'target' / 'host_example_e.py').read_bytes()
+    (tmp_path / 'host_example_e.py').write_bytes(raw)
+    (tmp_path / 'test_host.py').write_text(
+        'def test_boundary():\n    assert select_boundary_example_e\n', encoding='utf-8')
+    (tmp_path / 'caller.py').write_text(
+        'def call(request):\n    return select_boundary_example_e(request)\n', encoding='utf-8')
+    (tmp_path / 'policy.json').write_text('{"runtime_default":"off"}', encoding='utf-8')
+    context = retrieve_context(tmp_path, inventory, binding['candidate_id'])
+    related = {row['file']: row for row in context['sources']}
+    assert related['test_host.py']['roles'] == ['tests']
+    assert related['caller.py']['roles'] == ['caller']
+    assert related['policy.json']['roles'] == ['host_policy']
+    assert all(len(related[name]['sha256']) == 64 for name in
+               ('test_host.py', 'caller.py', 'policy.json'))

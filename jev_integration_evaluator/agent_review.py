@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import ast
 import copy
+import os
 from pathlib import Path
 from typing import Protocol
 
@@ -64,7 +65,7 @@ def retrieve_context(root: Path, inventory: dict, candidate_id: str, *,
             except SyntaxError:
                 raise InputError('Unsupported Python review source') from None
             symbols = [n.name for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))]
-            roles.extend(('callbacks', 'callers', 'registries'))
+            roles.append('python_source')
             if 'test' in Path(rel).parts or Path(rel).name.startswith('test_'):
                 roles.append('tests')
         else:
@@ -72,11 +73,69 @@ def retrieve_context(root: Path, inventory: dict, candidate_id: str, *,
             roles.append('policy_or_configuration')
         sources.append(dict(file=rel, sha256=row['sha256'], roles=roles,
                             symbols=symbols, text=source))
+    # Inspect nearby caller/test/policy files without importing them. These
+    # extra files are context evidence; they do not expand the inventory scope.
+    seen = {s['file'] for s in sources}
+    discovered = []
+    examined = 0
+    for directory, dirs, files in os.walk(root, followlinks=False):
+        dirs[:] = sorted(d for d in dirs if d not in {'.git', '.venv', 'venv', '__pycache__',
+                                                      'node_modules', 'dist', 'build'}
+                         and not (Path(directory) / d).is_symlink())
+        for name in sorted(files):
+            examined += 1
+            if examined > 5000:
+                break
+            p = Path(directory) / name
+            if p.is_symlink() or not p.is_file():
+                continue
+            rel = p.relative_to(root).as_posix()
+            if rel in seen or p.suffix.lower() not in {'.py', '.toml', '.yaml', '.yml', '.json'}:
+                continue
+            if p.stat().st_size > 32_000:
+                continue
+            if (name.startswith('test_') or name.endswith('_test.py')
+                    or name in {'pyproject.toml', 'setup.cfg', 'policy.json', 'policy.yaml', 'policy.yml'}
+                    or p.suffix == '.py'):
+                discovered.append((rel, p))
+        if examined > 5000:
+            break
+    if examined > 5000:
+        raise InputError('Related source search path bound exceeded')
+    needle = candidate['source']['symbol']
+    related = []
+    for rel, path in sorted(discovered):
+        raw = path.read_bytes()
+        try:
+            source = raw.decode('utf-8')
+        except UnicodeDecodeError:
+            continue
+        name = path.name
+        policy = name in {'pyproject.toml', 'setup.cfg', 'policy.json', 'policy.yaml', 'policy.yml'}
+        test = name.startswith('test_') or name.endswith('_test.py')
+        if not policy and needle not in source:
+            continue
+        if total + len(raw) > max_bytes or len(sources) + len(related) >= max_files:
+            raise InputError('Related review context byte/file bound exceeded')
+        symbols = []
+        if path.suffix == '.py':
+            try:
+                tree = ast.parse(source)
+            except SyntaxError:
+                raise InputError('Unsupported related Python review source') from None
+            symbols = [n.name for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))]
+        related.append(dict(file=rel, sha256=file_hash(path),
+                            roles=['tests' if test else 'host_policy' if policy else 'caller'],
+                            symbols=symbols, text=source))
+        total += len(raw)
+    sources.extend(related)
     if not any(x['file'] == candidate['source']['file'] for x in sources):
         raise InputError('Selected source absent from bounded review context')
     return dict(schema_version='1.0', kind='source-hashed-review-context-v1',
                 inventory_sha256=digest(inventory), candidate_id=candidate_id,
-                source_sha256=candidate['source']['source_sha256'], sources=sources)
+                source_sha256=candidate['source']['source_sha256'],
+                search_coverage=dict(examined_paths=examined, included_related=len(related)),
+                sources=sources)
 
 
 def draft_reviewed_spec(root: Path, inventory: dict, context: dict, adapter: ReviewAdapter,
@@ -109,6 +168,10 @@ def draft_reviewed_spec(root: Path, inventory: dict, context: dict, adapter: Rev
             raise InputError('Agent review response byte bound exceeded')
     except (TypeError, ValueError, RecursionError):
         raise InputError('Invalid agent review response') from None
+    try:
+        cap._schema('offline-agent-review-proposal-v1', proposal)
+    except cap.CapabilityError:
+        raise InputError('Invalid agent review proposal schema') from None
     required = {'schema_version', 'kind', 'request_sha256', 'reviewer', 'reason',
                 'evidence', 'recipe_id', 'bindings', 'questions', 'primary_question',
                 'evidence_question', 'label_actions', 'unresolved'}

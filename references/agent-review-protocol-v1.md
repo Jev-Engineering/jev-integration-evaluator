@@ -1,10 +1,12 @@
 # Offline source-matched review drafting v1
 
 `jev_integration_evaluator.agent_review` is a read-only preparation boundary.
-`retrieve_context(root, reviewed_inventory, candidate_id)` reads only files
-named by the inventory and checks their hashes before returning bounded source,
-symbols and role hints. The default limits are 24 files and 120,000 source
-bytes. It does not import a target module. Context contains source text and must
+`retrieve_context(root, reviewed_inventory, candidate_id)` reads files named
+by the inventory and checks their hashes before returning bounded source,
+symbols and role hints. It also scans at most 5,000 nearby paths for relevant
+callers, tests and host policy files; included bytes have individual hashes.
+The default limits are 24 included files and 120,000 source bytes. It does not
+import a target module. Context contains source text and must
 remain in a private local artifact; it is not suitable for a public log or PR.
 
 `draft_reviewed_spec(root, inventory, context, RecordedReviewAdapter(proposal),
@@ -28,6 +30,9 @@ independent of the reviewer. Missing inputs yield `unresolved` fields. The
 reviewer response must use exactly the declared fields; extra command,
 authority, measurement or source replacement fields fail closed. A changed
 source, answer or context invalidates `request_sha256`.
+
+The proposal schema is mirrored at `schemas/offline-agent-review-proposal-v1.schema.json`
+and `jev_integration_evaluator/data/offline-agent-review-proposal-v1.schema.json`.
 
 On a complete draft, the existing specification and inventory validators run,
 then the recipe transformer parses existing callbacks and registered actions
