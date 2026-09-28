@@ -1,0 +1,90 @@
+{
+  "architecture": "x86_64",
+  "cases": [
+    {
+      "discovery_outcome": "unsupported_or_unresolved",
+      "host": "opaque_host",
+      "runtime_activation_authorized": false,
+      "source_sha256": {
+        "main.py": "febba000726f5cc2a8fcc317e0a1b724a2d3a170479f4fc40c01598f1a7ada3f",
+        "service.py": "b31e26f882c3beb5a045b2bc7e952dbe163fb67691e5407966829aba6ae3b67e"
+      },
+      "status": "insufficient_evidence",
+      "target_executed": false,
+      "target_modified": false
+    },
+    {
+      "discovery_outcome": "unsupported_or_unresolved",
+      "host": "package_host",
+      "runtime_activation_authorized": false,
+      "source_sha256": {
+        "app/__init__.py": "746e1ee830311146e16153e3f73b78f436a713f2667be9f615cef96818c984a0",
+        "app/pipeline.py": "24e6e88aac5607a75c441b072f5796a1ab93b1484d31618e26c619a7fc321f78",
+        "runner.py": "05a4620832f62044d2772a780aa2d98b436089342a9c385933e5ec1ab69a3dd4"
+      },
+      "status": "insufficient_evidence",
+      "target_executed": false,
+      "target_modified": false
+    },
+    {
+      "discovery_outcome": "deterministic_rejection",
+      "host": "missing_callbacks",
+      "runtime_activation_authorized": false,
+      "source_sha256": {
+        "main.py": "f29e5bc6a792bfbbd6fc009f3c986bc381a1a8df3655de36bd12d1efc0e2abe4"
+      },
+      "status": "deterministic_rejection",
+      "target_executed": false,
+      "target_modified": false
+    },
+    {
+      "discovery_outcome": "unsupported_or_unresolved",
+      "host": "deterministic_only",
+      "runtime_activation_authorized": false,
+      "source_sha256": {
+        "main.py": "2d3539984b1d26c33e4b03d3b227269f30a9f9a37f1b39dd5550e47ab583a54b"
+      },
+      "status": "insufficient_evidence",
+      "target_executed": false,
+      "target_modified": false
+    },
+    {
+      "discovery_outcome": "incomplete_analysis",
+      "host": "unsupported_language",
+      "runtime_activation_authorized": false,
+      "source_sha256": {
+        "main.go": "4b1475d9d96a2f8f54244e5df94ae587af48bd5026a4e9aa5fb66233ce7df553"
+      },
+      "status": "incomplete_analysis",
+      "target_executed": false,
+      "target_modified": false
+    }
+  ],
+  "command_sha256": {
+    "jev_integration_evaluator/cli.py": "87edfec154961e82bfeb5c212919618743632ef87ce990076a8b982993c0616e",
+    "jev_integration_evaluator/repository_run.py": "18da14136ad822f110cf05228b490a9388c320bae53df8e3d66c36fa05d2d029"
+  },
+  "evidence_type": "synthetic_offline",
+  "oracle_sha256": {
+    "tests/path_corpus/generate_support.py": "9c3eeeeab42608d304f3fa64e12a14e69891e9e7d6b156d84a0c5503d47a7928",
+    "tests/test_path_corpus_oracle.py": "18e6534851829a74e5bdf00a4e13d1bee238464fe6935f6d194dcc4109103829"
+  },
+  "platform": "linux",
+  "python": "3.12.3",
+  "qualification_scope": "public_path_inspection_only",
+  "schema_version": "1.0",
+  "unrun": [
+    "connected_reviewed_spec_preparation",
+    "target_native_runner",
+    "modified_host_verification",
+    "interrupted_apply_resume",
+    "forged_external_receipt_rejection",
+    "dirty_tree_guard",
+    "conflicting_edit_transaction",
+    "installed_host_lifecycle",
+    "hosted_python_matrix",
+    "javascript_typescript_backend",
+    "live_provider_benefit",
+    "activation"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0",
+  "evidence_kind": "synthetic_independent_oracle",
+  "source_sha256": {
+    "main.py": "f29e5bc6a792bfbbd6fc009f3c986bc381a1a8df3655de36bd12d1efc0e2abe4"
+  },
+  "observed_public_outcome_before_policy": "deterministic_rejection",
+  "missing": ["host_policy", "independent_observation", "runtime_owner"]
+}

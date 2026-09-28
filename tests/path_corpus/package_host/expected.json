@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0",
+  "evidence_kind": "synthetic_independent_oracle",
+  "source_sha256": {
+    "app/__init__.py": "746e1ee830311146e16153e3f73b78f436a713f2667be9f615cef96818c984a0",
+    "app/pipeline.py": "24e6e88aac5607a75c441b072f5796a1ab93b1484d31618e26c619a7fc321f78",
+    "runner.py": "05a4620832f62044d2772a780aa2d98b436089342a9c385933e5ec1ab69a3dd4"
+  },
+  "host_policy": {
+    "allowed_actions": ["read", "summarize"],
+    "requires_permit": true,
+    "effect_limit_per_request": 1
+  }
+}

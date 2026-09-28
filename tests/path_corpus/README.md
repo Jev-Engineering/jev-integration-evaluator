@@ -17,3 +17,17 @@ this corpus alone makes no issue #9 completion claim.
 Fixture provenance: newly authored for this repository, no external source or
 private data. Changes to these source files and to their oracle need separate
 review before qualification evidence is accepted.
+
+`package_host/` is an ordinary importable Python package with a real runner,
+host-owned finite permission rule, and a one-effect baseline. `missing_callbacks/`
+has a possible seam but no independent observation, policy, or runtime owner.
+`deterministic_only/` keeps exact arithmetic outside semantic placement scope.
+`unsupported_language/` records an unqualified Go parser/backend path. Each
+fixture has source hashes frozen in its own `expected.json`; these oracles are
+separate from implementation fixture generation and from generated adapters.
+
+Dirty trees, truncated discovery, conflicting proposed edits, interrupted
+apply/resume, and forged external receipts require the connected command and
+target-native runner gates. The harness must exercise those cases on disposable
+copies with exact command/source identities. Their absence remains an open
+qualification gap; the present fixtures do not imply those cases passed.
