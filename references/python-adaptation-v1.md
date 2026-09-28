@@ -31,6 +31,52 @@ The inventory and review digests must be retained and authenticated outside
 the target and private preparation directory; locally matching JSON files
 cannot authenticate each other.
 
+`draft_adaptation_request` is an additive dependency on the #6 source-hashed
+review context and fixed offline `RecordedReviewAdapter`. It asks the adapter
+to propose only one of the two versioned shapes and an existing adapter
+binding. The proposal must cite the exact selected source and callback file;
+the caller supplies host policy and a separate source-matched binding review.
+The resulting request binds the review context, policy, proposal and binding
+review digests. The function refreshes context and source bytes and performs
+structural preparation without target execution or mutation. It cannot create
+missing authority callbacks. Until #6 is merged and the combined API is
+qualified, tests of this seam use a synthetic module with the frozen API and
+do not establish live agent-review integration.
+
+`draft_agent_prerequisites` accepts only the fixed #6 offline adapter and
+passes its proposal through `draft_prerequisite_plan`. This covers a narrower
+preparatory case: two to eight
+existing, exact-scoped Python files may receive appended plain top-level
+helpers. Existing bytes must remain an exact prefix. Existing definitions,
+imports and assignments cannot be changed; new authority-named callbacks,
+decorators, evaluated defaults and annotations are rejected. The #6 context
+must refresh against the actual source, the proposal cites each preimage, and
+an independent reviewer binds the policy, exact scope, full proposal and an
+independently authored validation specification. `apply_prerequisites`
+regenerates the plan before comparing it to an externally approved digest.
+Its only successful state is `applied_requires_rescan`: the previous inventory,
+source review and binding review become stale, and no recipe may be applied
+from them. A complete new scan, #6 review and independent behavioral checks
+are required before the new helpers can be used. This path does not implement
+an absent approval, lock, permission or verification callback. The patch
+engine guards exact source bytes and reverts ordinary write errors. Apply
+creates a new private recovery bundle outside the target, archives exact
+preimages and modes, fsyncs them before the first write, and journals every
+write boundary. `prerequisite_status` validates the externally approved plan,
+archive and full owned-file state. An interrupted or inconsistent apply returns
+`blocked_recovery`; it never replays a patch or marks it verified. Preserve
+the bundle for exact owned-byte recovery and inspect the target before any new
+plan.
+`inspect_prerequisite_postconditions` requires an externally anchored native
+runner receipt and independently authored oracle for the exact modified
+files, entrypoint, schedule and attempt. It checks every recorded output,
+isolation result and expected observation against the full schedule. Success
+is `validated_requires_rescan`; it cannot make the old inventory or recipe
+applicable. The dedicated privileged CI job executes a synthetic host that
+imports both newly added helpers from the modified files and checks their
+effects and result. This is synthetic qualification of the bounded path, not
+evidence that an arbitrary host policy or callback is safe.
+
 The synthetic structural tests execute the original and proposed method or
 async function with an inert local adapter. They check receiver state, effect
 order, return/exception behavior, await count and cancellation. These tests

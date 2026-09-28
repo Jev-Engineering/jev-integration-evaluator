@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "kind", "root_device", "root_inode", "inventory_sha256", "context_sha256", "policy_sha256", "proposal_sha256", "review_sha256", "scope_sha256", "patch_sha256", "owned_sha256"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "adaptation-prerequisite-plan-v1"},
+    "root_device": {"type": "integer", "minimum": 0},
+    "root_inode": {"type": "integer", "minimum": 0},
+    "inventory_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "context_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "policy_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "proposal_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "review_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "scope_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "patch_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "owned_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

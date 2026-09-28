@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "kind", "request_sha256", "context_sha256", "policy_sha256", "changes"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "adaptation-prerequisites-v1"},
+    "request_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "context_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "policy_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "changes": {
+      "type": "array", "minItems": 2, "maxItems": 8,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["file", "old_sha256", "new_content"],
+        "properties": {
+          "file": {"type": "string", "minLength": 1, "maxLength": 256, "pattern": "\\.py$"},
+          "old_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "new_content": {"type": "string", "minLength": 1, "maxLength": 120000}
+        }
+      }
+    }
+  }
+}

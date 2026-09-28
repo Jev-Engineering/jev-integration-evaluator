@@ -41,6 +41,10 @@ SHAPES = {
 
 REVIEWED_REQUEST_SCHEMA = {
     'type': 'object', 'additionalProperties': False,
+    'dependentRequired': {key: ['review_context_sha256', 'host_policy_sha256',
+                                'trusted_binding_review_sha256', 'agent_proposal_sha256']
+                          for key in ('review_context_sha256', 'host_policy_sha256',
+                                      'trusted_binding_review_sha256', 'agent_proposal_sha256')},
     'required': ['strategy', 'candidate_id', 'inventory_sha256', 'inventory_fingerprint',
                  'source', 'binding_review', 'adapter_name'],
     'properties': {
@@ -64,6 +68,10 @@ REVIEWED_REQUEST_SCHEMA = {
                                           'adapter_file': {'type': 'string', 'minLength': 1},
                                           'adapter_sha256': {'type': 'string', 'pattern': '^[0-9a-f]{64}$'}}},
         'adapter_name': {'type': 'string', 'pattern': '^[A-Za-z_][A-Za-z_0-9]*$'},
+        'review_context_sha256': {'type': 'string', 'pattern': '^[0-9a-f]{64}$'},
+        'host_policy_sha256': {'type': 'string', 'pattern': '^[0-9a-f]{64}$'},
+        'trusted_binding_review_sha256': {'type': 'string', 'pattern': '^[0-9a-f]{64}$'},
+        'agent_proposal_sha256': {'type': 'string', 'pattern': '^[0-9a-f]{64}$'},
     },
 }
 
