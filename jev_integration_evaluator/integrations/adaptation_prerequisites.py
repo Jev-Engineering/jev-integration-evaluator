@@ -70,6 +70,21 @@ def draft_prerequisite_plan(root, inventory, context, proposal, *, host_policy,
                                      discovery_excludes=discovery_excludes)
     if fresh_context != context:
         raise InputError('Prerequisite context changed after review')
+    candidates = [row for row in inventory.get('candidates', [])
+                  if row.get('candidate_id') == context['candidate_id']]
+    if (len(candidates) != 1 or candidates[0].get('tier') == 0
+            or candidates[0].get('pattern') == 'NONE'
+            or candidates[0].get('hard_real_time') is True
+            or candidates[0].get('deterministic_alternative') in ('mandatory','preferred')
+            or candidates[0].get('semantic_review', {}).get('approved') is not True
+            or candidates[0]['semantic_review'].get('source_sha256') != context.get('source_sha256')
+            or not candidates[0]['semantic_review'].get('reviewer')
+            or not candidates[0]['semantic_review'].get('reason')
+            or candidates[0].get('source', {}).get('source_sha256') != context.get('source_sha256')
+            or len([row for row in context.get('sources', [])
+                    if row['file'] == candidates[0]['source'].get('file')
+                    and row['sha256'] == candidates[0]['source'].get('file_sha256')]) != 1):
+        raise InputError('Source-matched candidate review required for prerequisites')
     if (type(allowed_files) not in (list, tuple)
             or any(type(name) is not str for name in allowed_files)):
         raise InputError('Exact prerequisite scope required')

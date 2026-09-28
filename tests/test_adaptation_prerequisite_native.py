@@ -35,8 +35,14 @@ print(json.dumps({'reached':True,'result':f'{first}-{second}',
         (root / name).write_bytes(raw)
         os.chmod(root / name, 0o644)
     inventory = {'files':[{'file':name,'sha256':_sha(raw)}
-                          for name,raw in {**originals,'entry.py':entry}.items()]}
+                          for name,raw in {**originals,'entry.py':entry}.items()],
+                 'candidates':[{'candidate_id':'c','tier':1,'pattern':'C',
+                                'source':{'source_sha256':'a'*64,'file':'a.py',
+                                          'file_sha256':_sha(originals['a.py'])},
+                                'semantic_review':{'approved':True,'reviewer':'source fixture',
+                                                   'reason':'bounded fixture','source_sha256':'a'*64}}]}
     context = {'candidate_id':'c','inventory_sha256':digest(inventory),
+               'source_sha256':'a'*64,
                'sources':[{'file':name,'sha256':_sha(raw)}
                           for name,raw in originals.items()]}
     module = ModuleType('jev_integration_evaluator.agent_review')

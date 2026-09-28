@@ -18,8 +18,14 @@ def _fixture(root, monkeypatch):
                  'b.py':b'def baseline(value):\n    return value + 1\n'}
     for name, content in originals.items(): (root / name).write_bytes(content)
     inventory = {'files':[{'file':name,'sha256':hashlib.sha256(content).hexdigest()}
-                          for name, content in originals.items()]}
+                          for name, content in originals.items()],
+                 'candidates':[{'candidate_id':'c','tier':1,'pattern':'C',
+                                'source':{'source_sha256':'a'*64,'file':'a.py',
+                                          'file_sha256':hashlib.sha256(originals['a.py']).hexdigest()},
+                                'semantic_review':{'approved':True,'reviewer':'source fixture',
+                                                   'reason':'bounded fixture','source_sha256':'a'*64}}]}
     context = {'candidate_id':'c','inventory_sha256':digest(inventory),
+               'source_sha256':'a'*64,
                'sources':[{'file':name,'sha256':hashlib.sha256(content).hexdigest()}
                           for name, content in originals.items()]}
     module = ModuleType('jev_integration_evaluator.agent_review')
@@ -82,7 +88,7 @@ def test_scoped_prerequisites_require_external_approval_then_rescan(tmp_path, mo
 
 
 @pytest.mark.parametrize('attack', ['authority','old_body','scope','policy','review','new_validation',
-                                    'import_time_default','global_shadow'])
+                                    'import_time_default','global_shadow','source_review'])
 def test_prerequisite_authority_and_drift_fail_without_mutation(tmp_path, monkeypatch, attack):
     items = list(_fixture(tmp_path, monkeypatch))
     original = {name:(tmp_path / name).read_bytes() for name in items[-1]}
@@ -104,6 +110,9 @@ def test_prerequisite_authority_and_drift_fail_without_mutation(tmp_path, monkey
         items[2] = copy.deepcopy(items[2])
         items[2]['changes'][0]['new_content'] += '\ndef value(other):\n    return other\n'
         items[5] = {**items[5], 'proposal_sha256':digest(items[2])}
+    elif attack == 'source_review':
+        items[0] = copy.deepcopy(items[0])
+        items[0]['candidates'][0]['semantic_review']['approved'] = False
     else: items[4] = {'expected':'weaker'}
     with pytest.raises(InputError): _draft(tmp_path, items)
     assert all((tmp_path / name).read_bytes() == content for name, content in original.items())

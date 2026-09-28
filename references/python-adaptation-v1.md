@@ -50,7 +50,8 @@ existing, exact-scoped Python files may receive appended plain top-level
 helpers. Existing bytes must remain an exact prefix. Existing definitions,
 imports and assignments cannot be changed; new authority-named callbacks,
 decorators, evaluated defaults and annotations are rejected. The #6 context
-must refresh against the actual source, the proposal cites each preimage, and
+must refresh against the actual source and retain an approved source-matched
+candidate review. The proposal cites each preimage, and
 an independent reviewer binds the policy, exact scope, full proposal and an
 independently authored validation specification. `apply_prerequisites`
 regenerates the plan before comparing it to an externally approved digest.
