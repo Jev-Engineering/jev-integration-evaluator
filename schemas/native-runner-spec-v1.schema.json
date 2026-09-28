@@ -1,0 +1,616 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Runner-only contribution. Cross-artifact semantic validation is mandatory.",
+  "oneOf": [
+    {
+      "additionalProperties": false,
+      "properties": {
+        "backend": {
+          "const": "linux-chroot-seccomp-python-ro-v1"
+        },
+        "environment": {
+          "additionalProperties": false,
+          "maxProperties": 16,
+          "patternProperties": {
+            "^JEV_[A-Z0-9_]{1,40}$": {
+              "maxLength": 256,
+              "pattern": "^[^\u0000]*$",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "environment_identity": {
+          "additionalProperties": false,
+          "properties": {
+            "kernel": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            },
+            "library_path": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            },
+            "library_sha256": {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "machine": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            },
+            "python_executable": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            },
+            "python_sha256": {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "python_version": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            },
+            "runtime_dependencies_sha256": {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "supervisor_sha256": {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "worker_sha256": {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "python_executable",
+            "python_sha256",
+            "python_version",
+            "machine",
+            "kernel",
+            "worker_sha256",
+            "supervisor_sha256",
+            "library_path",
+            "library_sha256",
+            "runtime_dependencies_sha256"
+          ],
+          "type": "object"
+        },
+        "files": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "bytes": {
+                "maximum": 2097152,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "mode": {
+                "enum": [
+                  292,
+                  420,
+                  365,
+                  493
+                ],
+                "type": "integer"
+              },
+              "path": {
+                "maxLength": 240,
+                "minLength": 1,
+                "pattern": "^(?!/)(?!.*\\\\)(?!.*[\\u0000-\\u001f\\u007f])(?!.*(?:^|/)\\.\\.?(/|$))[^/]+(?:/[^/]+)*$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "path",
+              "sha256",
+              "bytes",
+              "mode"
+            ],
+            "type": "object"
+          },
+          "maxItems": 256,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "limits": {
+          "additionalProperties": false,
+          "properties": {
+            "address_space_bytes": {
+              "maximum": 536870912,
+              "minimum": 67108864,
+              "type": "integer"
+            },
+            "cpu_seconds": {
+              "maximum": 20,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "open_files": {
+              "maximum": 64,
+              "minimum": 16,
+              "type": "integer"
+            },
+            "output_bytes": {
+              "maximum": 1048576,
+              "minimum": 64,
+              "type": "integer"
+            },
+            "schedule_seconds": {
+              "maximum": 120,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "wall_seconds": {
+              "maximum": 30,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "wall_seconds",
+            "cpu_seconds",
+            "address_space_bytes",
+            "open_files",
+            "output_bytes",
+            "schedule_seconds"
+          ],
+          "type": "object"
+        },
+        "schedule": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "argv": {
+                "items": {
+                  "maxLength": 1024,
+                  "pattern": "^[^\u0000]*$",
+                  "type": "string"
+                },
+                "maxItems": 32,
+                "type": "array"
+              },
+              "case_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,95}$",
+                "type": "string"
+              },
+              "entry": {
+                "maxLength": 240,
+                "minLength": 1,
+                "pattern": "^(?!/)(?!.*\\\\)(?!.*[\\u0000-\\u001f\\u007f])(?!.*(?:^|/)\\.\\.?(/|$))[^/]+(?:/[^/]+)*$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "case_id",
+              "entry",
+              "argv"
+            ],
+            "type": "object"
+          },
+          "maxItems": 64,
+          "minItems": 1,
+          "type": "array"
+        },
+        "schema_version": {
+          "const": "1.0"
+        },
+        "source_identity": {
+          "additionalProperties": false,
+          "properties": {
+            "device": {
+              "maximum": 18446744073709551615,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "inode": {
+              "maximum": 18446744073709551615,
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "device",
+            "inode"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "schema_version",
+        "backend",
+        "source_identity",
+        "files",
+        "environment_identity",
+        "environment",
+        "schedule",
+        "limits"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "backend": {
+          "const": "linux-chroot-seccomp-python-ro-v1"
+        },
+        "environment": {
+          "additionalProperties": false,
+          "maxProperties": 16,
+          "patternProperties": {
+            "^JEV_[A-Z0-9_]{1,40}$": {
+              "maxLength": 256,
+              "pattern": "^[^\u0000]*$",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "environment_identity": {
+          "additionalProperties": false,
+          "properties": {
+            "kernel": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            },
+            "library_path": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            },
+            "library_sha256": {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "machine": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            },
+            "python_executable": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            },
+            "python_sha256": {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "python_version": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            },
+            "runtime_dependencies_sha256": {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "supervisor_sha256": {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "worker_sha256": {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "python_executable",
+            "python_sha256",
+            "python_version",
+            "machine",
+            "kernel",
+            "worker_sha256",
+            "supervisor_sha256",
+            "library_path",
+            "library_sha256",
+            "runtime_dependencies_sha256"
+          ],
+          "type": "object"
+        },
+        "files": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "bytes": {
+                "maximum": 2097152,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "mode": {
+                "enum": [
+                  292,
+                  420,
+                  365,
+                  493
+                ],
+                "type": "integer"
+              },
+              "path": {
+                "maxLength": 240,
+                "minLength": 1,
+                "pattern": "^(?!/)(?!.*\\\\)(?!.*[\\u0000-\\u001f\\u007f])(?!.*(?:^|/)\\.\\.?(/|$))[^/]+(?:/[^/]+)*$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "path",
+              "sha256",
+              "bytes",
+              "mode"
+            ],
+            "type": "object"
+          },
+          "maxItems": 256,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "isolation_capabilities": {
+          "const": {
+            "dependencies": "declared_pure_python_snapshot",
+            "exec": "denied",
+            "filesystem": "read_only_copied_snapshot",
+            "network": "denied",
+            "platform": "linux-x86_64",
+            "process_creation": "denied",
+            "target_interpreter": "same_inode_trusted_worker",
+            "threads": "denied"
+          }
+        },
+        "limits": {
+          "additionalProperties": false,
+          "properties": {
+            "address_space_bytes": {
+              "maximum": 536870912,
+              "minimum": 67108864,
+              "type": "integer"
+            },
+            "cpu_seconds": {
+              "maximum": 20,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "open_files": {
+              "maximum": 64,
+              "minimum": 16,
+              "type": "integer"
+            },
+            "output_bytes": {
+              "maximum": 1048576,
+              "minimum": 64,
+              "type": "integer"
+            },
+            "schedule_seconds": {
+              "maximum": 120,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "wall_seconds": {
+              "maximum": 30,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "wall_seconds",
+            "cpu_seconds",
+            "address_space_bytes",
+            "open_files",
+            "output_bytes",
+            "schedule_seconds"
+          ],
+          "type": "object"
+        },
+        "schedule": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "argv": {
+                "items": {
+                  "maxLength": 1024,
+                  "pattern": "^[^\u0000]*$",
+                  "type": "string"
+                },
+                "maxItems": 32,
+                "type": "array"
+              },
+              "case_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,95}$",
+                "type": "string"
+              },
+              "entry": {
+                "maxLength": 240,
+                "minLength": 1,
+                "pattern": "^(?!/)(?!.*\\\\)(?!.*[\\u0000-\\u001f\\u007f])(?!.*(?:^|/)\\.\\.?(/|$))[^/]+(?:/[^/]+)*$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "case_id",
+              "entry",
+              "argv"
+            ],
+            "type": "object"
+          },
+          "maxItems": 64,
+          "minItems": 1,
+          "type": "array"
+        },
+        "schema_version": {
+          "const": "1.1"
+        },
+        "source_identity": {
+          "additionalProperties": false,
+          "properties": {
+            "device": {
+              "maximum": 18446744073709551615,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "inode": {
+              "maximum": 18446744073709551615,
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "device",
+            "inode"
+          ],
+          "type": "object"
+        },
+        "target_environment": {
+          "additionalProperties": false,
+          "properties": {
+            "dependency_identity": {
+              "additionalProperties": false,
+              "properties": {
+                "device": {
+                  "maximum": 18446744073709551615,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "inode": {
+                  "maximum": 18446744073709551615,
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "device",
+                "inode"
+              ],
+              "type": "object"
+            },
+            "dependency_root": {
+              "maxLength": 4096,
+              "pattern": "^/[^\\u0000]*$",
+              "type": "string"
+            },
+            "distributions": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "metadata_path": {
+                    "maxLength": 240,
+                    "minLength": 1,
+                    "pattern": "^(?!/)(?!.*\\\\)(?!.*[\\u0000-\\u001f\\u007f])(?!.*(?:^|/)\\.\\.?(/|$))[^/]+(?:/[^/]+)*$",
+                    "type": "string"
+                  },
+                  "name": {
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,95}$",
+                    "type": "string"
+                  },
+                  "version": {
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,95}$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "version",
+                  "metadata_path"
+                ],
+                "type": "object"
+              },
+              "maxItems": 32,
+              "minItems": 1,
+              "type": "array"
+            },
+            "files": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "bytes": {
+                    "maximum": 2097152,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "mode": {
+                    "enum": [
+                      292,
+                      420,
+                      365,
+                      493
+                    ],
+                    "type": "integer"
+                  },
+                  "path": {
+                    "maxLength": 240,
+                    "minLength": 1,
+                    "pattern": "^(?!/)(?!.*\\\\)(?!.*[\\u0000-\\u001f\\u007f])(?!.*(?:^|/)\\.\\.?(/|$))[^/]+(?:/[^/]+)*$",
+                    "type": "string"
+                  },
+                  "sha256": {
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "path",
+                  "sha256",
+                  "bytes",
+                  "mode"
+                ],
+                "type": "object"
+              },
+              "maxItems": 256,
+              "minItems": 1,
+              "type": "array"
+            },
+            "interpreter_path": {
+              "maxLength": 4096,
+              "pattern": "^/[^\\u0000]*$",
+              "type": "string"
+            },
+            "interpreter_sha256": {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "interpreter_path",
+            "interpreter_sha256",
+            "dependency_root",
+            "dependency_identity",
+            "files",
+            "distributions"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "schema_version",
+        "backend",
+        "source_identity",
+        "files",
+        "environment_identity",
+        "environment",
+        "schedule",
+        "limits",
+        "target_environment",
+        "isolation_capabilities"
+      ],
+      "type": "object"
+    }
+  ],
+  "title": "native-runner-spec-v1"
+}

@@ -1,0 +1,12 @@
+{
+  "kernel": "6.17.0-1022-azure",
+  "library_path": "/usr/lib/x86_64-linux-gnu/libseccomp.so.2.5.5",
+  "library_sha256": "b4d9140a7797ccf3ac14f5d9d579b64f157111662940cb8330c632b11a8cea8e",
+  "machine": "x86_64",
+  "python_executable": "/opt/hostedtoolcache/Python/3.13.5/x64/bin/python3.13",
+  "python_sha256": "9cf89c50189de85411dd34b0f0ec5daaab41bf6cd447628572defe3b3ffd0a04",
+  "python_version": "3.13.5",
+  "runtime_dependencies_sha256": "6e66d8c7f1d3671da3ac5269b8e1eef9f32c59bc3b69d76a17a7e97d064d4811",
+  "supervisor_sha256": "55d5380336b70407ebe2e1931161fed226bac49faed963f64b79589db6026ba6",
+  "worker_sha256": "024e60f495b49b4bb5b2e7604f3dba129e2556642f3b6ae45576fb6ae2346cd9"
+}

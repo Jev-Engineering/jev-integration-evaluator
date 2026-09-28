@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Runner-only contribution. Cross-artifact semantic validation is mandatory.",
+  "properties": {
+    "attempt": {
+      "maximum": 3,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "cases": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "case_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,95}$",
+            "type": "string"
+          },
+          "stderr_b64": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "pattern": "^[A-Za-z0-9+/]*={0,2}$",
+                "type": "string"
+              }
+            ]
+          },
+          "stdout_b64": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "pattern": "^[A-Za-z0-9+/]*={0,2}$",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "required": [
+          "case_id",
+          "stdout_b64",
+          "stderr_b64"
+        ],
+        "type": "object"
+      },
+      "maxItems": 64,
+      "minItems": 1,
+      "type": "array"
+    },
+    "kind": {
+      "const": "native-private-output-v1"
+    },
+    "phase": {
+      "enum": [
+        "baseline",
+        "modified"
+      ]
+    },
+    "receipt_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1.0"
+    }
+  },
+  "required": [
+    "schema_version",
+    "kind",
+    "phase",
+    "attempt",
+    "receipt_sha256",
+    "cases"
+  ],
+  "title": "native-private-output-v1",
+  "type": "object"
+}

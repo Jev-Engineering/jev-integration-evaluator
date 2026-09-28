@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:repository-native-contract-v1:1.0",
+  "title": "repository-native-contract-v1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "repository-native-contract-v1"
+    },
+    "baseline_spec": {
+      "type": "object"
+    },
+    "modified_spec": {
+      "type": "object"
+    },
+    "oracle": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "kind",
+    "baseline_spec",
+    "modified_spec",
+    "oracle"
+  ],
+  "additionalProperties": false
+}

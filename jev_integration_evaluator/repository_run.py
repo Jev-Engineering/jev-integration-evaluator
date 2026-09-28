@@ -29,6 +29,14 @@ from .integrations import lifecycle as engine
 from .integrations.contracts import validate_spec, validate_inventory
 from .integrations.verification import verify_implementation
 from .integrations.errors import AmbiguousBinding, MissingBinding, UnsupportedShape
+from .runners.isolated_python import (ExecutionGrant, RunnerError, canonical as native_canonical,
+                                      inspect_receipt as inspect_native_receipt,
+                                      request_digest as native_request_digest, run_schedule,
+                                      validate_spec as validate_native_spec)
+from .runners.observations import (inspect_baseline_postconditions,
+                                   inspect_lifecycle_postconditions)
+from .runners.private_archive import (read_private_output_archive,
+                                      write_private_output_archive)
 from .io import InputError, digest as engine_digest, read_json
 from .repository_actions import next_action_contract
 from .repository_conclusion import conclude_repository, DEFAULT_OBJECTIVE
@@ -218,8 +226,20 @@ def _scope(value: Any, state: dict, head: str | None, existing: bool) -> dict | 
     if not existing and value["trusted_session_head"] is not None:
         raise SessionError("unexpected_session_head_for_new_run")
     if any(value["grants"][k] for k in ("baseline", "modified")):
-        if value["execution_environment"] != "trusted_host":
+        if value["execution_environment"] not in ("trusted_host", "isolated"):
+            raise SessionError("execution_environment_required")
+        if value["execution_environment"] == "isolated" and value["schema_version"] != "1.1":
             raise SessionError("independent_isolation_backend_unsupported")
+    if (value["execution_environment"] == "isolated"
+            and any(value["grants"][k] for k in ("baseline", "apply", "modified"))
+            and value.get("native_contract_sha256") is None):
+        raise SessionError("native_contract_anchor_required")
+    established_backend = state.get("execution_backend") or (
+        "trusted_host" if any(state["receipts"].values()) else None)
+    if (established_backend is not None and
+            any(value["grants"][k] for k in ("baseline", "apply", "modified")) and
+            value["execution_environment"] != established_backend):
+        raise SessionError("session_execution_backend_cannot_change")
     return value
 
 
@@ -293,7 +313,16 @@ class Journal:
             self.rows = self._read()
             self.state = copy.deepcopy(self.rows[-1]["state"]) if self.rows else None
             self.head = self.rows[-1]["record_sha256"] if self.rows else None
-            self.check_receipt_history()
+            self.native_archive_invalid = False
+            try:
+                self.check_receipt_history()
+            except (SessionError, OSError):
+                # A completed native session remains inspectable when its
+                # private archive disappears or changes. Never replay it.
+                if not self.state or not any(
+                        row.get("backend") == "isolated" for row in self.state["receipt_history"]):
+                    raise
+                self.native_archive_invalid = True
         except BaseException:
             self.close()
             raise
@@ -346,6 +375,9 @@ class Journal:
                 for field in ("run_id", "repository_identity", "context_sha256", "context", "source_files", "engine_identity"):
                     if row["state"][field] != before[field]:
                         raise SessionError("session_immutable_context_changed")
+                if (before.get("execution_backend") is not None and
+                        row["state"].get("execution_backend") != before["execution_backend"]):
+                    raise SessionError("session_execution_backend_changed")
                 if any(row["state"]["attempts"][op] < before["attempts"][op] for op in OPERATIONS):
                     raise SessionError("session_attempt_history_rewound")
                 for field in ("failures", "receipt_history", "authorization_references"):
@@ -380,6 +412,31 @@ class Journal:
                     raise SessionError("archived_receipt_integrity_mismatch")
             finally:
                 os.close(fd)
+            if row.get("backend") == "isolated":
+                name = row["private_output_file"]
+                self._identity()
+                try:
+                    out = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK,
+                                  dir_fd=self.dirfd)
+                except FileNotFoundError:
+                    raise SessionError("native_private_output_missing_no_replay") from None
+                try:
+                    info = os.fstat(out)
+                    if (not stat.S_ISREG(info.st_mode) or info.st_nlink != 1
+                            or info.st_uid != os.getuid() or stat.S_IMODE(info.st_mode) != 0o600
+                            or not 0 < info.st_size <= 96 * 1024 * 1024):
+                        raise SessionError("unsafe_native_private_output")
+                    hasher, total = hashlib.sha256(), 0
+                    while total <= 96 * 1024 * 1024:
+                        data = os.read(out, min(65536, 96 * 1024 * 1024 + 1 - total))
+                        if not data:
+                            break
+                        total += len(data)
+                        hasher.update(data)
+                    if total != info.st_size or hasher.hexdigest() != row["private_output_sha256"]:
+                        raise SessionError("native_private_output_integrity_mismatch")
+                finally:
+                    os.close(out)
 
     def room_for_operation(self) -> None:
         limit = self.state["context"]["bounds"]["max_events"]
@@ -456,6 +513,81 @@ def _check_limits(spec: dict, state: dict) -> None:
         raise SessionError("verification_exceeds_session_bounds")
 
 
+def _native_contract(value: Any, state: dict, plan: dict, scope: dict | None,
+                     phase: str | None) -> dict:
+    """Bind a reviewed native schedule and independent oracle to this session.
+
+    A local contract hash is only an identity. The caller's authenticated scope
+    must supply the exact digest and oracle anchor before any target execution.
+    """
+    if scope is None or scope["execution_environment"] != "isolated":
+        raise SessionError("native_isolation_scope_required")
+    contract = _freeze(value)
+    _exact(contract, {"schema_version", "kind", "baseline_spec", "modified_spec", "oracle"},
+           "invalid_native_contract")
+    if contract["schema_version"] != "1.0" or contract["kind"] != "repository-native-contract-v1":
+        raise SessionError("unsupported_native_contract")
+    cap._schema("repository-native-contract-v1", contract)
+    if cap._digest(contract) != scope["native_contract_sha256"]:
+        raise SessionError("native_contract_scope_mismatch")
+    oracle = contract["oracle"]
+    cap._schema("native-postconditions-v1", oracle)
+    if cap._digest(oracle) != scope["trusted_oracle_sha256"]:
+        raise SessionError("native_oracle_external_anchor_mismatch")
+    if any(oracle[k] != wanted for k, wanted in (
+            ("repository_identity", state["repository_identity"]),
+            ("context_sha256", state["context_sha256"]),
+            ("bundle_digest", plan["contract_digest"]))):
+        raise SessionError("native_oracle_session_mismatch")
+    baseline, modified = contract["baseline_spec"], contract["modified_spec"]
+    try:
+        validate_native_spec(baseline)
+        validate_native_spec(modified)
+    except RunnerError as error:
+        raise SessionError("invalid_native_runner_spec") from error
+    if (baseline["schema_version"] != "1.1" or modified["schema_version"] != "1.1"
+            or baseline["environment_identity"] != modified["environment_identity"]
+            or baseline["target_environment"] != modified["target_environment"]
+            or baseline["source_identity"] != modified["source_identity"]
+            or [r["case_id"] for r in baseline["schedule"]] != ["baseline"]
+            or [r["case_id"] for r in modified["schedule"]] != ["off", "shadow"]):
+        raise SessionError("unsupported_native_schedule_or_environment")
+    bound = state["context"]["bounds"]
+    if (len(baseline["schedule"]) + len(modified["schedule"]) > bound["max_cases"]
+            or any(s["limits"]["schedule_seconds"] > bound["max_timeout_s"]
+                   for s in (baseline, modified))):
+        raise SessionError("native_schedule_exceeds_session_bounds")
+    owned = {row["file"]: row for row in plan["owned_files"]}
+    existing_owned = {path for path in owned if path in state["source_files"]}
+    if (not owned or existing_owned - {row["path"] for row in baseline["files"]}
+            or set(owned) - {row["path"] for row in modified["files"]}):
+        raise SessionError("native_spec_omits_owned_source")
+    for name, spec in (("baseline", baseline), ("modified", modified)):
+        expected = copy.deepcopy(state["source_files"])
+        if name == "modified":
+            for path, row in owned.items():
+                expected[path] = dict(sha256=row["new_sha256"], mode=row["new_mode"])
+        for row in spec["files"]:
+            if expected.get(row["path"]) != {"sha256": row["sha256"], "mode": row["mode"]}:
+                raise SessionError("native_spec_source_mismatch")
+        binding = oracle[name]
+        if (binding["request_sha256"] != native_request_digest(spec)
+                or binding["source_manifest_sha256"] != cap._digest(spec["files"])
+                or [r["case_id"] for r in binding["cases"]] != [r["case_id"] for r in spec["schedule"]]):
+            raise SessionError("native_oracle_schedule_mismatch")
+    if phase is not None and oracle[phase]["attempt"] != state["attempts"][phase] + 1:
+        raise SessionError("native_oracle_attempt_mismatch")
+    if phase is None and state["receipts"]["baseline"]:
+        if oracle["baseline"]["attempt"] != state["attempts"]["baseline"]:
+            raise SessionError("native_baseline_attempt_mismatch")
+    if phase == "modified" and state["receipts"]["baseline"]:
+        if oracle["baseline"]["attempt"] != state["attempts"]["baseline"]:
+            raise SessionError("native_baseline_attempt_mismatch")
+    if state["receipts"]["modified"] and oracle["modified"]["attempt"] != state["attempts"]["modified"]:
+        raise SessionError("native_modified_attempt_mismatch")
+    return contract
+
+
 def _snapshot(root: Path, state: dict, plan: dict | None, *, applied: bool) -> dict:
     report = cap.discover_repository(root, cap.DiscoveryPolicy.from_json(state["context"]["policy"]))
     if report["repository_identity"] != state["repository_identity"]:
@@ -477,8 +609,12 @@ def _begin(journal: Journal, operation: str, scope: dict) -> dict:
         raise SessionError("operation_retry_limit")
     journal.room_for_operation()
     state["attempts"][operation] += 1
+    if operation == "baseline" and state.get("execution_backend") is None:
+        state["execution_backend"] = scope["execution_environment"]
     state["pending"] = dict(operation=operation, attempt=state["attempts"][operation],
                             authority_reference=scope["reference"], authority_sha256=cap._digest(scope))
+    if scope["execution_environment"] == "isolated" and operation in ("baseline", "modified"):
+        state["pending"]["native_contract_sha256"] = scope["native_contract_sha256"]
     state["authorization_references"].append(dict(reference=scope["reference"], sha256=cap._digest(scope)))
     state["stage"] = operation + "_pending"
     journal.append(state, operation + "_started")
@@ -548,6 +684,107 @@ def _archive_receipt(journal: Journal, state: dict, root: Path, bundle: Path,
         provenance="externally_retained_recovery_anchor" if recovery else "direct_tool_observation"))
 
 
+def _native_names(phase: str, attempt: int, receipt_sha256: str) -> tuple[str, str]:
+    return (f"receipt-{phase}-{attempt}-{receipt_sha256}.json",
+            f"native-output-{phase}-{attempt}-{receipt_sha256}.json")
+
+
+def _read_native_receipt(journal: Journal, spec: dict, phase: str, attempt: int,
+                         trusted_sha256: str) -> dict:
+    filename, _ = _native_names(phase, attempt, trusted_sha256)
+    journal._identity()
+    try:
+        fd = os.open(filename, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=journal.dirfd)
+    except FileNotFoundError:
+        raise SessionError("native_receipt_missing_no_replay") from None
+    try:
+        info = os.fstat(fd)
+        if (not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid()
+                or info.st_nlink != 1 or stat.S_IMODE(info.st_mode) != 0o600
+                or not 0 < info.st_size <= MAX_INPUT_BYTES):
+            raise SessionError("unsafe_native_receipt_archive")
+        raw = os.read(fd, MAX_INPUT_BYTES + 1)
+        if len(raw) != info.st_size or os.fstat(fd).st_mtime_ns != info.st_mtime_ns:
+            raise SessionError("native_receipt_changed_during_read")
+    finally:
+        os.close(fd)
+    if cap._hash(raw) != trusted_sha256:
+        raise SessionError("native_receipt_external_anchor_mismatch")
+    try:
+        receipt = json.loads(raw)
+        inspect_native_receipt(spec, receipt, trusted_receipt_sha256=trusted_sha256)
+    except (ValueError, TypeError, RunnerError):
+        raise SessionError("invalid_anchored_native_receipt") from None
+    return receipt
+
+
+def _archive_native_result(journal: Journal, state: dict, root: Path, spec: dict,
+                           phase: str, result: Any, oracle_sha256: str) -> str:
+    attempt = state["attempts"][phase]
+    receipt_sha256 = result.receipt_sha256
+    receipt_file, output_file = _native_names(phase, attempt, receipt_sha256)
+    raw = native_canonical(result.receipt)
+    if cap._hash(raw) != receipt_sha256 or len(raw) > MAX_INPUT_BYTES:
+        raise SessionError("native_receipt_encoding_invalid")
+    journal._identity()
+    try:
+        fd = os.open(receipt_file, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
+                     0o600, dir_fd=journal.dirfd)
+    except FileExistsError:
+        raise SessionError("native_receipt_archive_collision_no_replay") from None
+    try:
+        if os.fstat(fd).st_uid != os.getuid():
+            raise SessionError("unsafe_native_receipt_archive")
+        view = memoryview(raw)
+        while view:
+            count = os.write(fd, view)
+            if count <= 0:
+                raise SessionError("native_receipt_archive_write_failed")
+            view = view[count:]
+        os.fsync(fd)
+        os.fsync(journal.dirfd)
+    finally:
+        os.close(fd)
+    archive_sha256 = write_private_output_archive(
+        journal.path / output_file, root, spec, result.receipt, result.private_outputs,
+        phase=phase, attempt=attempt, trusted_receipt_sha256=receipt_sha256)
+    state["receipt_history"].append(dict(
+        file=receipt_file, sha256=receipt_sha256, phase=phase, attempt=attempt,
+        status="failed", scheduled_cases=result.receipt["scheduled"],
+        completed_cases=result.receipt["recorded"], provenance="direct_tool_observation",
+        backend="isolated", private_output_file=output_file,
+        private_output_sha256=archive_sha256, oracle_sha256=oracle_sha256))
+    return archive_sha256
+
+
+def _native_prior(journal: Journal, root: Path, state: dict, scope: dict,
+                  contract: dict, phase: str) -> tuple[dict, dict]:
+    reference = state["receipts"][phase]
+    if reference is None or reference.get("backend") != "isolated":
+        raise SessionError("native_prior_proof_missing")
+    trusted_receipt = scope["trusted_" + phase + "_receipt"]
+    trusted_output = scope["trusted_" + phase + "_private_output"]
+    if (trusted_receipt != reference["sha256"]
+            or trusted_output != reference["private_output_sha256"]):
+        raise SessionError("native_external_phase_anchor_required")
+    history = next((r for r in reversed(state["receipt_history"])
+                    if r["phase"] == phase and r["sha256"] == trusted_receipt), None)
+    if history is None or history.get("private_output_sha256") != trusted_output:
+        raise SessionError("native_phase_history_missing")
+    spec = contract[phase + "_spec"]
+    receipt = _read_native_receipt(journal, spec, phase, history["attempt"], trusted_receipt)
+    expected_authority = f"{state['run_id']}-{phase}-{history['attempt']}"
+    if receipt["authority_reference_sha256"] != cap._hash(expected_authority.encode()):
+        raise SessionError("native_phase_authority_mismatch")
+    if contract["oracle"][phase]["attempt"] != history["attempt"]:
+        raise SessionError("native_phase_attempt_mismatch")
+    outputs = read_private_output_archive(
+        journal.path / history["private_output_file"], root, spec, receipt,
+        phase=phase, attempt=history["attempt"], trusted_receipt_sha256=trusted_receipt,
+        trusted_archive_sha256=trusted_output)
+    return receipt, outputs
+
+
 def _complete(journal: Journal, state: dict, operation: str, stage: str, failure: str | None = None) -> None:
     if failure:
         state["failures"].append(dict(operation=operation, attempt=state["attempts"][operation], code=failure))
@@ -555,7 +792,8 @@ def _complete(journal: Journal, state: dict, operation: str, stage: str, failure
     journal.append(state, operation + "_completed" if failure is None else operation + "_failed")
 
 
-def _reconcile(journal: Journal, root: Path, scope: dict | None) -> bool:
+def _reconcile(journal: Journal, root: Path, scope: dict | None,
+               native_contract: dict | None = None) -> bool:
     """Adopt a proven completed operation; never guess or replay unknown effects."""
     state = copy.deepcopy(journal.state)
     pending = state["pending"]
@@ -593,6 +831,67 @@ def _reconcile(journal: Journal, root: Path, scope: dict | None) -> bool:
     plan, spec = _engine_bundle(root, bundle)
     if plan["contract_digest"] != state["bundle"]["digest"]:
         raise SessionError("session_bundle_changed")
+    if pending.get("native_contract_sha256") is not None:
+        phase = operation
+        if phase not in ("baseline", "modified") or native_contract is None:
+            return False
+        if scope["execution_environment"] != "isolated" or scope["native_contract_sha256"] != pending["native_contract_sha256"]:
+            return False
+        try:
+            contract = _native_contract(native_contract, state, plan, scope, None)
+            if contract["oracle"][phase]["attempt"] != pending["attempt"]:
+                return False
+            trusted_receipt = scope["trusted_" + phase + "_receipt"]
+            trusted_output = scope["trusted_" + phase + "_private_output"]
+            if not trusted_receipt or not trusted_output:
+                return False
+            native_spec = contract[phase + "_spec"]
+            receipt = _read_native_receipt(journal, native_spec, phase, pending["attempt"], trusted_receipt)
+            expected_authority = f"{state['run_id']}-{phase}-{pending['attempt']}"
+            if receipt["authority_reference_sha256"] != cap._hash(expected_authority.encode()):
+                return False
+            _, output_file = _native_names(phase, pending["attempt"], trusted_receipt)
+            outputs = read_private_output_archive(
+                journal.path / output_file, root, native_spec, receipt,
+                phase=phase, attempt=pending["attempt"],
+                trusted_receipt_sha256=trusted_receipt,
+                trusted_archive_sha256=trusted_output)
+            _snapshot(root, state, plan, applied=phase == "modified")
+            if phase == "baseline":
+                report = inspect_baseline_postconditions(
+                    contract["oracle"], trusted_oracle_sha256=scope["trusted_oracle_sha256"],
+                    spec=native_spec, receipt=receipt, outputs=outputs,
+                    trusted_receipt_sha256=trusted_receipt)
+            else:
+                prior, prior_outputs = _native_prior(journal, root, state, scope, contract, "baseline")
+                report = inspect_lifecycle_postconditions(
+                    contract["oracle"], trusted_oracle_sha256=scope["trusted_oracle_sha256"],
+                    baseline_spec=contract["baseline_spec"], baseline_receipt=prior,
+                    baseline_outputs=prior_outputs,
+                    trusted_baseline_receipt_sha256=scope["trusted_baseline_receipt"],
+                    modified_spec=native_spec, modified_receipt=receipt,
+                    modified_outputs=outputs, trusted_modified_receipt_sha256=trusted_receipt)
+            passed = bool(report["postconditions_satisfied"] and receipt["source_identity_valid"]
+                          and receipt["exited_zero"] == receipt["scheduled"])
+            receipt_file, _ = _native_names(phase, pending["attempt"], trusted_receipt)
+            state["receipt_history"].append(dict(
+                file=receipt_file, sha256=trusted_receipt, phase=phase,
+                attempt=pending["attempt"], status="passed" if passed else "failed",
+                scheduled_cases=receipt["scheduled"], completed_cases=receipt["recorded"],
+                provenance="externally_retained_recovery_anchor", backend="isolated",
+                private_output_file=output_file, private_output_sha256=trusted_output,
+                oracle_sha256=scope["trusted_oracle_sha256"]))
+            if passed:
+                state["receipts"][phase] = dict(
+                    sha256=trusted_receipt, provenance="externally_retained_recovery_anchor",
+                    backend="isolated", private_output_sha256=trusted_output,
+                    oracle_sha256=scope["trusted_oracle_sha256"])
+                _complete(journal, state, phase, "baseline_passed" if phase == "baseline" else "verified")
+            else:
+                _complete(journal, state, phase, phase + "_failed", "recovered_native_postconditions_failed")
+            return True
+        except (RunnerError, SessionError, InputError, OSError, KeyError, TypeError, ValueError):
+            return False
     try:
         observed = engine.implementation_status(root, bundle,
             trusted_receipt_sha256=scope["trusted_modified_receipt"] if operation == "modified" else None)
@@ -626,9 +925,121 @@ def _reconcile(journal: Journal, root: Path, scope: dict | None) -> bool:
     return False
 
 
+def _run_native_lifecycle(journal: Journal, root: Path, bundle: Path, plan: dict,
+                          scope: dict | None, contract_input: dict | None,
+                          retry: bool, stop_after: str | None) -> dict:
+    state = journal.state
+    if scope is None or scope["execution_environment"] != "isolated" or contract_input is None:
+        return _summary(journal, "missing_scope", "supply_exact_native_contract_or_isolation_scope")
+    if state["stage"] == "verified":
+        contract = _native_contract(contract_input, state, plan, scope, None)
+        baseline_receipt, baseline_outputs = _native_prior(journal, root, state, scope, contract, "baseline")
+        modified_receipt, modified_outputs = _native_prior(journal, root, state, scope, contract, "modified")
+        report = inspect_lifecycle_postconditions(
+            contract["oracle"], trusted_oracle_sha256=scope["trusted_oracle_sha256"],
+            baseline_spec=contract["baseline_spec"], baseline_receipt=baseline_receipt,
+            baseline_outputs=baseline_outputs, trusted_baseline_receipt_sha256=scope["trusted_baseline_receipt"],
+            modified_spec=contract["modified_spec"], modified_receipt=modified_receipt,
+            modified_outputs=modified_outputs, trusted_modified_receipt_sha256=scope["trusted_modified_receipt"])
+        _snapshot(root, state, plan, applied=True)
+        if not report["postconditions_satisfied"]:
+            return _summary(journal, "blocked_recovery", "review_native_postcondition_failure")
+        return _summary(journal, "verified", "software_wiring_only_no_activation",
+                        target_executed=False, native_postconditions=report)
+    if state["stage"] in ("planned", "baseline_failed"):
+        phase = "baseline"
+    elif state["stage"] == "baseline_passed":
+        phase = "apply"
+    elif state["stage"] in ("applied_unverified", "modified_failed"):
+        phase = "modified"
+    else:
+        return _summary(journal, "blocked_recovery", "inspect_native_session_stage")
+    if state["stage"] == phase + "_failed" and not retry:
+        return _summary(journal, "verification_failed", "review_retained_failure_and_explicitly_request_bounded_retry")
+    if not _allowed(scope, phase, state):
+        return _summary(journal, "missing_scope", "obtain_exact_native_" + phase + "_scope")
+    contract = _native_contract(contract_input, state, plan, scope, phase if phase != "apply" else None)
+    if phase == "apply":
+        baseline_receipt, baseline_outputs = _native_prior(journal, root, state, scope, contract, "baseline")
+        baseline_report = inspect_baseline_postconditions(
+            contract["oracle"], trusted_oracle_sha256=scope["trusted_oracle_sha256"],
+            spec=contract["baseline_spec"], receipt=baseline_receipt,
+            outputs=baseline_outputs, trusted_receipt_sha256=scope["trusted_baseline_receipt"])
+        if not baseline_report["postconditions_satisfied"]:
+            raise SessionError("native_baseline_postconditions_failed")
+        _snapshot(root, state, plan, applied=False)
+        state = _begin(journal, "apply", scope)
+        try:
+            engine.apply_native_implementation(
+                root, bundle, scope["bundle_digest"], baseline_spec=contract["baseline_spec"],
+                baseline_receipt=baseline_receipt, trusted_baseline_sha256=scope["trusted_baseline_receipt"],
+                trusted_oracle_sha256=scope["trusted_oracle_sha256"], oracle=contract["oracle"],
+                baseline_outputs=baseline_outputs,
+                expected_repository_identity=state["repository_identity"],
+                expected_context_sha256=state["context_sha256"],
+                expected_attempt=state["attempts"]["baseline"],
+                expected_authority_sha256=cap._hash(
+                    f"{state['run_id']}-baseline-{state['attempts']['baseline']}".encode()))
+        except (InputError, OSError, RunnerError, ValueError, KeyError, TypeError):
+            _complete(journal, state, "apply", "apply_failed", "native_apply_interrupted_recovery_required")
+            return _summary(journal, "blocked_recovery", "reconcile_owned_apply_before_retry")
+        _complete(journal, state, "apply", "applied_unverified")
+        return _summary(journal, "applied_unverified", "resume_native_with_external_anchors")
+    _snapshot(root, state, plan, applied=phase == "modified")
+    baseline_receipt = baseline_outputs = None
+    if phase == "modified":
+        baseline_receipt, baseline_outputs = _native_prior(journal, root, state, scope, contract, "baseline")
+    state = _begin(journal, phase, scope)
+    spec = contract[phase + "_spec"]
+    authority = f"{state['run_id']}-{phase}-{state['attempts'][phase]}"
+    try:
+        result = run_schedule(root, spec, ExecutionGrant(native_request_digest(spec), authority))
+        if result.receipt["authority_reference_sha256"] != cap._hash(authority.encode()):
+            raise RunnerError("native_authority_reference_mismatch")
+        inspect_native_receipt(spec, result.receipt, trusted_receipt_sha256=result.receipt_sha256)
+        archive_sha256 = _archive_native_result(journal, state, root, spec, phase, result,
+                                                scope["trusted_oracle_sha256"])
+        if phase == "baseline":
+            report = inspect_baseline_postconditions(
+                contract["oracle"], trusted_oracle_sha256=scope["trusted_oracle_sha256"],
+                spec=spec, receipt=result.receipt, outputs=result.private_outputs,
+                trusted_receipt_sha256=result.receipt_sha256)
+        else:
+            report = inspect_lifecycle_postconditions(
+                contract["oracle"], trusted_oracle_sha256=scope["trusted_oracle_sha256"],
+                baseline_spec=contract["baseline_spec"], baseline_receipt=baseline_receipt,
+                baseline_outputs=baseline_outputs,
+                trusted_baseline_receipt_sha256=scope["trusted_baseline_receipt"],
+                modified_spec=spec, modified_receipt=result.receipt,
+                modified_outputs=result.private_outputs,
+                trusted_modified_receipt_sha256=result.receipt_sha256)
+        passed = bool(report["postconditions_satisfied"] and result.receipt["source_identity_valid"]
+                      and result.receipt["exited_zero"] == result.receipt["scheduled"])
+        if passed:
+            _snapshot(root, state, plan, applied=phase == "modified")
+        state["receipt_history"][-1]["status"] = "passed" if passed else "failed"
+        if passed:
+            state["receipts"][phase] = dict(
+                sha256=result.receipt_sha256, provenance="direct_tool_observation",
+                backend="isolated", private_output_sha256=archive_sha256,
+                oracle_sha256=scope["trusted_oracle_sha256"])
+    except (RunnerError, InputError, OSError, ValueError, KeyError, TypeError):
+        _complete(journal, state, phase, phase + "_failed", "native_execution_or_evidence_interrupted")
+        return _summary(journal, "blocked_recovery", "inspect_native_archive_and_external_anchor_before_retry")
+    if not passed:
+        _complete(journal, state, phase, phase + "_failed", "native_scheduled_postconditions_failed")
+        return _summary(journal, "verification_failed", "review_retained_native_schedule_and_postconditions")
+    stage = "baseline_passed" if phase == "baseline" else "verified"
+    _complete(journal, state, phase, stage)
+    return _summary(journal, stage, "resume_native_with_external_anchors" if phase == "baseline"
+                    else "software_wiring_only_no_activation", target_executed=True,
+                    native_postconditions=report)
+
+
 def run_repository(repo: str | Path, session: str | Path, *, context: dict | None = None,
                    prepared: dict | None = None, bundle: str | Path | None = None,
-                   scope: dict | None = None, cancel: bool = False, retry: bool = False,
+                   scope: dict | None = None, native_contract: dict | None = None,
+                   cancel: bool = False, retry: bool = False,
                    recover: bool = False, replan: bool = False,
                    stop_after: str | None = None) -> dict:
     """Connect planning, baseline, apply, verification, status and owned rollback.
@@ -649,6 +1060,7 @@ def run_repository(repo: str | Path, session: str | Path, *, context: dict | Non
     proposal = _prepared(prepared) if prepared is not None else None
     with _journal(Path(session), root) as journal:
         existing = journal.state is not None
+        native_input = _freeze(native_contract) if native_contract is not None else None
         if not existing:
             ctx = supplied or request_context()
             report = cap.discover_repository(root, cap.DiscoveryPolicy.from_json(ctx["policy"]))
@@ -675,6 +1087,8 @@ def run_repository(repo: str | Path, session: str | Path, *, context: dict | Non
             os.close(identity_fd)
             if cap._digest([str(root), identity.st_dev, identity.st_ino]) != state["repository_identity"]:
                 raise SessionError("repository_identity_changed")
+        if journal.native_archive_invalid and not (recover or cancel):
+            return _summary(journal, "blocked_recovery", "inspect_native_contract_and_private_archive")
         if proposal is not None:
             if proposal["adapter"] != journal.state["context"]["adapter"]:
                 raise SessionError("prepared_adapter_mismatch")
@@ -721,7 +1135,7 @@ def run_repository(repo: str | Path, session: str | Path, *, context: dict | Non
             state["stage"], state["bundle"], state["planned_output"], state["prepared_sha256"] = "prepared", None, None, None
             journal.append(state, "reviewed_pre_effect_replan_requested")
         if journal.state["pending"] and not recover:
-            if not _reconcile(journal, root, checked_scope):
+            if not _reconcile(journal, root, checked_scope, native_input):
                 if (journal.state["pending"]["operation"] == "plan" and retry and proposal is not None
                         and _allowed(checked_scope, "plan", journal.state)
                         and cap._digest(proposal) == journal.state["prepared_sha256"]):
@@ -767,7 +1181,10 @@ def run_repository(repo: str | Path, session: str | Path, *, context: dict | Non
             journal.append(state, "reviewed_preparation_bound")
             state = _begin(journal, "plan", checked_scope)
             try:
-                result = engine.plan_implementation(root, proposal["inventory"], proposal["spec"]["candidate_id"], proposal["spec"], out)
+                result = engine.plan_implementation(
+                    root, proposal["inventory"], proposal["spec"]["candidate_id"],
+                    proposal["spec"], out,
+                    native_readable_sources=checked_scope["execution_environment"] == "isolated")
             except MissingBinding:
                 _complete(journal, state, "plan", "plan_failed", "missing_host_binding")
                 return _summary(journal, "missing_prerequisite", "supply_missing_host_binding")
@@ -786,7 +1203,8 @@ def run_repository(repo: str | Path, session: str | Path, *, context: dict | Non
             state["bundle"] = dict(path=str(out), digest=result["bundle_digest"])
             _complete(journal, state, "plan", "planned")
             if stop_after == "plan":
-                return _summary(journal, "planned", "review_exact_bundle_and_obtain_execution_mutation_scope")
+                return _summary(journal, "planned", "review_native_bundle_and_scope" if checked_scope["execution_environment"] == "isolated"
+                                else "review_exact_bundle_and_obtain_execution_mutation_scope")
         state = journal.state
         bundle_path = Path(state["bundle"]["path"])
         plan, spec = _engine_bundle(root, bundle_path)
@@ -817,6 +1235,15 @@ def run_repository(repo: str | Path, session: str | Path, *, context: dict | Non
             return _summary(journal, "blocked_recovery", "inspect_bundle_receipts_and_owned_source")
         if observed["status"] == "blocked_recovery":
             return _summary(journal, "blocked_recovery", "supply_exact_owned_rollback_scope")
+        if state.get("execution_backend") == "isolated" or (
+                state.get("execution_backend") is None and checked_scope is not None
+                and not any(state["receipts"].values())
+                and checked_scope["execution_environment"] == "isolated"):
+            try:
+                return _run_native_lifecycle(journal, root, bundle_path, plan, checked_scope,
+                                             native_input, retry, stop_after)
+            except (RunnerError, InputError, OSError, ValueError, KeyError, TypeError):
+                return _summary(journal, "blocked_recovery", "inspect_native_contract_and_private_archive")
         if state["stage"] == "verified":
             _snapshot(root, state, plan, applied=True)
             if checked_scope is None:
@@ -890,6 +1317,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--prepared", type=Path)
     parser.add_argument("--bundle", type=Path)
     parser.add_argument("--scope", type=Path)
+    parser.add_argument("--native-contract", type=Path)
     parser.add_argument("--cancel", action="store_true")
     parser.add_argument("--retry", action="store_true")
     parser.add_argument("--recover", action="store_true")
@@ -899,7 +1327,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         context = _external(args.context, args.repo) if args.context else None
         if args.session is None:
-            if any((args.prepared, args.bundle, args.scope, args.cancel, args.retry, args.recover, args.replan, args.stop_after)):
+            if any((args.prepared, args.bundle, args.scope, args.native_contract, args.cancel, args.retry, args.recover, args.replan, args.stop_after)):
                 raise SessionError("explicit_external_session_required")
             result = inspect_repository(args.repo, context=context,
                 capabilities=_external(args.capabilities, args.repo) if args.capabilities else None,
@@ -912,6 +1340,7 @@ def main(argv: list[str] | None = None) -> int:
             result = run_repository(args.repo, args.session, context=context,
                 prepared=_external(args.prepared, args.repo) if args.prepared else None,
                 bundle=args.bundle, scope=_external(args.scope, args.repo) if args.scope else None,
+                native_contract=_external(args.native_contract, args.repo) if args.native_contract else None,
                 cancel=args.cancel, retry=args.retry, recover=args.recover,
                 replan=args.replan, stop_after=args.stop_after)
         print(json.dumps(result, ensure_ascii=True, allow_nan=False))
