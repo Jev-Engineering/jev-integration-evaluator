@@ -655,6 +655,28 @@
         "reason"
       ],
       "additionalProperties": false
+    },
+    "package_binding": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": "1.0"
+        },
+        "namespace": {
+          "type": "boolean"
+        },
+        "module": {
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*(\\.[A-Za-z_][A-Za-z_0-9]*)+$",
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "version",
+        "namespace",
+        "module"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [

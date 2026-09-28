@@ -37,7 +37,9 @@ def validate_spec(spec: dict) -> dict:
         raise InputError('Bundled runtime configuration must be off by default')
     if spec['output']['module'] == Path(spec['source']['file']).stem:
         raise InputError('Integration module cannot replace the host module')
-    if set(spec['output']['permitted_edits']) != {spec['source']['file'], spec['output']['module'] + '.py'}:
+    adapter_path = ((Path(spec['source']['file']).parent / (spec['output']['module'] + '.py')).as_posix()
+                    if 'package_binding' in spec else spec['output']['module'] + '.py')
+    if set(spec['output']['permitted_edits']) != {spec['source']['file'], adapter_path}:
         raise InputError('Permitted edits must name exactly the host and owned adapter')
     if spec['output']['dependencies'] != ['jev-integration-evaluator>=1.3.0.dev1']:
         raise InputError('Declare the installed evaluator dependency; automatic installation is not authorized')

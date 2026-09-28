@@ -141,6 +141,50 @@
     },
     "activation_authorized": {
       "const": false
+    },
+    "package_binding": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": "1.0"
+        },
+        "namespace": {
+          "type": "boolean"
+        },
+        "module": {
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z_0-9]*(\\.[A-Za-z_][A-Za-z_0-9]*)+$",
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "version",
+        "namespace",
+        "module"
+      ],
+      "additionalProperties": false
+    },
+    "contributing_sources": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[A-Za-z_][A-Za-z_0-9/]*\\.py$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      },
+      "minProperties": 1
+    },
+    "qualified_bindings": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[a-z_]+$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[A-Za-z_][A-Za-z_0-9]*(\\.[A-Za-z_][A-Za-z_0-9]*)*:[A-Za-z_][A-Za-z_0-9]*$"
+      },
+      "minProperties": 8
     }
   },
   "required": [

@@ -3,18 +3,20 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+import pytest
 from scripts.implementation_fixtures import fixture
 from jev_integration_evaluator.io import write_json
 
 
-def test_installed_wheel_drives_generated_host_and_loads_strict_data(tmp_path):
+@pytest.mark.parametrize('layout', ['flat', 'package', 'src', 'namespace'])
+def test_installed_wheel_drives_generated_host_and_loads_strict_data(tmp_path, layout):
     root=Path(__file__).resolve().parents[1];dist=tmp_path/'dist';dist.mkdir()
     build=subprocess.run([sys.executable,'-c','import setuptools.build_meta,sys;print(setuptools.build_meta.build_wheel(sys.argv[1]))',str(dist)],cwd=root,capture_output=True,text=True,timeout=60)
     assert build.returncode==0,build.stderr
     wheel=next(dist.glob('*.whl'));installed=tmp_path/'installed'
     install=subprocess.run([sys.executable,'-m','pip','install','--no-index','--no-deps','--target',str(installed),str(wheel)],capture_output=True,text=True,timeout=60)
     assert install.returncode==0,install.stderr
-    target,bundle=tmp_path/'host',tmp_path/'bundle';inv,spec=fixture(target,'C',tag='wheel_source')
+    target,bundle=tmp_path/'host',tmp_path/'bundle';inv,spec=fixture(target,'C',tag='wheel_source',layout=layout)
     write_json(tmp_path/'inventory.json',inv);write_json(tmp_path/'spec.json',spec)
     code='''import json,sys
 from pathlib import Path

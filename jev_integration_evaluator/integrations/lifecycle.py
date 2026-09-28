@@ -151,6 +151,19 @@ def _load(root, bundle, *, current_engine=False):
             or manifest['original_discovery_source']['file_sha256'] != spec['source']['file_sha256']
             or manifest['original_discovery_source']['source_sha256'] != spec['source']['source_sha256']):
         raise InputError('Implementation manifest differs from the reviewed discovery/binding')
+    if spec.get('package_binding') != manifest.get('package_binding'):
+        raise InputError('Package binding contract differs from the reviewed specification')
+    if spec.get('package_binding') and spec['source']['file'] not in manifest.get('contributing_sources', {}):
+        raise InputError('Package manifest omits the selected source dependency')
+    if spec.get('package_binding') and set(manifest.get('qualified_bindings', {})) != set(spec['bindings']):
+        raise InputError('Package manifest omits qualified role bindings')
+    owned_sources = {row['file']: row for row in plan['owned_files']}
+    for rel, expected in manifest.get('contributing_sources', {}).items():
+        p = safe_child(root, rel)
+        allowed = {expected}
+        if rel in owned_sources: allowed.add(owned_sources[rel]['new_sha256'])
+        if not p.is_file() or file_hash(p) not in allowed:
+            raise InputError('Contributing package module changed since planning')
     owned = {row['file']: row for row in plan['owned_files']}
     if len(owned) != len(plan['owned_files']) or set(owned) != set(spec['output']['permitted_edits']):
         raise InputError('Overlapping or out-of-scope ownership')
@@ -187,6 +200,11 @@ def plan_implementation(root, inventory, candidate_id, spec, output):
     for entry in inventory['files'] + inventory.get('configuration_evidence', []):
         p = safe_child(root, entry['file'])
         discovery[entry['file']] = {'sha256': entry['sha256'], 'mode': stat.S_IMODE(p.stat().st_mode)}
+    for rel, expected in derived.get('contributing_sources', {}).items():
+        p = safe_child(root, rel)
+        if rel in discovery and discovery[rel]['sha256'] != expected:
+            raise InputError('Contributing source differs from reviewed discovery')
+        discovery[rel] = {'sha256': expected, 'mode': stat.S_IMODE(p.stat().st_mode)}
     if any(stat.S_IMODE(safe_child(root,c['file']).stat().st_mode) & 0o7000 for c in patch['changes'] if safe_child(root,c['file']).exists()):
         raise InputError('Privileged source file modes are unsupported; no target was changed')
     out.mkdir(parents=True, exist_ok=True)
