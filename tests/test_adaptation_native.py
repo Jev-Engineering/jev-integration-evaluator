@@ -146,7 +146,7 @@ def test_native_edited_host_reachability_parity_and_anchored_lifecycle(tmp_path,
     oracle_sha = _hash(runner.canonical(oracle))
     grant = lambda spec: runner.ExecutionGrant(runner.request_digest(spec), 'synthetic-adaptation-test')
     original = runner.run_schedule(root, baseline, grant(baseline))
-    assert original.receipt['exited_zero'] == 1
+    assert original.receipt['exited_zero'] == 1, (original.receipt['cases'], original.private_outputs)
     assert life.apply_adaptation(root,bundle,plan['contract_digest'],baseline_spec=baseline,
         baseline_receipt=original.receipt,baseline_outputs=original.private_outputs,oracle=oracle,
         trusted_oracle_sha256=oracle_sha,
