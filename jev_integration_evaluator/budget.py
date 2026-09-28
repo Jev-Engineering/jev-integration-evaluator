@@ -145,6 +145,12 @@ class BudgetCoordinator:
         with self._lock:
             return not self._suspended and not self._tasks.get(key, {}).get("closed", False)
 
+    def task_closed(self, task_id: str) -> bool:
+        """Host fallback may ignore provider suspension, never task completion."""
+        key = self._task_key(task_id)
+        with self._lock:
+            return self._tasks.get(key, {}).get('closed', False)
+
     def snapshot(self) -> dict:
         with self._lock:
             return {"kind": "shared_budget_snapshot", "scope": "process_local_lifetime",

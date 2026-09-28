@@ -438,7 +438,9 @@ def _host_lifecycle(names, binding, adapter_alias, candidate_id, runtime_files):
 {marker}_started = False
 
 def {names['startup']}(*, budget_limits, audit_log, dependency_plan, client=None,
-                       egress_grant=None, startup_mode='off', enable_experiment=False):
+                       egress_grant=None, startup_mode='off', enable_experiment=False,
+                       connected_config=None, authority=None, verify_authority=None,
+                       current_environment_digest=None, ledger_path=None):
     """Construct this reviewed module's process-local runtime exactly once."""
     from jev_integration_evaluator.integrations.runtime_lifecycle import HostRuntimeLifecycle
     from jev_integration_evaluator.integrations.runtime_lifecycle import LifecycleError
@@ -447,6 +449,8 @@ def {names['startup']}(*, budget_limits, audit_log, dependency_plan, client=None
     if {marker}_started:
         raise RuntimeError('host_runtime_already_started')
     if type(enable_experiment) is not bool or (enable_experiment and startup_mode != 'shadow'):
+        raise ValueError('synthetic_shadow_authority_required')
+    if startup_mode == 'shadow' and connected_config is None and not enable_experiment:
         raise ValueError('synthetic_shadow_authority_required')
     reviewed = {{str(Path(__file__).resolve().parent / rel): sha for rel, sha in {expected!r}.items()}}
     if (type(dependency_plan) is not dict or set(dependency_plan) != {{'files'}}
@@ -459,9 +463,13 @@ def {names['startup']}(*, budget_limits, audit_log, dependency_plan, client=None
         raise LifecycleError('reviewed_dependency_plan_mismatch')
     runtime = HostRuntimeLifecycle({{{candidate_id!r}: {adapter_alias}}},
         budget_limits=budget_limits, audit_log=audit_log, dependency_plan=dependency_plan,
-        client=client, egress_grant=egress_grant, startup_mode=startup_mode)
+        client=client, egress_grant=egress_grant, startup_mode=startup_mode,
+        connected_config=connected_config, authority=authority,
+        verify_authority=verify_authority,
+        current_environment_digest=current_environment_digest,
+        ledger_path=ledger_path)
     {binding} = runtime.runtime_binding({candidate_id!r})
-    {adapter_alias}.ENABLED = enable_experiment
+    {adapter_alias}.ENABLED = enable_experiment or connected_config is not None
     {marker} = runtime
     {marker}_started = True
     return runtime

@@ -29,3 +29,14 @@ When benchmark evidence is absent, recommend constructing/fixing that evidence b
 ## Multi-placement and canary extensions
 
 Ask only when the workflow reaches the relevant gate: which placements share a task budget; whether tasks span processes; the stable combined-treatment canary scope; which source-reviewed gates belong to the deployed treatment; who retains threshold/study digests; and which cohorts/operational limits require complete monitoring. Reuse recorded constraints and source evidence. Missing costs or outcome data are blockers, not zero estimates. Scenario alternatives must be explicitly declared assumptions, not guessed probabilities. Do not demand monitoring setup for analysis-only intake. See `references/operational-evidence-v1.2.md`.
+
+For connected host runtime qualification, record the pinned endpoint/model,
+environment and reviewed source/configuration digests, budget scope, host-owned
+ledger location, and the independent authority that verifies egress,
+deployment, study and exact-runtime receipt digests. Do not ask for or store a
+plaintext key; the runtime accepts `env:TYPESAFE_API_KEY` only as a reference.
+Ask for raw observed holdouts and full scheduled paired outcomes only when
+canary or active treatment is proposed. Preserve missing outcomes in the
+denominator. A connectivity marker, installer receipt, config flag, or
+fabricated test fixture cannot establish deployment eligibility. See
+`references/host-runtime-lifecycle.md` for the mode table and restart contract.

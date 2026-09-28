@@ -121,6 +121,17 @@ python -m jev_integration_evaluator replay --input approved-decisions.jsonl --al
 
 No price is silently assumed, and a model answer is never treated as permission to act — your host policy stays in charge.
 
+Reviewed Python hosts can use the opt-in `HostRuntimeLifecycle` for connected
+shadow, canary, or active operation. The host supplies an exact expiring egress
+grant, a credential *reference*, a trusted digest-authentication callback, and
+a durable single-process budget/effect ledger. Canary and active also require
+raw observed holdouts, a frozen paired study, and exact runtime and deployment
+receipts; the component recomputes those gates before startup. See the
+[mode and authority table](references/host-runtime-lifecycle.md). Call
+`HostRuntimeLifecycle.qualification_inputs()` for the redacted inputs needed
+by an independent live qualification. Offline fixture tests do not establish
+real provider connectivity, operational safety, or measured benefit.
+
 ## ⚠️ Honest limits
 
 - **No live-model benefit has been measured** for this build. All validation to date uses synthetic fixtures and mocked HTTP.
