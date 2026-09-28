@@ -9,8 +9,8 @@ absence proof.
 | --- | --- | --- |
 | Linux, including WSL2 Linux filesystems | Supported through POSIX descriptor-relative reads with `O_NOFOLLOW`. | Existing Linux CI and recorded Linux/WSL runs. This change does not restart or reconfigure WSL. |
 | macOS with the required POSIX descriptor operations | Existing backend retained. | No macOS runner was added by issue #42; current macOS versions are not newly qualified here. |
-| Windows 11, CPython 3.14.3, local NTFS drive | Local discovery and source-bound preparation fixtures pass; this account cannot create real symbolic links. | The local suite covers handle identity, ACL denial, junctions, long paths and explicit link classification. CI must still qualify real symbolic-link behavior. |
-| Windows Server 2022 hosted runner, NTFS, CPython 3.10 and 3.13 | Qualification target for the same discovery and source-bound preparation commands. | The `windows-discovery` job provisions long-path and symbolic-link fixtures and fails on skips; support is claimed after both interpreter jobs pass. |
+| Windows 11 Pro build 26200, CPython 3.14.3, local NTFS drive | Locally qualified for the dedicated discovery fixtures and source-bound preparation. | All 19 dedicated tests pass. This account cannot create real symbolic links, so hosted CI covers actual file and directory links. |
+| Windows Server 2022 hosted runner build 20348, NTFS, CPython 3.10.11 and 3.13.15 | Qualified for native repository discovery on local drive-letter roots. | The `windows-discovery` jobs pass all 19 tests on both interpreters with zero skips, including real symbolic links and junctions, ACL denial, long paths, UNC outcomes, and interruption. Broader workflows remain unqualified on Windows. |
 | Windows 10, ReFS, FAT/exFAT, network shares, mapped drives, and device paths | Not qualified. UNC and mapped network roots are rejected; non-NTFS and device paths return explicit blocked outcomes. | No discovery report is emitted for an unsupported root. |
 
 ## Native Windows paths
@@ -33,7 +33,9 @@ with `unsupported_device_path`.
 
 No administrator rights or target-repository hooks are needed for a scan. The
 caller needs the ordinary Windows list/read rights required for the source files
-being considered. A denied source file or directory is recorded as an
+being considered. CI enables Developer Mode to create symbolic-link test
+fixtures; this is a test-runner setup and is not required by the scanner. A
+denied source file or directory is recorded as an
 `access_denied` limitation and the report has `discovery_outcome:
 incomplete_analysis` and `coverage.complete_within_policy: false`. The CLI's
 `status: written` means that this explicitly incomplete report was saved; it
