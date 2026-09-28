@@ -120,3 +120,17 @@ def test_imported_registry_is_source_bound_and_runs(tmp_path):
                                      baseline_sha256=baseline['receipt_sha256'])
     assert modified['status'] == 'verified'
     assert rollback_implementation(root, bundle, applied['rollback_digest'])['status'] == 'rolled_back'
+
+
+@pytest.mark.parametrize('pattern', list('ABCDEFGHIJKLM'))
+def test_every_recipe_preserves_package_lifecycle(tmp_path, pattern):
+    root, bundle = tmp_path / 'host', tmp_path / 'bundle'
+    inventory, spec = fixture(root, pattern, layout='package', tag='packaged_' + pattern.lower())
+    plan = plan_implementation(root, inventory, spec['candidate_id'], spec, bundle)
+    baseline = verify_implementation(root, bundle, 'baseline', approve_execution=True)
+    assert baseline['status'] == 'baseline_passed'
+    applied = apply_implementation(root, bundle, plan['bundle_digest'], baseline_sha256=baseline['receipt_sha256'])
+    modified = verify_implementation(root, bundle, 'modified', approve_execution=True,
+                                     baseline_sha256=baseline['receipt_sha256'])
+    assert modified['status'] == 'verified'
+    assert rollback_implementation(root, bundle, applied['rollback_digest'])['status'] == 'rolled_back'
