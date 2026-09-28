@@ -4,7 +4,7 @@
 
 **Find where an AI decision point would actually help your codebase — and prove it before you trust it.**
 
-[![Version](https://img.shields.io/badge/version-1.3.0.dev11-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.3.0.dev12-blue)](CHANGELOG.md)
 [![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)](pyproject.toml)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Default](https://img.shields.io/badge/default-offline%20%C2%B7%20read--only-orange)](#-safe-by-default)
@@ -54,6 +54,17 @@ python -m jev_integration_evaluator onboard --inventory ./analysis/jev-opportuni
 
 The scan writes ranked opportunities, an architecture map, integration and experiment plans, a risk analysis, and machine-readable JSON/CSV — into `./analysis`, outside your repo. The results report says "no experiment was run" until you actually run one.
 
+For native Windows source-bound discovery, use a local NTFS drive path and a
+new report path outside the target (PowerShell):
+
+```powershell
+python -m jev_integration_evaluator repository-discovery `
+  'C:\src\my-project' --out 'C:\jev-reports\capabilities.json'
+```
+
+See the [platform matrix](references/platform-support.md) for Windows versions,
+link handling, UNC outcomes and path limits.
+
 Want to see everything working first? Run the bundled offline demo:
 
 ```bash
@@ -84,6 +95,7 @@ Each stage rechecks source identity and requires its own explicit authorization 
 | Follow the full staged workflow | [`SKILL.md`](SKILL.md) |
 | Answer intake questions once, up front | [`ONBOARDING.md`](ONBOARDING.md) |
 | Discover and review candidates in a repo | [`references/repository-discovery-v1.md`](references/repository-discovery-v1.md) |
+| Check qualified platforms and filesystem limits | [`references/platform-support.md`](references/platform-support.md) |
 | Understand the 13 A–M placement patterns | [`references/placement-patterns.md`](references/placement-patterns.md) |
 | Pick a placement to prepare | [`references/experimental-selection.md`](references/experimental-selection.md) · [`references/placement-selection-v1.md`](references/placement-selection-v1.md) |
 | Generate and apply a reviewed code change | [`references/executable-integrations.md`](references/executable-integrations.md) |
@@ -112,7 +124,7 @@ No price is silently assumed, and a model answer is never treated as permission 
 - **No live-model benefit has been measured** for this build. All validation to date uses synthetic fixtures and mocked HTTP.
 - Static analysis can't see every dynamic call, callback, or generated file. A partial scan is not proof a repo has no opportunities.
 - Code changes are supported for **bounded, documented Python shapes** (and one JS/TS shape); everything else is analysis-only and says so.
-- Native Windows repository discovery is unsupported — use Linux, macOS, or WSL for that command.
+- Native Windows discovery is implemented for local NTFS drive paths; hosted qualification for real symlinks and Windows Server 2022 is pending. UNC/network roots and broader runtime/session workflows have separate limits; see the [platform matrix](references/platform-support.md).
 - The test runner is not a sandbox; use an isolated environment for untrusted projects.
 
 Full boundaries, trust assumptions, and validation records: [`references/`](references/) and [`validation/`](validation/).

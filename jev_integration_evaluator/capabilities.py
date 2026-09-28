@@ -2,7 +2,8 @@
 
 This is an additive discovery contract, not a replacement recipe validator or
 semantic reviewer. A nomination grants no execution, mutation, or activation
-scope. Secure descriptor-relative source reads currently require POSIX.
+scope. Secure source reads use POSIX descriptor-relative operations or
+handle-bound local NTFS operations on Windows.
 """
 from __future__ import annotations
 
@@ -15,6 +16,7 @@ import hashlib
 import io
 import json
 import keyword
+import ntpath
 import os
 from pathlib import Path, PurePosixPath
 import re
@@ -59,6 +61,16 @@ class CapabilityError(ValueError):
     def __init__(self, code: str):
         self.code = code
         super().__init__(code)
+
+
+@dataclass(frozen=True)
+class _WindowsDirectory:
+    """Path and file identity held for one native-Windows directory walk."""
+
+    path: str
+    identity: tuple[int, int]
+    root_path: str
+    fd: int
 
 
 def _json(value: Any) -> bytes:
@@ -144,6 +156,9 @@ def _safe_rel(value: str) -> bool:
 
 
 def _matches(path: str, patterns: tuple[str, ...]) -> bool:
+    if os.name == "nt":
+        path = path.casefold()
+        patterns = tuple(p.casefold() for p in patterns)
     return any(fnmatch.fnmatchcase(path, p.rstrip("/")) for p in patterns)
 
 
@@ -170,6 +185,582 @@ def _open_directory(path: Path) -> tuple[Path, int]:
         raise
 
 
+def _windows_api():
+    """Load only the Win32 calls needed to bind reads to native file handles."""
+    import ctypes
+    from ctypes import wintypes
+
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel32.CreateFileW.argtypes = (wintypes.LPCWSTR, wintypes.DWORD,
+                                     wintypes.DWORD, ctypes.c_void_p,
+                                     wintypes.DWORD, wintypes.DWORD,
+                                     wintypes.HANDLE)
+    kernel32.CreateFileW.restype = wintypes.HANDLE
+    kernel32.GetFinalPathNameByHandleW.argtypes = (wintypes.HANDLE, wintypes.LPWSTR,
+                                                    wintypes.DWORD, wintypes.DWORD)
+    kernel32.GetFinalPathNameByHandleW.restype = wintypes.DWORD
+    kernel32.GetDriveTypeW.argtypes = (wintypes.LPCWSTR,)
+    kernel32.GetDriveTypeW.restype = wintypes.UINT
+    kernel32.GetVolumeInformationW.argtypes = (
+        wintypes.LPCWSTR, wintypes.LPWSTR, wintypes.DWORD,
+        ctypes.POINTER(wintypes.DWORD), ctypes.POINTER(wintypes.DWORD),
+        ctypes.POINTER(wintypes.DWORD), wintypes.LPWSTR, wintypes.DWORD)
+    kernel32.GetVolumeInformationW.restype = wintypes.BOOL
+    kernel32.GetFileInformationByHandleEx.argtypes = (wintypes.HANDLE, wintypes.INT,
+                                                       ctypes.c_void_p, wintypes.DWORD)
+    kernel32.GetFileInformationByHandleEx.restype = wintypes.BOOL
+    return ctypes, wintypes, kernel32
+
+
+def _windows_absolute_path(path: str | Path) -> tuple[str, str]:
+    """Return a local absolute display path and its extended-length I/O path."""
+    if os.name != "nt":
+        raise CapabilityError("unsupported_secure_filesystem")
+    raw = os.fspath(path)
+    if isinstance(raw, bytes):
+        raw = os.fsdecode(raw)
+    folded = raw.casefold()
+    if folded.startswith("\\\\.\\") or folded.startswith("\\\\?\\globalroot"):
+        raise CapabilityError("unsupported_device_path")
+    if folded.startswith("\\\\?\\unc\\"):
+        raise CapabilityError("unsupported_unc_path")
+    if raw.startswith("\\\\?\\"):
+        if re.match(r"^\\\\\?\\[A-Za-z]:[\\/]", raw):
+            raw = raw[4:]
+        elif re.match(r"^\\\\\?\\[A-Za-z]:($|[^\\/])", raw):
+            raise CapabilityError("ambiguous_drive_relative_path")
+        else:
+            raise CapabilityError("unsupported_device_path")
+    elif raw.startswith("\\\\"):
+        raise CapabilityError("unsupported_unc_path")
+    elif ntpath.splitdrive(raw)[0]:
+        if not ntpath.isabs(raw):
+            raise CapabilityError("ambiguous_drive_relative_path")
+    else:
+        raw = os.path.abspath(raw)
+    display = ntpath.normpath(raw)
+    if not re.match(r"^[A-Za-z]:\\", display):
+        if display.startswith("\\\\"):
+            raise CapabilityError("unsupported_unc_path")
+        raise CapabilityError("invalid_windows_path")
+    drive_root = display[:2] + "\\"
+    ctypes, _, kernel32 = _windows_api()
+    drive_type = kernel32.GetDriveTypeW(drive_root)
+    if drive_type == 4:  # DRIVE_REMOTE, including mapped network drives.
+        raise CapabilityError("unsupported_unc_path")
+    if drive_type not in (2, 3, 6):  # removable, fixed, or RAM disk.
+        raise CapabilityError("unsupported_windows_filesystem")
+    filesystem = ctypes.create_unicode_buffer(64)
+    if not kernel32.GetVolumeInformationW(drive_root, None, 0, None, None, None,
+                                          filesystem, len(filesystem)):
+        raise CapabilityError("unsupported_windows_filesystem")
+    if filesystem.value.upper() != "NTFS":
+        raise CapabilityError("unsupported_windows_filesystem")
+    return display, "\\\\?\\" + display
+
+
+def _path_is_within(path: str | Path, root: str | Path) -> bool:
+    if os.name == "nt":
+        try:
+            candidate, _ = _windows_absolute_path(path)
+            parent, _ = _windows_absolute_path(root)
+            candidate, parent = _windows_fold_path(candidate), _windows_fold_path(parent)
+            return ntpath.commonpath((candidate, parent)) == parent
+        except (CapabilityError, ValueError, OSError):
+            return False
+    candidate, parent = Path(path), Path(root)
+    return candidate == parent or parent in candidate.parents
+
+
+def _windows_open(path: str, *, directory: bool, share_delete: bool = True):
+    """Open the final path component itself, including reparse points."""
+    import ctypes
+    import msvcrt
+
+    ctypes, wintypes, kernel32 = _windows_api()
+    access = 0x00000080 | (0x00000001 if directory else 0x80000000)  # attributes + list/read
+    flags = 0x00200000 | (0x02000000 if directory else 0)  # OPEN_REPARSE_POINT, BACKUP_SEMANTICS
+    share_mode = 0x00000001 | 0x00000002 | (0x00000004 if share_delete else 0)
+    handle = kernel32.CreateFileW(path, access, share_mode, None, 3, flags, None)
+    if handle == wintypes.HANDLE(-1).value:
+        raise ctypes.WinError(ctypes.get_last_error())
+    try:
+        fd = msvcrt.open_osfhandle(handle, os.O_RDONLY | getattr(os, "O_BINARY", 0))
+    except BaseException:
+        kernel32.CloseHandle(handle)
+        raise
+    try:
+        info = os.fstat(fd)
+        final_path = _windows_final_path(msvcrt.get_osfhandle(fd))
+        return fd, info, final_path
+    except BaseException:
+        os.close(fd)
+        raise
+
+
+def _windows_final_path(handle) -> str:
+    import ctypes
+    _, wintypes, kernel32 = _windows_api()
+    size = kernel32.GetFinalPathNameByHandleW(handle, None, 0, 0)
+    if not size:
+        raise ctypes.WinError(ctypes.get_last_error())
+    buffer = ctypes.create_unicode_buffer(size + 1)
+    written = kernel32.GetFinalPathNameByHandleW(handle, buffer, len(buffer), 0)
+    if not written or written >= len(buffer):
+        raise ctypes.WinError(ctypes.get_last_error())
+    return buffer.value
+
+
+def _windows_file_identity(info: os.stat_result) -> tuple[int, int]:
+    identity = (int(info.st_dev), int(info.st_ino))
+    if identity[0] == 0 or identity[1] == 0:
+        raise CapabilityError("ambiguous_filesystem_identity")
+    return identity
+
+
+def _windows_reparse_reason(info: os.stat_result) -> str | None:
+    attributes = getattr(info, "st_file_attributes", 0)
+    if not attributes & 0x400:  # FILE_ATTRIBUTE_REPARSE_POINT
+        return None
+    tag = getattr(info, "st_reparse_tag", 0)
+    if tag == 0xA000000C:  # IO_REPARSE_TAG_SYMLINK
+        return "symlink_excluded"
+    if tag == 0xA0000003:  # IO_REPARSE_TAG_MOUNT_POINT (junction or volume mount)
+        return "junction_excluded"
+    return "reparse_point_excluded"
+
+
+def _windows_under_root(path: str, root: str) -> bool:
+    candidate = _windows_fold_path(path)
+    parent = _windows_fold_path(root)
+    if candidate == parent:
+        return True
+    prefix = parent if parent.endswith("\\") else parent + "\\"
+    return candidate.startswith(prefix)
+
+
+def _windows_fold_path(path: str) -> str:
+    return ntpath.normpath(path.replace("/", "\\")).casefold()
+
+
+def _windows_same_path(left: str, right: str) -> bool:
+    return _windows_fold_path(left) == _windows_fold_path(right)
+
+
+def _windows_open_directory(path: str, root_path: str | None = None,
+                            expected: tuple[int, int] | None = None,
+                            *, share_delete: bool = True):
+    fd, info, final_path = _windows_open(path, directory=True, share_delete=share_delete)
+    try:
+        # fstat on an OPEN_REPARSE_POINT handle reports the reparse attribute,
+        # but some Windows/Python versions omit st_reparse_tag there. lstat
+        # supplies the tag; both identities must name the same entry.
+        path_info = os.lstat(path)
+        reason = _windows_reparse_reason(path_info)
+        if reason:
+            code = ("repository_path_contains_junction" if reason == "junction_excluded" else
+                    "repository_path_contains_symlink" if reason == "symlink_excluded" else
+                    "repository_path_contains_reparse_point")
+            raise CapabilityError(code)
+        identity = _windows_file_identity(info)
+        if _windows_file_identity(path_info) != identity:
+            raise CapabilityError("source_changed_during_discovery")
+        if expected is not None and identity != expected:
+            raise CapabilityError("source_changed_during_discovery")
+        if root_path is not None and not _windows_under_root(final_path, root_path):
+            raise CapabilityError("path_outside_repository")
+        return fd, info, final_path, identity
+    except BaseException:
+        os.close(fd)
+        raise
+
+
+def _windows_check_directory_path(path: str | Path, *, purpose: str = "repository") -> tuple[str, str, str]:
+    """Reject reparse ancestors and path aliases before trusting a Windows path."""
+    display, io_path = _windows_absolute_path(path)
+    drive, tail = ntpath.splitdrive(io_path)
+    current = drive + "\\"
+    final_path = current
+    components = [part for part in tail.split("\\") if part]
+    # Check the volume root as well as each directory. A handle's final name
+    # must match the lexical prefix, so an ancestor junction cannot redirect a
+    # later open while leaving only an ordinary directory at the leaf.
+    for component in [None, *components]:
+        if component is not None:
+            if not _windows_safe_component(component):
+                raise CapabilityError("unsupported_windows_path_component")
+            current = ntpath.join(current, component)
+        try:
+            fd, _, final_path, _ = _windows_open_directory(current)
+        except CapabilityError as exc:
+            if purpose != "repository" and exc.code in {
+                    "repository_path_contains_junction", "repository_path_contains_symlink",
+                    "repository_path_contains_reparse_point"}:
+                raise CapabilityError(f"{purpose}_path_contains_reparse_point") from None
+            raise
+        try:
+            if not _windows_same_path(final_path, current):
+                raise CapabilityError("ambiguous_windows_path")
+        finally:
+            os.close(fd)
+    return display, io_path, final_path
+
+
+def _windows_pin_directory_path(path: str | Path, *, purpose: str) -> tuple[str, str, str, list[int]]:
+    """Keep every directory component open without delete sharing during an output write."""
+    display, io_path = _windows_absolute_path(path)
+    drive, tail = ntpath.splitdrive(io_path)
+    current = drive + "\\"
+    pinned: list[int] = []
+    try:
+        components = [part for part in tail.split("\\") if part]
+        for component in [None, *components]:
+            if component is not None:
+                if not _windows_safe_component(component):
+                    raise CapabilityError("unsupported_windows_path_component")
+                current = ntpath.join(current, component)
+            fd = -1
+            try:
+                fd, _, final_path, _ = _windows_open_directory(current, share_delete=False)
+                if not _windows_same_path(final_path, current):
+                    raise CapabilityError("ambiguous_windows_path")
+                pinned.append(fd)
+                fd = -1
+            except CapabilityError as exc:
+                if purpose != "repository" and exc.code in {
+                        "repository_path_contains_junction", "repository_path_contains_symlink",
+                        "repository_path_contains_reparse_point"}:
+                    raise CapabilityError(f"{purpose}_path_contains_reparse_point") from None
+                raise
+            finally:
+                if fd >= 0:
+                    os.close(fd)
+        return display, io_path, final_path, pinned
+    except BaseException:
+        for fd in reversed(pinned):
+            os.close(fd)
+        raise
+
+
+def _windows_directory_entries(fd: int, limit: int) -> list[tuple[str, int]]:
+    """Enumerate names and file IDs from the already-verified directory handle."""
+    import ctypes
+    import msvcrt
+    from ctypes import wintypes
+
+    class _FileIdBothDirectoryInfo(ctypes.Structure):
+        _fields_ = (("NextEntryOffset", wintypes.DWORD), ("FileIndex", wintypes.DWORD),
+                    ("CreationTime", ctypes.c_longlong), ("LastAccessTime", ctypes.c_longlong),
+                    ("LastWriteTime", ctypes.c_longlong), ("ChangeTime", ctypes.c_longlong),
+                    ("EndOfFile", ctypes.c_longlong), ("AllocationSize", ctypes.c_longlong),
+                    ("FileAttributes", wintypes.DWORD), ("FileNameLength", wintypes.DWORD),
+                    ("EaSize", wintypes.DWORD), ("ShortNameLength", wintypes.BYTE),
+                    ("ShortName", wintypes.WCHAR * 12), ("FileId", ctypes.c_longlong),
+                    ("FileName", wintypes.WCHAR * 1))
+
+    buffer_size = 65_536
+    buffer = ctypes.create_string_buffer(buffer_size)
+    handle = msvcrt.get_osfhandle(fd)
+    entries: list[tuple[str, int]] = []
+    first = True
+    while True:
+        info_class = 11 if first else 10  # restart once, then continue by handle cursor
+        if not _windows_api()[2].GetFileInformationByHandleEx(
+                handle, info_class, buffer, buffer_size):
+            error = ctypes.get_last_error()
+            if error == 18:  # ERROR_NO_MORE_FILES
+                return entries
+            raise ctypes.WinError(error)
+        first = False
+        offset = 0
+        while True:
+            if offset + _FileIdBothDirectoryInfo.FileName.offset > buffer_size:
+                raise CapabilityError("directory_enumeration_invalid")
+            row = _FileIdBothDirectoryInfo.from_buffer(buffer, offset)
+            name_bytes = int(row.FileNameLength)
+            name_offset = offset + _FileIdBothDirectoryInfo.FileName.offset
+            if name_bytes % 2 or name_offset + name_bytes > buffer_size:
+                raise CapabilityError("directory_enumeration_invalid")
+            name = ctypes.wstring_at(ctypes.addressof(buffer) + name_offset, name_bytes // 2)
+            if name not in (".", ".."):
+                entries.append((name, int(row.FileId) & 0xFFFFFFFFFFFFFFFF))
+                if len(entries) > limit:
+                    return entries
+            next_offset = int(row.NextEntryOffset)
+            if not next_offset:
+                break
+            if (next_offset < name_offset - offset + name_bytes
+                    or next_offset % 8 or offset + next_offset > buffer_size):
+                raise CapabilityError("directory_enumeration_invalid")
+            offset += next_offset
+
+
+def _windows_secure_input(path: Path, limit: int) -> bytes:
+    display, io_path = _windows_absolute_path(path)
+    _, _, parent_final = _windows_check_directory_path(
+        ntpath.dirname(display), purpose="input")
+    raw, _ = _read_windows_file(io_path, parent_final, limit,
+                                expected_final_path=io_path)
+    return raw
+
+
+def _windows_create_private_file(path: str) -> int:
+    """Create a new file with a protected owner-only DACL and no link following."""
+    import ctypes
+    import msvcrt
+    from ctypes import wintypes
+
+    ctypes, wintypes, kernel32 = _windows_api()
+    advapi32 = ctypes.WinDLL("advapi32", use_last_error=True)
+    descriptor = ctypes.c_void_p()
+    revision = wintypes.DWORD()
+    advapi32.ConvertStringSecurityDescriptorToSecurityDescriptorW.argtypes = (
+        wintypes.LPCWSTR, wintypes.DWORD, ctypes.POINTER(ctypes.c_void_p),
+        ctypes.POINTER(wintypes.DWORD))
+    advapi32.ConvertStringSecurityDescriptorToSecurityDescriptorW.restype = wintypes.BOOL
+    kernel32.LocalFree.argtypes = (ctypes.c_void_p,)
+    kernel32.LocalFree.restype = ctypes.c_void_p
+    if not advapi32.ConvertStringSecurityDescriptorToSecurityDescriptorW(
+            "D:P(A;;FA;;;OW)", 1, ctypes.byref(descriptor), ctypes.byref(revision)):
+        raise ctypes.WinError(ctypes.get_last_error())
+
+    class _SecurityAttributes(ctypes.Structure):
+        _fields_ = (("nLength", wintypes.DWORD), ("lpSecurityDescriptor", ctypes.c_void_p),
+                    ("bInheritHandle", wintypes.BOOL))
+
+    security = _SecurityAttributes(ctypes.sizeof(_SecurityAttributes), descriptor, False)
+    try:
+        handle = kernel32.CreateFileW(path, 0x40000000 | 0x00000080, 0,
+                                      ctypes.byref(security), 1, 0x00000080 | 0x00200000,
+                                      None)  # GENERIC_WRITE, CREATE_NEW, OPEN_REPARSE_POINT
+    finally:
+        kernel32.LocalFree(descriptor)
+    if handle == wintypes.HANDLE(-1).value:
+        raise ctypes.WinError(ctypes.get_last_error())
+    try:
+        return msvcrt.open_osfhandle(handle, os.O_WRONLY | getattr(os, "O_BINARY", 0))
+    except BaseException:
+        kernel32.CloseHandle(handle)
+        raise
+
+
+def _secure_windows_root(repo: str | Path) -> tuple[Path, _WindowsDirectory, os.stat_result]:
+    try:
+        display, io_path, expected_final = _windows_check_directory_path(repo)
+    except CapabilityError:
+        raise
+    except OSError as exc:
+        raise CapabilityError(_windows_repository_oserror(exc)) from None
+    try:
+        fd, info, final_path, identity = _windows_open_directory(io_path)
+        if not _windows_same_path(final_path, expected_final):
+            os.close(fd)
+            raise CapabilityError("ambiguous_windows_path")
+    except CapabilityError:
+        raise
+    except OSError as exc:
+        raise CapabilityError(_windows_repository_oserror(exc)) from None
+    directory = _WindowsDirectory(io_path, identity, final_path, fd)
+    return Path(display), directory, info
+
+
+def _windows_stat_identity(info: os.stat_result) -> tuple[Any, ...]:
+    # Windows st_ctime varies between path-based and handle-based stat calls
+    # across supported Python versions. File ID, size, write time, mode,
+    # link count and reparse attributes provide the stable comparison here.
+    return (info.st_dev, info.st_ino, info.st_size, info.st_mtime_ns,
+            info.st_mode, info.st_nlink,
+            getattr(info, "st_file_attributes", 0), getattr(info, "st_reparse_tag", 0))
+
+
+def _windows_oserror_reason(exc: OSError, *, directory: bool = False) -> str:
+    if getattr(exc, "winerror", None) == 5 or isinstance(exc, PermissionError):
+        return "access_denied"
+    if getattr(exc, "winerror", None) == 206:
+        return "long_path_unavailable"
+    return "directory_unavailable" if directory else "source_unavailable"
+
+
+def _windows_repository_oserror(exc: OSError) -> str:
+    reason = _windows_oserror_reason(exc, directory=True)
+    return {"access_denied": "repository_access_denied",
+            "directory_unavailable": "repository_unavailable"}.get(reason, reason)
+
+
+def _windows_safe_component(name: str) -> bool:
+    if not name or any(ch in name for ch in ("/", "\\", ":", "\x00")) or name.endswith((".", " ")):
+        return False
+    base = name.split(".", 1)[0].upper()
+    return base not in {"CON", "PRN", "AUX", "NUL", *(f"COM{i}" for i in range(1, 10)),
+                        *(f"LPT{i}" for i in range(1, 10))}
+
+
+def _walk_windows(directory: _WindowsDirectory, policy: DiscoveryPolicy,
+                  notes: list[dict], counts: Counter, prefix: str = "",
+                  depth: int = 0) -> Iterator[tuple[str, bytes, int]]:
+    if depth > policy.max_depth:
+        notes.append({"path": prefix, "reason": "directory_depth_budget"})
+        return
+    try:
+        entries = _windows_directory_entries(
+            directory.fd, max(0, policy.max_entries - counts["entries"]))
+    except CapabilityError as exc:
+        notes.append({"path": prefix, "reason": exc.code})
+        counts["stopped"] = 1
+        return
+    except OSError as exc:
+        notes.append({"path": prefix, "reason": _windows_oserror_reason(exc, directory=True)})
+        return
+    counts["entries"] += len(entries)
+    if counts["entries"] > policy.max_entries:
+        notes.append({"path": prefix, "reason": "entry_budget"})
+        counts["stopped"] = 1
+        return
+    # Enumeration stays bound to the open directory handle. Recheck the handle
+    # path before opening any child so a moved directory cannot redirect reads.
+    try:
+        import msvcrt
+        current = os.fstat(directory.fd)
+        check_final = _windows_final_path(msvcrt.get_osfhandle(directory.fd))
+        if (_windows_file_identity(current) != directory.identity
+                or not _windows_under_root(check_final, directory.root_path)
+                or not _windows_same_path(check_final, directory.path)):
+            raise CapabilityError("source_changed_during_discovery")
+    except CapabilityError as exc:
+        notes.append({"path": prefix, "reason": exc.code})
+        counts["stopped"] = 1
+        return
+    except OSError as exc:
+        notes.append({"path": prefix, "reason": _windows_oserror_reason(exc, directory=True)})
+        counts["stopped"] = 1
+        return
+    folded = {}
+    for name, _ in entries:
+        key = name.casefold()
+        if key in folded and folded[key] != name:
+            notes.append({"path": prefix, "reason": "case_ambiguous_directory_entries"})
+            counts["stopped"] = 1
+            return
+        folded[key] = name
+    for name, entry_id in sorted(entries, key=lambda item: (item[0].casefold(), item[0])):
+        if counts["stopped"]:
+            return
+        path = f"{prefix}/{name}" if prefix else name
+        if SENSITIVE.search(name) or _matches(path, policy.exclude):
+            counts["excluded"] += 1
+            continue
+        if not _safe_rel(path) or not _windows_safe_component(name):
+            notes.append({"path": prefix, "reason": "unsupported_path"})
+            continue
+        full_path = ntpath.join(directory.path, name)
+        try:
+            info = os.lstat(full_path)
+            if (_windows_file_identity(info)[1] != entry_id):
+                raise CapabilityError("source_changed_during_discovery")
+            reason = _windows_reparse_reason(info)
+            if reason:
+                notes.append({"path": path, "reason": reason})
+                continue
+            if stat.S_ISDIR(info.st_mode):
+                if name.casefold() in {item.casefold() for item in IGNORED_DIRS} or name.casefold().endswith(".egg-info"):
+                    counts["excluded"] += 1
+                    continue
+                child_fd, child_info, child_final, child_identity = _windows_open_directory(
+                    full_path, directory.root_path)
+                try:
+                    if not _windows_same_path(child_final, full_path):
+                        raise CapabilityError("source_changed_during_discovery")
+                    if child_identity != _windows_file_identity(info):
+                        raise CapabilityError("source_changed_during_discovery")
+                    child = _WindowsDirectory(full_path, child_identity, directory.root_path, child_fd)
+                    yield from _walk_windows(child, policy, notes, counts, path, depth + 1)
+                finally:
+                    os.close(child_fd)
+                continue
+            if not stat.S_ISREG(info.st_mode):
+                notes.append({"path": path, "reason": "non_regular_file"})
+                continue
+            extension = PurePosixPath(path).suffix.lower()
+            lower_name = name.casefold() if os.name == "nt" else name
+            if (extension not in SOURCE_LANGUAGES and lower_name not in
+                    ({item.casefold() for item in CONFIG_NAMES} if os.name == "nt" else CONFIG_NAMES)
+                    and not path.casefold().startswith(".github/workflows/")):
+                continue
+            if counts["files"] >= policy.max_files:
+                notes.append({"path": path, "reason": "file_count_budget"})
+                counts["stopped"] = 1
+                return
+            remaining = policy.max_total_bytes - counts["bytes"]
+            if remaining <= 0:
+                notes.append({"path": path, "reason": "total_byte_budget"})
+                counts["stopped"] = 1
+                return
+            raw, mode = _read_windows_file(
+                full_path, directory.root_path, min(policy.max_file_bytes, remaining),
+                expected=info, expected_final_path=full_path)
+            counts["files"] += 1
+            counts["bytes"] += len(raw)
+            yield path, raw, mode
+        except CapabilityError as exc:
+            notes.append({"path": path, "reason": exc.code})
+        except OSError as exc:
+            notes.append({"path": path, "reason": _windows_oserror_reason(exc)})
+
+
+def _read_windows_file(path: str, root_path: str | None, limit: int,
+                       *, expected: os.stat_result | None = None,
+                       expected_final_path: str | None = None) -> tuple[bytes, int]:
+    fd = -1
+    try:
+        fd, before, final_path = _windows_open(path, directory=False)
+        if _windows_reparse_reason(before):
+            raise CapabilityError("reparse_point_excluded")
+        if root_path is not None and not _windows_under_root(final_path, root_path):
+            raise CapabilityError("path_outside_repository")
+        if expected_final_path is not None and not _windows_same_path(final_path, expected_final_path):
+            raise CapabilityError("ambiguous_windows_path")
+        if expected is not None and _windows_stat_identity(expected) != _windows_stat_identity(before):
+            raise CapabilityError("source_changed_during_read")
+        _windows_file_identity(before)
+        if not stat.S_ISREG(before.st_mode):
+            raise CapabilityError("non_regular_file")
+        if before.st_nlink != 1:
+            raise CapabilityError("hardlink_excluded")
+        if before.st_size > limit:
+            raise CapabilityError("file_byte_budget")
+        chunks = []
+        remaining = limit + 1
+        while remaining:
+            part = os.read(fd, min(remaining, 65_536))
+            if not part:
+                break
+            chunks.append(part)
+            remaining -= len(part)
+        raw = b"".join(chunks)
+        after = os.fstat(fd)
+        if _windows_stat_identity(before) != _windows_stat_identity(after):
+            raise CapabilityError("source_changed_during_read")
+        check_fd, current, current_path = _windows_open(path, directory=False)
+        try:
+            if (_windows_stat_identity(after) != _windows_stat_identity(current)
+                    or not _windows_same_path(current_path, final_path)):
+                raise CapabilityError("source_changed_during_read")
+            if root_path is not None and not _windows_under_root(current_path, root_path):
+                raise CapabilityError("path_outside_repository")
+            if expected_final_path is not None and not _windows_same_path(current_path, expected_final_path):
+                raise CapabilityError("ambiguous_windows_path")
+        finally:
+            os.close(check_fd)
+        if len(raw) > limit:
+            raise CapabilityError("file_byte_budget")
+        return raw, stat.S_IMODE(before.st_mode)
+    except OSError as exc:
+        raise CapabilityError(_windows_oserror_reason(exc)) from None
+    finally:
+        if fd >= 0:
+            os.close(fd)
+
+
 def _secure_root(repo: str | Path) -> tuple[Path, int, os.stat_result]:
     try:
         root = Path(repo).absolute()
@@ -184,6 +775,39 @@ def _secure_root(repo: str | Path) -> tuple[Path, int, os.stat_result]:
         return root, fd, ident
     except OSError as exc:
         raise CapabilityError("repository_unavailable") from None
+
+
+def _secure_discovery_root(repo: str | Path) -> tuple[Path, int | _WindowsDirectory, os.stat_result]:
+    if os.name == "nt":
+        return _secure_windows_root(repo)
+    return _secure_root(repo)
+
+
+def _repository_identity(root: Path, info: os.stat_result) -> str:
+    if os.name == "nt":
+        return _digest(["windows-file-id-v1", *_windows_file_identity(info)])
+    return _digest([str(root), info.st_dev, info.st_ino])
+
+
+def _close_directory(directory: int | _WindowsDirectory) -> None:
+    os.close(directory.fd if isinstance(directory, _WindowsDirectory) else directory)
+
+
+def _verify_root(root: Path, directory: int | _WindowsDirectory,
+                 info: os.stat_result) -> None:
+    if isinstance(directory, _WindowsDirectory):
+        fd, current, final_path, identity = _windows_open_directory(
+            directory.path, directory.root_path, directory.identity)
+        try:
+            if (identity != _windows_file_identity(info)
+                    or ntpath.normcase(final_path) != ntpath.normcase(directory.root_path)):
+                raise CapabilityError("repository_identity_changed")
+        finally:
+            os.close(fd)
+        return
+    current = root.stat()
+    if (current.st_dev, current.st_ino) != (info.st_dev, info.st_ino):
+        raise CapabilityError("repository_identity_changed")
 
 
 def _read_at(parent: int, name: str, limit: int) -> tuple[bytes, int]:
@@ -225,6 +849,9 @@ def _read_at(parent: int, name: str, limit: int) -> tuple[bytes, int]:
 
 def _walk(fd: int, policy: DiscoveryPolicy, notes: list[dict],
           counts: Counter, prefix: str = "", depth: int = 0) -> Iterator[tuple[str, bytes, int]]:
+    if isinstance(fd, _WindowsDirectory):
+        yield from _walk_windows(fd, policy, notes, counts, prefix, depth)
+        return
     if depth > policy.max_depth:
         notes.append({"path": prefix, "reason": "directory_depth_budget"})
         return
@@ -523,7 +1150,7 @@ def discover_repository(repo: str | Path, policy: DiscoveryPolicy | None = None)
     policy = policy or DiscoveryPolicy()
     if not isinstance(policy, DiscoveryPolicy):
         raise CapabilityError("invalid_discovery_policy")
-    root, fd, root_stat = _secure_root(repo)
+    root, fd, root_stat = _secure_discovery_root(repo)
     notes: list[dict] = []
     counts: Counter = Counter()
     records, seams, registries = [], [], []
@@ -545,41 +1172,52 @@ def discover_repository(repo: str | Path, policy: DiscoveryPolicy | None = None)
             records.append({"file": path, "sha256": _hash(raw), "mode": mode,
                             "language": language, "parser": parser,
                             "line_count": len(raw.splitlines()),
-                            "configuration_sighting": PurePosixPath(path).name in CONFIG_NAMES or path.startswith(".github/workflows/"),
-                            "test_sighting": any(p.startswith("test") or p in ("tests", "__tests__") for p in PurePosixPath(path).parts)})
-        current = root.stat()
-        if (current.st_dev, current.st_ino) != (root_stat.st_dev, root_stat.st_ino):
-            raise CapabilityError("repository_identity_changed")
+                            "configuration_sighting": (
+                                PurePosixPath(path).name.casefold() in {v.casefold() for v in CONFIG_NAMES}
+                                if os.name == "nt" else PurePosixPath(path).name in CONFIG_NAMES
+                            ) or (path.casefold().startswith(".github/workflows/")
+                                  if os.name == "nt" else path.startswith(".github/workflows/")),
+                            "test_sighting": any(
+                                ((p.casefold().startswith("test") or p.casefold() in ("tests", "__tests__"))
+                                 if os.name == "nt" else
+                                 (p.startswith("test") or p in ("tests", "__tests__")))
+                                for p in PurePosixPath(path).parts)})
+        _verify_root(root, fd, root_stat)
     finally:
-        os.close(fd)
-    # A second descriptor-relative pass checks the full bounded byte set and
-    # enumeration, not just the selected function. No target command is invoked.
-    _, check_fd, check_stat = _secure_root(root)
+        _close_directory(fd)
+    # A second bound pass checks the full bounded byte set and traversal, not
+    # just the selected function. No target command is invoked.
+    _, check_fd, check_stat = _secure_discovery_root(root)
     verify_notes: list[dict] = []
     verify_counts: Counter = Counter()
     try:
         verify = [(p, _hash(b), m) for p, b, m in _walk(check_fd, policy, verify_notes, verify_counts)]
     finally:
-        os.close(check_fd)
-    if ((check_stat.st_dev, check_stat.st_ino) != (root_stat.st_dev, root_stat.st_ino)
+        _close_directory(check_fd)
+    if (_repository_identity(root, check_stat) != _repository_identity(root, root_stat)
             or verify != [(r["file"], r["sha256"], r["mode"]) for r in records]
             or any(n["reason"] == "source_changed_during_read" for n in notes + verify_notes)):
         raise CapabilityError("source_changed_during_discovery")
     notes.extend(n for n in verify_notes if n not in notes)
     paths = {r["file"] for r in records}
+    package_paths = {p.casefold() for p in paths} if os.name == "nt" else paths
     layouts = set()
     for path in paths:
-        if not path.endswith(".py"):
+        if not (path.casefold().endswith(".py") if os.name == "nt" else path.endswith(".py")):
             continue
         parts = path.split("/")
         if len(parts) == 1:
             layouts.add("flat_module")
-        elif parts[0] == "src":
+        elif (parts[0].casefold() == "src" if os.name == "nt" else parts[0] == "src"):
             layouts.add("src_layout_sighting")
-        elif "/".join(parts[:-1]) + "/__init__.py" in paths:
-            layouts.add("regular_package_sighting")
         else:
-            layouts.add("namespace_or_directory_unresolved")
+            init_path = "/".join(parts[:-1]) + "/__init__.py"
+            if os.name == "nt":
+                init_path = init_path.casefold()
+            if init_path in package_paths:
+                layouts.add("regular_package_sighting")
+            else:
+                layouts.add("namespace_or_directory_unresolved")
     if notes:
         outcome = "incomplete_analysis"
     elif not seams:
@@ -598,7 +1236,7 @@ def discover_repository(repo: str | Path, policy: DiscoveryPolicy | None = None)
                         for name in ("admitted-nomination", "candidate-nomination", "repository-capabilities")},
         }),
         "parser_identity": f"{sys.implementation.name}-{sys.version_info.major}.{sys.version_info.minor}-ast",
-        "repository_identity": _digest([str(root), root_stat.st_dev, root_stat.st_ino]),
+        "repository_identity": _repository_identity(root, root_stat),
         "policy": json.loads(_json(asdict(policy))),
         "snapshot_scope": "bounded_source_and_configuration_not_full_repository",
         "snapshot_sha256": _digest(records), "files": records,
@@ -674,9 +1312,12 @@ def _load(path: Path, *, max_bytes: int = MAX_INPUT_BYTES) -> Any:
     directory_fd = -1
     try:
         try:
-            _, directory_fd = _open_directory(path.parent)
-            # Reuse source identity checks and nonblocking, no-follow reads.
-            raw, _ = _read_at(directory_fd, path.name, max_bytes)
+            if os.name == "nt":
+                raw = _windows_secure_input(path, max_bytes)
+            else:
+                _, directory_fd = _open_directory(path.parent)
+                # Reuse source identity checks and nonblocking, no-follow reads.
+                raw, _ = _read_at(directory_fd, path.name, max_bytes)
         except CapabilityError as exc:
             if exc.code == "file_byte_budget":
                 raise CapabilityError("input_byte_budget") from None
@@ -702,6 +1343,44 @@ def _load(path: Path, *, max_bytes: int = MAX_INPUT_BYTES) -> Any:
 
 
 def _write_out(path: Path, repo: Path, value: dict) -> None:
+    if os.name == "nt":
+        _, _, root_path, root_handles = _windows_pin_directory_path(
+            repo, purpose="repository")
+        parent_handles: list[int] = []
+        file_fd = -1
+        try:
+            display, io_path = _windows_absolute_path(path)
+            parent_display = ntpath.dirname(display)
+            _, _, parent_final, parent_handles = _windows_pin_directory_path(
+                parent_display, purpose="output")
+            leaf = ntpath.basename(display)
+            if not _windows_safe_component(leaf):
+                raise CapabilityError("output_unavailable_or_exists")
+            if _windows_under_root(parent_final, root_path):
+                raise CapabilityError("output_must_be_outside_repository")
+            file_fd = _windows_create_private_file(io_path)
+            import msvcrt
+            final_path = _windows_final_path(msvcrt.get_osfhandle(file_fd))
+            if (ntpath.normcase(ntpath.dirname(final_path)) != ntpath.normcase(parent_final)
+                    or _windows_under_root(final_path, root_path)):
+                raise CapabilityError("output_must_be_outside_repository")
+            with os.fdopen(file_fd, "wb") as handle:
+                file_fd = -1
+                handle.write(_json(value) + b"\n")
+                handle.flush()
+                os.fsync(handle.fileno())
+        except CapabilityError:
+            raise
+        except OSError:
+            raise CapabilityError("output_unavailable_or_exists") from None
+        finally:
+            if file_fd >= 0:
+                os.close(file_fd)
+            for fd in reversed(parent_handles):
+                os.close(fd)
+            for fd in reversed(root_handles):
+                os.close(fd)
+        return
     root = repo.resolve()
     parent = Path(os.path.abspath(path.parent))
     if parent == root or root in parent.parents:
@@ -741,9 +1420,13 @@ def main(argv: list[str] | None = None) -> int:
     try:
         policy = DiscoveryPolicy()
         if args.policy:
-            external = args.policy.resolve(strict=True)
-            root = args.repo.resolve(strict=True)
-            if external == root or root in external.parents:
+            if os.name == "nt":
+                external, _ = _windows_absolute_path(args.policy)
+                root, _ = _windows_absolute_path(args.repo)
+            else:
+                external = args.policy.resolve(strict=True)
+                root = args.repo.resolve(strict=True)
+            if _path_is_within(external, root):
                 raise CapabilityError("policy_must_be_external")
             policy = DiscoveryPolicy.from_json(_load(args.policy))
         if args.operation == "discover":

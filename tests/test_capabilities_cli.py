@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 @pytest.fixture
 def host(tmp_path):
     if os.name != 'posix':
-        pytest.skip('Descriptor-relative discovery is currently qualified only on POSIX')
+        pytest.skip('This legacy fixture asserts POSIX descriptor and 0600 mode behavior')
     root = tmp_path / 'private-target'
     root.mkdir()
     (root / 'opaque.py').write_text(
@@ -122,7 +122,6 @@ def test_central_policy_remains_external_and_applies_to_nomination(host, tmp_pat
 @pytest.mark.parametrize('name,kind', [
     ('report', 'repository-capabilities'), ('nomination', 'candidate-nomination'), ('admitted', 'admitted-nomination'),
 ])
-@pytest.mark.skipif(os.name != 'posix', reason='These CLI contracts use the POSIX secure capability input reader')
 def test_validate_capability_contracts_has_explicit_structural_scope(name, kind, tmp_path, capsys):
     value = json.loads((ROOT / 'examples/capabilities' / (name + '.example.json')).read_text())
     path = tmp_path / 'artifact.json'
@@ -140,7 +139,6 @@ def test_validate_capability_contracts_has_explicit_structural_scope(name, kind,
 
 
 @pytest.mark.parametrize('text', ['{"PRIVATE_SENTINEL":0,"PRIVATE_SENTINEL":1}', '{"x":NaN}', '[' * 2000])
-@pytest.mark.skipif(os.name != 'posix', reason='These CLI contracts use the POSIX secure capability input reader')
 def test_validate_capability_input_errors_do_not_echo_private_data(text, tmp_path, capsys):
     path = tmp_path / 'private-input.json'
     path.write_text(text, encoding='utf-8')
@@ -150,7 +148,6 @@ def test_validate_capability_input_errors_do_not_echo_private_data(text, tmp_pat
     assert str(path) not in captured.out + captured.err
 
 
-@pytest.mark.skipif(os.name != 'posix', reason='These CLI contracts use the POSIX secure capability input reader')
 def test_validate_report_rejects_changed_content_digest(tmp_path, capsys):
     value = json.loads((ROOT / 'examples/capabilities/report.example.json').read_text())
     value['report_sha256'] = '0' * 64
@@ -173,23 +170,21 @@ def test_validate_accepts_report_larger_than_nomination_input_limit(host, tmp_pa
     assert json.loads(capsys.readouterr().out)['source_revalidated'] is False
 
 
-@pytest.mark.skipif(os.name == 'posix', reason='Checks actual native platform rejection; POSIX reads are exercised separately')
 @pytest.mark.parametrize('name,kind', [
     ('report', 'repository-capabilities'), ('nomination', 'candidate-nomination'), ('admitted', 'admitted-nomination'),
 ])
-def test_validate_capability_contract_reports_native_platform_restriction(name, kind, tmp_path, capsys):
+def test_validate_capability_contract_examples_are_read_without_platform_restriction(name, kind, tmp_path, capsys):
     path = tmp_path / 'artifact.json'
     path.write_bytes((ROOT / 'examples/capabilities' / (name + '.example.json')).read_bytes())
-    assert cli.main(['validate', '--kind', kind, '--input', str(path)]) == 2
-    captured = capsys.readouterr()
-    assert json.loads(captured.err)['message'] == 'unsupported_secure_filesystem'
-    assert str(path) not in captured.out + captured.err
+    assert cli.main(['validate', '--kind', kind, '--input', str(path)]) == 0
+    assert json.loads(capsys.readouterr().out) == {
+        'status': 'valid', 'kind': kind, 'records': 1, 'source_revalidated': False}
 
 
 def test_central_discovery_reports_unsupported_secure_filesystem(tmp_path, capsys, monkeypatch):
     def unavailable(*args, **kwargs):
         raise capabilities.CapabilityError('unsupported_secure_filesystem')
-    monkeypatch.setattr(capabilities, '_secure_root', unavailable)
+    monkeypatch.setattr(capabilities, '_secure_discovery_root', unavailable)
     assert cli.main(['discover-capabilities', '--repo', str(tmp_path),
                      '--out', str(tmp_path.parent / 'not-written.json')]) == 2
     captured = capsys.readouterr()

@@ -55,7 +55,7 @@ def validate(check_manifest=False):
               'tests/test_executable_host_boundaries.py','tests/test_executable_source_scope.py','tests/test_executable_verification_identity.py',
               'jev_integration_evaluator/integrations/runtime_lifecycle.py',
               'tests/test_host_runtime_lifecycle.py', 'references/host-runtime-lifecycle.md',
-              'validation/REPOSITORY-SESSION-VALIDATION-1.3.0.dev11.md',
+              'validation/WINDOWS-DISCOVERY-VALIDATION-1.3.0.dev12.md',
               'jev_integration_evaluator/integrations/observations.py','schemas/implementation-observation.schema.json',
               'tests/test_executable_failure_receipts.py','tests/test_executable_source_fidelity.py','tests/test_executable_command_receipts.py',
               'examples/implementation/observation.example.json',
@@ -68,9 +68,10 @@ def validate(check_manifest=False):
     required += ['jev_integration_evaluator/nomination_inventory.py',
                  'jev_integration_evaluator/repository_discovery.py',
                  'scripts/prepare_repository_inventory.py', 'scripts/run_capability_demo.py',
-                 'references/repository-discovery-v1.md',
+                 'references/repository-discovery-v1.md', 'references/platform-support.md',
                  'tests/test_nomination_inventory.py', 'tests/test_repository_discovery_cli.py',
-                 'tests/test_repository_discovery_wheel.py', 'tests/test_capabilities_bridge_guards.py',
+                 'tests/test_repository_discovery_wheel.py', 'tests/test_repository_discovery_windows.py',
+                 'tests/test_capabilities_bridge_guards.py',
                  'tests/test_review_gate_invariants.py', 'references/review-gate-invariants.md']
     required += ['jev_integration_evaluator/selection.py',
                  'scripts/select_placement.py', 'scripts/run_selection_demo.py',
@@ -155,12 +156,13 @@ def validate(check_manifest=False):
                               'repository-session-v1', 'repository-offline-agent-review-v1')]
     for item in required:
         if not (ROOT/item).is_file():raise InputError('Required package file missing: '+item)
-    front=(ROOT/'SKILL.md').read_text().split('---',2)
+    front=(ROOT/'SKILL.md').read_text(encoding='utf-8').split('---',2)
     if len(front)!=3:raise InputError('SKILL.md needs YAML frontmatter')
     metadata=yaml.safe_load(front[1])
     if metadata.get('name')!='jev-integration-evaluator' or not metadata.get('description'):raise InputError('Invalid skill metadata')
     from jev_integration_evaluator import __version__
-    project_version=re.search(r'^version\s*=\s*"([^"]+)"', (ROOT/'pyproject.toml').read_text(),re.M)
+    project_version=re.search(r'^version\s*=\s*"([^"]+)"',
+                              (ROOT/'pyproject.toml').read_text(encoding='utf-8'), re.M)
     if (metadata.get('metadata',{}).get('version')!=__version__
             or read_json(ROOT/'skill-package.json')['version']!=__version__
             or not project_version or project_version.group(1)!=__version__):
@@ -289,7 +291,7 @@ def validate(check_manifest=False):
         manifest=ROOT/'SHA256SUMS'
         if not manifest.exists():raise InputError('Release checksum manifest is absent')
         listed=set()
-        for line in manifest.read_text().splitlines():
+        for line in manifest.read_text(encoding='utf-8').splitlines():
             expected,relative=line.split('  ',1)
             if not re.fullmatch('[a-f0-9]{64}',expected) or relative in listed:
                 raise InputError('Malformed or duplicated release checksum entry')

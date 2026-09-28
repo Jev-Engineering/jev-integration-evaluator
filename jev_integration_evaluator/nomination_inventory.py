@@ -97,11 +97,11 @@ def discover_repository_capabilities(repo: str | Path, cfg: dict, *,
 
 def _facts(repo: str | Path, report: dict, policy: cap.DiscoveryPolicy) -> tuple[list[dict], list[dict], list[dict]]:
     """Read exact hashes through the no-follow backend; reuse actual AST parsing."""
-    root, fd, root_stat = cap._secure_root(repo)
+    root, fd, root_stat = cap._secure_discovery_root(repo)
     functions, files, configs = [], [], []
     calls = 0
     try:
-        if cap._digest([str(root), root_stat.st_dev, root_stat.st_ino]) != report['repository_identity']:
+        if cap._repository_identity(root, root_stat) != report['repository_identity']:
             raise cap.CapabilityError('repository_replaced')
         records = {r['file']: r for r in report['files']}
         observed = []
@@ -133,7 +133,8 @@ def _facts(repo: str | Path, report: dict, policy: cap.DiscoveryPolicy) -> tuple
                     f.update({'file': path, 'language': 'python', 'file_sha256': record['sha256'],
                               'source_sha256': hashlib.sha256(snippet.encode('utf-8')).hexdigest(),
                               'node_id': path + '::' + f['symbol'], 'imports': imports,
-                              'is_test': any(p.startswith('test') or p in ('tests', '__tests__')
+                              'is_test': any((p.casefold().startswith('test') if os.name == 'nt' else p.startswith('test'))
+                                             or (p.casefold() in ('tests', '__tests__') if os.name == 'nt' else p in ('tests', '__tests__'))
                                              for p in Path(path).parts) or '.test.' in path or '.spec.' in path})
                     f['patterns'], f['roles'], f['discovery_note'] = _patterns(f)
                     calls += len(f['calls'])
@@ -148,13 +149,13 @@ def _facts(repo: str | Path, report: dict, policy: cap.DiscoveryPolicy) -> tuple
                           'symbols': len(parsed), 'imports': imports})
         if observed != list(records) or any(n['reason'] == 'source_changed_during_read' for n in notes):
             raise cap.CapabilityError('source_changed_during_inventory_preparation')
-        _, check_fd, current = cap._secure_root(root)
-        os.close(check_fd)
-        if (current.st_dev, current.st_ino) != (root_stat.st_dev, root_stat.st_ino):
+        _, check_fd, current = cap._secure_discovery_root(root)
+        cap._close_directory(check_fd)
+        if cap._repository_identity(root, current) != cap._repository_identity(root, root_stat):
             raise cap.CapabilityError('repository_replaced')
         return functions, files, configs
     finally:
-        os.close(fd)
+        cap._close_directory(fd)
 
 
 def prepare_nominated_inventory(repo: str | Path, report: dict, nominations: list[dict],

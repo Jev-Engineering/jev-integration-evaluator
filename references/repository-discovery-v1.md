@@ -9,16 +9,34 @@ They do not implement issue #4's durable repository implementation session.
 ## Commands and data contracts
 
 Run the trusted evaluator installation, using paths as data. Every output must
-be a new file in an existing, caller-owned directory outside the target. Output
-files are created exclusively with mode 0600; stdout contains only a status and
-digest. Failures return a redacted reason with exit status 2. A success status
-does not establish host wiring, provider connectivity or activation authority.
+be a new file in an existing, caller-owned directory outside the target. POSIX
+outputs are created exclusively with mode 0600; native Windows outputs receive a
+protected owner-only DACL. Stdout contains only a status and digest. Failures
+return a redacted reason with exit status 2; an interrupted scan returns
+`discovery_interrupted` with exit status 130. A written incomplete report keeps
+`discovery_outcome: incomplete_analysis` and
+`coverage.complete_within_policy: false`; `status: written` describes artifact
+creation, not complete discovery. No status establishes host wiring, provider
+connectivity or activation authority.
 
 ```bash
 jev-integration-evaluator repository-discovery REPO --out CAPABILITIES.json
 jev-integration-evaluator repository-discovery REPO --stage prepare --capabilities CAPABILITIES.json --nominations NOMINATIONS.json --out PREPARED.json
 jev-integration-evaluator repository-discovery REPO --stage review --capabilities CAPABILITIES.json --prepared PREPARED.json --review REVIEW.json --out REVIEWED.json
 ```
+
+On native Windows, run the same command with a local NTFS drive-letter path. For
+example, from PowerShell:
+
+```powershell
+python -m jev_integration_evaluator repository-discovery `
+  'C:\src\my-project' --out 'C:\jev-reports\capabilities.json'
+```
+
+The output directory must already exist and be outside the target. The report
+file must be new; it is created with an owner-only DACL. Windows rejects
+reparse points in the output directory path. External JSON inputs also reject
+reparse-point ancestors, linked files and hard links.
 
 `python -I scripts/prepare_repository_inventory.py` exposes the same stages.
 `NOMINATIONS.json` is an array of existing `candidate-nomination` records with
@@ -86,10 +104,30 @@ anchors and genuine review remain necessary; issues #4 and #6 cover session scop
 
 ## Coverage and limitations
 
-The qualified filesystem backend is Linux/POSIX descriptor-relative access with
-no-follow traversal, regular-file checks, hardlink rejection, bounded reads and
-identity rechecks. The new path explicitly fails on native Windows. Qualification
-does not establish a macOS execution result or an OS sandbox.
+The POSIX backend uses descriptor-relative no-follow traversal, regular-file
+checks, hardlink rejection, bounded reads and identity rechecks. The native
+Windows backend is qualified for local NTFS drive paths: directory entries are
+enumerated from open handles, files are opened without following the final
+reparse point, file IDs are checked against the enumerated identity, and final
+handle paths are checked against the reviewed root. The scan rechecks the
+bounded source set in a second pass. Windows path casing is treated
+case-insensitively for exclusions; report paths preserve entry case and use `/`.
+Case-fold collisions return incomplete coverage. See
+[`platform-support.md`](platform-support.md) for qualified Windows versions,
+privileges, UNC rejection and residual filesystem limits. This qualification
+does not establish an OS sandbox or expand repository-session/runtime support.
+
+Windows symlinks, junctions, volume mounts and other reparse points are never
+followed. Tree entries receive explicit exclusion reasons and make coverage
+incomplete; a reparse point in the root or an ancestor blocks discovery. Root,
+external-input and output-directory components are checked by their final
+handle paths so an ancestor junction cannot redirect an operation. UNC and
+mapped network paths return `unsupported_unc_path`. Access-denied files and
+directories are recorded as `access_denied`; they are not silently omitted from
+a complete report. Long drive paths use the extended `\\?\` prefix. NTFS is the
+only qualified native Windows filesystem; non-NTFS and device paths return
+specific blocked outcomes. macOS behavior remains on the existing POSIX backend
+and is not newly qualified by the Windows work.
 
 Python AST discovery identifies flat/package/src layouts and qualified symbols.
 Structural eligibility is not semantic suitability or executable support.

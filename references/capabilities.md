@@ -27,11 +27,17 @@ identity. Target AGENTS.md/configuration and nomination text cannot change it.
 The caller's explicit policy is not an execution or mutation approval.
 
 Outputs must have an existing directory outside the target. They are created
-exclusively with mode 0600, never overwrite an existing file or symlink, and are
-fsynced with their parent directory. The CLI emits only a digest/status or a
-stable redacted error class. These private metadata reports may contain source
-paths, qualified names and untrusted nomination rationale. They must not be
-published as private-target evidence without separate disclosure review.
+exclusively, never overwrite an existing file or link, and are private to the
+caller: POSIX uses mode 0600 and native Windows uses a protected owner-only
+DACL. The POSIX writer also fsyncs the parent directory. The CLI emits only a
+digest/status or a stable redacted error class. These private metadata reports
+may contain source paths, qualified names and untrusted nomination rationale.
+They must not be published as private-target evidence without separate
+disclosure review.
+
+Native Windows checks every repository-root, external JSON-input and output
+directory component by its final handle path. Reparse-point ancestors cannot
+redirect these operations; linked JSON inputs and hard links are rejected.
 
 Exit code 0 means the requested artifact was written, not that the target is
 eligible or verified. Inspect `discovery_outcome` or `status`. Exit code 2 means
@@ -40,19 +46,23 @@ activation flag or shell-command adapter.
 
 ## Read and identity contract
 
-Discovery, admission and the three new CLI contract-validation input paths
-currently require POSIX descriptor-relative filesystem operations and O_NOFOLLOW.
-Package schema/example validation remains portable. Every absolute directory component is opened without
-following symlinks. Source traversal is bounded by entry, file, byte, depth,
-symbol and AST-node limits. Known nonregular files are rejected before opening;
-raced replacements are rejected using descriptor type/identity checks. Hard
-links and symlinks are excluded. Source bytes/modes and the bounded enumeration
-are checked twice. Source text is not imported, compiled to bytecode, executed,
-returned in the report, or sent to a provider. Parsing builds an AST only.
+Discovery and admission use descriptor-relative, no-follow reads on supported
+POSIX systems and handle-bound traversal on qualified native Windows NTFS
+volumes. Windows drive-letter roots use NTFS file IDs and explicit reparse-point
+checks; UNC/mapped paths and non-NTFS volumes are rejected. The three CLI
+contract-validation input paths use the same secure artifact readers. Every
+absolute directory component is checked without following links. Source
+traversal is bounded by entry, file, byte, depth, symbol and AST-node limits.
+Known nonregular files are rejected before opening; replacements are rejected
+using type and identity checks. Hard links and links/reparse points are
+excluded. Source bytes/modes and bounded enumeration are checked twice. Source
+text is not imported, compiled to bytecode, executed, returned in the report or
+sent to a provider. Parsing builds an AST only.
 
-The report binds the resolved lexical root's device/inode/path identity, current
-bounded source/configuration hashes and modes, caller policy, parser major/minor
-identity, and hashes of the module plus all three schema files. It is deliberately
+The report binds the POSIX root's device/inode/path identity or the Windows
+NTFS volume/file identity, current bounded source/configuration hashes and
+modes, caller policy, parser major/minor identity, and hashes of the module plus
+all three schema files. It is deliberately
 not a complete repository snapshot: Git internals, ignored/generated directories,
 unsupported file extensions and caller exclusions are not hashed. A Git clean
 status, atomic filesystem snapshot, installed dependencies or execution isolation
@@ -132,13 +142,12 @@ Its secure artifact reader has the same POSIX requirement and rejects special,
 linked or oversized input files. Use `nominate-candidate` for fresh
 source/policy/report checks.
 
-See `validation/REVIEW-GATE-VALIDATION-1.3.0.dev6.md` for current qualification,
-including its actual platforms and interpreters. The original checkpoint's
-fragment-only Python 3.13.5 run is historical and does not establish full-package
-qualification. Native Windows discovery, new-language rewriting, independently
-authored host qualification, provider connectivity and application benefit
-remain unestablished. The nominal structural preflight does not authorize any
-rewrite. The dev5 bridge constructs a real source-matched inventory and applies
-semantic review with eligibility gates intact. Issue #5 remains open for a
-complete source-reviewed no-useful-placement outcome; dev4 qualification remains
-historical in `validation/DISCOVERY-VALIDATION-1.3.0.dev4.md`.
+See [`platform-support.md`](platform-support.md) for the native Windows discovery
+qualification and filesystem limits. The broader repository-session/runtime
+contracts retain their own platform restrictions. New-language rewriting,
+independently authored host qualification, provider connectivity and application
+benefit remain unestablished. The nominal structural preflight does not authorize
+any rewrite. The dev5 bridge constructs a real source-matched inventory and
+applies semantic review with eligibility gates intact. Issue #5 remains open for
+a complete source-reviewed no-useful-placement outcome; dev4 qualification
+remains historical in `validation/DISCOVERY-VALIDATION-1.3.0.dev4.md`.

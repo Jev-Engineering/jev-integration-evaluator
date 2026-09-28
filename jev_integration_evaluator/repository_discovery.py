@@ -9,6 +9,7 @@ import argparse
 import copy
 from dataclasses import asdict
 import json
+import os
 from pathlib import Path
 
 from . import capabilities as cap
@@ -42,12 +43,16 @@ def add_arguments(parser):
 
 def _external_data(path, repo, *, max_bytes=cap.MAX_INPUT_BYTES):
     # Check resolved location but read the original path with the canonical
-    # descriptor-relative no-follow loader, so links cannot bypass the check.
+    # no-follow loader, so links cannot bypass the check.
     try:
-        root, external = Path(repo).resolve(strict=True), Path(path).resolve(strict=True)
+        if os.name == 'nt':
+            root, _ = cap._windows_absolute_path(repo)
+            external, _ = cap._windows_absolute_path(path)
+        else:
+            root, external = Path(repo).resolve(strict=True), Path(path).resolve(strict=True)
     except (OSError, RuntimeError):
         raise cap.CapabilityError('input_unavailable_or_invalid') from None
-    if external == root or root in external.parents:
+    if cap._path_is_within(external, root):
         raise cap.CapabilityError('configuration_must_be_external')
     return cap._load(Path(path), max_bytes=max_bytes)
 
@@ -104,6 +109,9 @@ def main(argv: list[str] | None = None) -> int:
         reason = exc.code if isinstance(exc, cap.CapabilityError) else 'invalid_repository_discovery_input'
         print(json.dumps({'status': 'blocked', 'reason': reason}))
         return 2
+    except KeyboardInterrupt:
+        print(json.dumps({'status': 'blocked', 'reason': 'discovery_interrupted'}))
+        return 130
 
 
 if __name__ == '__main__':
