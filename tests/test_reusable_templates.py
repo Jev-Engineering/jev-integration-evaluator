@@ -1,4 +1,4 @@
-"""Source-faithful offline contract checks for issue 59; no installed host."""
+"""Source-faithful contracts and precise partial installed status for issue 59."""
 import importlib.util
 import json
 from pathlib import Path
@@ -22,7 +22,7 @@ def fixture_module(relative, name):
     return module
 
 
-def test_six_rows_are_source_bound_and_do_not_claim_installation():
+def test_six_rows_are_source_bound_and_limit_installed_claims_to_h():
     matrix = use_case_matrix()
     assert [row["id"] for row in matrix["rows"]] == ["C", "L", "D", "E", "M", "H"]
     for row in matrix["rows"]:
@@ -30,7 +30,19 @@ def test_six_rows_are_source_bound_and_do_not_claim_installation():
         assert receipt["source_sha256"] == row["source_sha256"]
         assert not receipt["target_imported"] and not receipt["installed_verified"]
         assert row["mode"] == "off" and row["benefit"] == "unknown"
-        assert {row[k] for k in ("apply", "install", "launch", "provider")} == {"pending"}
+        if row["id"] == "H":
+            assert receipt["consumer_adapter_sha256"] == row["consumer_adapter_sha256"]
+            assert {row[k] for k in ("apply", "install", "launch")} == {
+                "qualified_offline_h_synthetic_host"}
+            assert {row[k] for k in ("materialize", "verify", "status", "disable",
+                                     "upgrade", "rollback")} == {
+                "qualified_offline_h_synthetic_host"}
+            assert row["bind"] == "pending_h_console_binding"
+            assert row["provider"] == "pending"
+        else:
+            assert {row[k] for k in ("apply", "install", "launch", "provider")} == {"pending"}
+            assert {row[k] for k in ("materialize", "bind", "verify", "status",
+                                     "disable", "upgrade", "rollback")} == {"pending"}
         assert row["recipe"] == f'python.{row["id"]}@1.0'
         assert row["contract_id"] == f'use-case.{row["id"]}@1.0.0'
 
@@ -42,6 +54,18 @@ def test_source_drift_fails_closed(tmp_path):
     source.write_bytes((ROOT / row["source"]).read_bytes() + b"\n# drift\n")
     with pytest.raises(InputError, match="changed"):
         inspect_use_case_source(tmp_path, "L")
+
+
+def test_retention_adapter_drift_fails_closed(tmp_path):
+    row = next(row for row in use_case_matrix()["rows"] if row["id"] == "H")
+    source = tmp_path / row["source"]
+    source.parent.mkdir(parents=True)
+    source.write_bytes((ROOT / row["source"]).read_bytes())
+    adapter = tmp_path / row["consumer_adapter"]
+    adapter.parent.mkdir(parents=True)
+    adapter.write_bytes((ROOT / row["consumer_adapter"]).read_bytes() + b"\n# drift\n")
+    with pytest.raises(InputError, match="adapter changed"):
+        inspect_use_case_source(tmp_path, "H")
 
 
 def test_registered_tool_is_single_host_checked_dispatch():

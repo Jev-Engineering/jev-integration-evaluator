@@ -83,8 +83,11 @@ The [six-use-case source matrix](references/use-case-template-matrix-v1.md)
 pins offline host contracts for registered tools, graph identity, retrieval,
 completion, claim support and safe retention. The five new fixture oracles are
 tested offline. A shared fixture wheel is also installed and invoked through
-its normal off-mode console on Linux CPython 3.13; individual template
-transforms, supervised installed delivery, provider modes and benefit remain pending.
+its normal off-mode console on Linux CPython 3.13. A separate
+[H retention host](references/retention-template-offline-v1.md) now has a
+source-bound offline package/install/supervised normal-console effect, versioned
+upgrade and owned rollback. Its H-specific console bind, the other individual
+templates, provider modes and benefit remain pending.
 
 Want to see everything working first? Run the bundled offline demo:
 

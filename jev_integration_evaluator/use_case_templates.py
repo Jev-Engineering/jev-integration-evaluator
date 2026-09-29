@@ -1,4 +1,4 @@
-"""Read-only, source-bound inventory of illustrative use-case contracts.
+"""Read-only, source-bound inventory with one partial offline H qualification.
 
 These records describe offline host fixtures. They grant no implementation,
 installation, runtime, or provider authority.
@@ -39,6 +39,15 @@ def inspect_use_case_source(source_root: str | Path, case_id: str) -> dict:
     observed = file_hash(source)
     if observed != row["source_sha256"]:
         raise InputError("Use-case source changed; review and refresh contract")
+    adapter_sha256 = None
+    if case_id == "H":
+        adapter = root.joinpath(*row["consumer_adapter"].split("/"))
+        if (adapter.is_symlink() or not adapter.is_file()
+                or not adapter.resolve().is_relative_to(root)):
+            raise InputError("Retention consumer adapter is missing or outside source root")
+        adapter_sha256 = file_hash(adapter)
+        if adapter_sha256 != row["consumer_adapter_sha256"]:
+            raise InputError("Retention consumer adapter changed; review and refresh contract")
     return {"schema_version": "1.0", "id": case_id, "status": "source_matched",
             "source_sha256": observed, "target_imported": False, "target_executed": False,
-            "installed_verified": False}
+            "installed_verified": False, "consumer_adapter_sha256": adapter_sha256}
