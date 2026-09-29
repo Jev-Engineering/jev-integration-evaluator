@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Registered Alpha offline installed versioned upgrade report v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "kind", "classification", "run_id", "rollback_validation_run_id", "versions", "source_sha256", "reviewed_host_file_sha256", "modified_receipt_sha256", "install_receipt_sha256", "installed_origins", "raw_effect_sha256", "raw_actions", "offline_fault_checks", "retained_environments", "final_stage", "final_generation_id", "provider_qualification", "measured_benefit"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "registered-alpha-upgrade-report-v1"},
+    "classification": {"const": "offline_installed_versioned_host"},
+    "run_id": {"type": "string", "format": "uuid"},
+    "rollback_validation_run_id": {"type": "string", "format": "uuid"},
+    "versions": {"const": ["1.0.0", "1.0.1"]},
+    "source_sha256": {"$ref": "#/$defs/pair_sha"},
+    "reviewed_host_file_sha256": {"$ref": "#/$defs/pair_distinct_sha"},
+    "modified_receipt_sha256": {"$ref": "#/$defs/pair_sha"},
+    "install_receipt_sha256": {"$ref": "#/$defs/pair_sha"},
+    "installed_origins": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "object", "additionalProperties": false, "required": ["host", "evaluator"], "properties": {"host": {"type": "string", "pattern": "^/"}, "evaluator": {"type": "string", "pattern": "^/"}}}},
+    "raw_effect_sha256": {"$ref": "#/$defs/sha"},
+    "raw_actions": {"const": ["inspect", "inspect-v2", "inspect"]},
+    "offline_fault_checks": {"const": ["wrong_upgrade_plan_refused", "new_source_drift_refused", "new_install_config_drift_refused", "wrong_rollback_digest_refused"]},
+    "retained_environments": {"type": "array", "minItems": 2, "maxItems": 2, "uniqueItems": true, "items": {"type": "string", "pattern": "^/"}},
+    "final_stage": {"const": "rolled_back"},
+    "final_generation_id": {"type": "string", "pattern": "^jev-env-[0-9a-f]{24}$"},
+    "provider_qualification": {"const": "not_run"},
+    "measured_benefit": {"const": false}
+  },
+  "$defs": {
+    "sha": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "pair_sha": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"$ref": "#/$defs/sha"}},
+    "pair_distinct_sha": {"type": "array", "minItems": 2, "maxItems": 2, "uniqueItems": true, "items": {"$ref": "#/$defs/sha"}}
+  }
+}

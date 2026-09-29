@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "kind": "registered-alpha-upgrade-source-review-v1",
+  "status": "source_reviewed_for_offline_installed_upgrade",
+  "reviewer": "independent_fixture_author",
+  "versions": {
+    "1.0.0": {
+      "files": {
+        "pyproject.toml": "b1da52cfc898bda9f2d6614a8c420d2c5d0520b29fe8f80f7ec93d653cd53e9b",
+        "src/registered_alpha/host.py": "097d23c5ce68b53c59038fb8ac195744d8ab9adafa2bdf1ce1939ed91a67d4e5",
+        "src/registered_alpha/console.py": "bdd3fe57542578af4332037b325617e784a5818bddc1b2bc66b89d62fa8cdc6f",
+        "src/registered_alpha/__init__.py": "ee3d08a82f10edefbf1cc563dbffecf18772db62fbd82d4bee5ad8a9425c371a",
+        "src/registered_alpha/requirements.lock": "21ac598980a951f6b4e0f098bc1756ccfffbbe7e8c12d36a228c8381ca0c013b",
+        "src/registered_alpha/runtime.json": "0c1f169e847504851b588cac189b805f24b317288411ca9699b16cbf41ea0252",
+        "oracle-v1.json": "32dedb0ae94324ae8c0a86ebee7feff74281949b315e1b5b2bf15b3b38865431"
+      },
+      "review": "Existing finite registered-action host and normal console, baseline inspect effect."
+    },
+    "1.0.1": {
+      "files": {
+        "pyproject.toml": "e6c21c61a0652ea348ca1fa72c3e2d2b0df4c29f2d2b31aa101cb2e7b5473a5d",
+        "src/registered_alpha/host.py": "bf05ea7dae8223e612be5672fe2d67d9ed84f2c6c8a6e8757fb719ddced7b602",
+        "src/registered_alpha/console.py": "bdd3fe57542578af4332037b325617e784a5818bddc1b2bc66b89d62fa8cdc6f",
+        "src/registered_alpha/__init__.py": "ee3d08a82f10edefbf1cc563dbffecf18772db62fbd82d4bee5ad8a9425c371a",
+        "src/registered_alpha/requirements.lock": "21ac598980a951f6b4e0f098bc1756ccfffbbe7e8c12d36a228c8381ca0c013b",
+        "src/registered_alpha/runtime.json": "0c1f169e847504851b588cac189b805f24b317288411ca9699b16cbf41ea0252",
+        "oracle-v1.json": "32dedb0ae94324ae8c0a86ebee7feff74281949b315e1b5b2bf15b3b38865431"
+      },
+      "review": "Only package version and inspect event label change. The registered inspect action, host permission, approval, validation, duplicate lock, and normal console remain unchanged."
+    }
+  },
+  "qualification": {
+    "observed_scope": "offline installed normal command and independent synthetic effect file",
+    "provider_contacted": false,
+    "activation_authorized": false,
+    "measured_benefit": false
+  }
+}

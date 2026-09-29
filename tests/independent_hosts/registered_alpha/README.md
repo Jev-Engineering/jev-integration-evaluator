@@ -72,6 +72,35 @@ does not establish recovery from every possible process crash point. The
 driver retains the pending and recovered journal heads plus the reviewed
 incomplete generation digest in the external anchor directory. A separate
 source-stage test interrupts apply after its durable intent and requires owned
-rollback. Upgrade to a new installed Alpha version, other install interruption
-points, connected shadow and provider/authorized modes remain separate
-unqualified rows.
+rollback. Other install interruption points, connected shadow and
+provider/authorized modes remain separate unqualified rows.
+
+`installed_upgrade.py` adds a separate offline, versioned installed journey.
+`review-upgrade-v1.json` pins the original 1.0.0 source and an independently
+authored 1.0.1 variant before either copy is scanned or packaged. The 1.0.1
+change is confined to package metadata and the host-owned `inspect` effect
+label: the registered decision stays `inspect`, while the raw effect says
+`inspect-v2`. Both generations undergo source baseline, apply, modified
+verification, offline package build and private install. The driver checks
+installed host/evaluator origins and retains external receipt anchors.
+
+One off-mode delivery session invokes 1.0.0, stops it, rejects wrong cutover
+authority and drift, stages 1.0.1 in the same run ID, invokes it, disables it,
+and restores the retained 1.0.0 generation with an exact rollback digest.
+The original 1.0.0 observation expected an initially empty effect file, so it
+cannot safely be replayed after two effects. A **new, separately scoped**
+off-mode delivery session then invokes the retained 1.0.0 installed command
+against a fresh two-row baseline. The independent event file must contain
+exactly `inspect`, `inspect-v2`, `inspect` for three distinct task IDs. The
+rollback validation session has its own run ID; the upgrade/rollback journal
+keeps its original run ID. Both installed environments and all receipts remain
+for review. This does not qualify an in-place replay of the first session's
+old observation or a connected provider.
+
+The opt-in `tests/test_registered_alpha_installed_upgrade.py` uses the same
+`JEV_REGISTERED_ALPHA_INSTALLED_PYTHON` and
+`JEV_REGISTERED_ALPHA_WHEELHOUSE` inputs as the fault journey. It validates
+the strict packaged `registered-alpha-upgrade-report-v1` contract and reads
+the raw event file independently of the driver report. The offline result is
+synthetic fixture evidence only; provider reachability, authorized modes and
+measured benefit remain unqualified.
