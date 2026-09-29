@@ -924,6 +924,10 @@ def upgrade_session(directory: str | Path, new_plan: dict, *, scope: dict,
             raise DeliveryError('upgrade_generation_history_limit')
         if scope.get('upgrade_plan_sha256') != new_plan.get('plan_sha256'):
             raise DeliveryError('exact_upgrade_plan_authority_required')
+        # A stopped generation is still the cutover's source of authority.
+        # Refuse to replace its plan after its installed bytes or reviewed
+        # source/configuration have changed.
+        _check_plan(old_plan)
         _check_plan(new_plan)
         if (new_plan['schema_version'] != old_plan['schema_version'] or
                 new_plan['kind'] != old_plan['kind']):

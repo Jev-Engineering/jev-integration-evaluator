@@ -128,6 +128,49 @@ def test_interrupted_composite_apply_blocks_replay_under_same_journey(tmp_path, 
         trusted_journey_head=recorded['journey_head_sha256'])['run_id'] == created['run_id']
 
 
+def test_interrupted_source_verification_keeps_same_journey_and_anchor(tmp_path, monkeypatch):
+    root, inventory, selection, specs = _prepared(tmp_path)
+    bundle = tmp_path / 'bundle'
+    planned = plan_composite(root, inventory, selection, specs, bundle)
+    session = tmp_path / 'journey'
+    created = journey.create_journey(session, source_root=str(root),
+                                     bundle=str(bundle), source_kind='composite')
+    baseline = verify_composite(root, bundle, 'baseline', approve_execution=True)
+    anchored = _record(session, created, 'baseline_anchored',
+                       trusted_receipt_sha256=baseline['receipt_sha256'])
+    apply_composite(root, bundle, planned['bundle_digest'],
+                    baseline_sha256=baseline['receipt_sha256'])
+    from jev_integration_evaluator.integrations import composite
+    original_probe = composite._probe
+
+    def interrupted_probe(*_args, **_kwargs):
+        raise KeyboardInterrupt('injected_verification_interruption')
+
+    monkeypatch.setattr(composite, '_probe', interrupted_probe)
+    with pytest.raises(KeyboardInterrupt, match='injected_verification_interruption'):
+        verify_composite(root, bundle, 'modified', approve_execution=True,
+                         baseline_sha256=baseline['receipt_sha256'])
+    stuck = journey.journey_status(session,
+        trusted_journey_head=anchored['journey_head_sha256'])
+    assert stuck['run_id'] == created['run_id']
+    assert stuck['anchors']['baseline_receipt_sha256'] == baseline['receipt_sha256']
+    assert stuck['anchors']['modified_receipt_sha256'] is None
+    assert stuck['next_action'] == 'reconcile_exact_source_transaction'
+    monkeypatch.setattr(composite, '_probe', original_probe)
+    modified = verify_composite(root, bundle, 'modified', approve_execution=True,
+                                baseline_sha256=baseline['receipt_sha256'])
+    assert modified['status'] == 'verified'
+    recovered = journey.journey_status(session,
+        trusted_journey_head=anchored['journey_head_sha256'])
+    assert recovered['run_id'] == created['run_id']
+    assert recovered['next_action'] == 'verify_and_anchor_modified_source'
+    assert recovered['anchors']['modified_receipt_sha256'] is None
+    anchored_modified = _record(session, anchored, 'source_verified',
+                                trusted_receipt_sha256=modified['receipt_sha256'])
+    assert anchored_modified['run_id'] == created['run_id']
+    assert anchored_modified['next_action'] == 'prepare_exact_package_plan'
+
+
 def test_composite_journey_to_supervised_installed_two_effects(tmp_path, monkeypatch):
     wheelhouse_name = os.environ.get('JEV_TEMPLATE_WHEELHOUSE')
     if not wheelhouse_name:

@@ -166,6 +166,11 @@ effect sink and process outside the session before any new invocation. An
 interrupted implementation apply or package/install stage uses its own
 `implement-status`/`implement-rollback` or `package-recover`/`install-recover`
 contract first; the delivery plan requires those stages to be verified.
+An interrupted composite modified verification keeps the same journey run and
+baseline anchor. `journey-status` reports `reconcile_exact_source_transaction`
+while verification is pending; the #54 verifier can finish that exact applied
+transaction, after which the operator anchors the externally retained
+modified receipt on the same run.
 
 ## Upgrade and rollback
 
@@ -173,6 +178,19 @@ contract first; the delivery plan requires those stages to be verified.
 installed plan, and a scope containing `upgrade_plan_sha256`. It archives the
 new plan and selects it without starting it. Supply a fresh launch scope to
 run the new generation. The old environment and receipt remain for rollback.
+The cutover rechecks the stopped generation's reviewed source, configuration,
+secret reference, installed receipt and executable before selecting the new
+plan. A changed old prerequisite blocks cutover without changing the selected
+generation. An interruption after the immutable new plan archive but before
+the `upgrade_staged` journal row leaves the old generation selected; an exact
+retry can use the archived plan. An interruption after `rollback_pending` for
+a prior owned generation is reconciled by `resume` from the current externally
+retained head, without invoking either console again. These are local
+single-controller boundaries, not a distributed cutover protocol.
+The offline installed regression builds distinct `0.1.0` and `0.2.0` host
+generations, launches and stops each under separate scopes, then restores the
+retained `0.1.0` generation under an exact rollback digest. It checks the
+selected receipt and entrypoint origin, with no automatic launch on rollback.
 An incompatible delivery schema, stale receipt, active old process or reused
 environment blocks upgrade. `rollback` after a stopped generation requires
 the exact returned `previous_generation_rollback_digest` in its scope; it
@@ -180,8 +198,9 @@ selects the retained old verified generation without launching it. On the
 first generation, rollback delegates to the exact owned #54 source rollback
 digest and refuses concurrent edits; it retains the historical installed
 environment. `disable` stops the console under the offline policy and records
-that state. The installed source's configured baseline or block fallback is
-checked by the existing implementation verification, not altered by disable.
+that state. A fresh launch scope cannot relaunch the disabled session. The
+installed source's configured baseline or block fallback is checked by the
+existing implementation verification and is not altered by disable.
 
 The qualified adapter is a local Python console with an owner-selected finite
 observation contract. Generic daemons, Windows, cloud deployment, service
@@ -195,7 +214,15 @@ the one owned #54 composite bundle: `status_composite` authenticates the
 modified receipt and `rollback_composite` restores exactly that bundle under
 its rollback digest. Two reviewed recipe C placements can share one normal
 console startup, one lifecycle/coordinator and task identity. The offline
-installed fixture checks distinct raw effects for both placements plus a
-separate ready marker. Source-level combined verification checks the shared
-budget and cross-placement failure behavior; this is not a connected provider
-or measured-benefit claim.
+installed supervised off-mode fixture checks distinct raw effects for both
+placements plus a separate ready marker. A separately invoked installed
+normal console fixture opts into synthetic shadow observation and records two
+assessment IDs, one task hash, one coordinator token, and a two-call shared
+budget alongside the distinct effect files. The installed console runs with a
+minimal explicit environment, and its Python prefix plus evaluator and host
+module origins are checked against the installed generation. Later calls to
+both placements under the same task produce baseline effects without further
+assessments after the shared call limit. Its injected second-placement
+failure retains only the first effect. This is offline fixture evidence, not a
+connected provider or measured-benefit claim. The delivery supervisor still
+forces `JEV_RUNTIME_MODE=off` for its owned launch.

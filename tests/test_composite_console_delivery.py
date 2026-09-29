@@ -47,11 +47,10 @@ def _prepared(tmp_path, *, fail_second=False, delivery_effects=False):
         body = source.read_text(encoding='utf-8')
         body = body.replace('from threading import RLock\n',
                             'from threading import RLock\nimport os\n')
-        original = "def perform_primary_two(request):\n    STATE['effects'].append('first')"
+        original = "def perform_primary_two(request):\n"
         changed = ('def perform_primary_two(request):\n'
                    '    if os.environ.get("JEV_TEST_FAIL_SECOND") == "1":\n'
-                   '        raise RuntimeError("second_placement_failed")\n'
-                   "    STATE['effects'].append('first')")
+                   '        raise RuntimeError("second_placement_failed")\n')
         assert original in body
         source.write_text(body.replace(original, changed), encoding='utf-8')
     build_tools = {name: importlib.metadata.version(name) for name in ('pip', 'setuptools', 'wheel')}
@@ -69,6 +68,8 @@ def _prepared(tmp_path, *, fail_second=False, delivery_effects=False):
 from .host_two import public_entry_two
 from pathlib import Path
 import hashlib
+import json
+import os
 
 EVENTS = []
 COMPOSITE_OBSERVATION = {}
@@ -119,6 +120,9 @@ def observe_composite_runtime(runtime, request, candidate_ids):
         'calls': snapshot['calls'], 'cost': snapshot['reserved_cost']})
 
 def make_one():
+    if os.environ.get('DELIVERY_AUDIT_PATH'):
+        import atexit
+        atexit.register(_delivery_audit)
     return {'task_id': 'shared-task', 'objective': 'offline fixture', 'command': '/prune'}
 
 def make_two():
@@ -131,6 +135,39 @@ def main_one():
 def main_two():
     request = make_two()
     return public_entry_two(request)
+
+def _delivery_audit():
+    path = os.environ.get('DELIVERY_AUDIT_PATH')
+    if not path:
+        return
+    from . import host_one, host_two
+    import jev_integration_evaluator as evaluator
+    import sys
+    third_result = None
+    if os.environ.get('DELIVERY_THIRD_ATTEMPT') == '1':
+        repeated = {'task_id': 'shared-task', 'objective': 'offline fixture',
+                    'command': '/prune'}
+        third_result = [public_entry_one(repeated), public_entry_two(repeated)]
+    assessments = [row for row in EVENTS if row.get('type') == 'assessment']
+    Path(path).write_text(json.dumps({
+        'assessed': [row['candidate_id'] for row in assessments],
+        'task_hashes': [row['task_id_hash'] for row in assessments],
+        'modes': [row['mode'] for row in assessments],
+        'tokens': COMPOSITE_OBSERVATION.get('tokens', []),
+        'calls': COMPOSITE_OBSERVATION.get('calls'),
+        'third_result': third_result,
+        'audit_types': [row.get('type') for row in EVENTS],
+        'one': host_one.STATE['effects'],
+        'two': host_two.STATE['effects'],
+        'python_prefix': sys.prefix,
+        'python_executable': sys.executable,
+        'module_origins': {
+            'console': str(Path(__file__).resolve()),
+            'host_one': str(Path(host_one.__file__).resolve()),
+            'host_two': str(Path(host_two.__file__).resolve()),
+            'evaluator': str(Path(evaluator.__file__).resolve()),
+        },
+    }), encoding='utf-8')
 ''', encoding='utf-8')
     runtime = {
         'requirements.lock': ('dependency_lock', 'jev-integration-evaluator==1.3.0.dev1\n',
@@ -226,7 +263,7 @@ def main_two():
 
 
 def test_two_reviewed_console_bindings_render_one_shared_runtime(tmp_path):
-    root, inventory, selection, specs = _prepared(tmp_path)
+    root, inventory, selection, specs = _prepared(tmp_path, delivery_effects=True)
     bundle = tmp_path / 'bundle'
     planned = plan_composite(root, inventory, selection, specs, bundle)
     report = read_json(bundle / 'composite-console.json')
@@ -283,7 +320,8 @@ def test_two_real_seams_run_from_one_normal_console_after_reviewed_apply(tmp_pat
 def test_verified_composite_builds_and_installs_one_owned_generation(tmp_path):
     if not os.environ.get('JEV_TEMPLATE_WHEELHOUSE'):
         pytest.skip('Explicitly prepared offline wheelhouse required')
-    root, inventory, selection, specs = _prepared(tmp_path)
+    root, inventory, selection, specs = _prepared(tmp_path, fail_second=True,
+                                                  delivery_effects=True)
     templates = {}
     for identifier, spec in specs.items():
         directory = tmp_path / ('template-' + identifier)
@@ -342,9 +380,69 @@ def test_verified_composite_builds_and_installs_one_owned_generation(tmp_path):
     assert install_receipt['candidate_ids'] == selection['candidate_ids']
     assert installer.composite_installation_status(install_plan)['status'] == 'installed_recorded'
     command = install_receipt['installed']['console_script']
+    installed_venv = Path(install_receipt['environment']) / 'venv'
+    installed_env = {'PATH': '/usr/bin:/bin', 'PYTHONNOUSERSITE': '1',
+                     'JEV_RUNTIME_MODE': 'off', 'JEV_TEST_SHADOW': '1'}
+
+    def assert_installed_origin(observed):
+        assert Path(observed['python_prefix']).resolve() == installed_venv.resolve()
+        assert Path(observed['python_executable']).parent == installed_venv / 'bin'
+        assert set(observed['module_origins']) == {'console', 'host_one', 'host_two',
+                                                   'evaluator'}
+        assert all(Path(origin).is_relative_to(installed_venv.resolve())
+                   for origin in observed['module_origins'].values())
+
+    audit = tmp_path / 'installed-audit.json'
+    one = tmp_path / 'installed-effect-one.bin'
+    two = tmp_path / 'installed-effect-two.bin'
     run = subprocess.run([command], cwd=tmp_path, capture_output=True, text=True,
-                         timeout=25, env={**os.environ, 'JEV_TEST_SHADOW': '0'})
+                         timeout=25, env={**installed_env,
+                                          'DELIVERY_AUDIT_PATH': str(audit),
+                                          'DELIVERY_EFFECT_PATH_ONE': str(one),
+                                          'DELIVERY_EFFECT_PATH_TWO': str(two)})
     assert run.returncode == 0, run.stderr
+    observed = json.loads(audit.read_text(encoding='utf-8'))
+    assert_installed_origin(observed)
+    assert sorted(observed['assessed']) == selection['candidate_ids']
+    assert observed['modes'] == ['shadow', 'shadow']
+    assert len(set(observed['task_hashes'])) == 1
+    assert len(set(observed['tokens'])) == 1
+    assert observed['calls'] == 2
+    assert observed['one'] == observed['two'] == ['first']
+    assert one.read_bytes() == two.read_bytes() == b'first\n'
+    exhausted_one = tmp_path / 'exhausted-effect-one.bin'
+    exhausted_two = tmp_path / 'exhausted-effect-two.bin'
+    exhausted_audit = tmp_path / 'exhausted-audit.json'
+    exhausted = subprocess.run([command], cwd=tmp_path, capture_output=True, text=True,
+                               timeout=25, env={**installed_env,
+                                                'DELIVERY_THIRD_ATTEMPT': '1',
+                                                'DELIVERY_AUDIT_PATH': str(exhausted_audit),
+                                                'DELIVERY_EFFECT_PATH_ONE': str(exhausted_one),
+                                                'DELIVERY_EFFECT_PATH_TWO': str(exhausted_two)})
+    assert exhausted.returncode == 0, exhausted.stderr
+    limited = json.loads(exhausted_audit.read_text(encoding='utf-8'))
+    assert_installed_origin(limited)
+    assert limited['third_result'] == [0, 0]
+    assert sorted(limited['assessed']) == selection['candidate_ids']
+    assert limited['calls'] == 2
+    assert limited['audit_types'] == ['assessment', 'shadow_comparison',
+                                      'assessment', 'shadow_comparison']
+    assert exhausted_one.read_bytes() == exhausted_two.read_bytes() == b'first\nfirst\n'
+    failed_one = tmp_path / 'failed-effect-one.bin'
+    failed_two = tmp_path / 'failed-effect-two.bin'
+    failed_audit = tmp_path / 'failed-audit.json'
+    failed = subprocess.run([command], cwd=tmp_path, capture_output=True, text=True,
+                            timeout=25, env={**installed_env, 'JEV_TEST_FAIL_SECOND': '1',
+                                             'DELIVERY_AUDIT_PATH': str(failed_audit),
+                                             'DELIVERY_EFFECT_PATH_ONE': str(failed_one),
+                                             'DELIVERY_EFFECT_PATH_TWO': str(failed_two)})
+    assert failed.returncode != 0
+    assert failed_one.read_bytes() == b'first\n'
+    assert not failed_two.exists()
+    failure = json.loads(failed_audit.read_text(encoding='utf-8'))
+    assert_installed_origin(failure)
+    assert sorted(failure['assessed']) == selection['candidate_ids']
+    assert len(set(failure['task_hashes'])) == 1
     assert installer.install_composite_package(
         install_plan, approved_plan_sha256=install_plan['plan_sha256']) == install_receipt
     assert installer.recover_composite_installation(
