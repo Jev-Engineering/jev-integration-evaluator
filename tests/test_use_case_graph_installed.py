@@ -101,10 +101,12 @@ def _observation(directory: Path) -> tuple[dict, dict, bytes]:
 
 
 def _observe(session: Path, status: dict) -> dict:
-    for _ in range(300):
+    deadline = time.monotonic() + 10
+    while time.monotonic() < deadline:
         status = delivery.observe_session(session,
             trusted_session_head=status["session_head_sha256"])
-        if status["recorded_observations"]["outcome_verified"]:
+        if (status["recorded_observations"]["ready"]
+                and status["recorded_observations"]["outcome_verified"]):
             return status
         time.sleep(0.01)
     raise AssertionError("graph effect not observed")

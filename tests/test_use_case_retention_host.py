@@ -77,7 +77,7 @@ def _host(target: Path, version: str = "1.0.0"):
         "        with Path(ready).open('x', encoding='utf-8') as stream:\n"
         "            stream.write('ready\\n')\n"
         "    import time\n"
-        "    time.sleep(0.5)\n"
+        "    time.sleep(15)\n"
         "    return 0\n"
         "if __name__ == '__main__':\n"
         "    raise SystemExit(main())\n", encoding="utf-8")
@@ -305,10 +305,12 @@ def test_retention_host_installed_supervised_offline_effect(tmp_path):
     launch_scope = _scope(created, delivery_plan, "launch")
     observed = delivery.launch_session(session, scope=launch_scope,
         approved_scope_sha256=launch_scope["scope_sha256"])
-    for _ in range(200):
+    deadline = time.monotonic() + 10
+    while time.monotonic() < deadline:
         observed = delivery.observe_session(
             session, trusted_session_head=observed["session_head_sha256"])
-        if observed["recorded_observations"]["outcome_verified"]:
+        if (observed["recorded_observations"]["ready"]
+                and observed["recorded_observations"]["outcome_verified"]):
             break
         time.sleep(0.01)
     assert observed["recorded_observations"]["outcome_verified"] is True
@@ -389,10 +391,12 @@ def test_retention_host_installed_supervised_offline_effect(tmp_path):
     new_launch_scope = _scope(upgraded, new_delivery_plan, "launch")
     new_observed = delivery.launch_session(session, scope=new_launch_scope,
         approved_scope_sha256=new_launch_scope["scope_sha256"])
-    for _ in range(200):
+    deadline = time.monotonic() + 10
+    while time.monotonic() < deadline:
         new_observed = delivery.observe_session(
             session, trusted_session_head=new_observed["session_head_sha256"])
-        if new_observed["recorded_observations"]["outcome_verified"]:
+        if (new_observed["recorded_observations"]["ready"]
+                and new_observed["recorded_observations"]["outcome_verified"]):
             break
         time.sleep(0.01)
     assert new_observed["recorded_observations"]["outcome_verified"] is True

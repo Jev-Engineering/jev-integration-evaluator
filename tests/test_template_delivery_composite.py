@@ -287,7 +287,7 @@ def test_composite_journey_to_supervised_installed_two_effects(tmp_path, monkeyp
     environment = {'DELIVERY_READY_PATH_ONE': str(ready),
                    'DELIVERY_EFFECT_PATH_ONE': str(one),
                    'DELIVERY_EFFECT_PATH_TWO': str(two),
-                   'DELIVERY_EFFECT_HOLD_SECONDS': '0.7'}
+                   'DELIVERY_EFFECT_HOLD_SECONDS': '30'}
     original_append = delivery._append
     def interrupted_created_row(path, rows, event, state):
         if event == 'created':
@@ -331,10 +331,15 @@ def test_composite_journey_to_supervised_installed_two_effects(tmp_path, monkeyp
     launched = delivery.launch_session(runtime, scope=launch_scope,
         approved_scope_sha256=launch_scope['scope_sha256'])
     observed = launched
-    for _ in range(200):
+    deadline = time.monotonic() + 45
+    while time.monotonic() < deadline:
         observed = delivery.observe_session(runtime,
             trusted_session_head=observed['session_head_sha256'])
-        if observed['recorded_observations']['outcome_verified']:
+        if (observed['recorded_observations']['ready']
+                and observed['recorded_observations']['outcome_verified']
+                and observed['current_process_alive']
+                and observed['current_ready']
+                and observed['current_integration_reachable']):
             break
         time.sleep(0.01)
     assert observed['current_process_alive'] is True
