@@ -13,7 +13,7 @@ from pathlib import Path
 import uuid
 
 from .contracts import validate_contract
-from .io import canonical, digest, file_hash, read_json
+from .io import InputError, canonical, digest, file_hash, read_json
 from .template_delivery import (DeliveryError, _locked, _now, _owned_file,
                                 _private, _safe_directory, create_session,
                                 plan_delivery, session_status)
@@ -155,6 +155,10 @@ def create_journey(directory: str | Path, *, source_root: str,
     """Create a stable run before apply; no target or package effect occurs."""
     if source_kind not in ('single', 'composite'):
         raise DeliveryError('journey_source_kind_unsupported')
+    for name in (source_root, bundle):
+        path = Path(name)
+        if not path.is_absolute() or any(part.is_symlink() for part in (path, *path.parents)):
+            raise DeliveryError('journey_source_and_bundle_must_be_absolute_without_symlinks')
     target = _safe_directory(directory, exists=False)
     if not target.parent.is_dir():
         raise DeliveryError('journey_parent_missing')
@@ -170,8 +174,9 @@ def create_journey(directory: str | Path, *, source_root: str,
     if observed['status'] not in ('planned', 'applied_unverified'):
         raise DeliveryError('journey_requires_reviewed_source_transaction')
     state['bundle_digest'] = observed['bundle_digest']
-    if target == Path(source_root) or target.is_relative_to(Path(source_root)):
-        raise DeliveryError('journey_overlaps_source')
+    if any(target == root or target.is_relative_to(root) or root.is_relative_to(target)
+           for root in (Path(source_root), Path(bundle))):
+        raise DeliveryError('journey_overlaps_source_or_bundle')
     target.mkdir(mode=0o700)
     _private(target)
     (target / 'plans').mkdir(mode=0o700)
@@ -183,15 +188,24 @@ def create_journey(directory: str | Path, *, source_root: str,
 
 
 def _current(directory: Path, state: dict) -> dict:
-    source = _source_status(state)
+    try:
+        source = _source_status(state)
+    except (InputError, OSError, ValueError):
+        source = {'status': 'drift_or_unavailable', 'receipt_trust': 'unavailable',
+                  'bundle_digest': state['bundle_digest']}
     if source['bundle_digest'] != state['bundle_digest']:
         raise DeliveryError('journey_source_bundle_changed')
     result = {'source_status': source['status'], 'source_receipt_trust': source['receipt_trust']}
     if state['package_plan_sha256'] is not None:
         package_plan = _load_plan(directory, state['package_plan_sha256'])
-        if _package_plan(state, package_plan) != package_plan:
-            raise DeliveryError('journey_package_plan_drift')
-        result['package_status'] = _package_status(state, package_plan)['status']
+        if source['status'] == 'verified':
+            try:
+                if _package_plan(state, package_plan) != package_plan:
+                    raise DeliveryError('journey_package_plan_drift')
+            except (InputError, OSError, ValueError):
+                result['package_status'] = 'plan_or_source_drift'
+        if 'package_status' not in result:
+            result['package_status'] = _package_status(state, package_plan)['status']
     else:
         result['package_status'] = 'unplanned'
     if state['install_plan_sha256'] is not None:
@@ -213,6 +227,8 @@ def _current(directory: Path, state: dict) -> dict:
 def _next(state: dict, current: dict) -> str:
     if current['source_status'] == 'blocked_recovery':
         return 'reconcile_exact_source_transaction'
+    if current['source_status'] == 'drift_or_unavailable':
+        return 'review_source_transaction'
     if state['baseline_receipt_sha256'] is None:
         return 'verify_and_anchor_source_baseline'
     if current['source_status'] == 'planned':
@@ -364,14 +380,16 @@ def promote_journey(directory: str | Path, *, trusted_journey_head: str,
         if (state['install_receipt_sha256'] is None
                 or current['install_status'] != 'installed_recorded'):
             raise DeliveryError('journey_verified_installation_required')
-        install_plan = _load_plan(target, state['install_plan_sha256'])
-        delivery_plan = plan_delivery(install_plan,
-            trusted_install_receipt_sha256=state['install_receipt_sha256'],
-            observation=observation, launch_environment=launch_environment)
         if state['delivery_plan_sha256'] is not None:
-            if state['delivery_plan_sha256'] != delivery_plan['plan_sha256']:
+            delivery_plan = _load_plan(target, state['delivery_plan_sha256'])
+            if (observation != delivery_plan['observation']
+                    or (launch_environment or {}) != delivery_plan['launch_environment']):
                 raise DeliveryError('journey_pending_promotion_plan_changed')
         else:
+            install_plan = _load_plan(target, state['install_plan_sha256'])
+            delivery_plan = plan_delivery(install_plan,
+                trusted_install_receipt_sha256=state['install_receipt_sha256'],
+                observation=observation, launch_environment=launch_environment)
             _archive(target, delivery_plan, delivery_plan['plan_sha256'])
             state['delivery_plan_sha256'] = delivery_plan['plan_sha256']
             state['stage'] = 'promotion_pending'

@@ -24,6 +24,13 @@ Retain each plan/receipt digest outside its directory. Never infer launch,
 connected mode, or measured benefit from an install receipt. See
 `references/template-installation-v1.md`.
 
+For one source-to-runtime run, create a private `template journey-create`
+record after the reviewed implementation plan and before apply. Pin each
+externally retained source/package/install receipt and exact plan with
+`template journey-record`; inspect `template journey-status` for interrupted
+effects and use the existing owner-specific recovery commands. Promote only a
+verified installation with `template journey-promote`.
+
 For an installed console invocation, also collect an independently authored
 ready/effect observation schedule and exact operation scope. `template
 delivery-plan` and `template deploy --plan` prepare the session without

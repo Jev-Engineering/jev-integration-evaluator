@@ -10,10 +10,51 @@ runtime mode remains `off`.
 
 ## Inputs and CLI journey
 
-Complete the reviewed `template bind`, implementation baseline/apply/modified
-verification, and `template package`/`package-build`/`install-plan`/`install`
-sequence first. Retain the modified and install receipt SHA-256 digests outside
-their bundle and environment. The delivery planner rechecks current source,
+Begin a stable run with `template journey-create` after the source-bound
+implementation or composite plan exists and before apply. Run the reviewed
+`template bind`, baseline/apply/modified verification, and `template package`/
+`package-build`/`install-plan`/`install` commands through their own exact
+authorization contracts. After each stage, `template journey-record` pins its
+plan or externally retained receipt to the same `run_id` and journal head.
+`template journey-status` only reconciles the current owned bytes and returns
+an exact next action; it never repeats an uncertain apply, build or install.
+For a pending apply use the existing `implement-status`/`implement-rollback`
+or composite equivalents. For an interrupted package or environment, use the
+exact #55 `package-recover` or `install-recover` approval and generation digest.
+`template journey-promote` creates the runtime session under
+`<journey>/runtime` with the same run ID once installation is verified. It
+does not launch the host. The journey state is
+[`template-delivery-journey-v1`](../schemas/template-delivery-journey-v1.schema.json)
+and has a separate owner-private hash-chain journal. This is a bridge between
+existing effect owners, not a second executor.
+
+```bash
+jev-integration-evaluator template journey-create \
+  --session /private/journey --source-root /private/host \
+  --bundle /private/implementation-bundle --source-kind single
+# After the separately authorized source baseline verification:
+jev-integration-evaluator template journey-record \
+  --session /private/journey --trusted-journey-head LAST_RETAINED_HEAD \
+  --stage baseline_anchored --trusted-receipt-sha256 EXTERNAL_BASELINE_RECEIPT_SHA256
+# Repeat journey-record for source_verified, package_planned, package_built,
+# install_planned, and installed after their underlying effect owners finish.
+jev-integration-evaluator template journey-status \
+  --session /private/journey --trusted-journey-head LAST_RETAINED_HEAD
+jev-integration-evaluator template journey-promote \
+  --session /private/journey --trusted-journey-head LAST_RETAINED_HEAD \
+  --observation /private/observation.json
+```
+
+`package_planned` and `install_planned` require `--plan` with the exact plan
+JSON. `package_built` requires `--receipt` and
+`--trusted-receipt-sha256`; `source_verified` and `installed` require the
+trusted receipt digest. Record each new `journey_head_sha256` externally before
+the next call. Old receipts remain in the journey history after a later
+generation is stopped or the owned source is rolled back. A source or package
+drift result blocks dependent stage advancement.
+
+Retain the modified and install receipt SHA-256 digests outside their bundle
+and environment. The delivery planner rechecks current source,
 configuration, secret references, package files and installed receipt through
 the installer; a changed or unavailable prerequisite fails closed. A local
 receipt digest is not its own trust anchor.

@@ -33,12 +33,14 @@ pytestmark = pytest.mark.skipif(
     reason='Composite installed console profile requires Linux x86-64 CPython 3.13')
 
 
-def _prepared(tmp_path, *, fail_second=False):
+def _prepared(tmp_path, *, fail_second=False, delivery_effects=False):
     root = tmp_path / 'host'
     _, first = fixture(root, 'C', tag='one', layout='package',
-                       package_name='coupled_pkg', console_exit=True)
+                       package_name='coupled_pkg', console_exit=True,
+                       effect_sink=delivery_effects)
     _, second = fixture(root, 'C', tag='two', layout='package',
-                        package_name='coupled_pkg', console_exit=True)
+                        package_name='coupled_pkg', console_exit=True,
+                        effect_sink=delivery_effects)
     package = root / 'coupled_pkg'
     if fail_second:
         source = package / 'host_two.py'

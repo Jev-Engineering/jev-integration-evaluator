@@ -44,13 +44,15 @@ def fixture(root: Path, pattern='C', *, tag=None, crlf=False, layout='flat', nat
         source.insert(3, 'import os')
         source.insert(4, 'import time')
     def sink(label):
-        return ("_jev_ready = os.environ.get('DELIVERY_READY_PATH')\n"
+        return (f"_jev_ready = os.environ.get('DELIVERY_READY_PATH_{tag.upper()}') "
+                "or os.environ.get('DELIVERY_READY_PATH')\n"
                 "if _jev_ready:\n"
                 "    with open(_jev_ready, 'wb') as _jev_stream:\n"
                 "        _jev_stream.write(b'ready\\n')\n"
                 "        _jev_stream.flush()\n"
                 "        os.fsync(_jev_stream.fileno())\n"
-                "_jev_sink = os.environ.get('DELIVERY_EFFECT_PATH')\n"
+                f"_jev_sink = os.environ.get('DELIVERY_EFFECT_PATH_{tag.upper()}') "
+                "or os.environ.get('DELIVERY_EFFECT_PATH')\n"
                 "if _jev_sink:\n"
                 "    with open(_jev_sink, 'ab') as _jev_stream:\n"
                 f"        _jev_stream.write({(label + chr(10)).encode()!r})\n"
