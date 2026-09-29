@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "kind", "reference", "run_id", "plan_sha256", "trusted_session_head", "expires_at", "revoked", "grants", "scope_sha256"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "template-delivery-scope-v1"},
+    "reference": {"type": "string", "minLength": 1, "maxLength": 256},
+    "run_id": {"type": "string", "format": "uuid"},
+    "plan_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "trusted_session_head": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "expires_at": {"type": "string", "format": "date-time"},
+    "revoked": {"type": "boolean"},
+    "upgrade_plan_sha256": {"anyOf": [{"type": "null"}, {"type": "string", "pattern": "^[0-9a-f]{64}$"}]},
+    "rollback_digest": {"anyOf": [{"type": "null"}, {"type": "string", "pattern": "^[0-9a-f]{64}$"}]},
+    "grants": {"type": "object", "additionalProperties": false,
+      "required": ["launch", "stop", "disable", "rollback", "upgrade"],
+      "properties": {"launch": {"type": "boolean"}, "stop": {"type": "boolean"}, "disable": {"type": "boolean"}, "rollback": {"type": "boolean"}, "upgrade": {"type": "boolean"}}},
+    "scope_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

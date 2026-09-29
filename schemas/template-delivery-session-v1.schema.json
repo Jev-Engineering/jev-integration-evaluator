@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "kind", "run_id", "plan_sha256", "generation_id", "stage", "pending", "process", "disabled", "observations", "attempts", "failures", "generation_history"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "template-delivery-session-v1"},
+    "run_id": {"type": "string", "format": "uuid"},
+    "plan_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "generation_id": {"type": "string", "minLength": 1},
+    "stage": {"enum": ["installed", "launch_pending", "launched", "running", "stop_pending", "stopped", "disabled", "upgrade_staged", "rollback_pending", "rolled_back", "blocked_recovery"]},
+    "pending": {"anyOf": [{"type": "null"}, {"enum": ["launch", "stop", "rollback"]}]},
+    "process": {"anyOf": [{"type": "null"}, {"type": "object", "additionalProperties": false, "required": ["pid", "boot_id", "start_ticks"], "properties": {"pid": {"type": "integer", "minimum": 1}, "boot_id": {"type": "string", "minLength": 1}, "start_ticks": {"type": "string", "minLength": 1}}}]},
+    "disabled": {"type": "boolean"},
+    "observations": {"type": "object", "additionalProperties": false, "required": ["generated", "applied", "installed", "launched", "ready", "entrypoint_reached", "integration_reachable", "provider_reachable", "mode_authorized", "outcome_verified"], "properties": {
+      "generated": {"type": "boolean"}, "applied": {"type": "boolean"}, "installed": {"type": "boolean"}, "launched": {"type": "boolean"}, "ready": {"type": "boolean"}, "entrypoint_reached": {"type": "boolean"}, "integration_reachable": {"type": "boolean"}, "provider_reachable": {"type": "boolean"}, "mode_authorized": {"type": "boolean"}, "outcome_verified": {"type": "boolean"}
+    }},
+    "attempts": {"type": "object", "additionalProperties": false, "required": ["launch", "stop"], "properties": {"launch": {"type": "integer", "minimum": 0, "maximum": 3}, "stop": {"type": "integer", "minimum": 0, "maximum": 3}}},
+    "failures": {"type": "array", "maxItems": 6, "items": {"type": "string", "minLength": 1, "maxLength": 128}},
+    "generation_history": {"type": "array", "maxItems": 2, "items": {"type": "object", "additionalProperties": false, "required": ["plan_sha256", "generation_id"], "properties": {"plan_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "generation_id": {"type": "string", "minLength": 1}}}}
+  }
+}

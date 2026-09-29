@@ -24,6 +24,15 @@ Retain each plan/receipt digest outside its directory. Never infer launch,
 connected mode, or measured benefit from an install receipt. See
 `references/template-installation-v1.md`.
 
+For an installed console invocation, also collect an independently authored
+ready/effect observation schedule and exact operation scope. `template
+delivery-plan` and `template deploy --plan` prepare the session without
+running the host. A second `template deploy` with a valid scope starts only
+the recorded off-mode console generation. Retain the returned session head
+outside the session; use `template status` and `template observe` to distinguish
+recorded observations from current process/readiness state. See
+`references/template-delivery-session-v1.md`.
+
 Example answered intake:
 
 ```json

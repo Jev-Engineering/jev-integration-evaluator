@@ -23,11 +23,12 @@ from jev_integration_evaluator.integrations.recipes import host_lifecycle_marker
 from jev_integration_evaluator.integrations.python_entrypoint import inspect_entrypoint
 
 
-def _prepared(tmp_path: Path, layout: str = 'package', tag: str = 'console', loop: bool = False):
+def _prepared(tmp_path: Path, layout: str = 'package', tag: str = 'console', loop: bool = False,
+              effect_sink: bool = False):
     target = tmp_path / 'target'
     package_name = 'birch_pkg' if layout == 'src' else 'atlas_pkg'
     inventory, spec = fixture(target, 'C', tag=tag, layout=layout, console_exit=True,
-                              package_name=package_name)
+                              package_name=package_name, effect_sink=effect_sink)
     package = target / ('src/' + package_name if layout == 'src' else package_name)
     host = Path(spec['source']['file']).stem
     entry = spec['verification']['entry_point']
@@ -463,8 +464,10 @@ def test_installed_console_reaches_owned_integration_and_rolls_back(tmp_path, la
     python = environment / binary / ('python.exe' if os.name == 'nt' else 'python')
     wheels = sorted(dist.glob('*.whl'))
     assert len(wheels) == 2
+    wheelhouse = os.environ.get('JEV_TEMPLATE_WHEELHOUSE')
+    dependency_source = (['--find-links', wheelhouse] if wheelhouse else ['--no-deps'])
     install = subprocess.run([sys.executable, '-m', 'pip', '--python', str(python),
-                              'install', '--no-index', '--no-deps',
+                              'install', '--no-index', *dependency_source,
                               *(str(w) for w in wheels)], capture_output=True, text=True, timeout=90)
     assert install.returncode == 0, install.stderr
     script = environment / binary / (binding['script'] + ('.exe' if os.name == 'nt' else ''))

@@ -18,7 +18,7 @@ from jev_integration_evaluator.integrations.recipes import RECIPES, anchor_hash
 
 
 def fixture(root: Path, pattern='C', *, tag=None, crlf=False, layout='flat', native_probe=False,
-            console_exit=False, package_name='fixture_pkg'):
+            console_exit=False, package_name='fixture_pkg', effect_sink=False):
     root.mkdir(parents=True, exist_ok=True)
     tag = tag or ('scenario_' + pattern.lower())
     recipe = RECIPES['python.'+pattern]
@@ -40,16 +40,34 @@ def fixture(root: Path, pattern='C', *, tag=None, crlf=False, layout='flat', nat
               ('class HostGate:\n    def __init__(self, actions, **kwargs):\n        self.actions = actions'
                if native_probe else 'from jev_integration_evaluator.runtime import HostGate'), 'LOCK = RLock()',
               'STATE = '+repr(state), 'RECORDS = '+repr(records)]
+    if effect_sink:
+        source.insert(3, 'import os')
+        source.insert(4, 'import time')
+    def sink(label):
+        return ("_jev_ready = os.environ.get('DELIVERY_READY_PATH')\n"
+                "if _jev_ready:\n"
+                "    with open(_jev_ready, 'wb') as _jev_stream:\n"
+                "        _jev_stream.write(b'ready\\n')\n"
+                "        _jev_stream.flush()\n"
+                "        os.fsync(_jev_stream.fileno())\n"
+                "_jev_sink = os.environ.get('DELIVERY_EFFECT_PATH')\n"
+                "if _jev_sink:\n"
+                "    with open(_jev_sink, 'ab') as _jev_stream:\n"
+                f"        _jev_stream.write({(label + chr(10)).encode()!r})\n"
+                "        _jev_stream.flush()\n"
+                "        os.fsync(_jev_stream.fileno())\n"
+                "_jev_hold = os.environ.get('DELIVERY_EFFECT_HOLD_SECONDS')\n"
+                "if _jev_hold: time.sleep(float(_jev_hold))\n") if effect_sink else ''
     def define(name,args,body):
         source.append('\ndef '+name+'('+args+'):\n'+''.join('    '+line+'\n' for line in body.splitlines()))
     if pattern=='E':
         define(first,'request',"STATE['effects'].append('first')\nif not STATE['ineffective']: STATE['records'] += 1\nreturn {'reported': 'ok'}")
     elif pattern=='J':
         define(first,'request',"STATE['effects'].append('first')\nreturn {'task_id': request['task_id'], 'owner': 'base'}")
-    else:define(first,'request',"STATE['effects'].append('first')\nreturn " + ('0' if console_exit and pattern=='C' else "'first'"))
+    else:define(first,'request',sink('first') + "STATE['effects'].append('first')\nreturn " + ('0' if console_exit and pattern=='C' else "'first'"))
     if pattern=='J':define(second,'request',"STATE['effects'].append('second')\nreturn {'task_id': request['task_id'], 'owner': 'alt'}")
     elif pattern=='L':define(second,'request',"STATE['effects'].append('second')\nSTATE['revision'] += 1\nreturn 'merged'")
-    else:define(second,'request',"STATE['effects'].append('second')\nreturn " + ('0' if console_exit and pattern=='C' else "'second'"))
+    else:define(second,'request',sink('second') + "STATE['effects'].append('second')\nreturn " + ('0' if console_exit and pattern=='C' else "'second'"))
     options = "{'base': "+first+", 'alt': "+second+"}"
     baseline='base';labels={'primary':'base','alternative':'alt','uncertain':None};policy={'fallback':'baseline'}
     if pattern=='A':policy={'fallback':'block'}

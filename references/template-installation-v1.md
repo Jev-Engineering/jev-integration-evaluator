@@ -58,7 +58,9 @@ build hook runs, so the package receipt records it after the effect.
 resolution, runs `pip check`, verifies distribution RECORD hashes and origins,
 checks the declared console entry target in an isolated interpreter, and writes
 off-mode config. No user/global site package is installed. A launch or readiness
-claim belongs to #56; the installer does not run the console entry itself.
+claim belongs to the separately scoped delivery session; the installer does
+not run the console entry itself. See
+[`template-delivery-session-v1`](template-delivery-session-v1.md).
 
 Build/install subprocesses receive a narrow environment with no inherited
 `PIP_*`, `PYTHONPATH`, user site or pip config. Package acquisition is a

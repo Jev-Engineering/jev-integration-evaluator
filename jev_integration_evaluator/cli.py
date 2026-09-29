@@ -189,6 +189,39 @@ def parser():
     s=template_sub.add_parser('package-recover',help='Adopt a verified wheel or remove an independently inspected partial build')
     s.add_argument('--plan',required=True); s.add_argument('--approve-plan-sha256',required=True)
     s.add_argument('--approve-generation-sha256')
+    s=template_sub.add_parser('delivery-plan',help='Bind a verified installed console and independent observation schedule')
+    s.add_argument('--install-plan',required=True); s.add_argument('--trusted-install-receipt-sha256',required=True)
+    s.add_argument('--observation',required=True); s.add_argument('--launch-environment')
+    s.add_argument('--out',required=True)
+    s=template_sub.add_parser('journey-create',help='Start one source-to-runtime delivery run before source application')
+    s.add_argument('--session',required=True); s.add_argument('--source-root',required=True)
+    s.add_argument('--bundle',required=True); s.add_argument('--source-kind',choices=['single','composite'],default='single')
+    s=template_sub.add_parser('journey-record',help='Anchor one verified prerequisite plan or receipt without running effects')
+    s.add_argument('--session',required=True); s.add_argument('--trusted-journey-head',required=True)
+    s.add_argument('--stage',choices=['baseline_anchored','source_verified','package_planned',
+                                     'package_built','install_planned','installed'],required=True)
+    s.add_argument('--plan'); s.add_argument('--receipt'); s.add_argument('--trusted-receipt-sha256')
+    s=template_sub.add_parser('journey-status',help='Read-only reconciliation of one source-to-runtime run')
+    s.add_argument('--session',required=True); s.add_argument('--trusted-journey-head')
+    s=template_sub.add_parser('journey-promote',help='Create an off-mode runtime child with the existing run ID')
+    s.add_argument('--session',required=True); s.add_argument('--trusted-journey-head',required=True)
+    s.add_argument('--observation',required=True); s.add_argument('--launch-environment')
+    s=template_sub.add_parser('deploy',help='Create a private delivery session or launch its exact installed console')
+    s.add_argument('--session',required=True); s.add_argument('--plan'); s.add_argument('--scope')
+    s.add_argument('--approve-scope-sha256')
+    s=template_sub.add_parser('resume',help='Reconcile pending delivery intent without replaying effects')
+    s.add_argument('--session',required=True); s.add_argument('--trusted-session-head',required=True)
+    s=template_sub.add_parser('status',help='Read current delivery and process state without running the host')
+    s.add_argument('--session',required=True); s.add_argument('--trusted-session-head')
+    s=template_sub.add_parser('observe',help='Check independently authored host postconditions')
+    s.add_argument('--session',required=True); s.add_argument('--trusted-session-head',required=True)
+    s=template_sub.add_parser('upgrade',help='Select a new verified owned generation after bounded old stop')
+    s.add_argument('--session',required=True); s.add_argument('--plan',required=True)
+    s.add_argument('--scope',required=True); s.add_argument('--approve-scope-sha256',required=True)
+    for action in ('stop','disable','rollback'):
+        s=template_sub.add_parser(action,help='Request bounded drain of the exact owned console process')
+        s.add_argument('--session',required=True); s.add_argument('--scope',required=True)
+        s.add_argument('--approve-scope-sha256',required=True)
     s=common("implement-composite-plan", "Plan one reviewed multi-placement transaction")
     s.add_argument("--repo",required=True); s.add_argument("--inventory",required=True)
     s.add_argument("--selection",required=True); s.add_argument("--specs",required=True); s.add_argument("--out",required=True)
@@ -263,6 +296,59 @@ def execute(args):
             return materialize_template(args.repo,request,args.out,tooling_dir=args.tooling)
         if args.template_action=='bind':
             return bind_template(args.repo,read_json(args.request),read_json(args.binding),args.out)
+        if args.template_action in ('journey-create','journey-record','journey-status','journey-promote'):
+            from .template_delivery_journey import (create_journey, record_journey,
+                                                    journey_status, promote_journey)
+            if args.template_action=='journey-create':
+                return create_journey(args.session,source_root=args.source_root,
+                                      bundle=args.bundle,source_kind=args.source_kind)
+            if args.template_action=='journey-record':
+                return record_journey(args.session,trusted_journey_head=args.trusted_journey_head,
+                    stage=args.stage,plan=read_json(args.plan) if args.plan else None,
+                    receipt=read_json(args.receipt) if args.receipt else None,
+                    trusted_receipt_sha256=args.trusted_receipt_sha256)
+            if args.template_action=='journey-status':
+                return journey_status(args.session,trusted_journey_head=args.trusted_journey_head)
+            return promote_journey(args.session,trusted_journey_head=args.trusted_journey_head,
+                observation=read_json(args.observation),
+                launch_environment=read_json(args.launch_environment) if args.launch_environment else {})
+        if args.template_action in ('delivery-plan','deploy','resume','status','observe','stop','disable','rollback','upgrade'):
+            from .template_delivery import (plan_delivery, create_session, launch_session,
+                                            resume_session, session_status, observe_session,
+                                            stop_session, rollback_session, upgrade_session)
+            if args.template_action=='delivery-plan':
+                environment=read_json(args.launch_environment) if args.launch_environment else {}
+                result=plan_delivery(read_json(args.install_plan),
+                    trusted_install_receipt_sha256=args.trusted_install_receipt_sha256,
+                    observation=read_json(args.observation),launch_environment=environment)
+                from .template_installation import write_plan_exclusive
+                write_plan_exclusive(args.out,result,
+                    host_root=result['install_plan']['package_plan']['request']['host_root'])
+                return result
+            if args.template_action=='deploy':
+                if bool(args.plan)==bool(args.scope):
+                    raise InputError('template_deploy_requires_exactly_plan_or_scope')
+                if args.plan:
+                    return create_session(args.session,read_json(args.plan))
+                if not args.approve_scope_sha256:
+                    raise InputError('exact_delivery_scope_digest_required')
+                return launch_session(args.session,scope=read_json(args.scope),
+                    approved_scope_sha256=args.approve_scope_sha256)
+            if args.template_action=='resume':
+                return resume_session(args.session,trusted_session_head=args.trusted_session_head)
+            if args.template_action=='status':
+                return session_status(args.session,trusted_session_head=args.trusted_session_head)
+            if args.template_action=='observe':
+                return observe_session(args.session,trusted_session_head=args.trusted_session_head)
+            if args.template_action=='upgrade':
+                return upgrade_session(args.session,read_json(args.plan),
+                    scope=read_json(args.scope),approved_scope_sha256=args.approve_scope_sha256)
+            if args.template_action=='rollback':
+                return rollback_session(args.session,scope=read_json(args.scope),
+                    approved_scope_sha256=args.approve_scope_sha256)
+            return stop_session(args.session,scope=read_json(args.scope),
+                approved_scope_sha256=args.approve_scope_sha256,
+                disable=args.template_action=='disable')
         from .template_installation import (plan_package, build_package, package_status, plan_install,
                                             install_package, installation_status, recover_installation,
                                             recover_package, write_plan_exclusive)
