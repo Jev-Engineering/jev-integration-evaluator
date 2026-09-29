@@ -8,6 +8,18 @@ is versioned and pins the exact fixture bytes. `use_case_matrix()` reads it;
 `inspect_use_case_source(root, id)` checks the current bytes without importing or
 executing host code. The offline oracle test is
 [`tests/test_reusable_templates.py`](../tests/test_reusable_templates.py).
+The [finite console fixture](../examples/use-case-host/console.py) has a
+separate direct-execution test in
+[`tests/test_use_case_console_host.py`](../tests/test_use_case_console_host.py).
+Its builder copies all five exact reviewed source modules into one regular
+Python package with a declared `use-case-offline` console entry. One off-mode
+command runs C, L, D, E, M and H consumers and writes six separate raw outcome
+files plus a ready marker. The test reads those files independently and checks
+the host's permission/dispatch, graph revision and merge receipt, contradictory
+retrieval evidence, raw completion state, citation/audit disposition, and
+retention readback. It also checks that an active-mode request creates no
+effects. This is direct offline fixture execution; package build, installation,
+supervised launch and use-case-specific template transforms remain pending.
 Every new host requires a fresh source review and binding. The Python recipe
 catalog's `implemented_bounded_shape` is a transform capability for a narrow
 shape, not an installed use-case qualification.
@@ -40,6 +52,12 @@ separately approved lifecycle commands only after a *new* host review produces
 the exact inventory/spec, policy, source grammar, and host-owned interfaces.
 The five fixture consumers are currently outside the automatic
 `module-tail-call-v1` grammar. No generated patch for them is claimed here.
+After #56 is merged, the finite console host can be carried through the
+separate #54 source verification, #55 package/install and #56 delivery receipt
+contracts. #56 requires an externally retained install receipt digest and
+independent ready, entrypoint and integration observations. Those observations
+must check the six raw outcome files under an approved off-mode launch, with
+the explicit `/prune` choice and a separate `/compact` no-mutation check.
 
 ### L: graph identity
 
