@@ -115,16 +115,18 @@ Synthetic assessment costs and sequential per-call/per-episode latencies are
 predeclared assumptions; local runner wall time is measured separately. No
 user history, provider, production memory or generator is used.
 
-Only calibration is available pending independent pre-result review. Scorer
-reviewer fields are null and the holdout CLI requires an externally checked
-exact study-spec digest. To run calibration from the repository root with a
-new output path:
+Independent semantic review by codex-rag45-independent and code review by
+graph44 on 2026-09-28 UTC are recorded in the scorer and study metadata. The
+study note anchors both approved pre-metadata digests. The holdout CLI still
+requires an externally checked exact post-metadata study-spec digest. To run
+calibration from the repository root with a new output path:
 
 ```powershell
 python examples/coding-agent/retention_study.py --split calibration --out validation/issue49-calibration-report.json
 python -m pytest -q tests/test_coding_agent_retention.py
 ```
 
-The draft choices and oracle were co-authored as synthetic fixtures; independent
-adjudication and a frozen holdout remain required. A calibration result cannot
-support live adoption or permission to process real user history.
+The choices and oracle were co-authored as synthetic fixtures and then
+independently reviewed. The holdout remains unrun pending exact digest binding.
+A calibration result cannot support live adoption or permission to process
+real user history.

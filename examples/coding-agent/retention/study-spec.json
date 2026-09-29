@@ -12,10 +12,10 @@
     "reader_questions": "d15d00615fc29c8ddb1f64803eb103e49be037897cffa6a63bdd9906ae798ecc",
     "report_schema": "dc53a6748898c839ca2c37c160041f3db564435083d6fd4da938fd88e3ffa1d4",
     "runner": "bd519bbeff322f920f556b8d412867045e56cd3ede7f8102dadba2903c93326d",
-    "scorer": "0ac0e9f7532ba86ce97234e5b149ac30ca07d3d5ce45fe8e8848ad239904bc65",
+    "scorer": "b6fdacda79187128dbd3f8187ab1d3f62b81b5beccdffcce4acdd645ad8e22c3",
     "source": "dc3e0f2647c922c1789da3fcf750dd16f61ed0634dd16123ec9c3961acf26a1f"
   },
-  "note": "No holdout executed. Scorer reviewer fields remain null until independent pre-result review. Synthetic proposals are co-authored fixtures, not provider observations.",
+  "note": "No holdout executed. Semantic review: codex-rag45-independent, 2026-09-28 UTC, signed f07ccad, pre-metadata spec SHA256 593b977df85f492f29c31bff26b11c329f511726fc1ef996191404424714f4c6. Code and contract review: graph44, 2026-09-28 UTC, signed 18fab74, pre-metadata spec SHA256 0d944dcb48ba0f29054c6f1dca0664438eedde833a3bd8803e587f66f0d6321a. Synthetic proposals are co-authored fixtures, not provider observations.",
   "schema_version": "coding-agent-retention-study-v1",
   "source_base_commit": "bbd77306877797ee6d418483fd0be46342c67cfa",
   "splits": {
@@ -56,5 +56,5 @@
       "h24"
     ]
   },
-  "status": "prepared_pending_independent_review"
+  "status": "independently_reviewed"
 }
