@@ -140,7 +140,7 @@ def test_runtime_async_off_await_cancellation_timeout_and_error_identity():
         during.cancel()
         with pytest.raises(asyncio.CancelledError):
             await during
-        with pytest.raises(TimeoutError):
+        with pytest.raises(asyncio.TimeoutError):
             await asyncio.wait_for(invoke_async(module, original, 'timeout'), timeout=.01)
         after = asyncio.create_task(invoke_async(module, original, 'after'))
         assert await after == 'after'
