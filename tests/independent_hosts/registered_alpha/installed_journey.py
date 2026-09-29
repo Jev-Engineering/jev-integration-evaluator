@@ -11,6 +11,7 @@ from datetime import datetime, timedelta, timezone
 from email.parser import BytesParser
 import hashlib
 import importlib.metadata
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -26,7 +27,16 @@ from jev_integration_evaluator.integrations.lifecycle import (
     apply_implementation, implementation_status, plan_implementation)
 from jev_integration_evaluator.integrations.verification import verify_implementation
 from jev_integration_evaluator import template_installation as installer
-from tests.independent_hosts.registered_alpha.qualification import ROOT, source_matched_request
+
+_qualification_file = Path(__file__).resolve().with_name('qualification.py')
+_qualification_spec = importlib.util.spec_from_file_location(
+    'registered_alpha_qualification', _qualification_file)
+if _qualification_spec is None or _qualification_spec.loader is None:
+    raise RuntimeError('registered_alpha_qualification_loader_missing')
+_qualification = importlib.util.module_from_spec(_qualification_spec)
+_qualification_spec.loader.exec_module(_qualification)
+ROOT = _qualification.ROOT
+source_matched_request = _qualification.source_matched_request
 
 
 def _sha(raw: bytes) -> str:
