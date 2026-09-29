@@ -1,4 +1,4 @@
-"""Read-only, source-bound inventory with partial offline E and H qualifications.
+"""Read-only, source-bound inventory with partial offline L, E and H qualifications.
 
 These records describe offline host fixtures. They grant no implementation,
 installation, runtime, or provider authority.
@@ -40,7 +40,7 @@ def inspect_use_case_source(source_root: str | Path, case_id: str) -> dict:
     if observed != row["source_sha256"]:
         raise InputError("Use-case source changed; review and refresh contract")
     adapter_sha256 = None
-    if case_id in ("E", "H"):
+    if case_id in ("L", "E", "H"):
         adapter = root.joinpath(*row["consumer_adapter"].split("/"))
         if (adapter.is_symlink() or not adapter.is_file()
                 or not adapter.resolve().is_relative_to(root)):

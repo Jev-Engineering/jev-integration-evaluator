@@ -22,7 +22,7 @@ def fixture_module(relative, name):
     return module
 
 
-def test_six_rows_are_source_bound_and_limit_installed_claims_to_e_and_h():
+def test_six_rows_are_source_bound_and_limit_installed_claims_to_l_e_and_h():
     matrix = use_case_matrix()
     assert [row["id"] for row in matrix["rows"]] == ["C", "L", "D", "E", "M", "H"]
     for row in matrix["rows"]:
@@ -30,7 +30,7 @@ def test_six_rows_are_source_bound_and_limit_installed_claims_to_e_and_h():
         assert receipt["source_sha256"] == row["source_sha256"]
         assert not receipt["target_imported"] and not receipt["installed_verified"]
         assert row["mode"] == "off" and row["benefit"] == "unknown"
-        if row["id"] in ("E", "H"):
+        if row["id"] in ("L", "E", "H"):
             assert receipt["consumer_adapter_sha256"] == row["consumer_adapter_sha256"]
             state = f"qualified_offline_{row['id'].lower()}_synthetic_host"
             assert {row[k] for k in ("apply", "install", "launch")} == {state}
@@ -77,6 +77,18 @@ def test_completion_adapter_drift_fails_closed(tmp_path):
     adapter.write_bytes((ROOT / row["consumer_adapter"]).read_bytes() + b"\n# drift\n")
     with pytest.raises(InputError, match="adapter changed"):
         inspect_use_case_source(tmp_path, "E")
+
+
+def test_graph_adapter_drift_fails_closed(tmp_path):
+    row = next(row for row in use_case_matrix()["rows"] if row["id"] == "L")
+    for key in ("source", "consumer_adapter"):
+        path = tmp_path / row[key]
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes((ROOT / row[key]).read_bytes())
+    adapter = tmp_path / row["consumer_adapter"]
+    adapter.write_bytes(adapter.read_bytes() + b"\n# drift\n")
+    with pytest.raises(InputError, match="adapter changed"):
+        inspect_use_case_source(tmp_path, "L")
 
 
 def test_registered_tool_is_single_host_checked_dispatch():

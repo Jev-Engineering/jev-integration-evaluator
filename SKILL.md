@@ -75,12 +75,11 @@ It does not extend the Python #56 supervisor or grant connected authority.
 
 The [issue #59 use-case matrix](references/use-case-template-matrix-v1.md)
 pins six illustrative source contracts and five distinct offline host oracles.
-Its source match is read-only. Separate E completion and H retention synthetic
+Its source match is read-only. Separate L graph, E completion and H retention synthetic
 hosts have offline source-bound apply/install/supervised normal-console/disable/
 versioned upgrade/rollback journeys; their use-case-specific console binds
 remain pending. Other individual installs, provider modes and benefit remain
-pending. The L synthetic host has a
-source-bound apply/verify/rollback test. Keep `/prune` and `/compact` as separate
+pending. Keep `/prune` and `/compact` as separate
 explicit user choices.
 The finite offline use-case console fixture checks six separate fixture-emitted outcome records
 under mode `off`. Its source-pinned wheel is installed and invoked through its

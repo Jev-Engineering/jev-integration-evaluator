@@ -170,6 +170,8 @@ def validate(check_manifest=False):
                  'jev_integration_evaluator/data/use-case-template-matrix-v1.json',
                  'references/use-case-template-matrix-v1.md',
                  'tests/test_reusable_templates.py',
+                 'tests/test_use_case_graph_installed.py',
+                 'references/graph-template-offline-v1.md',
                  'tests/test_use_case_completion_host.py',
                  'examples/use-case-host/completion_consumer.py',
                  'references/completion-template-offline-v1.md',
