@@ -65,7 +65,7 @@ pins six illustrative source contracts and five distinct offline host oracles.
 Its source match is read-only; apply, install, launch, provider modes and benefit
 remain pending for these use cases. Keep `/prune` and `/compact` as separate
 explicit user choices.
-The finite offline use-case console fixture checks six separate raw outcomes
+The finite offline use-case console fixture checks six separate fixture-emitted outcome records
 under mode `off`; it is a direct package-source run, not yet an installed or
 supervised generation.
 

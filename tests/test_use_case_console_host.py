@@ -19,12 +19,19 @@ MODULES = {"C": "agent", "L": "graph", "D": "rag", "E": "completion",
 
 def prepare_use_case_host(destination: Path) -> Path:
     """Copy only current reviewed source bytes into a regular package host."""
+    matrix = use_case_matrix()
+    host_spec = matrix["host"]
+    console_source = ROOT / host_spec["console"]
+    project_source = ROOT / host_spec["project"]
+    assert file_hash(console_source) == host_spec["console_sha256"]
+    assert file_hash(project_source) == host_spec["project_sha256"]
     destination.mkdir(mode=0o700)
     package = destination / "use_case_fixture"
     package.mkdir(mode=0o700)
     (package / "__init__.py").write_text('"""Reviewed offline use-case host."""\n', encoding="utf-8")
-    shutil.copyfile(ROOT / "examples/use-case-host/console.py", package / "console.py")
-    for row in use_case_matrix()["rows"]:
+    shutil.copyfile(console_source, package / "console.py")
+    assert file_hash(package / "console.py") == host_spec["console_sha256"]
+    for row in matrix["rows"]:
         case_id = row["id"]
         assert inspect_use_case_source(ROOT, case_id)["status"] == "source_matched"
         source = ROOT / row["source"]
@@ -32,14 +39,8 @@ def prepare_use_case_host(destination: Path) -> Path:
         if not target.exists():
             shutil.copyfile(source, target)
         assert file_hash(target) == row["source_sha256"]
-    (destination / "pyproject.toml").write_text(
-        '[build-system]\nrequires = ["setuptools>=68"]\n'
-        'build-backend = "setuptools.build_meta"\n'
-        '[project]\nname = "jev-use-case-offline-fixture"\nversion = "1.0.0"\n'
-        'requires-python = ">=3.13"\n'
-        '[project.scripts]\nuse-case-offline = "use_case_fixture.console:main"\n'
-        '[tool.setuptools.packages.find]\ninclude = ["use_case_fixture*"]\n',
-        encoding="utf-8")
+    shutil.copyfile(project_source, destination / "pyproject.toml")
+    assert file_hash(destination / "pyproject.toml") == host_spec["project_sha256"]
     return destination
 
 
@@ -83,3 +84,33 @@ def test_one_normal_console_preserves_six_raw_use_case_outcomes(tmp_path):
     assert rows["H"]["compact_unchanged"]["wrong_mode_mutation"] is False
     assert rows["H"]["compact_mutation_blocked"] is True
     assert rows["H"]["later_recall"]["success"] is True
+
+
+def test_console_refuses_invalid_hold_and_existing_effects(tmp_path):
+    host = prepare_use_case_host(tmp_path / "host")
+    effects = tmp_path / "effects"
+    effects.mkdir(mode=0o700)
+    ready = tmp_path / "ready.bin"
+    platform_env = {name: os.environ[name] for name in ("SystemRoot", "WINDIR")
+                    if name in os.environ}
+    env = {**platform_env, "PYTHONPATH": str(host), "JEV_RUNTIME_MODE": "off",
+           "USE_CASE_EFFECT_DIR": str(effects), "USE_CASE_READY_PATH": str(ready)}
+
+    def run(extra):
+        return subprocess.run([sys.executable, "-m", "use_case_fixture.console"],
+                              cwd=tmp_path, env={**env, **extra},
+                              capture_output=True, text=True, timeout=15)
+
+    for hold in ("nonsense", "nan", "6"):
+        assert run({"USE_CASE_HOLD_SECONDS": hold}).returncode == 2
+        assert not list(effects.iterdir()) and not ready.exists()
+
+    existing = effects / "C.json"
+    existing.write_bytes(b"unrelated\n")
+    assert run({}).returncode == 2
+    assert existing.read_bytes() == b"unrelated\n" and not ready.exists()
+    existing.unlink()
+
+    ready.write_bytes(b"unrelated ready\n")
+    assert run({}).returncode == 2
+    assert ready.read_bytes() == b"unrelated ready\n" and not list(effects.iterdir())

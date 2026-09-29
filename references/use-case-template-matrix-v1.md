@@ -11,14 +11,20 @@ executing host code. The offline oracle test is
 The [finite console fixture](../examples/use-case-host/console.py) has a
 separate direct-execution test in
 [`tests/test_use_case_console_host.py`](../tests/test_use_case_console_host.py).
-Its builder copies all five exact reviewed source modules into one regular
-Python package with a declared `use-case-offline` console entry. One off-mode
-command runs C, L, D, E, M and H consumers and writes six separate raw outcome
-files plus a ready marker. The test reads those files independently and checks
+Its builder checks the matrix-pinned console and project bytes, then copies
+those and all five exact reviewed source modules into one regular Python
+package with a declared `use-case-offline` console entry. One off-mode
+command runs C, L, D, E, M and H consumers and writes six separate
+fixture-emitted outcome records plus a ready marker in fresh paths. The fixture
+requires owner-only `0700` directories on POSIX; native Windows ACL ownership
+is not qualified by this direct-execution check.
+The test reads those files after process exit and checks
 the host's permission/dispatch, graph revision and merge receipt, contradictory
 retrieval evidence, raw completion state, citation/audit disposition, and
 retention readback. It also checks that an active-mode request creates no
-effects. This is direct offline fixture execution; package build, installation,
+effects. The files are authored by the same fixture process that runs the
+consumers; they are not independent observations of an installed host or its
+external effects. This is direct offline fixture execution; package build, installation,
 supervised launch and use-case-specific template transforms remain pending.
 Every new host requires a fresh source review and binding. The Python recipe
 catalog's `implemented_bounded_shape` is a transform capability for a narrow
@@ -56,7 +62,8 @@ After #56 is merged, the finite console host can be carried through the
 separate #54 source verification, #55 package/install and #56 delivery receipt
 contracts. #56 requires an externally retained install receipt digest and
 independent ready, entrypoint and integration observations. Those observations
-must check the six raw outcome files under an approved off-mode launch, with
+must check the six fixture-emitted outcome files against independent host
+postconditions under an approved off-mode launch, with
 the explicit `/prune` choice and a separate `/compact` no-mutation check.
 
 ### L: graph identity

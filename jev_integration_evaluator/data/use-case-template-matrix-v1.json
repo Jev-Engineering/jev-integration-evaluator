@@ -1,6 +1,12 @@
 {
   "schema_version": "1.0",
   "scope": "offline_source_contracts_only",
+  "host": {
+    "console": "examples/use-case-host/console.py",
+    "console_sha256": "4ea467e3c1e8c4465f0503e6ebb1ddeb4f0fd99656b7d1557495968dcb6e45ef",
+    "project": "examples/use-case-host/pyproject.toml",
+    "project_sha256": "01a9eaeb37869a796a5660e77d4bf4e88fa6bbbcd127bf35a0c53c0f4b9a8fb0"
+  },
   "rows": [
     {
       "id": "C",

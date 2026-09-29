@@ -2,10 +2,20 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Read-only use-case template coverage matrix v1",
   "type": "object", "additionalProperties": false,
-  "required": ["schema_version", "scope", "rows"],
+  "required": ["schema_version", "scope", "host", "rows"],
   "properties": {
     "schema_version": {"const": "1.0"},
     "scope": {"const": "offline_source_contracts_only"},
+    "host": {
+      "type": "object", "additionalProperties": false,
+      "required": ["console", "console_sha256", "project", "project_sha256"],
+      "properties": {
+        "console": {"const": "examples/use-case-host/console.py"},
+        "console_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "project": {"const": "examples/use-case-host/pyproject.toml"},
+        "project_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
     "rows": {"type": "array", "minItems": 6, "maxItems": 6, "items": {"$ref": "#/$defs/row"}}
   },
   "$defs": {

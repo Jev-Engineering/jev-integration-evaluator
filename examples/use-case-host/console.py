@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+import stat
 import time
 
 from . import agent, completion, graph, rag, retention
@@ -163,23 +164,63 @@ def _retention() -> dict:
             "later_recall": recall}
 
 
-def main() -> int:
+def _private_directory(path: Path) -> bool:
+    if not path.is_absolute() or any(item.is_symlink() for item in (path, *path.parents)):
+        return False
+    try:
+        info = path.lstat()
+    except OSError:
+        return False
+    if not stat.S_ISDIR(info.st_mode):
+        return False
+    return (os.name == "nt" or
+            (info.st_uid == os.getuid() and stat.S_IMODE(info.st_mode) == 0o700))
+
+
+def _inputs() -> tuple[Path, Path, float] | None:
     if os.environ.get("JEV_RUNTIME_MODE") != "off":
+        return None
+    effect_name = os.environ.get("USE_CASE_EFFECT_DIR", "")
+    ready_name = os.environ.get("USE_CASE_READY_PATH", "")
+    hold_name = os.environ.get("USE_CASE_HOLD_SECONDS", "0")
+    if not effect_name or not ready_name or len(hold_name) > 8:
+        return None
+    try:
+        hold = float(hold_name)
+    except ValueError:
+        return None
+    if not 0 <= hold <= 5:
+        return None
+    directory, ready = Path(effect_name), Path(ready_name)
+    if (not _private_directory(directory) or not _private_directory(ready.parent)
+            or not ready.is_absolute() or ready.exists() or ready.is_symlink()
+            or ready.parent == directory or any(directory.iterdir())):
+        return None
+    return directory, ready, hold
+
+
+def _write_new(path: Path, contents: bytes) -> None:
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
+    flags |= getattr(os, "O_BINARY", 0)
+    descriptor = os.open(path, flags, 0o600)
+    with os.fdopen(descriptor, "wb") as output:
+        output.write(contents)
+        output.flush()
+        os.fsync(output.fileno())
+
+
+def main() -> int:
+    checked = _inputs()
+    if checked is None:
         return 2
-    directory = Path(os.environ["USE_CASE_EFFECT_DIR"])
-    ready = Path(os.environ["USE_CASE_READY_PATH"])
-    if not directory.is_absolute() or not ready.is_absolute() or not directory.is_dir():
-        return 2
+    directory, ready, hold = checked
     outcomes = {"C": _registered_tool(), "L": _graph_identity(),
                 "D": _retrieval_evidence(), "E": _completion(),
                 "M": _claim_support(), "H": _retention()}
     for case_id, outcome in outcomes.items():
-        (directory / (case_id + ".json")).write_text(
-            json.dumps(outcome, sort_keys=True, separators=(",", ":")) + "\n", encoding="utf-8")
-    ready.write_bytes(b"ready\n")
-    hold = float(os.environ.get("USE_CASE_HOLD_SECONDS", "0"))
-    if not 0 <= hold <= 5:
-        return 2
+        _write_new(directory / (case_id + ".json"),
+                   (json.dumps(outcome, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8"))
+    _write_new(ready, b"ready\n")
     time.sleep(hold)
     return 0
 
