@@ -166,6 +166,12 @@ def test_reviewed_successor_and_unresolved_conflict_are_distinct():
     assert oracle.score_recall(successor_question, successor_scorer, successor_case["items"],
                                successor_case["supersession"])["success"] is True
     assert oracle.score_recall(successor_question, successor_scorer, successor_case["items"], [])["success"] is False
+    without_old = [item for item in successor_case["items"] if item["id"] != "c04-i01"]
+    reader_view = oracle.reader_projection(successor_question, without_old, successor_case["supersession"])
+    assert reader_view["supersession"] == []
+    assert "c04-i01" not in json.dumps(reader_view)
+    assert oracle.score_recall(successor_question, successor_scorer, without_old,
+                               successor_case["supersession"])["success"] is True
     conflict_case, _, _, conflict_question, conflict_scorer = calibration("c05")
     assert conflict_case["supersession"] == []
     assert oracle.score_recall(conflict_question, conflict_scorer, conflict_case["items"], [])["success"] is True

@@ -45,8 +45,10 @@ def reader_projection(question, retained, supersession):
         raise ValueError("reader question missing")
     allowed = ("id", "text", "byte_sha256", "source_kind", "source_ref", "capture_revision")
     edge_keys = ("old_id", "new_id", "authority")
+    retained_ids = {item["id"] for item in retained}
     edges = [{key: edge[key] for key in edge_keys} for edge in supersession
-             if edge["authority"] == "host_reviewed"]
+             if edge["authority"] == "host_reviewed" and
+             edge["old_id"] in retained_ids and edge["new_id"] in retained_ids]
     return {"question": question,
             "retained_items": [{key: item[key] for key in allowed} for item in retained],
             "supersession": edges}
