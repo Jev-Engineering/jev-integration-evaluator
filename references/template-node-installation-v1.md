@@ -152,8 +152,16 @@ The installed evaluator CLI exposes the same separate package and install stages
 The plan commands write new private files exclusively; `node-package-build`
 and `node-install` are the only package/install effect commands. Keep each
 approval and receipt digest in a separately owned channel, and pass the
-current digest back explicitly. The installed CLI test exercises these exact
-commands before creating a delivery descriptor and launching an ESM host.
+current digest back explicitly. Installed CLI tests exercise these exact
+commands before creating delivery descriptors and launching separate ESM,
+CommonJS and TypeScript hosts. The CommonJS and TypeScript cases use their
+source-verified fixture builders to obtain already-applied hosts, then make
+fresh CLI-owned package and install generations. They pin native Node/npm and
+a disposable copy of trusted TypeScript 5.8.3, pass explicit plan and receipt
+digests across each CLI stage, and check independent effect, ready and
+integration bytes from the normal installed off-mode command. Wrong build,
+install and launch approval digests fail before output or host effect appears.
+These checks do not exercise provider traffic or qualify connected operation.
 
 The CLI mirrors the session APIs as `template node-delivery-plan`,
 `node-session-create`, `node-launch`, `node-observe`, `node-status`,
