@@ -139,6 +139,12 @@ p95; local fixture wall time is measured separately. It retained 137 scorer-
 classified unnecessary tokens, versus 92 for deterministic. The predeclared
 synthetic gate passed, so the report says `synthetic_gates_met_live_needs_more_evidence`.
 
+Report reading notes: in H18, `fault_kind="keep"` records the raw proposed label,
+not the failure reason. Its 45 ms late response became `uncertain` and incurred
+the full 0.003 synthetic cost units. H07/H08 have no reviewed supersession edge;
+their single retained new-source answers do not show that dropping conflicting
+originals safely resolves contradictions in general.
+
 The choices and oracle were co-authored as synthetic fixtures and then
 independently reviewed. The visible task identified the anticipated domain, so
 this result does not establish arbitrary future recall, provider performance,
