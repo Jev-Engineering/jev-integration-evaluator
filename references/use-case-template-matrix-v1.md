@@ -83,7 +83,9 @@ may propose `same`, `related`, `different`, or `uncertain`; only exact `same`
 with approval and a current revision may merge. A stale revision, changed entity,
 missing approval, malformed assessment or failed audit leaves the graph intact.
 The installed L fixture now uses a local SQLite transaction for two fixed
-entities; a real host still needs its own identity policy and rollback owner.
+entities and a revisioned reconciliation record. It does not canonicalize
+entity rows or refuse a later approved repeat of the pair; a real host still
+needs its own identity policy and rollback owner.
 
 The [L seam test](../tests/test_use_case_graph_host.py) now builds a separate
 synthetic host from the reviewed L recipe fixture, copies the matrix-pinned
@@ -99,7 +101,8 @@ The [individual installed L journey](../tests/test_use_case_graph_installed.py)
 extends that reviewed host with a normal console. Both the deterministic
 baseline and generated alternative invoke the same code-owned consumer. The
 #55/#56 path packages, installs, normally launches, observes a local SQLite
-entity/revision/merge/audit transaction with independent database readback,
+entity/revision/reconciliation-record/audit transaction with independent
+database readback and full ordered receipt-chain validation,
 disables, upgrades a separately reviewed
 fixture version and rolls back its owned generation and source edits. The
 consumer requires a finite action, current revision, approval and fresh output

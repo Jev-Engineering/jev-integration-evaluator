@@ -41,6 +41,20 @@ def _private_path(name: str, label: str, *, fresh: bool) -> Path:
     return path
 
 
+def _valid_history(audit_rows: list[tuple[int, str]],
+                   merge_rows: list[tuple[int, str]], revision: int,
+                   left: graph.Entity, right: graph.Entity) -> bool:
+    """Check every durable receipt, its order, and its revision chain."""
+    if type(revision) is not int or not 0 <= revision <= 32:
+        return False
+    expected = [(index + 1, json.dumps({
+        "left_key": left.key, "right_key": right.key,
+        "sources": [left.provenance, right.provenance],
+        "revision_before": index, "revision_after": index + 1,
+    }, sort_keys=True, separators=(",", ":"))) for index in range(revision)]
+    return audit_rows == expected and merge_rows == expected
+
+
 def _sqlite_merge(path: Path, state: dict, left: graph.Entity,
                   right: graph.Entity) -> tuple[dict, dict]:
     """Commit audit and exact-revision merge in one SQLite transaction."""
@@ -70,10 +84,12 @@ def _sqlite_merge(path: Path, state: dict, left: graph.Entity,
             "SELECT key, name, jurisdiction, registry_id, provenance FROM entities ORDER BY key"))
         if (len(recorded) != 1 or current_entities != expected_entities
                 or recorded[0][0] != state["revision"]
-                or recorded[0][0] != state["expected_revision"]
-                or db.execute("SELECT COUNT(*) FROM merges").fetchone()[0] != recorded[0][0]
-                or db.execute("SELECT COUNT(*) FROM audit").fetchone()[0] != recorded[0][0]):
+                or recorded[0][0] != state["expected_revision"]):
             raise RuntimeError("graph database identity or revision conflict")
+        prior_audits = db.execute("SELECT id, receipt FROM audit ORDER BY id").fetchall()
+        prior_merges = db.execute("SELECT id, receipt FROM merges ORDER BY id").fetchall()
+        if not _valid_history(prior_audits, prior_merges, recorded[0][0], left, right):
+            raise RuntimeError("graph database history conflict")
         staged = graph.InMemoryGraph(left, right, revision=recorded[0][0])
         audit_rows: list[dict] = []
         def audit(row: dict) -> None:
@@ -106,12 +122,13 @@ def _sqlite_merge(path: Path, state: dict, left: graph.Entity,
         entities = tuple(reader.execute(
             "SELECT key, name, jurisdiction, registry_id, provenance FROM entities ORDER BY key"))
         revisions = reader.execute("SELECT value FROM revision").fetchall()
-        audits = [json.loads(row[0]) for row in reader.execute("SELECT receipt FROM audit ORDER BY id")]
-        merges = [json.loads(row[0]) for row in reader.execute("SELECT receipt FROM merges ORDER BY id")]
+        audit_rows = reader.execute("SELECT id, receipt FROM audit ORDER BY id").fetchall()
+        merge_rows = reader.execute("SELECT id, receipt FROM merges ORDER BY id").fetchall()
     if (entities != expected_entities or revisions != [(staged.revision,)]
-            or audits[-1:] != [receipt] or merges[-1:] != [receipt]
-            or len(audits) != staged.revision or len(merges) != staged.revision):
+            or not _valid_history(audit_rows, merge_rows, staged.revision, left, right)):
         raise RuntimeError("graph committed database readback failed")
+    audits = [json.loads(row[1]) for row in audit_rows]
+    merges = [json.loads(row[1]) for row in merge_rows]
     return receipt, {"entities": {key: asdict(entity) for key, entity in
                                   ((left.key, left), (right.key, right))},
                      "merges": merges, "audits": audits, "revision": staged.revision}

@@ -27,7 +27,7 @@ from scripts.implementation_fixtures import fixture
 
 
 ROOT = Path(__file__).resolve().parents[1]
-GRAPH_RUNTIME_SHA256 = "fc9b0930986d9fba96187f458415de43871a44fdd67e782ee071f9715e8d5364"
+GRAPH_RUNTIME_SHA256 = "020b47ae6beb3be229ed1485d8aec048a3ee8a55f55a949a90e22894f0a62ae0"
 
 
 def _graph_host(target: Path, version: str | None = None):
@@ -190,6 +190,33 @@ def test_graph_sqlite_transaction_and_independent_readback(tmp_path, monkeypatch
     with pytest.raises(RuntimeError, match="revision conflict"):
         runtime.merge(request, state)
     assert database.read_bytes() == original and not (effects / "stale.json").exists()
+    original_audit = json.dumps(audit[0], sort_keys=True, separators=(",", ":"))
+    altered_audit = dict(audit[0], revision_before=99)
+    with sqlite3.connect(database) as changed:
+        changed.execute("UPDATE audit SET receipt = ? WHERE id = 1", (
+            json.dumps(altered_audit, sort_keys=True, separators=(",", ":")),))
+    tampered = database.read_bytes()
+    monkeypatch.setenv("GRAPH_EFFECT_PATH", str(effects / "history-tamper.json"))
+    with pytest.raises(RuntimeError, match="history conflict"):
+        runtime.merge(request, {"revision": 1, "expected_revision": 1,
+                                "approval": True})
+    assert database.read_bytes() == tampered
+    assert not (effects / "history-tamper.json").exists()
+    with sqlite3.connect(database) as repaired:
+        repaired.execute("UPDATE audit SET receipt = ? WHERE id = 1", (original_audit,))
+    with sqlite3.connect(database) as changed:
+        changed.execute("UPDATE merges SET receipt = ? WHERE id = 1", (
+            json.dumps(dict(audit[0], sources=["forged", "registry-right"]),
+                       sort_keys=True, separators=(",", ":")),))
+    tampered_merge = database.read_bytes()
+    monkeypatch.setenv("GRAPH_EFFECT_PATH", str(effects / "merge-tamper.json"))
+    with pytest.raises(RuntimeError, match="history conflict"):
+        runtime.merge(request, {"revision": 1, "expected_revision": 1,
+                                "approval": True})
+    assert database.read_bytes() == tampered_merge
+    assert not (effects / "merge-tamper.json").exists()
+    with sqlite3.connect(database) as repaired:
+        repaired.execute("UPDATE merges SET receipt = ? WHERE id = 1", (original_audit,))
     with sqlite3.connect(database) as changed:
         changed.execute("UPDATE entities SET name = 'Other' WHERE key = 'left'")
     conflicting = database.read_bytes()

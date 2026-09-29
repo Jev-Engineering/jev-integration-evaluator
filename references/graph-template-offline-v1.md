@@ -38,7 +38,9 @@ for an external SQLite file under an owner-private `0700` directory. A
 revision, inserts the audit before the merge record, advances the revision
 with a compare-and-swap, and commits both records together with SQLite full
 synchronous mode. A separate read-only connection checks committed entities,
-revision, audit and merge rows before an effect is reported. Stale revision,
+revision, and the full ordered audit/merge receipt history before an effect is
+reported. A historical receipt changed without changing row count is refused.
+Stale revision,
 conflicting entity, missing approval, changed action or failed audit creates
 no new merge or release file. Tests independently query the database and
 compare it with the installed console's raw effect; the database itself is
@@ -54,12 +56,14 @@ versions have identical finite graph semantics. Generation rollback does
 not reverse either graph effect.
 
 The #54 console binder remains C/E-only, so an L-specific bind receipt is
-pending. This SQLite transaction is a local synthetic identity fixture; it
-does not synthesize a graph from documents, authorize semantic identity, or
-measure graph quality. The classifier always proposes `same` for two fixed
-entities. Database file creation, graph commit and JSON effect creation are
+pending. This SQLite transaction records reconciliation of one fixed pair; it
+does not collapse the two entity rows into a canonical node or reject a repeat
+of the same pair under a later approved revision. It does not synthesize a
+graph from documents, authorize semantic identity, or measure graph quality.
+The classifier always proposes `same` for those two fixed entities. Database
+file creation, merge-record commit and JSON effect creation are
 not one transaction: an interrupted post-commit JSON write requires manual
 reconciliation, never blind retry. The test does not establish concurrency
 across independent hosts, arbitrary entity identity, connected/provider
 authority, or production approval. Generation rollback retains both database
-effects; it does not reverse an entity merge.
+effects; it does not reverse a reconciliation record.
