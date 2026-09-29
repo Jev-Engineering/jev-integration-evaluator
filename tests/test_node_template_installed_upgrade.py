@@ -63,7 +63,7 @@ def _observations(parent: Path, version: str, item: str) -> tuple[dict, dict, by
 
 
 def _installed(tmp_path: Path, name: str, version: str, item: str,
-               tooling: Path, node: Path, npm: Path) -> dict:
+               tooling: Path, node: Path, npm: Path, *, prepare_only: bool = False) -> dict:
     work = tmp_path / name
     work.mkdir(mode=0o700)
     source, request = request_for(work, 'typescript')
@@ -117,6 +117,8 @@ def _installed(tmp_path: Path, name: str, version: str, item: str,
               'effects': [['read', item + marker]]}]
     request['implementation_spec']['verification_sha256'] = digest(cases)
     request['implementation_spec']['verification_cases_count'] = len(cases)
+    if prepare_only:
+        return {'source': source, 'request': request, 'cases': cases}
     rendered = tmp_path / (name + '-render')
     materialize_template(source, request, rendered, tooling_dir=tooling)
     bundle = tmp_path / (name + '-bundle')

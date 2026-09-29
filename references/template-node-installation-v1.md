@@ -311,6 +311,6 @@ command. The trusted tooling reader verifies the package's declared version;
 substitution with 5.9.3 fails closed. These are finite synthetic off-mode
 host executions. The #56 supervisor remains Python-console-only. The separate
 Node session adds bounded offline process ownership and observation. Required
-full regressions, installed evaluator CLI three-format journeys, connected
+full regressions, connected
 authority, async rejection/cancellation and cross-placement budget coverage
 remain pending before a complete issue #60 claim.

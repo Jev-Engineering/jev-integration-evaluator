@@ -81,6 +81,14 @@ launch, observation, stop, disable, upgrade selection and rollback selection.
 An independent installed CommonJS fixture now exercises its normal package
 command, source-generated raw effect, interrupted upgrade selection and
 retained rollback; see the Node installation reference for exact limits.
+The independent CommonJS and TypeScript installed evaluator CLI fixture now
+uses `template materialize`, `js-plan`, baseline `js-verify`, exactly approved
+`js-apply`, modified `js-verify`, and externally anchored `js-status` before
+the separate Node package, install, and supervised normal-command stages.
+It rejects a wrong apply digest before the host edit and checks the installed
+entrypoint and raw off-mode host effect for each format. These are synthetic,
+local Linux fixtures with trusted tooling outside the target, not provider or
+benefit evidence. The ESM installed CLI journey follows the same stages.
 The Python #56 supervisor remains Python-only. Complete issue #60 release
 gates and connected modes require their own exact
 authority, receipt and observed holdout gates. Synthetic JS verification is
