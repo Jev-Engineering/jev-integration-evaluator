@@ -28,6 +28,20 @@ unsupported, and installation alone does not establish launch readiness,
 provider reachability or benefit. The installed lifecycle supervisor belongs
 to issue #56.
 
+The independent #57 dual registered-action fixture in
+`tests/independent_hosts/registered_dual` freezes two source-reviewed recipe C
+seams and a separate raw-effect oracle. Its opt-in Linux CPython 3.13 driver
+uses this composite transaction, the offline package/install APIs and one #56
+journey. A normal installed console reaches both transformed seams with one
+task ID and one coordinator; its two JSONL effects are checked outside the
+host audit. Calls through both seams again during the live owner consume no
+additional assessment and the host ledgers refuse duplicate effects. The
+driver also reconciles an unreleased start under the same run, disables, and
+restores owned source bytes. `JEV_RUNTIME_MODE` stays off; the code-owned
+synthetic shadow is offline and supplies no provider or release authority.
+This is one package and one process-local owner, not a distributed budget
+between the separately installed Alpha and work-queue applications.
+
 `implement-composite-*` is an additive synthetic, trusted-host workflow for two
 to four bounded Python recipes. It does not change the original single-placement
 CLI, its receipts, or its source-drift rules. The planner reads one reviewed

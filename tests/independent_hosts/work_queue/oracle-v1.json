@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "kind": "work-queue-independent-oracle-v1",
+  "classification": "authored_source_before_template",
+  "cases": [
+    {"id": "default_enqueue", "job_id": "queue-oracle-one", "intent": "enqueue",
+     "item": "batch-a", "allowed": "1", "complete_allowed": "0",
+     "expected_exits": [0], "expected_effects": [
+       {"job_id": "queue-oracle-one", "operation": "enqueue", "item": "batch-a"}]},
+    {"id": "approved_intent_still_baseline", "job_id": "queue-oracle-two",
+     "intent": "complete", "item": "batch-b", "allowed": "1", "complete_allowed": "1",
+     "expected_exits": [0], "expected_effects": [
+       {"job_id": "queue-oracle-two", "operation": "enqueue", "item": "batch-b"}]},
+    {"id": "denied_job", "job_id": "queue-oracle-three", "intent": "complete",
+     "item": "batch-a", "allowed": "0", "complete_allowed": "1",
+     "expected_exits": [2], "expected_effects": []},
+    {"id": "duplicate_id", "job_id": "queue-oracle-four", "intent": "enqueue",
+     "item": "batch-b", "allowed": "1", "complete_allowed": "0",
+     "expected_exits": [0, 1], "expected_effects": [
+       {"job_id": "queue-oracle-four", "operation": "enqueue", "item": "batch-b"}]}
+  ]
+}

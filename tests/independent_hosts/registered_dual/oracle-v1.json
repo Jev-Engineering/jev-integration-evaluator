@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0",
+  "status": "independent_offline_host_effect_oracle",
+  "task_id": "dual-task-one",
+  "alpha_effect": {"action": "inspect", "item": "fixture-one", "task_id": "dual-task-one"},
+  "queue_effect": {"item": "fixture-one", "operation": "enqueue", "task_id": "dual-task-one"},
+  "shared_budget": {"max_calls_per_task": 2, "expected_assessments": 2},
+  "qualification": {"provider_contacted": false, "activation_authorized": false, "measured_benefit": false}
+}
