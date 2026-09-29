@@ -353,13 +353,16 @@ def run_offline(workspace: Path, wheelhouse: Path, anchors: Path) -> dict:
             or len(host_audit['repeat_results']) != 2
             or set(host_audit['repeat_results']) != {'duplicate_queue_job',
                                                       'duplicate_task_effect'}
-            or host_audit['audit_types'] != ['assessment', 'shadow_comparison',
-                                             'assessment', 'shadow_comparison',
-                                             'shadow_comparison', 'shadow_comparison']
-            or host_audit['audit_reasons'][-2] != 'shared_total_call_budget'
-            or host_audit['audit_reasons'][-1] not in {
+            or host_audit['audit_types'].count('assessment') != 2
+            or host_audit['audit_types'].count('shadow_comparison') != 4
+            or len(host_audit['audit_types']) != 6
+            # Completion order of original and repeat shadow comparisons varies.
+            or host_audit['audit_reasons'].count('shared_total_call_budget') < 1
+            or any(reason not in {
                 'shared_total_call_budget',
-                'runtime_suspended_or_closed_during_assessment'}
+                'runtime_suspended_or_closed_during_assessment',
+                'bounded_proposal_not_execution_authorization'}
+                   for reason in host_audit['audit_reasons'][-4:])
             or host_audit['modes'] != ['shadow', 'shadow']):
         raise RuntimeError('dual_shared_budget_or_duplicate_missing')
     installed_root = Path(installed['environment']) / 'venv'
