@@ -1,7 +1,7 @@
 # Python console entrypoint binding v1
 
 `template bind` derives an exact, reviewed console caller contract for
-`python.bounded-tail-call@1.0.0` recipe C, D, E, H or M. It reads source and `pyproject.toml`
+`python.bounded-tail-call@1.0.0` recipe C, D, E, H, L or M. It reads source and `pyproject.toml`
 without importing the target. It writes a bound template request and a binding
 report outside the target. It does not modify, execute, install or activate the
 host. Existing `template validate`, `template materialize`, `implement-*` commands
@@ -11,7 +11,7 @@ and legacy receipts retain their original behavior.
 
 The execution profile is one process on Linux x86-64, Python 3.10 or
 newer, with a regular package in the repository root or `src/`, a
-`pyproject.toml` `[project.scripts]` console command, and a reviewed recipe C/D/E/H/M
+`pyproject.toml` `[project.scripts]` console command, and a reviewed recipe C/D/E/H/L/M
 `module-tail-call-v1` seam. The console function lives in a separate module in
 the same package. The selected host module owns the seam, a one-argument task
 caller that directly returns that seam call, all recipe C policy/registry/guard
@@ -62,8 +62,12 @@ approval, audit durability and release remain the M consumer's responsibility.
 Recipe D requires the bounded task-loop form because a retrieval handoff result
 is not a console exit code. The binder owns task lifecycle and caller identity;
 corpus revision, provenance, contradiction retention, and answer release remain
-the D consumer's code-owned checks. Recipe C retains both existing forms.
-Other recipes remain unsupported by this binder.
+the D consumer's code-owned checks.
+Recipe L requires the same bounded task-loop form: its graph disposition is not
+a console exit code. The binder checks the caller and stable task identity;
+the host-owned graph consumer checks approval, exact entity sources, revision,
+audit and SQLite commit. A bound L console is offline synthetic coverage only.
+Recipe C retains both existing forms. Other recipes remain unsupported by this binder.
 
 The explicit binding file names the chosen script and existing host-owned
 startup factories. It cannot synthesize policy, credentials, approvals, audit

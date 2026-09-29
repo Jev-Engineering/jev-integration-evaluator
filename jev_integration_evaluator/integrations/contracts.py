@@ -50,8 +50,8 @@ def validate_spec(spec: dict) -> dict:
              or ('package_binding' in spec and entrypoint is None))):
         raise InputError('Supported host lifecycle requires reviewed lock and configuration; packages also require a bound entrypoint')
     if entrypoint is not None and ('host_lifecycle' not in spec or 'package_binding' not in spec
-                                   or spec['recipe']['id'] not in ('python.C', 'python.D', 'python.E', 'python.H', 'python.M')):
-        raise InputError('Console entrypoint requires package-bound recipe C, D, E, H or M lifecycle')
+                                   or spec['recipe']['id'] not in ('python.C', 'python.D', 'python.E', 'python.H', 'python.L', 'python.M')):
+        raise InputError('Console entrypoint requires package-bound recipe C, D, E, H, L or M lifecycle')
     runtime_paths = [row['file'] for row in runtime_files]
     if (len(runtime_paths) != len(set(runtime_paths)) or
             set(spec['output']['permitted_edits']) !=
