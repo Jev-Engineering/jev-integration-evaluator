@@ -17,6 +17,7 @@ import pytest
 
 from jev_integration_evaluator import template_delivery as delivery
 from jev_integration_evaluator import template_installation as installer
+from jev_integration_evaluator.contracts import validate_contract
 from jev_integration_evaluator.config import load_config
 from jev_integration_evaluator.io import digest, file_hash
 from jev_integration_evaluator.scanner import scan_repo
@@ -180,17 +181,21 @@ def _expected_effect(corpus: Path) -> bytes:
         "registry-one", "registry-two", "registry-three"]
     assert [row["stance"] for row in rows[:3]] == [
         "supports", "contradicts", "uncertain"]
-    citations = [{"passage_id": row["id"], "source_id": row["source_id"],
-                  "span": row["span"], "quote": row["text"],
-                  "claim_id": row["claim_id"], "stance": row["stance"]}
-                 for row in rows[:3]]
+    passages = [{"passage_id": row["id"], "source_id": row["source_id"],
+                 "span": row["span"], "quote": row["text"],
+                 "claim_id": row["claim_id"], "stance": row["stance"],
+                 "provenance": row["provenance"],
+                 "initial_relevance": "relevant" if row["id"] == "hit" else "irrelevant"}
+                for row in rows[:3]]
     expected = {"corpus_revision": 7, "corpus_sha256": file_hash(corpus),
                 "status": "ready", "selected_ids": ["hit", "counter", "maybe"],
                 "decisions": [["hit", "relevant"], ["counter", "irrelevant"],
                               ["maybe", "irrelevant"], ["noise", "irrelevant"]],
-                "answer": {"query": "approved",
-                           "summary": "conflicting and uncertain status evidence",
-                           "citations": citations}}
+                "answer": {"schema_version": "1.0", "kind": "retrieval-answer-handoff-v1",
+                           "query": "approved", "disposition": "withheld_conflict",
+                           "answer": None, "passages": passages,
+                           "missing_claim_ids": [], "missing_passage_ids": [],
+                           "missing_passages": []}}
     return (json.dumps(expected, sort_keys=True, separators=(",", ":")) + "\n").encode()
 
 
@@ -263,8 +268,57 @@ def test_retrieval_consumer_refuses_missing_stale_and_unauthorized(tmp_path, mon
     assert consumer.commit(request, rows, host_approved=True) == [
         "hit", "counter", "maybe", "noise"]
     assert output.read_bytes() == _expected_effect(corpus)
+    validate_contract(json.loads(output.read_text())["answer"],
+                      "retrieval-answer-handoff-v1")
     with pytest.raises(ValueError, match="fresh"):
         consumer.commit(request, rows, host_approved=True)
+
+
+def test_retrieval_answer_handoff_requires_complete_unopposed_provenance(tmp_path, monkeypatch):
+    target = tmp_path / "retrieval-handoff"
+    _host(target, "1.0.0")
+    monkeypatch.syspath_prepend(str(target))
+    consumer = importlib.import_module("retrieval_host.retrieval_consumer")
+    rag = consumer.rag
+    rows = json.loads((ROOT / "examples/use-case-host/retrieval_corpus_v1.json").read_text())["passages"]
+    passages = tuple(rag.Passage(row["id"], row["source_id"], row["span"],
+                                 row["text"], row["claim_id"], row["stance"])
+                     for row in rows)
+    full = rag.select_evidence("approved", passages, "lexical")
+    conflict = consumer.answer_handoff("approved", full, rows)
+    validate_contract(conflict, "retrieval-answer-handoff-v1")
+    assert conflict["disposition"] == "withheld_conflict"
+    assert conflict["answer"] is None
+    assert [(p["passage_id"], p["provenance"], p["initial_relevance"])
+            for p in conflict["passages"]] == [
+                ("hit", "registry-one:0:15", "relevant"),
+                ("counter", "registry-two:0:13", "irrelevant"),
+                ("maybe", "registry-three:0:14", "irrelevant")]
+    omitted = rag.EvidenceBundle("approved", (passages[0],), full.decisions, "ready")
+    missing = consumer.answer_handoff("approved", omitted, rows)
+    validate_contract(missing, "retrieval-answer-handoff-v1")
+    assert missing["disposition"] == "withheld_missing"
+    assert missing["missing_passage_ids"] == ["counter", "maybe"]
+    assert [(p["passage_id"], p["provenance"], p["stance"])
+            for p in missing["missing_passages"]] == [
+                ("counter", "registry-two:0:13", "contradicts"),
+                ("maybe", "registry-three:0:14", "uncertain")]
+    assert missing["answer"] is None
+    empty = rag.EvidenceBundle("approved", (), full.decisions, "insufficient")
+    empty_handoff = consumer.answer_handoff("approved", empty, rows)
+    validate_contract(empty_handoff, "retrieval-answer-handoff-v1")
+    assert empty_handoff["missing_claim_ids"] == ["status"]
+    assert empty_handoff["answer"] is None
+    unopposed = rag.select_evidence("approved", passages[:1], "lexical")
+    released = consumer.answer_handoff("approved", unopposed, rows[:1])
+    validate_contract(released, "retrieval-answer-handoff-v1")
+    assert released["disposition"] == "released"
+    assert released["answer"]["passage_ids"] == ["hit"]
+    forged = rag.Passage("hit", "registry-one", "1:15", "status approved",
+                         "status", "supports")
+    with pytest.raises(ValueError, match="reviewed provenance"):
+        consumer.answer_handoff("approved",
+            rag.EvidenceBundle("approved", (forged,), unopposed.decisions, "ready"), rows[:1])
 
 
 def test_retrieval_installed_offline_upgrade_and_rollback(tmp_path):
@@ -346,8 +400,11 @@ def test_retrieval_installed_offline_upgrade_and_rollback(tmp_path):
     assert (v1 / "ready.txt").read_bytes() == b"ready\n"
     effect = json.loads((v1 / "effect.json").read_text())
     assert effect["selected_ids"] == ["hit", "counter", "maybe"]
-    assert [row["source_id"] for row in effect["answer"]["citations"]] == [
+    assert [row["source_id"] for row in effect["answer"]["passages"]] == [
         "registry-one", "registry-two", "registry-three"]
+    assert effect["answer"]["disposition"] == "withheld_conflict"
+    assert effect["answer"]["answer"] is None
+    validate_contract(effect["answer"], "retrieval-answer-handoff-v1")
     assert observed["recorded_observations"]["provider_reachable"] is False
     disable = _scope(observed, original_delivery, "disable")
     disabled = delivery.stop_session(session, scope=disable,

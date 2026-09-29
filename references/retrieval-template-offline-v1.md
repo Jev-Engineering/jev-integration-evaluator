@@ -32,17 +32,26 @@ stance and provenance fields. The generated D selection must include the
 supporting hit and the initially irrelevant contradictory and uncertain
 passages for the same material claim. Missing, changed, stale, ambiguous or
 unauthorized inputs refuse the write. The consumer calls the unchanged
-`answer_with_evidence` oracle with its lexical baseline and a real code-owned
-deterministic formatter. The formatter emits a cited evidence bundle that
-explicitly describes conflict; it does not assert which source is true.
+`answer_with_evidence` oracle with its lexical baseline and a code-owned
+finite answer consumer. The strict `retrieval-answer-handoff-v1` record retains
+each selected passage's source, span, quote, claim, stance, exact corpus
+provenance and initial relevance. The independent corpus contains supporting,
+contradictory and uncertain status passages. Its normal installed command
+emits `withheld_conflict` with a null answer while retaining all three,
+including the two initially irrelevant passages. Missing material passages
+or missing exact support emit `withheld_missing`; neither state releases text.
+A separate pure contract test shows that only an unopposed exact `status
+approved` support span can release the bounded sentence “The reviewed source
+reports status approved.” This reports a reviewed record, not source truth.
 No LLM or provider is called in this qualification.
 
 `D_EFFECT_PATH` and `D_READY_PATH` are fresh absolute files under a private
 `0700` directory outside source, package, environment and session roots. The
 consumer writes the raw effect with exclusive owner-only creation and fsync.
 The test independently derives expected bytes from the pinned external corpus,
-reads the installed command's effect file and checks the cited source IDs,
-quotes, stances, selected IDs and lexical decisions. A verifier probe uses a
+reads the installed command's effect file and checks withheld release,
+provenance, source IDs, quotes, stances, selected IDs and lexical decisions.
+A verifier probe uses a
 per-process output path; this is still a synthetic host effect, not an
 independent retrieval service or measured answer quality.
 
@@ -61,4 +70,5 @@ retrievers, arbitrary queries, a generative answer model, connected authority,
 provider operation, answer correctness, task benefit, interrupted upgrade or
 cross-process task deduplication. A real host needs its own retriever and
 generation authority, source provenance, raw answer evaluation and retry
-ownership before those cells can be promoted.
+ownership before those cells can be promoted. The pure positive handoff test
+is a contract exercise, not an installed or measured answer-quality result.

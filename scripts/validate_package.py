@@ -183,7 +183,9 @@ def validate(check_manifest=False):
                  'examples/use-case-host/completion_consumer.py',
                  'references/completion-template-offline-v1.md',
                  'schemas/use-case-template-matrix-v1.schema.json',
-                 'jev_integration_evaluator/data/use-case-template-matrix-v1.schema.json']
+                 'jev_integration_evaluator/data/use-case-template-matrix-v1.schema.json',
+                 'schemas/retrieval-answer-handoff-v1.schema.json',
+                 'jev_integration_evaluator/data/retrieval-answer-handoff-v1.schema.json']
     required += ['jev_integration_evaluator/template_node_installation.py',
                  'jev_integration_evaluator/template_node_delivery.py',
                  'jev_integration_evaluator/template_node_session.py',
