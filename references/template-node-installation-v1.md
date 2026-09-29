@@ -64,8 +64,12 @@ authenticate an approval or receipt.
 The build writes a durable owner intent in the private parent **before**
 creating its output directory. The install stage does the same for its
 generation. Status can identify interruption before the directory, between
-directory creation and its owner marker, and after the journal starts. It
-never adopts or deletes such a partial root automatically.
+directory creation and its owner marker, and after the journal starts. The
+markerless-directory stage requires an exactly empty root; any content or a
+dangling root symlink is an unknown collision. An interruption while writing
+the temporary intent, before its atomic rename, fails closed as `ownership
+intent precommit incomplete` and needs operator review. Status never adopts or
+deletes such a partial root automatically.
 
 The build copies the exact applied source into a new private package directory,
 copies the exact offline cache and npm module tree, and runs the pinned native Node/npm pair as

@@ -123,6 +123,11 @@ def test_offline_owned_package_install_and_drift(tmp_path, monkeypatch, extensio
     interrupted = node_install.package_status(interrupted_plan)
     assert interrupted == {'status': 'build_interrupted_review_required',
                            'stage': 'directory_created' if extension == 'cjs' else 'intent_recorded'}
+    markerless_root = Path(interrupted_request['package_directory'])
+    markerless_root.mkdir(exist_ok=True)
+    (markerless_root / 'app').mkdir()
+    with pytest.raises(InputError, match='markerless package root'):
+        node_install.package_status(interrupted_plan)
     with pytest.raises((FileExistsError, InputError)):
         node_install.build_node_package(
             interrupted_plan, approved_plan_sha256=interrupted_plan['plan_sha256'])
@@ -187,6 +192,32 @@ def test_install_intent_classifies_pre_marker_interruption(tmp_path, monkeypatch
     root.mkdir(mode=0o700)
     assert node_install.installation_status(plan) == {
         'status': 'install_interrupted_review_required', 'stage': 'directory_created'}
+    (root / 'app').mkdir()
+    with pytest.raises(InputError, match='markerless generation root'):
+        node_install.installation_status(plan)
+
+
+@pytest.mark.parametrize('kind', ['package', 'generation'])
+def test_status_rejects_dangling_root_symlink_and_uncommitted_intent(tmp_path, monkeypatch, kind):
+    if platform.system() != 'Linux':
+        pytest.skip('native Linux ownership checks required')
+    parent = tmp_path / 'outputs'; parent.mkdir(mode=0o700)
+    os.chmod(parent, 0o700)
+    root = parent / 'dangling'
+    plan = {'plan_sha256': 'a' * 64, 'request': {'package_directory': str(root)}}
+    if kind == 'package':
+        monkeypatch.setattr(node_install, '_check_plan', lambda _: None)
+        status = node_install.package_status
+    else:
+        monkeypatch.setattr(node_install, '_check_install', lambda _: root)
+        status = node_install.installation_status
+    root.symlink_to(parent / 'missing', target_is_directory=True)
+    with pytest.raises(InputError, match='root is a symlink'):
+        status(plan)
+    root.unlink()
+    node_install._intent_path(root).with_suffix('.tmp').write_bytes(b'incomplete')
+    with pytest.raises(InputError, match='intent precommit incomplete'):
+        status(plan)
 
 
 @pytest.mark.parametrize('format_name', ['esm', 'commonjs'])

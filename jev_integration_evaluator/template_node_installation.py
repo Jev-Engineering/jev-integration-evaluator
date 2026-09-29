@@ -485,6 +485,8 @@ def package_status(plan: dict, *, trusted_receipt_sha256: str | None = None) -> 
     _check_plan(plan)
     root = Path(plan['request']['package_directory'])
     has_intent = _intent(root, plan['plan_sha256'], 'node-package-intent-v1')
+    if root.is_symlink():
+        raise InputError('Node package root is a symlink')
     if not root.exists():
         return {'status': 'build_interrupted_review_required' if has_intent else 'absent',
                 'stage': 'intent_recorded' if has_intent else 'none'}
@@ -493,6 +495,8 @@ def package_status(plan: dict, *, trusted_receipt_sha256: str | None = None) -> 
     _top_level(root, {'owner.json', 'journal.jsonl', 'app', 'cache', 'npm_tool', 'home', 'tmp',
                       'package-receipt.json'})
     if not (root / 'owner.json').is_file():
+        if any(root.iterdir()):
+            raise InputError('Node markerless package root contains unknown content')
         return {'status': 'build_interrupted_review_required', 'stage': 'directory_created'}
     _owner(root, plan['plan_sha256'], 'node-package-owner-v1')
     rows = _journal(root, plan['plan_sha256'])
@@ -625,15 +629,17 @@ def installation_status(plan: dict, *, trusted_receipt_sha256: str | None = None
     _linux()
     root = _check_install(plan)
     has_intent = _intent(root, plan['plan_sha256'], 'node-generation-intent-v1')
+    if root.is_symlink():
+        raise InputError('Node generation root is a symlink')
     if not root.exists():
         return {'status': 'install_interrupted_review_required' if has_intent else 'absent',
                 'stage': 'intent_recorded' if has_intent else 'none'}
     if not has_intent:
         raise InputError('Node generation root has no prior ownership intent')
-    if root.is_symlink():
-        raise InputError('Node generation symlink changed')
     _top_level(root, {'owner.json', 'journal.jsonl', 'app', 'install-receipt.json'})
     if not (root / 'owner.json').is_file():
+        if any(root.iterdir()):
+            raise InputError('Node markerless generation root contains unknown content')
         return {'status': 'install_interrupted_review_required', 'stage': 'directory_created'}
     _owner(root, plan['plan_sha256'], 'node-generation-owner-v1')
     rows = _journal(root, plan['plan_sha256'])
