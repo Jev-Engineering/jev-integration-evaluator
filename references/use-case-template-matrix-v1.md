@@ -1,9 +1,9 @@
 # Reusable use-case template contracts v1 (issue #59 checkpoint)
 
 This checkpoint records six distinct `use-case.<letter>@1.0.0` source contracts.
-It is an offline source and
-host-oracle inventory. It does not materialize, apply, install, start, configure,
-or connect any of these use cases. The [machine-readable matrix](../jev_integration_evaluator/data/use-case-template-matrix-v1.json)
+It is an offline source and host-oracle inventory. It does not materialize or
+apply use-case-specific transforms or connect any provider. The
+[machine-readable matrix](../jev_integration_evaluator/data/use-case-template-matrix-v1.json)
 is versioned and pins the exact fixture bytes. `use_case_matrix()` reads it;
 `inspect_use_case_source(root, id)` checks the current bytes without importing or
 executing host code. The offline oracle test is
@@ -23,9 +23,16 @@ the host's permission/dispatch, graph revision and merge receipt, contradictory
 retrieval evidence, raw completion state, citation/audit disposition, and
 retention readback. It also checks that an active-mode request creates no
 effects. The files are authored by the same fixture process that runs the
-consumers; they are not independent observations of an installed host or its
-external effects. This is direct offline fixture execution; package build, installation,
-supervised launch and use-case-specific template transforms remain pending.
+consumers; they are not independent observations of external effects. The
+[installed fixture test](../tests/test_use_case_installed_console.py) additionally
+checks the copied source and exact module bytes inside an offline-built wheel,
+installs that wheel in a fresh Linux CPython 3.13 environment, invokes the
+declared `use-case-offline` command with runtime mode `off`, checks the six
+fixture-emitted records, rejects an active-mode launch before effects, and
+uninstalls the package. This proves normal installed invocation of the shared
+fixture host only. It does not provide a #54 implementation receipt, #55
+source-bound package/install receipt, #56 supervised session, independent raw
+effect observation, or any individual L/D/E/M/H template transform.
 Every new host requires a fresh source review and binding. The Python recipe
 catalog's `implemented_bounded_shape` is a transform capability for a narrow
 shape, not an installed use-case qualification.
@@ -58,8 +65,8 @@ separately approved lifecycle commands only after a *new* host review produces
 the exact inventory/spec, policy, source grammar, and host-owned interfaces.
 The five fixture consumers are currently outside the automatic
 `module-tail-call-v1` grammar. No generated patch for them is claimed here.
-After #56 is merged, the finite console host can be carried through the
-separate #54 source verification, #55 package/install and #56 delivery receipt
+The finite console host still needs to be carried through the separate #54
+source verification, #55 package/install and #56 delivery receipt
 contracts. #56 requires an externally retained install receipt digest and
 independent ready, entrypoint and integration observations. Those observations
 must check the six fixture-emitted outcome files against independent host

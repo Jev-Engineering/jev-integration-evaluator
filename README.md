@@ -73,7 +73,9 @@ normal entrypoint launch and connected-mode qualification remain pending.
 The [six-use-case source matrix](references/use-case-template-matrix-v1.md)
 pins offline host contracts for registered tools, graph identity, retrieval,
 completion, claim support and safe retention. The five new fixture oracles are
-tested offline; installed execution, provider modes and benefit remain pending.
+tested offline. A shared fixture wheel is also installed and invoked through
+its normal off-mode console on Linux CPython 3.13; individual template
+transforms, supervised installed delivery, provider modes and benefit remain pending.
 
 Want to see everything working first? Run the bundled offline demo:
 
