@@ -32,15 +32,19 @@ normally launches the installed `graph-host` console.
 The consumer accepts only the finite `reconcile_same` request with a task ID.
 Host-owned approval, current revision, separately retained expected revision,
 two exact entity snapshots and pre-mutation audit are required. It calls the
-unchanged `reconcile` oracle; stale revision, missing approval, changed
-action or missing output path refuses the effect. `GRAPH_EFFECT_PATH` and
-`GRAPH_READY_PATH` are fresh external files. On Linux their parent is
-owner-private `0700`; graph output is created exclusively, mode `0600`, and
-fsynced. The output contains the in-memory store's entities, revision,
-merge receipt and audit record after mutation. The test independently
-constructs expected raw bytes, reads the installed command's output and
-checks revision/provenance/receipt/audit equality. This is a raw effect from
-the same synthetic host process, not an independent database observer.
+unchanged `reconcile` oracle. The installed fixture supplies `GRAPH_DB_PATH`
+for an external SQLite file under an owner-private `0700` directory. A
+`BEGIN IMMEDIATE` transaction checks the stored entities, provenance and
+revision, inserts the audit before the merge record, advances the revision
+with a compare-and-swap, and commits both records together with SQLite full
+synchronous mode. A separate read-only connection checks committed entities,
+revision, audit and merge rows before an effect is reported. Stale revision,
+conflicting entity, missing approval, changed action or failed audit creates
+no new merge or release file. Tests independently query the database and
+compare it with the installed console's raw effect; the database itself is
+the durable fixture effect, rather than a JSON assertion about in-memory
+state. `GRAPH_EFFECT_PATH` and `GRAPH_READY_PATH` remain separate external
+files; the JSON effect is exclusive, mode `0600`, and fsynced.
 
 The test disables the first generation, builds and installs a separately
 reviewed 1.0.1 fixture version, stages and launches it under a new exact
@@ -49,10 +53,13 @@ retained 1.0.0 generation. Both owned source edits are restored. The two
 versions have identical finite graph semantics. Generation rollback does
 not reverse either graph effect.
 
-The #54 console binder remains C-only, so an L-specific bind receipt is
-pending. This profile does not prove persistent database transaction or
-rollback semantics, concurrency across processes, dynamic entity identity,
-connected/provider authority, or measured graph quality. The synthetic
-classifier always proposes `same`; it does not establish semantic entity
-identity. A real host needs its own transactional graph store, authenticated
-approval and audit, revision ownership, and independent graph readback.
+The #54 console binder remains C/E-only, so an L-specific bind receipt is
+pending. This SQLite transaction is a local synthetic identity fixture; it
+does not synthesize a graph from documents, authorize semantic identity, or
+measure graph quality. The classifier always proposes `same` for two fixed
+entities. Database file creation, graph commit and JSON effect creation are
+not one transaction: an interrupted post-commit JSON write requires manual
+reconciliation, never blind retry. The test does not establish concurrency
+across independent hosts, arbitrary entity identity, connected/provider
+authority, or production approval. Generation rollback retains both database
+effects; it does not reverse an entity merge.

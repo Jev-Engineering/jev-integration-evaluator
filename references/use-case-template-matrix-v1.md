@@ -82,8 +82,8 @@ revision, an atomic merge adapter and durable pre-mutation audit. An assessment
 may propose `same`, `related`, `different`, or `uncertain`; only exact `same`
 with approval and a current revision may merge. A stale revision, changed entity,
 missing approval, malformed assessment or failed audit leaves the graph intact.
-The in-memory fixture is not a graph database transaction. A real host needs its
-own atomic transaction proof and rollback ownership.
+The installed L fixture now uses a local SQLite transaction for two fixed
+entities; a real host still needs its own identity policy and rollback owner.
 
 The [L seam test](../tests/test_use_case_graph_host.py) now builds a separate
 synthetic host from the reviewed L recipe fixture, copies the matrix-pinned
@@ -98,13 +98,15 @@ confirms stale expected revision or missing approval creates no merge record.
 The [individual installed L journey](../tests/test_use_case_graph_installed.py)
 extends that reviewed host with a normal console. Both the deterministic
 baseline and generated alternative invoke the same code-owned consumer. The
-#55/#56 path packages, installs, normally launches, observes raw in-memory
-entities/revision/merge/audit records, disables, upgrades a separately reviewed
+#55/#56 path packages, installs, normally launches, observes a local SQLite
+entity/revision/merge/audit transaction with independent database readback,
+disables, upgrades a separately reviewed
 fixture version and rolls back its owned generation and source edits. The
 consumer requires a finite action, current revision, approval and fresh output
 path; the test reads the effect against independently constructed expected
-bytes. This is not a persistent graph database transaction or independent
-database readback. The combined console fixture's L record remains separate;
+bytes. This is a durable synthetic SQLite effect for fixed entities, not
+graph synthesis or production identity approval. The combined console
+fixture's L record remains separate;
 #54 L-specific bind, provider authority and benefit are pending. See the
 [L operator reference](graph-template-offline-v1.md).
 
