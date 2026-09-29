@@ -304,6 +304,7 @@ def _check_plan(plan: dict) -> dict:
 @contextmanager
 def _locked(directory: Path) -> Iterator[None]:
     _linux_profile()
+    _private(directory.parent)
     _private(directory)
     import fcntl
     lock = directory / 'session.lock'
@@ -728,6 +729,7 @@ def create_session(directory: str | Path, plan: dict, *, run_id: str | None = No
         raise DeliveryError('delivery_session_overlaps_installed_generation')
     if not target.parent.is_dir():
         raise DeliveryError('delivery_session_parent_missing')
+    _private(target.parent)
     target.mkdir(mode=0o700)
     _private(target)
     fd = os.open(target / 'events.jsonl', os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)

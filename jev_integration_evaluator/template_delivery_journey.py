@@ -162,6 +162,7 @@ def create_journey(directory: str | Path, *, source_root: str,
     target = _safe_directory(directory, exists=False)
     if not target.parent.is_dir():
         raise DeliveryError('journey_parent_missing')
+    _private(target.parent)
     state = {'schema_version': '1.0', 'kind': 'template-delivery-journey-v1',
              'run_id': str(uuid.uuid4()), 'stage': 'source_planned',
              'source_kind': source_kind, 'source_root': source_root,

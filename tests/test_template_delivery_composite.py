@@ -3,7 +3,10 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 from email.parser import BytesParser
+from contextlib import redirect_stdout
 import importlib.metadata
+import io
+import json
 import os
 from pathlib import Path
 import platform
@@ -14,6 +17,7 @@ import zipfile
 import pytest
 
 from jev_integration_evaluator.io import InputError, digest, file_hash, read_json
+from jev_integration_evaluator.cli import main as cli_main
 from jev_integration_evaluator import template_installation as installer
 from jev_integration_evaluator import template_delivery as delivery
 from jev_integration_evaluator import template_delivery_journey as journey
@@ -115,6 +119,11 @@ def test_composite_journey_to_supervised_installed_two_effects(tmp_path, monkeyp
     session = tmp_path / 'journey'
     created = journey.create_journey(session, source_root=str(root),
                                      bundle=str(bundle), source_kind='composite')
+    output = io.StringIO()
+    with redirect_stdout(output):
+        assert cli_main(['template', 'journey-status', '--session', str(session),
+                         '--trusted-journey-head', created['journey_head_sha256']]) == 0
+    assert json.loads(output.getvalue())['run_id'] == created['run_id']
     assert created['next_action'] == 'verify_and_anchor_source_baseline'
     baseline = verify_composite(root, bundle, 'baseline', approve_execution=True)
     recorded = _record(session, created, 'baseline_anchored',

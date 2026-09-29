@@ -115,7 +115,8 @@ possibly executed invocation. `status` is read-only.
 
 The owner-private session contains `events.jsonl`, an append-only fsynced
 hash-chain, and immutable `plans/<plan_sha256>.json` archives. A nonblocking
-owner lock admits one controller at a time. The launch helper waits on a
+owner lock admits one controller at a time. Its parent directory must also be
+owner-private. The launch helper waits on a
 private pipe until its boot ID, PID and Linux process start ticks are durable;
 EOF before release prevents execution. If release may have happened and the
 exact process cannot be proven live, recovery records an unknown outcome and
