@@ -186,7 +186,7 @@ def test_clean_installed_host_and_repeated_installation(tmp_path, monkeypatch):
                             capture_output=True, text=True, timeout=30,
                             env={'PATH': '/usr/bin:/bin', 'HOME': str(tmp_path)})
     assert result.returncode == 0, result.stderr
-    assert json.loads(result.stdout) == {'entrypoint_reached': True, 'template_count': 1}
+    assert json.loads(result.stdout) == {'entrypoint_reached': True, 'template_count': 2}
     assert installed['mode'] == 'off' and installed['provider_reachable'] is False
     origin = subprocess.run([installed['installed']['python'], '-I', '-c',
                              'import jev_integration_evaluator as j;print(j.__file__)'],

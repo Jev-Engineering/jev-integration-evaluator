@@ -168,6 +168,7 @@ def parser():
     for action in ('validate','materialize'):
         s=template_sub.add_parser(action,help='Validate current source and strict template parameters' if action=='validate' else 'Create exclusive external planner inputs without changing the host')
         s.add_argument('--repo',required=True); s.add_argument('--request',required=True)
+        s.add_argument('--tooling',help='External trusted Node and TypeScript directory for JS recipe C')
         if action=='materialize': s.add_argument('--out',required=True)
     s=template_sub.add_parser('bind',help='Derive reviewed Python console bindings without editing the host')
     s.add_argument('--repo',required=True); s.add_argument('--request',required=True)
@@ -258,8 +259,8 @@ def execute(args):
         if args.template_action=='inspect': return inspect_template(args.template_id,args.version)
         if args.template_action in ('validate','materialize'):
             request=read_json(args.request)
-            if args.template_action=='validate': return validate_template_request(args.repo,request)
-            return materialize_template(args.repo,request,args.out)
+            if args.template_action=='validate': return validate_template_request(args.repo,request,tooling_dir=args.tooling)
+            return materialize_template(args.repo,request,args.out,tooling_dir=args.tooling)
         if args.template_action=='bind':
             return bind_template(args.repo,read_json(args.request),read_json(args.binding),args.out)
         from .template_installation import (plan_package, build_package, package_status, plan_install,

@@ -1,0 +1,314 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "candidate_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "configuration_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "emitted_sha256": {
+      "oneOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "evaluator_version": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "format": {
+      "enum": [
+        "esm",
+        "commonjs",
+        "typescript"
+      ]
+    },
+    "generated_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "lifecycle": {
+      "const": {
+        "active_mode": "pending_separate_authority",
+        "apply": "pending_separate_approval",
+        "authorized_mode": "off",
+        "baseline": "pending_separate_execution_authority",
+        "binding_adaptation": "requires_existing_js_planner",
+        "build": "pending_node_adapter",
+        "canary_mode": "pending_separate_authority",
+        "configure": "pending_node_adapter",
+        "connectivity": "pending_separate_authority",
+        "disable": "host_control_required",
+        "entrypoint_reachability": "pending_host_test",
+        "generation": "supported",
+        "install": "pending_node_adapter",
+        "launch": "pending_delivery_supervisor",
+        "materialization": "supported",
+        "measured_benefit": "unknown",
+        "parameter_validation": "supported",
+        "planning": "requires_existing_js_planner",
+        "rollback": "target_rollback_requires_existing_lifecycle",
+        "selection": "requires_current_review",
+        "shadow_mode": "pending_separate_authority",
+        "status": "render_status_only",
+        "stop": "host_control_required",
+        "upgrade": "fresh_request_required",
+        "verification": "pending_authorized_host_test"
+      }
+    },
+    "lock_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "manifest_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "owned_resources": {
+      "additionalProperties": false,
+      "properties": {
+        "implementation-spec.json": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "package-profile.json": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "template-manifest.json": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "template-request.json": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "template-manifest.json",
+        "template-request.json",
+        "implementation-spec.json",
+        "package-profile.json"
+      ],
+      "type": "object"
+    },
+    "package": {
+      "additionalProperties": false,
+      "properties": {
+        "dependency_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "entrypoint": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*\\.(?:mjs|cjs)$",
+          "type": "string"
+        },
+        "entrypoint_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "name": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "package_json_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "package_lock_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "source_files": {
+          "additionalProperties": {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "minProperties": 3,
+          "type": "object"
+        },
+        "source_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "version": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "entrypoint",
+        "source_files",
+        "source_sha256",
+        "dependency_count",
+        "package_json_sha256",
+        "package_lock_sha256",
+        "entrypoint_sha256"
+      ],
+      "type": "object"
+    },
+    "planner": {
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "const": "js-plan"
+        },
+        "output": {
+          "const": "new external private bundle"
+        },
+        "spec": {
+          "const": "implementation-spec.json"
+        },
+        "tooling": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "command",
+        "spec",
+        "tooling",
+        "output"
+      ],
+      "type": "object"
+    },
+    "renderer_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "request_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "secret_references_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "source_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "spec_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "status": {
+      "const": "materialized"
+    },
+    "target_executed": {
+      "const": false
+    },
+    "target_modified": {
+      "const": false
+    },
+    "template_id": {
+      "const": "javascript.recipe-c"
+    },
+    "template_version": {
+      "const": "1.0.0"
+    },
+    "tooling": {
+      "additionalProperties": false,
+      "properties": {
+        "backend_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "compiler_path": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "compiler_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "compiler_version": {
+          "const": "5.8.3"
+        },
+        "emitter_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "lifecycle_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "node_path": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "node_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "probe_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "runtime_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "transformer_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "node_path",
+        "node_sha256",
+        "compiler_path",
+        "compiler_sha256",
+        "compiler_version",
+        "transformer_sha256",
+        "runtime_sha256",
+        "probe_sha256",
+        "emitter_sha256",
+        "backend_sha256",
+        "lifecycle_sha256"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "status",
+    "template_id",
+    "template_version",
+    "manifest_sha256",
+    "evaluator_version",
+    "renderer_sha256",
+    "tooling",
+    "request_sha256",
+    "spec_sha256",
+    "candidate_id",
+    "format",
+    "source_sha256",
+    "generated_sha256",
+    "emitted_sha256",
+    "package",
+    "configuration_sha256",
+    "secret_references_sha256",
+    "lifecycle",
+    "target_modified",
+    "target_executed",
+    "owned_resources",
+    "planner",
+    "lock_sha256"
+  ],
+  "type": "object"
+}

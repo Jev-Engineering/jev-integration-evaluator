@@ -5,6 +5,12 @@ repository sessions, implementation planning and runtime operations. A discovery
 report is a bounded source snapshot; it is not an execution sandbox or a global
 absence proof.
 
+The `javascript.recipe-c@1.0.0` catalog entry declares Linux x86-64 with a
+trusted external Node executable and TypeScript 5.8.3 compiler. Its present
+qualification is source-bound planner materialization; npm installation,
+normal package launch, provider reachability and connected mode are pending.
+Windows Node interop does not qualify native Linux execution.
+
 | Platform and filesystem | Repository discovery | Qualification |
 | --- | --- | --- |
 | Linux, including WSL2 Linux filesystems | Supported through POSIX descriptor-relative reads with `O_NOFOLLOW`. | Existing Linux CI and recorded Linux/WSL runs. This change does not restart or reconfigure WSL. |

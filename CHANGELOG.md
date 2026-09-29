@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased — JavaScript recipe C template catalog
+
+- Add a separate `javascript.recipe-c@1.0.0` source-bound catalog entry for
+  reviewed ESM, CommonJS and TypeScript recipe C hosts. It checks finite Node
+  package/lock/start inputs, off-mode config and external trusted tool hashes,
+  then materializes private `js-plan` inputs without host effects.
+- Preserve the Python template request and legacy CLI. Native npm install,
+  supervised launch and provider qualification remain pending separate gates.
+
 ## Unreleased — offline template package and installation
 
 - Add strict source-bound package and install plans for an already applied,

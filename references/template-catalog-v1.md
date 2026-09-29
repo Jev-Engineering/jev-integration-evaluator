@@ -121,7 +121,10 @@ two new directories. A source, policy, inventory, recipe, or renderer change
 changes or invalidates the binding.
 
 Supported source grammar remains the bounded Python shape in
-[executable integrations](executable-integrations.md). Other grammars,
-JavaScript/TypeScript templates, native application launch, provider operation
-and connected delivery are outside this catalog version. See the manifest's
-lifecycle statuses instead of treating generation as deployability.
+[executable integrations](executable-integrations.md). A separate
+[`javascript.recipe-c@1.0.0` entry](javascript-recipe-c-template-v1.md)
+accepts only the bounded native recipe C ESM, CommonJS and TypeScript source
+shapes, with its own strict request and lock schemas. Native application
+launch, provider operation and connected delivery remain outside both
+materializers. See each manifest's lifecycle statuses before treating
+generation as deployability.

@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "backend": {
+      "const": "javascript"
+    },
+    "configuration": {
+      "additionalProperties": false,
+      "properties": {
+        "credential_ref": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "pattern": "^env:[A-Za-z_][A-Za-z0-9_]*$",
+              "type": "string"
+            }
+          ]
+        },
+        "mode": {
+          "const": "off"
+        }
+      },
+      "required": [
+        "mode",
+        "credential_ref"
+      ],
+      "type": "object"
+    },
+    "entrypoint": {
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*\\.(?:mjs|cjs)$",
+      "type": "string"
+    },
+    "entrypoint_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "format": {
+      "enum": [
+        "esm",
+        "commonjs",
+        "typescript"
+      ]
+    },
+    "implementation_spec": {
+      "type": "object"
+    },
+    "package_json_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "package_lock_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "profile": {
+      "const": "flat-async-recipe-c-v1"
+    },
+    "reviewed_configuration_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "reviewed_package_source_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "secret_references": {
+      "additionalProperties": false,
+      "properties": {
+        "credential": {
+          "pattern": "^env:[A-Za-z_][A-Za-z0-9_]*$",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "template_id": {
+      "const": "javascript.recipe-c"
+    },
+    "template_version": {
+      "const": "1.0.0"
+    }
+  },
+  "required": [
+    "schema_version",
+    "template_id",
+    "template_version",
+    "backend",
+    "profile",
+    "format",
+    "implementation_spec",
+    "entrypoint",
+    "package_json_sha256",
+    "package_lock_sha256",
+    "entrypoint_sha256",
+    "reviewed_package_source_sha256",
+    "configuration",
+    "secret_references",
+    "reviewed_configuration_sha256"
+  ],
+  "type": "object"
+}
