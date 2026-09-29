@@ -36,10 +36,13 @@ fresh observation schedule. `E_RAW_STATE_PATH`, `E_EFFECT_RECEIPT_PATH` and
 `E_READY_PATH` are absolute files under a new owner-only `0700` directory
 outside the source, package, environment and session trees. The consumer
 requires an approved finite operation and fresh unlinked effect paths. It
-writes final state and a receipt with pre/post state hashes using exclusive
-owner-only files and fsync. The test independently computes the expected raw
-bytes, reads both files, and evaluates the final state with the pinned raw
-oracle. A success-shaped executor field without the raw goal fails. Missing
+writes fixture-chosen final state and a fixture-generated receipt with pre/post
+hashes using exclusive owner-only files and fsync. The `before` hash comes from
+a fixed fixture value; the consumer does not read persisted initial task state.
+The test independently computes expected raw bytes, reads both files, and
+evaluates final state with the pinned raw oracle. This is a checked fixture
+readback, not proof of a real task-state transition or an independent receipt
+producer. A success-shaped executor field without the raw goal fails. Missing
 permission, an unknown operation or an existing output path refuses a new
 effect. An incomplete state/receipt pair cannot satisfy the session's
 independent observation schedule and must be reviewed before any retry.
@@ -47,7 +50,8 @@ independent observation schedule and must be reviewed before any retry.
 The test disables the first session, builds and installs a separately reviewed
 version 1.0.1, stages it with an exact upgrade scope, normally launches and
 observes its raw effect, disables it, rolls the session back to the retained
-version 1.0.0 generation, and restores both owned source edits. Both
+version 1.0.0 generation, and restores both owned source edits. Generation
+rollback does not undo a prior task effect. Both
 environments remain available for inspection. These are synthetic fixture
 versions, not a real application's compatibility guarantee.
 
