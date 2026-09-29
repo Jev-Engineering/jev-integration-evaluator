@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Registered Alpha offline installed qualification report v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "kind", "classification", "run_id", "source_candidate_id", "source_sha256", "modified_receipt_sha256", "install_receipt_sha256", "raw_effect_sha256", "installed_origins", "offline_fault_checks", "observed_action", "provider_qualification", "measured_benefit", "final_stage"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "registered-alpha-offline-report-v1"},
+    "classification": {"const": "offline_installed_host"},
+    "run_id": {"type": "string", "format": "uuid"},
+    "source_candidate_id": {"type": "string", "minLength": 1},
+    "source_sha256": {"$ref": "#/$defs/sha"},
+    "modified_receipt_sha256": {"$ref": "#/$defs/sha"},
+    "install_receipt_sha256": {"$ref": "#/$defs/sha"},
+    "raw_effect_sha256": {"$ref": "#/$defs/sha"},
+    "installed_origins": {"type": "object", "additionalProperties": false,
+      "required": ["host", "evaluator"], "properties": {
+        "host": {"type": "string", "pattern": "^/"},
+        "evaluator": {"type": "string", "pattern": "^/"}
+      }},
+    "offline_fault_checks": {"type": "array", "minItems": 8, "maxItems": 8,
+      "uniqueItems": true, "items": {"enum": ["install_interrupted_recovered",
+        "revoked_scope", "source_drift",
+        "config_drift", "unreleased_start_recovered", "duplicate_effect_twice",
+        "post_disable_refusal", "rollback_edit_refusal"]}},
+    "observed_action": {"const": "inspect"},
+    "provider_qualification": {"const": "not_run"},
+    "measured_benefit": {"const": false},
+    "final_stage": {"const": "rolled_back"}
+  },
+  "$defs": {"sha": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+}

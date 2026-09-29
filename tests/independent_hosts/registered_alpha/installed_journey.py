@@ -17,11 +17,13 @@ import os
 from pathlib import Path
 import platform
 import shutil
+import subprocess
 import sys
 import time
 import zipfile
 
-from jev_integration_evaluator.io import digest, file_hash, read_json, write_json
+from jev_integration_evaluator.io import InputError, digest, file_hash, read_json, write_json
+from jev_integration_evaluator.contracts import validate_contract
 from jev_integration_evaluator.template_catalog import prepare_template_binding, materialize_template
 from jev_integration_evaluator.integrations.lifecycle import (
     apply_implementation, implementation_status, plan_implementation)
@@ -102,6 +104,48 @@ def _create_release(path: Path) -> None:
         os.fsync(fd)
     finally:
         os.close(fd)
+
+
+def _installed_origins(installed: dict, install_plan: dict, workspace: Path) -> dict:
+    """Check exact installed metadata and module paths without executing them."""
+    environment = Path(installed['environment'])
+    python = Path(installed['installed']['python'])
+    expected_python = Path(install_plan['profile']['executable_path']).resolve(strict=True)
+    if (not python.is_relative_to(environment / 'venv') or not python.is_symlink()
+            or python.resolve(strict=True) != expected_python):
+        raise RuntimeError('registered_alpha_interpreter_origin_changed')
+    site = environment / 'venv/lib/python3.13/site-packages'
+    if not site.is_dir() or site.is_symlink():
+        raise RuntimeError('registered_alpha_site_origin_changed')
+    origins = {'host': site / 'registered_alpha/__init__.py',
+               'evaluator': site / 'jev_integration_evaluator/__init__.py'}
+    for name in ('host', 'evaluator'):
+        path = origins[name]
+        if (path.is_symlink() or not path.is_file() or
+                not path.resolve(strict=True).is_relative_to(site.resolve(strict=True)) or
+                path.resolve().is_relative_to(workspace / 'host')):
+            raise RuntimeError('registered_alpha_' + name + '_checkout_origin')
+    for name in ('jev-independent-registered-alpha', 'jev-integration-evaluator'):
+        matching = [dist for dist in importlib.metadata.distributions(path=[str(site)])
+                    if dist.metadata['Name'].lower().replace('_', '-') == name]
+        if (len(matching) != 1 or
+                matching[0].version != installed['installed']['distributions'][name]):
+            raise RuntimeError('registered_alpha_distribution_origin_changed')
+    entry = Path(installed['installed']['entrypoint_origin'])
+    if (entry.is_symlink() or not entry.is_file() or
+            entry.resolve(strict=True) != origins['host'].with_name('console.py').resolve(strict=True)):
+        raise RuntimeError('registered_alpha_entrypoint_origin_changed')
+    return {name: str(origins[name].resolve(strict=True)) for name in ('host', 'evaluator')}
+
+
+def _refused(action, exception: type[Exception], marker: str) -> None:
+    try:
+        action()
+    except exception as error:
+        if marker not in str(error):
+            raise
+    else:
+        raise RuntimeError('registered_alpha_expected_refusal_missing_' + marker)
 
 
 def run_offline(workspace: Path, wheelhouse: Path, anchors: Path) -> dict:
@@ -197,9 +241,35 @@ def run_offline(workspace: Path, wheelhouse: Path, anchors: Path) -> dict:
     install_plan = installer.plan_install(package_plan, package_receipt)
     progress = _record(journey, journey_dir, progress, 'install_planned', plan=install_plan)
     _anchor(anchors, 'journey_install_planned', progress['journey_head_sha256'])
+    original_run = installer._run
+    def interrupt_dependencies(command, **kwargs):
+        if '--require-hashes' in command:
+            raise KeyboardInterrupt('registered_alpha_injected_dependency_install_interrupt')
+        return original_run(command, **kwargs)
+    installer._run = interrupt_dependencies
+    try:
+        _refused(lambda: installer.install_package(install_plan,
+            approved_plan_sha256=install_plan['plan_sha256']), KeyboardInterrupt,
+            'registered_alpha_injected_dependency_install_interrupt')
+    finally:
+        installer._run = original_run
+    incomplete = installer.installation_status(install_plan)
+    if (incomplete['status'] != 'interrupted_recovery_required'
+            or not incomplete['generation_sha256']):
+        raise RuntimeError('registered_alpha_install_interruption_not_owned')
+    _anchor(anchors, 'install_incomplete_generation', incomplete['generation_sha256'])
+    _refused(lambda: installer.install_package(install_plan,
+        approved_plan_sha256=install_plan['plan_sha256']), installer.InstallationError,
+        'install_interrupted_recovery_required')
+    removed = installer.recover_installation(install_plan,
+        approved_plan_sha256=install_plan['plan_sha256'],
+        approved_generation_sha256=incomplete['generation_sha256'])
+    if removed['status'] != 'owned_incomplete_generation_removed':
+        raise RuntimeError('registered_alpha_incomplete_install_not_recovered')
     installed = installer.install_package(install_plan,
         approved_plan_sha256=install_plan['plan_sha256'])
     _anchor(anchors, 'package_installed', installed['receipt_sha256'])
+    origins = _installed_origins(installed, install_plan, workspace)
     progress = _record(journey, journey_dir, progress, 'installed',
                        trusted_receipt_sha256=installed['receipt_sha256'])
     _anchor(anchors, 'journey_installed', progress['journey_head_sha256'])
@@ -237,6 +307,64 @@ def run_offline(workspace: Path, wheelhouse: Path, anchors: Path) -> dict:
     if child['run_id'] != progress['run_id']:
         raise RuntimeError('registered_alpha_run_identity_changed')
     launch_scope = _scope(child, delivery_plan, 'launch')
+    revoked = dict(launch_scope)
+    revoked['revoked'] = True
+    revoked['scope_sha256'] = digest({key: value for key, value in revoked.items()
+                                       if key != 'scope_sha256'})
+    _refused(lambda: delivery.launch_session(runtime, scope=revoked,
+        approved_scope_sha256=revoked['scope_sha256']), delivery.DeliveryError,
+        'scope')
+    if delivery.session_status(runtime)['session_head_sha256'] != child['session_head_sha256']:
+        raise RuntimeError('registered_alpha_revocation_changed_session')
+
+    source_file = host / 'pyproject.toml'
+    source_bytes = source_file.read_bytes()
+    source_file.write_bytes(source_bytes + b'\n# reviewed source drift probe\n')
+    try:
+        _refused(lambda: delivery.launch_session(runtime, scope=launch_scope,
+            approved_scope_sha256=launch_scope['scope_sha256']), InputError,
+            'verification_failed')
+    finally:
+        source_file.write_bytes(source_bytes)
+    config_file = Path(installed['environment']) / 'config.json'
+    config_bytes = config_file.read_bytes()
+    changed_config = json.loads(config_bytes)
+    changed_config['jev_runtime']['credential_ref'] = 'env:REGISTERED_ALPHA_UNUSED_KEY'
+    config_file.write_text(json.dumps(changed_config, sort_keys=True), encoding='utf-8')
+    try:
+        _refused(lambda: delivery.launch_session(runtime, scope=launch_scope,
+            approved_scope_sha256=launch_scope['scope_sha256']), InputError,
+            'drift')
+    finally:
+        config_file.write_bytes(config_bytes)
+    if (delivery.session_status(runtime)['session_head_sha256'] != child['session_head_sha256']
+            or effects.exists() or ready.exists()):
+        raise RuntimeError('registered_alpha_drift_probe_changed_session_or_effect')
+
+    original_append = delivery._append
+    def interrupt_before_release(directory, rows, event, state):
+        if event == 'launched':
+            raise RuntimeError('registered_alpha_injected_before_release')
+        return original_append(directory, rows, event, state)
+    delivery._append = interrupt_before_release
+    try:
+        _refused(lambda: delivery.launch_session(runtime, scope=launch_scope,
+            approved_scope_sha256=launch_scope['scope_sha256']), RuntimeError,
+            'registered_alpha_injected_before_release')
+    finally:
+        delivery._append = original_append
+    pending = delivery.session_status(runtime)
+    if (pending['pending'] != 'launch' or pending['run_id'] != child['run_id']
+            or effects.exists() or ready.exists()):
+        raise RuntimeError('registered_alpha_interrupted_launch_effect_or_identity')
+    _anchor(anchors, 'delivery_start_pending', pending['session_head_sha256'])
+    child = delivery.resume_session(runtime,
+        trusted_session_head=pending['session_head_sha256'])
+    if (child['pending'] is not None or child['stage'] != 'installed'
+            or child['run_id'] != progress['run_id'] or effects.exists()):
+        raise RuntimeError('registered_alpha_unreleased_start_recovery_changed_run')
+    _anchor(anchors, 'delivery_start_recovered', child['session_head_sha256'])
+    launch_scope = _scope(child, delivery_plan, 'launch')
     launched = delivery.launch_session(runtime, scope=launch_scope,
         approved_scope_sha256=launch_scope['scope_sha256'])
     _anchor(anchors, 'delivery_launched', launched['session_head_sha256'])
@@ -266,29 +394,65 @@ def run_offline(workspace: Path, wheelhouse: Path, anchors: Path) -> dict:
     if observed['recorded_observations']['provider_reachable'] is not False:
         raise RuntimeError('unexpected_provider_qualification_claim')
     _anchor(anchors, 'delivery_effect_observed', observed['session_head_sha256'])
+    repeated_environment = {key: value for key, value in launch_environment.items()
+                            if key not in ('REGISTERED_ALPHA_HOLD', 'REGISTERED_ALPHA_READY',
+                                           'REGISTERED_ALPHA_RELEASE')}
+    repeated_environment.update({'PATH': str(Path(installed['environment']) / 'venv/bin'),
+                                 'PYTHONNOUSERSITE': '1', 'JEV_RUNTIME_MODE': 'off'})
+    for _ in range(2):
+        repeated = subprocess.run([installed['installed']['console_script']],
+            cwd=installed['environment'], env=repeated_environment,
+            capture_output=True, timeout=15)
+        if repeated.returncode == 0 or b'duplicate_task_effect' not in repeated.stderr:
+            raise RuntimeError('registered_alpha_duplicate_task_not_refused')
+        if effects.read_bytes() != expected_effect:
+            raise RuntimeError('registered_alpha_duplicate_task_changed_effect')
     disable_scope = _scope(observed, delivery_plan, 'disable')
     disabled = delivery.stop_session(runtime, scope=disable_scope,
         approved_scope_sha256=disable_scope['scope_sha256'], disable=True)
     if disabled['stage'] != 'disabled':
         raise RuntimeError('registered_alpha_disable_incomplete')
     _anchor(anchors, 'delivery_disabled', disabled['session_head_sha256'])
+    disabled_launch_scope = _scope(disabled, delivery_plan, 'launch')
+    _refused(lambda: delivery.launch_session(runtime, scope=disabled_launch_scope,
+        approved_scope_sha256=disabled_launch_scope['scope_sha256']), delivery.DeliveryError,
+        'blocked')
+    if effects.read_bytes() != expected_effect:
+        raise RuntimeError('registered_alpha_post_disable_effect_changed')
     source_status = implementation_status(host, bundle,
         trusted_receipt_sha256=modified['receipt_sha256'])
     rollback_scope = _scope(disabled, delivery_plan, 'rollback',
                             rollback_digest=source_status['rollback_digest'])
+    source_file.write_bytes(source_bytes + b'\n# concurrent edit before rollback\n')
+    try:
+        _refused(lambda: delivery.rollback_session(runtime, scope=rollback_scope,
+            approved_scope_sha256=rollback_scope['scope_sha256']), InputError,
+            'changed since planning')
+    finally:
+        source_file.write_bytes(source_bytes)
+    if delivery.session_status(runtime)['session_head_sha256'] != disabled['session_head_sha256']:
+        raise RuntimeError('registered_alpha_edit_refusal_changed_session')
     rolled = delivery.rollback_session(runtime, scope=rollback_scope,
         approved_scope_sha256=rollback_scope['scope_sha256'])
     if rolled['stage'] != 'rolled_back':
         raise RuntimeError('registered_alpha_rollback_incomplete')
     _anchor(anchors, 'delivery_rolled_back', rolled['session_head_sha256'])
-    return {'schema_version': '1.0', 'classification': 'offline_installed_host',
+    report = {'schema_version': '1.0', 'kind': 'registered-alpha-offline-report-v1',
+            'classification': 'offline_installed_host',
             'run_id': progress['run_id'], 'source_candidate_id': spec['candidate_id'],
             'source_sha256': spec['source']['source_sha256'],
             'modified_receipt_sha256': modified['receipt_sha256'],
             'install_receipt_sha256': installed['receipt_sha256'],
             'raw_effect_sha256': file_hash(effects),
+            'installed_origins': origins,
+            'offline_fault_checks': ['install_interrupted_recovered', 'revoked_scope',
+                                     'source_drift', 'config_drift',
+                                     'unreleased_start_recovered', 'duplicate_effect_twice',
+                                     'post_disable_refusal', 'rollback_edit_refusal'],
             'observed_action': 'inspect', 'provider_qualification': 'not_run',
             'measured_benefit': False, 'final_stage': rolled['stage']}
+    validate_contract(report, 'registered-alpha-offline-report-v1')
+    return report
 
 
 def main() -> int:

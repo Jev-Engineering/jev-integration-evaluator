@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Independent registered-dual installed composite offline report v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "kind", "classification", "run_id", "candidate_ids",
+    "source_sha256", "modified_receipt_sha256", "install_receipt_sha256",
+    "raw_effect_sha256", "installed_origins", "assessment_count", "common_task_identity",
+    "shared_budget_exhausted", "duplicate_refused", "start_recovered_same_run",
+    "provider_qualification", "measured_benefit", "final_stage"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "registered-dual-offline-report-v1"},
+    "classification": {"const": "independent_installed_composite_fixture"},
+    "run_id": {"type": "string", "format": "uuid"},
+    "candidate_ids": {"type": "array", "minItems": 2, "maxItems": 2,
+      "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "source_sha256": {"type": "object", "minProperties": 2, "maxProperties": 2,
+      "additionalProperties": {"$ref": "#/$defs/sha"}},
+    "modified_receipt_sha256": {"$ref": "#/$defs/sha"},
+    "install_receipt_sha256": {"$ref": "#/$defs/sha"},
+    "raw_effect_sha256": {"type": "object", "additionalProperties": false,
+      "required": ["alpha", "queue"], "properties": {
+        "alpha": {"$ref": "#/$defs/sha"}, "queue": {"$ref": "#/$defs/sha"}}},
+    "installed_origins": {"type": "object", "additionalProperties": false,
+      "required": ["host", "evaluator"], "properties": {
+        "host": {"type": "string", "pattern": "^/"},
+        "evaluator": {"type": "string", "pattern": "^/"}}},
+    "assessment_count": {"const": 2},
+    "common_task_identity": {"const": true},
+    "shared_budget_exhausted": {"const": true},
+    "duplicate_refused": {"const": true},
+    "start_recovered_same_run": {"const": true},
+    "provider_qualification": {"const": "not_run"},
+    "measured_benefit": {"const": false},
+    "final_stage": {"const": "rolled_back"}
+  },
+  "$defs": {"sha": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+}
