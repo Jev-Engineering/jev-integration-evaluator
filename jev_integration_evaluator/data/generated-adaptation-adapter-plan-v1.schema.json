@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Generated Python adaptation adapter plan v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["kind", "schema_version", "root_identity", "engine_identity", "request_sha256", "spec_sha256", "inventory_sha256", "caller_scope_sha256", "patch_sha256", "owned_file", "source_file", "source_before_sha256", "source_after_sha256", "adaptation_verification_sha256", "stage", "contract_digest"],
+  "properties": {
+    "kind": {"const": "generated-adaptation-adapter-plan-v1"},
+    "schema_version": {"const": "1.0"},
+    "root_identity": {"type": "object", "additionalProperties": false, "required": ["path_sha256", "device", "inode"], "properties": {"path_sha256": {"$ref": "#/$defs/hash"}, "device": {"type": "integer"}, "inode": {"type": "integer"}}},
+    "engine_identity": {"$ref": "#/$defs/hash"},
+    "request_sha256": {"$ref": "#/$defs/hash"},
+    "spec_sha256": {"$ref": "#/$defs/hash"},
+    "inventory_sha256": {"$ref": "#/$defs/hash"},
+    "caller_scope_sha256": {"$ref": "#/$defs/hash"},
+    "patch_sha256": {"$ref": "#/$defs/hash"},
+    "owned_file": {"type": "object", "additionalProperties": false, "required": ["file", "old_sha256", "new_sha256", "old_mode", "new_mode"], "properties": {"file": {"type": "string", "minLength": 1}, "old_sha256": {"oneOf": [{"$ref": "#/$defs/hash"}, {"type": "null"}]}, "new_sha256": {"$ref": "#/$defs/hash"}, "old_mode": {"oneOf": [{"type": "integer"}, {"type": "null"}]}, "new_mode": {"type": "integer"}}},
+    "source_file": {"type": "string", "minLength": 1},
+    "source_before_sha256": {"$ref": "#/$defs/hash"},
+    "source_after_sha256": {"$ref": "#/$defs/hash"},
+    "adaptation_verification_sha256": {"oneOf": [{"$ref": "#/$defs/hash"}, {"type": "null"}]},
+    "stage": {"enum": ["bootstrap", "final"]},
+    "contract_digest": {"$ref": "#/$defs/hash"}
+  },
+  "$defs": {"hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}

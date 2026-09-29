@@ -22,7 +22,8 @@ def prepared(source, shape, symbol):
         statement = next(n for n in tree.body if isinstance(n, ast.ClassDef) and n.name == owner)
         statement = next(n for n in statement.body if isinstance(n, ast.FunctionDef) and n.name == name).body[-1]
     else:
-        statement = next(n for n in tree.body if isinstance(n, ast.AsyncFunctionDef) and n.name == symbol).body[-1]
+        statement = next(n for n in tree.body if isinstance(n, (ast.AsyncFunctionDef, ast.FunctionDef))
+                         and n.name == symbol).body[-1]
     return prepare_shape(raw, shape=shape, symbol=symbol, source_sha256=hashlib.sha256(raw).hexdigest(),
                          anchor_sha256=digest(ast.dump(statement, annotate_fields=True, include_attributes=False)),
                          adapter_name='adapter')

@@ -106,16 +106,17 @@ reviewer must check that the scheduled native cases actually exercise every
 owned prerequisite and that observations cover its expected effects; an
 entrypoint hash and output receipt alone cannot establish that coverage.
 
-The synthetic structural tests execute the original and proposed method or
-async function with an inert local adapter. They check receiver state, effect
-order, return/exception behavior, await count and cancellation. These tests
-exercise the shape edit; they do not qualify active JEV routing, a generated
-adapter or a real host integration. The separate native lifecycle tests below
-exercise patch application and isolation with an inert synthetic adapter.
-`host.invoke_bound` is synchronous and cannot safely run an async executor;
-the async strategy must get a distinct independently verified runtime before
-it can be promoted to an executable recipe. Preparatory prerequisites also
-need a fresh source scan and candidate/binding reviews after their changes.
+The original structural tests execute the method or async edit with an inert
+local adapter; the original native lifecycle still owns only the selected
+source. A separate generated adapter runtime now supports reviewed regular
+packages in off and offline synthetic shadow. See
+`references/python-adaptation-runtime-v1.md` for its independent caller audit,
+adapter creation/revision ownership, installed host checks, and exact
+post-adaptation review sequence. `host.invoke_bound` remains synchronous;
+the async runtime profile schedules only synthetic assessment off the event
+loop and awaits the original operation once. Connected async and active
+execution remain unsupported. Preparatory prerequisites still need a fresh
+source scan and candidate/binding reviews after their changes.
 
 ## Native one-source lifecycle
 

@@ -171,6 +171,17 @@ def validate(check_manifest=False):
                  for name in ('javascript-template-request-v1',
                               'javascript-template-manifest-v1',
                               'javascript-template-lock-v1')]
+    required += ['jev_integration_evaluator/integrations/adaptation_runtime.py',
+                 'jev_integration_evaluator/integrations/adaptation_adapter_lifecycle.py',
+                 'scripts/prepare_adaptation_runtime.py',
+                 'tests/test_template_adaptation_runtime.py',
+                 'references/python-adaptation-runtime-v1.md']
+    required += [f'{directory}/{name}.schema.json'
+                 for directory in ('schemas', 'jev_integration_evaluator/data')
+                 for name in ('generated-adaptation-adapter-request-v1',
+                              'generated-adaptation-adapter-plan-v1',
+                              'adaptation-runtime-caller-review-v1',
+                              'adaptation-runtime-review-receipt-v1')]
     required += [f'{directory}/{name}.schema.json'
                  for directory in ('schemas', 'jev_integration_evaluator/data')
                  for name in ('template-request-v1', 'template-manifest-v1', 'template-lock-v1',

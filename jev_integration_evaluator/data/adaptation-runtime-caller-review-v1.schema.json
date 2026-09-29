@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Independent complete caller review for bounded Python adaptation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["reviewer", "reason", "closed_scope", "external_callers", "caller_scope_sha256"],
+  "properties": {
+    "reviewer": {"type": "string", "minLength": 1},
+    "reason": {"type": "string", "minLength": 1},
+    "closed_scope": {"const": true},
+    "external_callers": {"const": false},
+    "caller_scope_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

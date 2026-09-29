@@ -106,6 +106,7 @@ Each stage rechecks source identity and requires its own explicit authorization 
 | Generate and apply a reviewed code change | [`references/executable-integrations.md`](references/executable-integrations.md) |
 | Render versioned source-bound planner inputs | [`references/template-catalog-v1.md`](references/template-catalog-v1.md) |
 | Bind recipe C to a reviewed Python console command | [`references/template-python-entrypoint-v1.md`](references/template-python-entrypoint-v1.md) |
+| Generate a bounded method, async, or fixed-positional Python adapter runtime | [`references/python-adaptation-runtime-v1.md`](references/python-adaptation-runtime-v1.md) |
 | Build and install a verified Python host in an owned offline environment | [`references/template-installation-v1.md`](references/template-installation-v1.md) |
 | Modify JavaScript/TypeScript hosts | [`references/javascript-typescript-backend-v1.md`](references/javascript-typescript-backend-v1.md) |
 | Run rigorous before/after experiments | [`references/experimental-methodology.md`](references/experimental-methodology.md) · [`references/lifecycle-and-evidence.md`](references/lifecycle-and-evidence.md) |
@@ -146,6 +147,7 @@ real provider connectivity, operational safety, or measured benefit.
 - **No live-model benefit has been measured** for this build. All validation to date uses synthetic fixtures and mocked HTTP.
 - Static analysis can't see every dynamic call, callback, or generated file. A partial scan is not proof a repo has no opportunities.
 - Code changes are supported for **bounded, documented Python shapes** (and one JS/TS shape); everything else is analysis-only and says so.
+- The generated Python adaptation runtime supports normal installed commands in off and offline synthetic shadow for its reviewed regular-package shapes. Connected async/canary/active use and a general multi-statement rewriter are not qualified.
 - Native Windows discovery is qualified for local NTFS drive paths on Windows 11 and Windows Server 2022. Windows Server 2022 CI ran the required discovery fixtures on CPython 3.10 and 3.13 with real symlinks and zero skips. UNC/network roots and broader runtime/session workflows have separate limits; see the [platform matrix](references/platform-support.md).
 - The test runner is not a sandbox; use an isolated environment for untrusted projects.
 
