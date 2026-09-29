@@ -90,6 +90,8 @@ def _sqlite_merge(path: Path, state: dict, left: graph.Entity,
         prior_merges = db.execute("SELECT id, receipt FROM merges ORDER BY id").fetchall()
         if not _valid_history(prior_audits, prior_merges, recorded[0][0], left, right):
             raise RuntimeError("graph database history conflict")
+        if recorded[0][0] == 32:
+            raise RuntimeError("graph database revision limit reached")
         staged = graph.InMemoryGraph(left, right, revision=recorded[0][0])
         audit_rows: list[dict] = []
         def audit(row: dict) -> None:

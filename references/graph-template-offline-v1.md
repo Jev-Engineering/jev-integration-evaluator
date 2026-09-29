@@ -40,6 +40,8 @@ with a compare-and-swap, and commits both records together with SQLite full
 synchronous mode. A separate read-only connection checks committed entities,
 revision, and the full ordered audit/merge receipt history before an effect is
 reported. A historical receipt changed without changing row count is refused.
+The fixture accepts at most 32 committed reconciliation records; a 33rd is
+refused before mutation.
 Stale revision,
 conflicting entity, missing approval, changed action or failed audit creates
 no new merge or release file. Tests independently query the database and

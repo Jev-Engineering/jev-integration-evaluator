@@ -52,7 +52,7 @@
       "source": "examples/graph-system/entities.py",
       "source_sha256": "6484f40eee708ddd805bfd4f36128be89ca0aa4c1eb6ea132dedb4d4a61dac0c",
       "consumer_adapter": "examples/use-case-host/graph_runtime.py",
-      "consumer_adapter_sha256": "020b47ae6beb3be229ed1485d8aec048a3ee8a55f55a949a90e22894f0a62ae0",
+      "consumer_adapter_sha256": "e4ab3d68724042d7559cf06f54d9e59f9438a9329ab64a18eefc1ecd60cbe9e0",
         "host_consumer": "reconcile / SQLite entity transaction",
         "host_oracle": "approval, exact entities, revision and audit with independent committed database readback",
       "offline_contract": "tested_fixture",

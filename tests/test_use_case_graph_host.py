@@ -27,7 +27,7 @@ from scripts.implementation_fixtures import fixture
 
 
 ROOT = Path(__file__).resolve().parents[1]
-GRAPH_RUNTIME_SHA256 = "020b47ae6beb3be229ed1485d8aec048a3ee8a55f55a949a90e22894f0a62ae0"
+GRAPH_RUNTIME_SHA256 = "e4ab3d68724042d7559cf06f54d9e59f9438a9329ab64a18eefc1ecd60cbe9e0"
 
 
 def _graph_host(target: Path, version: str | None = None):
@@ -250,3 +250,19 @@ def test_graph_sqlite_transaction_and_independent_readback(tmp_path, monkeypatch
         assert observed.execute("SELECT value FROM revision").fetchall() == [(2,)]
         assert observed.execute("SELECT COUNT(*) FROM audit").fetchone() == (2,)
         assert observed.execute("SELECT COUNT(*) FROM merges").fetchone() == (2,)
+    for revision in range(2, 32):
+        monkeypatch.setenv("GRAPH_EFFECT_PATH", str(effects / f"step-{revision}.json"))
+        assert runtime.merge(request, {"revision": revision,
+                                       "expected_revision": revision,
+                                       "approval": True}) == revision + 1
+    at_limit = database.read_bytes()
+    monkeypatch.setenv("GRAPH_EFFECT_PATH", str(effects / "over-limit.json"))
+    with pytest.raises(RuntimeError, match="revision limit reached"):
+        runtime.merge(request, {"revision": 32, "expected_revision": 32,
+                                "approval": True})
+    assert database.read_bytes() == at_limit
+    assert not (effects / "over-limit.json").exists()
+    with sqlite3.connect(database.as_uri() + "?mode=ro", uri=True) as observed:
+        assert observed.execute("SELECT value FROM revision").fetchall() == [(32,)]
+        assert observed.execute("SELECT COUNT(*) FROM audit").fetchone() == (32,)
+        assert observed.execute("SELECT COUNT(*) FROM merges").fetchone() == (32,)
