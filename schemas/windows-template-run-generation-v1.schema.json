@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "kind", "run_id", "sequence", "action", "session", "install_plan_sha256", "install_receipt_sha256", "environment", "project_name", "project_version", "source_sha256", "record_sha256"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "windows-template-run-generation-v1"},
+    "run_id": {"type": "string", "format": "uuid"},
+    "sequence": {"type": "integer", "minimum": 0, "maximum": 2},
+    "action": {"enum": ["initial", "upgrade", "rollback"]},
+    "session": {"type": "object"},
+    "install_plan_sha256": {"$ref": "#/$defs/sha256"},
+    "install_receipt_sha256": {"$ref": "#/$defs/sha256"},
+    "environment": {"type": "string", "minLength": 1},
+    "project_name": {"type": "string", "minLength": 1},
+    "project_version": {"type": "string", "minLength": 1},
+    "source_sha256": {"$ref": "#/$defs/sha256"},
+    "record_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {"sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}

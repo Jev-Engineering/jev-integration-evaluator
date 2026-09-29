@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "kind", "run_id", "owned_directory", "mode", "maximum_generations", "record_sha256"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "windows-template-run-v1"},
+    "run_id": {"type": "string", "format": "uuid"},
+    "owned_directory": {"$ref": "#/$defs/owned"},
+    "mode": {"const": "off"},
+    "maximum_generations": {"const": 3},
+    "record_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "owned": {"type": "object", "additionalProperties": false, "required": ["path", "volume_id", "file_id", "acl_sha256", "lock_acl_sha256"], "properties": {"path": {"type": "string", "minLength": 1}, "volume_id": {"type": "integer", "minimum": 1}, "file_id": {"type": "integer", "minimum": 1}, "acl_sha256": {"$ref": "#/$defs/sha256"}, "lock_acl_sha256": {"$ref": "#/$defs/sha256"}}}
+  }
+}

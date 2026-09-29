@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "kind", "plan_sha256", "package_receipt_sha256", "environment", "owned_directory", "installed", "mode", "runtime_activation_authorized", "receipt_sha256"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "windows-template-install-receipt-v1"},
+    "plan_sha256": {"$ref": "#/$defs/sha256"},
+    "package_receipt_sha256": {"$ref": "#/$defs/sha256"},
+    "environment": {"type": "string", "minLength": 1},
+    "owned_directory": {"type": "object", "additionalProperties": false, "required": ["path", "volume_id", "file_id", "acl_sha256", "lock_acl_sha256"], "properties": {"path": {"type": "string", "minLength": 1}, "volume_id": {"type": "integer", "minimum": 1}, "file_id": {"type": "integer", "minimum": 1}, "acl_sha256": {"$ref": "#/$defs/sha256"}, "lock_acl_sha256": {"$ref": "#/$defs/sha256"}}},
+    "installed": {"type": "object", "additionalProperties": false, "required": ["python", "python_sha256", "console_script", "console_script_sha256", "entrypoint_origin", "installed_files_sha256", "installed_files", "tree_sha256", "tree_files", "tree_acl_sha256", "tree_acls", "tree_identity_sha256", "config_acl_sha256", "distributions"], "properties": {
+      "python": {"type": "string", "minLength": 1}, "python_sha256": {"$ref": "#/$defs/sha256"},
+      "console_script": {"type": "string", "minLength": 1}, "console_script_sha256": {"$ref": "#/$defs/sha256"},
+      "entrypoint_origin": {"type": "string", "minLength": 1},
+      "installed_files_sha256": {"$ref": "#/$defs/sha256"},
+      "installed_files": {"type": "object", "minProperties": 1, "maxProperties": 4096, "additionalProperties": {"$ref": "#/$defs/sha256"}},
+      "tree_sha256": {"$ref": "#/$defs/sha256"},
+      "tree_files": {"type": "object", "minProperties": 1, "maxProperties": 12000, "additionalProperties": {"$ref": "#/$defs/sha256"}},
+      "tree_acl_sha256": {"$ref": "#/$defs/sha256"},
+      "tree_identity_sha256": {"$ref": "#/$defs/sha256"},
+      "tree_acls": {"type": "object", "minProperties": 1, "maxProperties": 12000, "additionalProperties": {"$ref": "#/$defs/sha256"}},
+      "config_acl_sha256": {"$ref": "#/$defs/sha256"},
+      "distributions": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string", "minLength": 1}}
+    }},
+    "mode": {"const": "off"},
+    "runtime_activation_authorized": {"const": false},
+    "receipt_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {"sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}

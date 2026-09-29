@@ -77,6 +77,21 @@ off-mode configuration and external trusted tooling before using the
 [JS template catalog](references/javascript-recipe-c-template-v1.md).
 Catalog materialization does not request install or launch authority.
 
+For native Windows Python console work, inspect the read-only NTFS preparation
+contract in [Windows template preparation](references/windows-template-preparation-v1.md)
+before proposing any apply or installed journey. A preparation receipt is not
+runtime or mutation authority. The selected package-input inventory is a
+separate read-only API for reviewed files in its declared source traversal and
+selected wheels; skipped directories remain outside that inventory;
+it does not verify an applied implementation or run a native installer.
+For a separately approved applied-source receipt and exact offline wheel
+inventory, use the [native Windows API checkpoint](references/windows-template-native-delivery-v1.md)
+for owner-private package/install generations, supervised off-mode normal
+consoles, and retained installed-version cutover and rollback. Retain all
+receipt digests externally. Local Windows 11 CPython 3.10/3.13/3.14 installed
+fixture runs have retained private receipts.
+Windows Server mutating and installed qualification remains pending.
+
 For connected host runtime qualification, record the pinned endpoint/model,
 environment and reviewed source/configuration digests, budget scope, host-owned
 ledger location, and the independent authority that verifies egress,

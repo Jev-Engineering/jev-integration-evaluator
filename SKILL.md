@@ -88,6 +88,19 @@ under mode `off`. Its source-pinned wheel is installed and invoked through its
 normal console on Linux CPython 3.13. This is a shared fixture installation,
 not a supervised generation or five individual template transforms.
 
+For a proposed native Windows Python console host, use the read-only selected
+file preflight in `references/windows-template-preparation-v1.md`. Its receipt
+is preparation only and grants no apply, install, launch or provider authority.
+For reviewed files in the declared traversal and selected wheels, the same
+reference describes a read-only package-input inventory API. It grants no
+build, install or launch authority.
+For an already applied and independently verified Python console host, a
+separate [native Windows offline API checkpoint](references/windows-template-native-delivery-v1.md)
+can build/install hash-locked wheels, supervise off-mode installed consoles,
+and select retained old/new installed generations under one run ID on local
+NTFS. Retained local Windows 11 CPython 3.10/3.13/3.14 fixture runs do not
+qualify Windows Server, untrusted execution or provider traffic.
+
 Run `scripts/run_implementation_demo.py --out NEW_PRIVATE_DIRECTORY`, the existing v1.1/v1.2 demos, full regressions, installed-wheel host checks and package validation for implementation changes. Publish only minimal synthetic validation metadata, never private target source, preimages, raw test output or activation fixtures. Prior validation reports remain historical.
 
 For dev3 verification, validate each observation against `implementation-observation` before assertions. Never promote missing observations or required commands that did not run. Validate receipt schedules, command identities and command exit-code consistency against the reviewed spec; oversized receipt observations remain failed scheduled cases. A durable baseline or modified verification start event without completion means `blocked_recovery`: an earlier passing receipt is history, not the result of the interrupted run. Require fresh execution authority to reverify; retain exact owned-byte rollback. Source encoding cookies must denote UTF-8; unrelated decorators do not authorize rewriting decorated selected seams.

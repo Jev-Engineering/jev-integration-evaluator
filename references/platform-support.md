@@ -24,6 +24,22 @@ owner-private environment and external observation files. Windows, macOS,
 other Python versions, service managers, connected provider activation and
 generic container or cloud delivery are not qualified by that profile.
 
+The proposed [native Windows template preparation](windows-template-preparation-v1.md)
+checks selected reviewed file bytes and local NTFS paths without changing the
+host. It is not native template delivery. Current stage support is:
+
+| Native Windows stage | Current qualification |
+| --- | --- |
+| Repository discovery | Qualified only as recorded below. |
+| Selected source/path preparation | Read-only local Windows 11 Pro build 26200, CPython 3.14.3 observation; Server 2022 candidates need independent runs. |
+| Selected package-input inventory | Read-only local Windows 11 Pro build 26200, CPython 3.14.3 observation. It checks reviewed files in its declared traversal and selected wheel bytes, reports skipped directories, and grants no build/install authority; Server 2022 candidates need independent runs. |
+| Implementation planning and mutation | No complete native Windows template-delivery qualification. |
+| Repository session | POSIX journal contract; native Windows unsupported. |
+| Package build and install | Separate native offline API checkpoint locally ran on Windows 11 Pro build 26200, CPython 3.10.11, 3.13.13 and 3.14.3 on NTFS; it binds reviewed applied source and hash-locked wheels. Each interpreter has a retained private receipt archive. Server mutating/installed runs and broader recovery edges remain pending. The #55 installer remains Linux only. |
+| Normal console launch, observation and owned stop | Native API checkpoint locally ran installed off-mode consoles under a gated Job Object, with separate entry-ready and effect observations, exact owned stop, and retained 1.0.0 → 1.0.1 → 1.0.0 selection in one run. This is fixture evidence; the #56 delivery session remains Linux only. |
+| Verification and execution isolation | No Windows seccomp-equivalent target isolation in this profile. |
+| Provider-connected runtime | Pending independent authority and live qualification. |
+
 | Platform and filesystem | Repository discovery | Qualification |
 | --- | --- | --- |
 | Linux, including WSL2 Linux filesystems | Supported through POSIX descriptor-relative reads with `O_NOFOLLOW`. | Existing Linux CI and recorded Linux/WSL runs. This change does not restart or reconfigure WSL. |

@@ -286,6 +286,40 @@ def validate(check_manifest=False):
                  for name in ('repository-run-context-v1', 'repository-run-scope-v1',
                               'repository-run-selection-v1',
                               'repository-session-v1', 'repository-offline-agent-review-v1')]
+    required += ['jev_integration_evaluator/windows_template_preflight.py',
+                 'scripts/windows_template_preflight.py',
+                 'tests/test_windows_template_preflight.py',
+                 'references/windows-template-preparation-v1.md']
+    required += [f'{directory}/windows-template-preflight-v1.schema.json'
+                 for directory in ('schemas', 'jev_integration_evaluator/data')]
+    required += ['jev_integration_evaluator/windows_template_package_inputs.py',
+                 'tests/test_windows_template_package_inputs.py']
+    required += [f'{directory}/windows-template-package-inputs-v1.schema.json'
+                 for directory in ('schemas', 'jev_integration_evaluator/data')]
+    required += ['jev_integration_evaluator/windows_template_owned.py',
+                 'jev_integration_evaluator/windows_template_plan.py',
+                 'jev_integration_evaluator/windows_template_install.py',
+                 'jev_integration_evaluator/windows_template_tree.py',
+                 'jev_integration_evaluator/windows_template_session.py',
+                 'jev_integration_evaluator/windows_template_run.py',
+                 'tests/test_windows_template_owned.py',
+                 'tests/test_windows_template_session.py',
+                 'tests/test_windows_template_delivery.py',
+                 'tests/test_windows_template_run.py',
+                 'references/windows-template-native-delivery-v1.md']
+    required += [f'{directory}/{name}.schema.json'
+                 for directory in ('schemas', 'jev_integration_evaluator/data')
+                 for name in ('windows-template-package-plan-v1',
+                              'windows-template-package-receipt-v1',
+                              'windows-template-install-plan-v1',
+                              'windows-template-install-receipt-v1',
+                              'windows-template-session-v1',
+                              'windows-template-process-v1',
+                              'windows-template-observation-v1',
+                              'windows-template-run-v1',
+                              'windows-template-run-intent-v1',
+                              'windows-template-run-generation-v1',
+                              'windows-template-run-selection-v1')]
     for item in required:
         if not (ROOT/item).is_file():raise InputError('Required package file missing: '+item)
     front=(ROOT/'SKILL.md').read_text(encoding='utf-8').split('---',2)

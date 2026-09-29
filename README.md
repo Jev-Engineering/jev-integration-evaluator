@@ -65,6 +65,16 @@ python -m jev_integration_evaluator repository-discovery `
 See the [platform matrix](references/platform-support.md) for Windows versions,
 link handling, UNC outcomes and path limits.
 
+For a proposed native Windows Python console delivery, the
+[read-only source and package-input checks](references/windows-template-preparation-v1.md)
+inspect reviewed files on local NTFS. A separate
+[offline native API checkpoint](references/windows-template-native-delivery-v1.md)
+has a locally observed Windows 11 package/install, supervised normal-console
+path, and retained installed-version cutover and rollback under one run ID.
+Local Windows 11 CPython 3.10/3.13/3.14 installed fixture runs have retained
+private receipts. Windows Server mutating runs, broader recovery edges and
+provider qualification remain pending.
+
 The separate [JavaScript recipe C template catalog](references/javascript-recipe-c-template-v1.md)
 validates reviewed ESM, CommonJS and TypeScript source through trusted external
 tooling and materializes source-bound planner inputs on Linux.
