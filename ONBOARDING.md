@@ -84,6 +84,11 @@ runtime or mutation authority. The selected package-input inventory is a
 separate read-only API for reviewed files in its declared source traversal and
 selected wheels; skipped directories remain outside that inventory;
 it does not verify an applied implementation or run a native installer.
+For a separately approved applied-source receipt and exact offline wheel
+inventory, use the [native Windows API checkpoint](references/windows-template-native-delivery-v1.md)
+for an owner-private package/install generation and one supervised off-mode
+normal console. Retain all receipt digests externally. Upgrade/rollback and
+the full native qualification matrix remain pending.
 
 For connected host runtime qualification, record the pinned endpoint/model,
 environment and reviewed source/configuration digests, budget scope, host-owned

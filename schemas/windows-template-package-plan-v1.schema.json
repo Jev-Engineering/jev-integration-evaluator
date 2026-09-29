@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "kind", "request", "inputs", "implementation_bundle_digest", "template_lock_sha256", "build_tool_versions", "operations", "target_executed", "runtime_activation_authorized", "plan_sha256"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "windows-template-package-plan-v1"},
+    "request": {"type": "object", "additionalProperties": false,
+      "required": ["host_root", "reviewed_source_files", "implementation_bundle", "trusted_modified_receipt_sha256", "template_directory", "wheelhouse", "reviewed_wheels", "output_parent", "environment_parent", "console_script", "interpreter", "configuration", "reviewed_configuration_sha256"],
+      "properties": {
+        "host_root": {"type": "string", "minLength": 1},
+        "reviewed_source_files": {"$ref": "#/$defs/hash_map"},
+        "implementation_bundle": {"type": "string", "minLength": 1},
+        "trusted_modified_receipt_sha256": {"$ref": "#/$defs/sha256"},
+        "template_directory": {"type": "string", "minLength": 1},
+        "wheelhouse": {"type": "string", "minLength": 1},
+        "reviewed_wheels": {"$ref": "#/$defs/hash_map"},
+        "output_parent": {"type": "string", "minLength": 1},
+        "environment_parent": {"type": "string", "minLength": 1},
+        "console_script": {"type": "string", "minLength": 1},
+        "interpreter": {"type": "string", "minLength": 1},
+        "configuration": {"type": "object", "additionalProperties": false, "required": ["jev_runtime"], "properties": {"jev_runtime": {"type": "object", "additionalProperties": false, "required": ["mode", "credential_ref"], "properties": {"mode": {"const": "off"}, "credential_ref": {"oneOf": [{"type": "null"}, {"type": "string", "pattern": "^env:[A-Za-z_][A-Za-z0-9_]*$"}]}}}}},
+        "reviewed_configuration_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "inputs": {"type": "object"},
+    "implementation_bundle_digest": {"$ref": "#/$defs/sha256"},
+    "template_lock_sha256": {"$ref": "#/$defs/sha256"},
+    "build_tool_versions": {"type": "object", "additionalProperties": false, "required": ["setuptools", "wheel"], "properties": {"setuptools": {"type": "string", "minLength": 1}, "wheel": {"type": "string", "minLength": 1}}},
+    "operations": {"const": ["copy_selected_reviewed_source", "build_offline_wheel", "hash_and_record_wheel"]},
+    "target_executed": {"const": false},
+    "runtime_activation_authorized": {"const": false},
+    "plan_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "hash_map": {"type": "object", "minProperties": 1, "maxProperties": 4096, "additionalProperties": {"$ref": "#/$defs/sha256"}}
+  }
+}

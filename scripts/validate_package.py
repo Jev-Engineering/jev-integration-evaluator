@@ -296,6 +296,23 @@ def validate(check_manifest=False):
                  'tests/test_windows_template_package_inputs.py']
     required += [f'{directory}/windows-template-package-inputs-v1.schema.json'
                  for directory in ('schemas', 'jev_integration_evaluator/data')]
+    required += ['jev_integration_evaluator/windows_template_owned.py',
+                 'jev_integration_evaluator/windows_template_plan.py',
+                 'jev_integration_evaluator/windows_template_install.py',
+                 'jev_integration_evaluator/windows_template_tree.py',
+                 'jev_integration_evaluator/windows_template_session.py',
+                 'tests/test_windows_template_owned.py',
+                 'tests/test_windows_template_session.py',
+                 'tests/test_windows_template_delivery.py',
+                 'references/windows-template-native-delivery-v1.md']
+    required += [f'{directory}/{name}.schema.json'
+                 for directory in ('schemas', 'jev_integration_evaluator/data')
+                 for name in ('windows-template-package-plan-v1',
+                              'windows-template-package-receipt-v1',
+                              'windows-template-install-plan-v1',
+                              'windows-template-install-receipt-v1',
+                              'windows-template-session-v1',
+                              'windows-template-process-v1')]
     for item in required:
         if not (ROOT/item).is_file():raise InputError('Required package file missing: '+item)
     front=(ROOT/'SKILL.md').read_text(encoding='utf-8').split('---',2)

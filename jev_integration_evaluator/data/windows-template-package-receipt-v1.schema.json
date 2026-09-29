@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "kind", "plan_sha256", "source_sha256", "wheel_filename", "wheel_sha256", "package_directory", "owned_directory", "runtime_activation_authorized", "receipt_sha256"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "windows-template-package-receipt-v1"},
+    "plan_sha256": {"$ref": "#/$defs/sha256"},
+    "source_sha256": {"$ref": "#/$defs/sha256"},
+    "wheel_filename": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]*\\.whl$"},
+    "wheel_sha256": {"$ref": "#/$defs/sha256"},
+    "package_directory": {"type": "string", "minLength": 1},
+    "owned_directory": {"type": "object", "additionalProperties": false, "required": ["path", "volume_id", "file_id", "acl_sha256", "lock_acl_sha256"], "properties": {"path": {"type": "string", "minLength": 1}, "volume_id": {"type": "integer", "minimum": 1}, "file_id": {"type": "integer", "minimum": 1}, "acl_sha256": {"$ref": "#/$defs/sha256"}, "lock_acl_sha256": {"$ref": "#/$defs/sha256"}}},
+    "runtime_activation_authorized": {"const": false},
+    "receipt_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {"sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}

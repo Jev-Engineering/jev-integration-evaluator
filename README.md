@@ -67,8 +67,11 @@ link handling, UNC outcomes and path limits.
 
 For a proposed native Windows Python console delivery, the
 [read-only source and package-input checks](references/windows-template-preparation-v1.md)
-inspect reviewed files on local NTFS. Apply, install and supervised
-launch remain separately unqualified on Windows.
+inspect reviewed files on local NTFS. A separate
+[offline native API checkpoint](references/windows-template-native-delivery-v1.md)
+has a locally observed Windows 11 package/install and supervised normal-console
+path. The required Windows version matrix, upgrade/rollback, recovery edges and
+provider-connected qualification remain pending.
 
 The separate [JavaScript recipe C template catalog](references/javascript-recipe-c-template-v1.md)
 validates reviewed ESM, CommonJS and TypeScript source through trusted external

@@ -6,6 +6,10 @@ install a wheel, launch a process, isolate target code, or qualify provider
 connectivity. The machine-readable receipt has `status: preparation_only` and
 all apply/install/launch authority fields set to `false`.
 
+An independently scoped [native offline API checkpoint](windows-template-native-delivery-v1.md)
+now covers one locally observed installed off-mode console journey; this
+preparation receipt remains read-only and grants none of that authority.
+
 ## Proposed target and trust boundary
 
 The read-only preflight accepts native x86-64 CPython 3.10, 3.13 or 3.14 on
@@ -94,65 +98,34 @@ an independently protected location. It does not authenticate the review,
 verify an applied implementation receipt, create a private package or venv,
 run build hooks or pip, qualify a launcher, or grant build/install/launch
 authority. The report must not be passed to the Linux installer as its plan.
-An eventual native installer must repeat exact checks under its own lock and
-bind the externally retained applied-source and installation receipts.
+The separate native installer repeats exact checks under its own lock and
+binds the externally retained applied-source and installation receipts.
 
-## Native delivery adapter after the #56 contract merges
+## Native delivery design boundary
 
-The next mutating stage needs a separate `plan/build` then `install-plan/install`
-authority sequence. A Windows package plan must bind every actual build input,
-including any files under the inventory's skipped directories that its build
-can read, or prevent build access to them; it must then recheck that source map,
-the #54 entrypoint binding and externally retained modified implementation
-receipt, selected wheel hashes/tags, off-mode configuration, and exact native
-interpreter. A source inventory receipt alone cannot authorize a build hook.
-The build must copy checked bytes into an exclusively created owner-private
-staging directory, disable index/user-site/Python path influence, record the
-wheel hash after the hook, and reconcile an interrupted build before reuse.
-
-The installer must create one owner-private NTFS generation with a protected
-DACL, use `Scripts\\python.exe` and its native console launcher, install only
-hash-locked offline wheels, then verify distributions, import origins, RECORD
-hashes, launcher bytes and off-mode config. It needs a cross-process Windows
-file lock, durable intent/journal writes and exact generation ownership.
-Read-only status must distinguish a completed anchored install from a pending
-or interrupted one. Locked files, ACL denial, read-only attributes, reparse
-points, hard links and changed source/wheel bytes must block recovery instead
-of prompting a blind recursive delete.
-
-The supervisor can reuse #56's plan/session/scope/observation separation only
-after adapting its Linux-only process path. A native launch needs a retained
-Windows process handle and creation time, verified executable origin, one
-durable launch-pending event before process release, and a job or equivalent
-owned stop boundary. Repeated launch, cancellation, crash reconciliation,
-observation drift and exact owned rollback need native tests. `TerminateProcess`
-must never target a PID without confirming the retained process identity. This
-trusted-local-host profile has no untrusted-code isolation claim. Connected
-mode remains behind its own source/config/egress/receipt gates and live evidence.
+The separate [native offline API checkpoint](windows-template-native-delivery-v1.md)
+uses a two-stage exact package plan/build followed by install plan/install.
+It verifies the externally retained applied-source receipt and copied source,
+uses only checked files in a protected staging root, installs hash-locked
+wheels into a protected NTFS venv, and runs one gated normal console under a
+Windows Job Object. This read-only preparation report cannot stand in for any
+of those effect authorities. The mutating checkpoint remains a trusted-local-
+host execution profile and has not completed issue #61 qualification.
 
 ## Delivery requirements still pending
 
-The implementation lifecycle has a Windows `msvcrt` lock path, but POSIX mode
-bits, `chmod` and path checks do not establish an owner-only Windows DACL,
-durable replacement, or identity-stable rollback. The existing installer uses
-`fcntl`, `O_NOFOLLOW`, POSIX uid/mode and `venv/bin/python` symlink assumptions;
-its supported profile is Linux x86-64 CPython 3.13. The repository session
-journal is POSIX. The #56 supervisor currently relies on Linux process identity
-and stop semantics. Discovery success cannot expand any of those contracts.
+The original #55 installer and #56 supervisor retain their Linux-only
+profiles. The repository session journal is POSIX. The native checkpoint
+uses separate NTFS owner artifacts and Job Object process ownership; it has
+not replaced the Linux contracts or completed a Windows upgrade/rollback path.
 
-A native adapter must independently test protected owner DACLs for journal,
-bundle and configuration artifacts; NTFS volume/file IDs and no reparse or
-hard links; file ACL and read-only-attribute preservation; case and long-path
-behavior; cross-process locks; flush/replace/recovery after interruption; and
-file-open conflicts. Installation must bind an independently retained modified
-implementation receipt, source snapshot with explicit traversal exclusions, exact wheel hashes, native
-`Scripts\\python.exe` and console launcher, and an owned environment generation.
-The supervisor must bind a Windows process handle, creation time and executable
-origin to one session, reject duplicate starts, observe exit/cancellation,
-reap only its owned process, and preserve unrelated work. Upgrade and rollback
-must verify exact owned bytes and attributes, restore the prior generation, and
-fail closed on drift or a locked file. Connected modes still need independent
-source/configuration, egress, receipt and holdout authority.
+Full #61 qualification still requires the supported Windows/Python matrix,
+native ACL denial, real reparse ancestors, hard links, case collisions, long
+paths, read-only and locked files, concurrent source edits and interruption
+tests against the mutating path. It also requires independent ready/effect
+observations, cancellation and upgrade/rollback with exact owned bytes and
+attributes. Connected modes still need independent source/configuration,
+egress, receipt and holdout authority.
 
 For a preflight failure, inspect its fixed `reason`, restore the reviewed source
 or prepare a fresh independently reviewed manifest, and rerun. This checkpoint

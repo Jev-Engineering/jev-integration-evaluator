@@ -35,8 +35,8 @@ host. It is not native template delivery. Current stage support is:
 | Selected package-input inventory | Read-only local Windows 11 Pro build 26200, CPython 3.14.3 observation. It checks reviewed files in its declared traversal and selected wheel bytes, reports skipped directories, and grants no build/install authority; Server 2022 candidates need independent runs. |
 | Implementation planning and mutation | No complete native Windows template-delivery qualification. |
 | Repository session | POSIX journal contract; native Windows unsupported. |
-| Package build and install | Existing template installer is Linux x86-64 CPython 3.13 only. |
-| Normal console launch, observation and owned stop | Native Windows adapter and installed journey pending; #56 delivery session is Linux only. |
+| Package build and install | Separate native offline API checkpoint locally ran on Windows 11 Pro build 26200, CPython 3.14.3 and NTFS; it binds reviewed applied source and hash-locked wheels. Required Windows version matrix and recovery edges remain pending. The #55 installer remains Linux only. |
+| Normal console launch, observation and owned stop | Native API checkpoint locally ran one installed off-mode console under a gated Job Object with exact owned stop. Independent multi-role host observation, upgrade/rollback and required matrix remain pending; the #56 delivery session remains Linux only. |
 | Verification and execution isolation | No Windows seccomp-equivalent target isolation in this profile. |
 | Provider-connected runtime | Pending independent authority and live qualification. |
 

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "kind", "run_id", "owned_directory", "install_plan_sha256", "install_receipt_sha256", "install_environment", "python", "python_sha256", "console_script", "console_script_sha256", "launch_environment", "mode", "session_sha256"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "windows-template-session-v1"},
+    "run_id": {"type": "string", "format": "uuid"},
+    "owned_directory": {"type": "object", "additionalProperties": false, "required": ["path", "volume_id", "file_id", "acl_sha256", "lock_acl_sha256"], "properties": {"path": {"type": "string", "minLength": 1}, "volume_id": {"type": "integer", "minimum": 1}, "file_id": {"type": "integer", "minimum": 1}, "acl_sha256": {"$ref": "#/$defs/sha256"}, "lock_acl_sha256": {"$ref": "#/$defs/sha256"}}},
+    "install_plan_sha256": {"$ref": "#/$defs/sha256"},
+    "install_receipt_sha256": {"$ref": "#/$defs/sha256"},
+    "install_environment": {"type": "string", "minLength": 1},
+    "python": {"type": "string", "minLength": 1},
+    "python_sha256": {"$ref": "#/$defs/sha256"},
+    "console_script": {"type": "string", "minLength": 1},
+    "console_script_sha256": {"$ref": "#/$defs/sha256"},
+    "launch_environment": {"type": "object", "maxProperties": 16, "propertyNames": {"pattern": "^[A-Z][A-Z0-9_]{0,63}$"}, "additionalProperties": {"type": "string", "maxLength": 4096}},
+    "mode": {"const": "off"},
+    "session_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {"sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}

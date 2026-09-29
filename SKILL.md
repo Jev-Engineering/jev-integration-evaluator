@@ -94,6 +94,12 @@ is preparation only and grants no apply, install, launch or provider authority.
 For reviewed files in the declared traversal and selected wheels, the same
 reference describes a read-only package-input inventory API. It grants no
 build, install or launch authority.
+For an already applied and independently verified Python console host, a
+separate [native Windows offline API checkpoint](references/windows-template-native-delivery-v1.md)
+can build/install hash-locked wheels and supervise one off-mode installed
+console on local NTFS. Its local installed fixture run does not qualify the
+required Windows matrix, upgrade/rollback, untrusted execution or provider
+traffic.
 
 Run `scripts/run_implementation_demo.py --out NEW_PRIVATE_DIRECTORY`, the existing v1.1/v1.2 demos, full regressions, installed-wheel host checks and package validation for implementation changes. Publish only minimal synthetic validation metadata, never private target source, preimages, raw test output or activation fixtures. Prior validation reports remain historical.
 

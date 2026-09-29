@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "kind", "session_sha256", "pid", "created_filetime", "image", "job", "identity_sha256"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "windows-template-process-v1"},
+    "session_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "pid": {"type": "integer", "minimum": 1},
+    "created_filetime": {"type": "integer", "minimum": 1},
+    "image": {"type": "string", "minLength": 1},
+    "job": {"type": "string", "pattern": "^Local\\\\jev-template-[0-9a-f-]{36}$"},
+    "identity_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}
