@@ -70,6 +70,60 @@ This is a point-in-time check; a later mutation or installer must
 recheck the exact files under its own ownership lock. Unselected files are not
 reviewed by this receipt.
 
+## Complete package-input inventory (read-only API)
+
+`inspect_windows_template_package_inputs(host_root, reviewed_source_files,
+wheelhouse, reviewed_wheels, output_parent, environment_parent, console_script)`
+extends the point-in-time preparation check to an externally reviewed **complete**
+host file map (up to 4,096 files/64 MB), selected wheelhouse files (up to 64
+wheels/256 MB total), static `pyproject.toml` project, pinned setuptools/wheel
+build requirements and console declaration, and the
+current native interpreter executable hash. Each file and root is checked
+twice; the source walk rejects unlisted files, reparse points, hard links,
+ambiguous names, and directory identity drift. Wheel bytes are hash checked
+before reading bounded ZIP metadata and compatible wheel tags. Both output
+and environment parents must already exist on disjoint local NTFS paths.
+
+The API returns a private `windows-template-package-inputs-v1` report with
+`status: package_inputs_reviewed_only`. Keep the reviewed maps and report in
+an independently protected location. It does not authenticate the review,
+verify an applied implementation receipt, create a private package or venv,
+run build hooks or pip, qualify a launcher, or grant build/install/launch
+authority. The report must not be passed to the Linux installer as its plan.
+An eventual native installer must repeat exact checks under its own lock and
+bind the externally retained applied-source and installation receipts.
+
+## Native delivery adapter after the #56 contract merges
+
+The next mutating stage needs a separate `plan/build` then `install-plan/install`
+authority sequence. A Windows package plan must recheck the complete source map,
+the #54 entrypoint binding and externally retained modified implementation
+receipt, selected wheel hashes/tags, off-mode configuration, and exact native
+interpreter. A source inventory receipt alone cannot authorize a build hook.
+The build must copy checked bytes into an exclusively created owner-private
+staging directory, disable index/user-site/Python path influence, record the
+wheel hash after the hook, and reconcile an interrupted build before reuse.
+
+The installer must create one owner-private NTFS generation with a protected
+DACL, use `Scripts\\python.exe` and its native console launcher, install only
+hash-locked offline wheels, then verify distributions, import origins, RECORD
+hashes, launcher bytes and off-mode config. It needs a cross-process Windows
+file lock, durable intent/journal writes and exact generation ownership.
+Read-only status must distinguish a completed anchored install from a pending
+or interrupted one. Locked files, ACL denial, read-only attributes, reparse
+points, hard links and changed source/wheel bytes must block recovery instead
+of prompting a blind recursive delete.
+
+The supervisor can reuse #56's plan/session/scope/observation separation only
+after adapting its Linux-only process path. A native launch needs a retained
+Windows process handle and creation time, verified executable origin, one
+durable launch-pending event before process release, and a job or equivalent
+owned stop boundary. Repeated launch, cancellation, crash reconciliation,
+observation drift and exact owned rollback need native tests. `TerminateProcess`
+must never target a PID without confirming the retained process identity. This
+trusted-local-host profile has no untrusted-code isolation claim. Connected
+mode remains behind its own source/config/egress/receipt gates and live evidence.
+
 ## Delivery requirements still pending
 
 The implementation lifecycle has a Windows `msvcrt` lock path, but POSIX mode

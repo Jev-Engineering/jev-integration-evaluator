@@ -66,8 +66,8 @@ See the [platform matrix](references/platform-support.md) for Windows versions,
 link handling, UNC outcomes and path limits.
 
 For a proposed native Windows Python console delivery, the
-[read-only source preflight](references/windows-template-preparation-v1.md)
-checks selected reviewed files on local NTFS. Apply, install and supervised
+[read-only source and package-input checks](references/windows-template-preparation-v1.md)
+inspect reviewed files on local NTFS. Apply, install and supervised
 launch remain separately unqualified on Windows.
 
 The separate [JavaScript recipe C template catalog](references/javascript-recipe-c-template-v1.md)

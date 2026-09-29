@@ -80,7 +80,9 @@ Catalog materialization does not request install or launch authority.
 For native Windows Python console work, inspect the read-only NTFS preparation
 contract in [Windows template preparation](references/windows-template-preparation-v1.md)
 before proposing any apply or installed journey. A preparation receipt is not
-runtime or mutation authority.
+runtime or mutation authority. The complete package-input inventory is a
+separate read-only API for an independently reviewed source map and wheel set;
+it does not verify an applied implementation or run a native installer.
 
 For connected host runtime qualification, record the pinned endpoint/model,
 environment and reviewed source/configuration digests, budget scope, host-owned
