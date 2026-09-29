@@ -153,7 +153,7 @@
       "source": "examples/rag-system/pipeline.py",
       "source_sha256": "2c02318aa6ee76a1c085f8a11cbac5a7bda60ce8040cac58bfa34da6d52504a1",
       "consumer_adapter": "examples/use-case-host/claim_consumer.py",
-      "consumer_adapter_sha256": "b97a5a18d1e8fccfeec5f17f916f355b385fa6914a3a100e9e4dd0e98c84263f",
+      "consumer_adapter_sha256": "fb0390e6e9864f39dd29c36daca8e3d2ca1dc595c269d953e9c8ade633490092",
       "host_consumer": "review_claims / answer_with_claim_review",
       "host_oracle": "exact citation spans, critical-claim block and audit before release",
       "offline_contract": "tested_fixture",

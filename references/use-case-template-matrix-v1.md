@@ -172,12 +172,14 @@ and experiments.
 
 The [individual M installed journey](../tests/test_use_case_claim_host.py)
 builds a reviewed finite host around the matrix-pinned claim reviewer and
-consumer. Its normal off-mode console permits only one exact assertion and
-passage; the code-owned reviewer checks the critical citation and exact span,
-then the consumer writes separate support, audit and release files. The test
+consumer. Its finite off-mode draft generator exercises release in the first
+installed generation and removal of an unsupported noncritical claim in the
+second. The reviewer checks critical citations and exact spans; the consumer
+reads back support and audit bytes before writing a release effect. The test
 reads those fixture-authored files against independently constructed bytes and
 checks the release hashes bind the observed support and audit. It refuses
-missing or fabricated/partial citations, denied approval, changed source and
+missing or fabricated/partial citations, uncertain critical claims, denied
+approval, corrupted raw readback, changed source and
 wrong operation scope. The #55/#56 journey installs, observes, disables,
 upgrades a second reviewed fixture version, and rolls back its retained
 generation and owned source edits. The fixture assessor is not a provider or

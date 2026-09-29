@@ -31,21 +31,35 @@ digest refuses launch before any effect.
 external files under one owner-only `0700` directory. The consumer requires a
 host-approved finite task. It rejects unsupported critical claims, missing or
 partial citations, changed quotes, unknown task IDs and occupied effect paths.
-Its exact fixture assessor supports only the assertion `Permit is active` from
-the fixed `fixture-permit-register-v1` passage and its exact span. The claim
-reviewer checks the citation and critical-claim policy. Support, then the
-fixture audit, then the claim release effect are written as exclusive `0600`
-files with fsync. A partial file set remains occupied and requires external
-review; no retry is authorized by a reported `ok` value.
+Its finite fixture draft generator has five registered cases: `accept`,
+`revise`, `request_evidence`, `fabricated`, and `partial`. The code-owned
+assessor supports only `Permit is active` from the fixed
+`fixture-permit-register-v1` passage and exact citation offsets. The claim
+reviewer blocks fabricated or partial critical citations, requests more
+evidence for an uncertain critical claim, and removes an unsupported
+noncritical claim under its dependency policy. A revised answer releases only
+the supported critical assertion and records the removed claim ID. No model
+label or `reported` value grants release authority.
+
+The consumer requires host approval before assessment. It writes support and
+audit as exclusive `0600` files with fsync, reopens both with `O_NOFOLLOW`,
+checks owner, mode, and exact raw bytes, and only then writes and reads back the
+release effect. Support records retain source, passage, span, quote, and exact
+citation offsets; the release hashes bind the observed support and audit. A
+failed readback leaves no release file. A partial file set remains occupied and
+requires external review; no retry is authorized by a reported `ok` value.
 
 The test independently computes expected raw support, audit and release bytes,
 reads the installed consumer's files, and verifies the effect hashes reference
 the observed support and audit. The supervisor observes distinct ready,
 support, audit and release roles. These records are fixture-authored and
 synthetic; they are not a provider result or an independent real permit
-register. A successful installed invocation is disabled; a separately reviewed
-1.0.1 fixture package is installed and staged through exact upgrade scope,
-normally launched and observed, then disabled. Session rollback selects the
+register. A successful installed `accept` invocation is disabled; a separately
+reviewed 1.0.1 fixture package generates `revise`, removes one unsupported
+noncritical claim, and is installed and staged through exact upgrade scope,
+normally launched and observed, then disabled. Source-level negative tests
+cover `request_evidence`, fabricated and partial citations, denied approval,
+and corrupted support readback before release. Session rollback selects the
 retained 1.0.0 generation. Both source edits are separately rolled back.
 Rollback does not erase prior claim effects.
 
