@@ -214,6 +214,11 @@ def validate(check_manifest=False):
                  'tests/test_template_delivery_session.py',
                  'tests/test_template_delivery_installed.py',
                  'tests/test_template_delivery_composite.py']
+    required += ['tests/independent_hosts/registered_alpha/installed_journey.py',
+                 'tests/independent_hosts/registered_alpha/README.md',
+                 'tests/test_registered_alpha_installed_faults.py']
+    required += [f'{directory}/registered-alpha-offline-report-v1.schema.json'
+                 for directory in ('schemas', 'jev_integration_evaluator/data')]
     required += [f'{directory}/{name}.schema.json'
                  for directory in ('schemas', 'jev_integration_evaluator/data')
                  for name in ('template-delivery-observation-v1',

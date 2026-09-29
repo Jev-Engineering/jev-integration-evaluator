@@ -11,11 +11,14 @@ import time
 
 import pytest
 
-from jev_integration_evaluator.io import file_hash, read_json
+from jev_integration_evaluator.io import InputError, file_hash, read_json
 from jev_integration_evaluator.config import load_config
 from jev_integration_evaluator.scanner import scan_repo
 from jev_integration_evaluator.template_catalog import prepare_template_binding, materialize_template
-from jev_integration_evaluator.integrations.lifecycle import plan_implementation, apply_implementation
+from jev_integration_evaluator.integrations.lifecycle import (
+    plan_implementation, apply_implementation, implementation_status,
+    rollback_implementation)
+from jev_integration_evaluator.integrations import lifecycle
 from jev_integration_evaluator.integrations.verification import verify_implementation
 from tests.independent_hosts.registered_alpha.qualification import source_matched_request
 
@@ -111,6 +114,46 @@ def test_alpha_reviewed_source_verification_on_disposable_copy(tmp_path, monkeyp
     assert modified['status'] == 'verified', modified
     assert file_hash(ROOT / 'src/registered_alpha/host.py') == read_json(REVIEW)['files'][
         'src/registered_alpha/host.py']
+
+
+def test_alpha_interrupted_apply_retains_recovery_and_owned_rollback(tmp_path, monkeypatch):
+    host = tmp_path / 'host'
+    shutil.copytree(ROOT, host, ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
+    request, binding = source_matched_request(host)
+    bound = prepare_template_binding(host, request, binding)['request']
+    materialize_template(host, bound, tmp_path / 'render')
+    spec = bound['implementation_spec']
+    bundle = tmp_path / 'implementation'
+    plan = plan_implementation(host, bound['reviewed_inventory'], spec['candidate_id'],
+                               spec, bundle)
+    baseline_source = {name: file_hash(host / name) for name in (
+        'pyproject.toml', 'src/registered_alpha/host.py',
+        'src/registered_alpha/console.py')}
+    probe = tmp_path / 'probe-effects'
+    probe.mkdir(mode=0o700)
+    monkeypatch.setenv('REGISTERED_ALPHA_PROBE_EFFECTS_DIR', str(probe))
+    baseline = verify_implementation(host, bundle, 'baseline', approve_execution=True)
+    assert baseline['status'] == 'baseline_passed'
+    original_record = lifecycle._record
+
+    def interrupt_after_intent(directory, current_plan, event, *extra):
+        original_record(directory, current_plan, event, *extra)
+        if event == 'apply_started':
+            raise KeyboardInterrupt('alpha_apply_interrupted_after_durable_intent')
+
+    monkeypatch.setattr(lifecycle, '_record', interrupt_after_intent)
+    with pytest.raises(KeyboardInterrupt, match='alpha_apply_interrupted'):
+        apply_implementation(host, bundle, plan['bundle_digest'],
+                             baseline_sha256=baseline['receipt_sha256'])
+    monkeypatch.setattr(lifecycle, '_record', original_record)
+    pending = implementation_status(host, bundle)
+    assert pending['status'] == 'blocked_recovery'
+    with pytest.raises(InputError, match='recovery/rollback'):
+        apply_implementation(host, bundle, plan['bundle_digest'],
+                             baseline_sha256=baseline['receipt_sha256'])
+    rolled = rollback_implementation(host, bundle, pending['rollback_digest'])
+    assert rolled['status'] == 'rolled_back'
+    assert {name: file_hash(host / name) for name in baseline_source} == baseline_source
 
 
 @pytest.mark.parametrize('case', read_json(ORACLE)['cases'], ids=lambda case: case['id'])

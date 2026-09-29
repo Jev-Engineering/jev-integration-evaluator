@@ -46,3 +46,29 @@ drives source verification, package/install, one supervised off-mode invocation,
 raw effect inspection, disable and owned source rollback. It requires separate
 owner-private workspace and external anchor directories. The script does not
 create provider grants, credentials, connected-mode receipts or a benefit claim.
+
+The opt-in `tests/test_registered_alpha_installed_faults.py` runs that driver
+with `JEV_REGISTERED_ALPHA_INSTALLED_PYTHON` set to an evaluator interpreter
+installed from the exact reviewed wheel and `JEV_REGISTERED_ALPHA_WHEELHOUSE`
+set to its offline dependency closure. The test runs outside both checkouts.
+From the evaluator checkout, run
+`JEV_REGISTERED_ALPHA_INSTALLED_PYTHON=/absolute/private/venv/bin/python JEV_REGISTERED_ALPHA_WHEELHOUSE=/absolute/private/wheelhouse python -m pytest -q tests/test_registered_alpha_installed_faults.py`.
+With either input absent, this opt-in test reports a skip. Its result validates
+`registered-alpha-offline-report-v1` against the packaged strict schema.
+The driver independently imports both installed distributions to check their
+module and entrypoint origins. It injects an interruption during the locked
+dependency install, verifies the incomplete owned generation, refuses a blind
+repeat, and uses the public exact-generation recovery API before retrying.
+It then checks revoked launch scope, changed source and installed configuration,
+an injected interruption before child release, same-run recovery, two repeated
+normal-command attempts with the same task ID,
+post-disable launch refusal and rollback refusal after a concurrent source edit.
+Only the first installed command may append one `inspect` effect. The
+interruption is a controlled offline fault injection before child release; it
+does not establish recovery from every possible process crash point. The
+driver retains the pending and recovered journal heads plus the reviewed
+incomplete generation digest in the external anchor directory. A separate
+source-stage test interrupts apply after its durable intent and requires owned
+rollback. Upgrade to a new installed Alpha version, other install interruption
+points, connected shadow and provider/authorized modes remain separate
+unqualified rows.
