@@ -28,8 +28,8 @@
       "required": ["launch", "stop"], "properties": {
         "launch": {"type": "integer", "minimum": 0, "maximum": 3},
         "stop": {"type": "integer", "minimum": 0, "maximum": 32}}},
-    "history": {"type": "array", "maxItems": 16, "items": {"$ref": "#/$defs/sha"}},
-    "pending_upgrade_sha256": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha"}]},
+    "history": {"description": "Exact prior descriptor digests; rollback must verify each loaded plan against its filename before selection.", "type": "array", "maxItems": 16, "items": {"$ref": "#/$defs/sha"}},
+    "pending_upgrade_sha256": {"description": "Exact pending descriptor digest; recovery must verify the loaded plan and recheck the generation being left.", "oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha"}]},
     "failures": {"type": "array", "maxItems": 64, "items": {"type": "string", "minLength": 1, "maxLength": 128}}
   },
   "$defs": {"sha": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}

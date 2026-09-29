@@ -127,9 +127,15 @@ uncertain dead child is `blocked_recovery` until independently reviewed.
 `upgrade_node_session` is valid only after stop. It rechecks the old installed
 generation, validates a fresh descriptor with independent unused output paths,
 and records the new selected generation without launching it. An interrupted
-selection resumes under the same run ID and journal. `rollback_node_session`
+selection resumes under the same run ID and journal. Resume rechecks the
+installed generation being left, then verifies that the loaded pending plan's
+content digest equals its journal-anchored filename before selecting it. If
+either check fails, the pending row and externally retained head remain in
+place for review. `rollback_node_session`
 requires the exact previous generation digest, a stopped current process and
-unchanged retained installation. It restores selection only; no source files
+unchanged retained installation. Rollback recovery repeats that current
+generation check and verifies the previous plan against its history digest.
+It restores selection only; no source files
 or installed bytes are deleted and no process is launched. The previous
 descriptor's observation paths were consumed by its earlier run, so rollback
 does not by itself authorize another launch. Fresh source rollback stays with

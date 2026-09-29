@@ -124,6 +124,18 @@ def _write_plan(directory: Path, descriptor: dict) -> None:
         _create_file(path, raw)
 
 
+def _anchored_plan(directory: Path, expected_sha256: str) -> dict:
+    path = directory / 'plans' / (expected_sha256 + '.json')
+    _file(path)
+    descriptor = read_json(path)
+    validate_contract(descriptor, 'node-delivery-descriptor-v1')
+    if (descriptor['descriptor_sha256'] != expected_sha256
+            or digest({k: v for k, v in descriptor.items()
+                       if k != 'descriptor_sha256'}) != expected_sha256):
+        raise NodeSessionError('node_session_descriptor_changed')
+    return descriptor
+
+
 def _append(directory: Path, rows: list[dict], event: str, state: dict) -> str:
     if event not in _EVENTS or len(rows) >= 256:
         raise NodeSessionError('node_session_journal_bound')
@@ -179,14 +191,8 @@ def _open(directory: str | Path) -> tuple[Path, list[dict], dict, dict]:
     state = copy.deepcopy(rows[-1]['state'])
     if owner.get('run_id') != state['run_id']:
         raise NodeSessionError('node_session_owner_changed')
-    plan_path = target / 'plans' / (state['descriptor_sha256'] + '.json')
-    _file(plan_path)
-    descriptor = read_json(plan_path)
-    validate_contract(descriptor, 'node-delivery-descriptor-v1')
-    if (descriptor['descriptor_sha256'] != state['descriptor_sha256']
-            or descriptor['generation_id'] != state['generation_id']
-            or digest({k: v for k, v in descriptor.items() if k != 'descriptor_sha256'})
-               != descriptor['descriptor_sha256']):
+    descriptor = _anchored_plan(target, state['descriptor_sha256'])
+    if descriptor['generation_id'] != state['generation_id']:
         raise NodeSessionError('node_session_descriptor_changed')
     return target, rows, state, descriptor
 
@@ -438,18 +444,18 @@ def resume_node_session(directory: str | Path, *, trusted_session_head: str) -> 
             head = _append(target, rows, state['stage'], state)
             return _result(state, head, descriptor)
         if state['pending'] == 'rollback':
-            return _finish_rollback(target, rows, state)
+            return _finish_rollback(target, rows, state, descriptor)
         if state['pending'] == 'upgrade':
-            return _finish_upgrade(target, rows, state)
+            return _finish_upgrade(target, rows, state, descriptor)
         return _result(state, rows[-1]['record_sha256'], descriptor)
 
 
-def _finish_upgrade(target: Path, rows: list[dict], state: dict) -> dict:
+def _finish_upgrade(target: Path, rows: list[dict], state: dict,
+                    leaving: dict) -> dict:
     if state['pending_upgrade_sha256'] is None:
         raise NodeSessionError('node_session_upgrade_intent_missing')
-    path = target / 'plans' / (state['pending_upgrade_sha256'] + '.json')
-    _file(path)
-    new = read_json(path)
+    _check_install(leaving)
+    new = _anchored_plan(target, state['pending_upgrade_sha256'])
     validate_node_delivery(new)
     state['history'].append(state['descriptor_sha256'])
     state['descriptor_sha256'] = new['descriptor_sha256']
@@ -480,16 +486,16 @@ def upgrade_node_session(directory: str | Path, new_descriptor: dict, *, scope: 
         state['stage'], state['pending'] = 'upgrade_pending', 'upgrade'
         state['pending_upgrade_sha256'] = new_descriptor['descriptor_sha256']
         _append(target, rows, 'upgrade_pending', state)
-        return _finish_upgrade(target, rows, state)
+        return _finish_upgrade(target, rows, state, old)
 
 
-def _finish_rollback(target: Path, rows: list[dict], state: dict) -> dict:
+def _finish_rollback(target: Path, rows: list[dict], state: dict,
+                     leaving: dict) -> dict:
     if not state['history']:
         raise NodeSessionError('node_session_previous_generation_missing')
+    _check_install(leaving)
     previous = state['history'][-1]
-    path = target / 'plans' / (previous + '.json')
-    _file(path)
-    old = read_json(path)
+    old = _anchored_plan(target, previous)
     _check_install(old)
     state['history'].pop()
     state['descriptor_sha256'] = old['descriptor_sha256']
@@ -515,13 +521,11 @@ def rollback_node_session(directory: str | Path, *, scope: dict,
                 or _process_alive(state['process'])):
             raise NodeSessionError('node_session_rollback_requires_stopped_generation')
         _check_install(current)
-        previous_path = target / 'plans' / (state['history'][-1] + '.json')
-        _file(previous_path)
-        previous = read_json(previous_path)
+        previous = _anchored_plan(target, state['history'][-1])
         _check_install(previous)
         state['stage'], state['pending'] = 'rollback_pending', 'rollback'
         _append(target, rows, 'rollback_pending', state)
-        return _finish_rollback(target, rows, state)
+        return _finish_rollback(target, rows, state, current)
 
 
 def node_session_status(directory: str | Path, *, trusted_session_head: str | None = None) -> dict:

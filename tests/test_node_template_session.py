@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
+import json
 import os
 from pathlib import Path
 import platform
@@ -224,3 +225,75 @@ def test_stopped_generation_upgrade_and_pending_rollback_reconcile(tmp_path, mon
     assert restored['run_id'] == created['run_id']
     assert restored['generation_id'] == old['generation_id']
     assert restored['stage'] == 'rolled_back' and not restored['observations']['launched']
+
+
+@pytest.mark.parametrize('operation', ('upgrade', 'rollback'))
+@pytest.mark.parametrize('failure', ('substituted_plan', 'leaving_generation_drift'))
+def test_interrupted_selection_rejects_substitution_and_drift(
+        tmp_path, monkeypatch, operation, failure):
+    monkeypatch.setattr(session, 'validate_node_delivery',
+                        lambda _: {'status': 'verified_unlaunched'})
+    monkeypatch.setattr(session, '_check_install', lambda _: None)
+    old = _descriptor(tmp_path / 'old', 'one')
+    new = _descriptor(tmp_path / 'new', 'two')
+    created = session.create_node_session(tmp_path / 'session', old)
+
+    def stopped_from(current):
+        launch = _scope(current, 'launch')
+        running = session.launch_node_session(tmp_path / 'session', scope=launch,
+            approved_scope_sha256=launch['scope_sha256'])
+        stop = _scope(running, 'stop')
+        return session.stop_node_session(tmp_path / 'session', scope=stop,
+            approved_scope_sha256=stop['scope_sha256'], grace_seconds=0)
+
+    stopped = stopped_from(created)
+    if operation == 'rollback':
+        upgrade = _scope(stopped, 'upgrade', extra=new['descriptor_sha256'])
+        selected = session.upgrade_node_session(tmp_path / 'session', new,
+            scope=upgrade, approved_scope_sha256=upgrade['scope_sha256'])
+        stopped = stopped_from(selected)
+    original_append = session._append
+
+    def interrupt(directory, rows, event, state):
+        if event == ('upgrade_staged' if operation == 'upgrade' else 'rolled_back'):
+            raise RuntimeError('selection_interrupted')
+        return original_append(directory, rows, event, state)
+
+    monkeypatch.setattr(session, '_append', interrupt)
+    if operation == 'upgrade':
+        scope = _scope(stopped, 'upgrade', extra=new['descriptor_sha256'])
+        action = lambda: session.upgrade_node_session(tmp_path / 'session', new,
+            scope=scope, approved_scope_sha256=scope['scope_sha256'])
+    else:
+        scope = _scope(stopped, 'rollback',
+                       extra=stopped['previous_generation_rollback_digest'])
+        action = lambda: session.rollback_node_session(tmp_path / 'session',
+            scope=scope, approved_scope_sha256=scope['scope_sha256'])
+    with pytest.raises(RuntimeError, match='selection_interrupted'):
+        action()
+    monkeypatch.setattr(session, '_append', original_append)
+    pending = session.node_session_status(tmp_path / 'session')
+    assert pending['pending'] == operation
+    assert pending['run_id'] == created['run_id']
+
+    if failure == 'substituted_plan':
+        anchored = (new if operation == 'upgrade' else old)['descriptor_sha256']
+        alternate = _descriptor(tmp_path / 'alternate', 'alternate')
+        (tmp_path / 'session' / 'plans' / f'{anchored}.json').write_text(
+            json.dumps(alternate) + '\n', encoding='utf-8')
+        expected_error = 'node_session_descriptor_changed'
+    else:
+        leaving = old if operation == 'upgrade' else new
+        def drift(descriptor):
+            if descriptor['descriptor_sha256'] == leaving['descriptor_sha256']:
+                raise session.NodeSessionError('node_session_installed_generation_drift')
+        monkeypatch.setattr(session, '_check_install', drift)
+        expected_error = 'node_session_installed_generation_drift'
+
+    with pytest.raises(session.NodeSessionError, match=expected_error):
+        session.resume_node_session(tmp_path / 'session',
+            trusted_session_head=pending['session_head_sha256'])
+    retained = session.node_session_status(tmp_path / 'session')
+    assert retained['pending'] == operation
+    assert retained['session_head_sha256'] == pending['session_head_sha256']
+    assert retained['generation_id'] == pending['generation_id']
