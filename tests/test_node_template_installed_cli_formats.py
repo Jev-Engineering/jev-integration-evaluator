@@ -14,6 +14,7 @@ import pytest
 
 from jev_integration_evaluator.io import digest, file_hash, read_json
 from jev_integration_evaluator import template_node_installation as installer
+from jev_integration_evaluator import template_js_catalog
 from jev_integration_evaluator.integrations.js_backend import trusted_js_tool_identity
 from test_node_template_installation import native_tools
 from test_node_template_installed_upgrade import (
@@ -49,15 +50,12 @@ def test_installed_cli_source_verified_off_mode_format(tmp_path, format_name):
     (tmp_path / 'generations').mkdir(mode=0o700)
 
     builder = installed_commonjs if format_name == 'commonjs' else installed_typescript
-    host = builder(tmp_path, 'cli-host', '1.0.0', 'alpha', tooling, node, npm)
+    host = builder(tmp_path, 'cli-host', '1.0.0', 'alpha', tooling, node, npm,
+                   prepare_only=True)
     source = host['source']
-    installed = host['installed']
-    plan = host['install_plan']
-    assert plan['package_plan']['format'] == format_name
-    entry = Path(installed['command'][1])
-    assert entry.is_relative_to(Path(installed['generation_path']) / 'app')
-    assert file_hash(entry) == installed['entrypoint_sha256']
-    assert not entry.is_relative_to(PROJECT)
+    request = host['request']
+    assert request['format'] == format_name
+    assert request['reviewed_package_source_sha256'] == digest(template_js_catalog._source_tree(source))
 
     wheel_dir = tmp_path / 'wheel'
     wheel_dir.mkdir(mode=0o700)
@@ -98,18 +96,54 @@ def test_installed_cli_source_verified_off_mode_format(tmp_path, format_name):
             json.dump(value, stream)
         return path
 
-    # The fixture builder supplies source-bound apply and verification receipts.
-    # The evaluator CLI owns an independent package and install generation.
+    request_file = private_json('template-request.json', request)
+    spec_file = private_json('implementation-spec.json', request['implementation_spec'])
+    cases_file = private_json('verification-cases.json', host['cases'])
+    rendered = tmp_path / 'cli-render'
+    materialized = invoke('template', 'materialize', '--repo', source,
+        '--request', request_file, '--tooling', tooling, '--out', rendered)
+    lock = read_json(rendered / 'template-lock.json')
+    assert lock['format'] == format_name
+    assert lock['source_sha256'] == request['implementation_spec']['source']['sha256']
+    assert read_json(rendered / 'render-status.json')['status'] == 'complete'
+    assert materialized['status'] == 'materialized'
+    bundle = tmp_path / 'cli-bundle'
+    js_common = ('--repo', source, '--bundle', bundle, '--tooling', tooling)
+    planned_js = invoke('js-plan', *js_common, '--spec', spec_file)
+    baseline = invoke('js-verify', *js_common, '--phase', 'baseline',
+        '--cases', cases_file, '--approve-execution')
+    assert baseline['status'] == 'passed'
+    invoke('js-apply', *js_common, '--approve', '0' * 64,
+        '--baseline-sha256', baseline['receipt_sha256'], ok=False)
+    assert file_hash(source / request['implementation_spec']['source']['file']) == lock['source_sha256']
+    applied = invoke('js-apply', *js_common, '--approve', planned_js['bundle_sha256'],
+        '--baseline-sha256', baseline['receipt_sha256'])
+    assert applied['status'] == 'applied_unverified'
+    modified = invoke('js-verify', *js_common, '--phase', 'modified',
+        '--cases', cases_file, '--baseline-sha256', baseline['receipt_sha256'],
+        '--approve-execution')
+    assert modified['status'] == 'passed'
+    assert invoke('js-status', *js_common,
+        '--trusted-modified-sha256', modified['receipt_sha256'])['status'] == 'verified'
+
+    # The installed evaluator now owns each CLI stage from source render to launch.
     cli_packages = tmp_path / 'cli-packages'
     cli_generations = tmp_path / 'cli-generations'
     cli_packages.mkdir(mode=0o700)
     cli_generations.mkdir(mode=0o700)
-    package_request = dict(plan['package_plan']['request'])
-    package_request['package_directory'] = str(cli_packages / 'package')
-    package_request['environment_parent'] = str(cli_generations)
-    request_file = private_json('package-request.json', package_request)
+    package_request = {'schema_version': '1.0', 'kind': 'node-package-request-v1',
+        'host_root': str(source), 'render_directory': str(rendered),
+        'implementation_bundle': str(bundle),
+        'trusted_modified_sha256': modified['receipt_sha256'],
+        'node': str(node), 'node_sha256': file_hash(node),
+        'npm_cli': str(npm), 'npm_cli_sha256': file_hash(npm),
+        'npm_tree_sha256': digest(installer._tree(npm.parent.parent)),
+        'tooling_directory': str(tooling), 'offline_cache': str(tmp_path / 'cache'),
+        'package_directory': str(cli_packages / 'package'),
+        'environment_parent': str(cli_generations)}
+    package_request_file = private_json('package-request.json', package_request)
     package_plan = tmp_path / 'package-plan.json'
-    planned = invoke('template', 'node-package-plan', '--request', request_file,
+    planned = invoke('template', 'node-package-plan', '--request', package_request_file,
         '--out', package_plan)
     reviewed_plan = read_json(package_plan)
     assert planned['plan_sha256'] == reviewed_plan['plan_sha256']
