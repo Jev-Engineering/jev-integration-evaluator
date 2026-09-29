@@ -117,16 +117,29 @@ user history, provider, production memory or generator is used.
 
 Independent semantic review by codex-rag45-independent and code review by
 graph44 on 2026-09-28 UTC are recorded in the scorer and study metadata. The
-study note anchors both approved pre-metadata digests. The holdout CLI still
-requires an externally checked exact post-metadata study-spec digest. To run
-calibration from the repository root with a new output path:
+study note anchors both approved pre-metadata digests. A single holdout was run
+from the externally checked exact post-metadata digest; its report is
+`validation/issue49-holdout-report.json`. To run calibration from the
+repository root with a new output path:
 
 ```powershell
 python examples/coding-agent/retention_study.py --split calibration --out validation/issue49-calibration-report.json
 python -m pytest -q tests/test_coding_agent_retention.py
 ```
 
+The 24-case synthetic holdout kept all 20 `/prune` efficacy rows and all 24
+guarded safety rows. Later task success was 8/20 historical, 7/20 deterministic,
+and 12/20 JEV. JEV rescued six cases and regressed two versus historical; it
+rescued five and regressed none versus deterministic. Its guarded arms lost no
+pins, provenance or bytes, made no wrong-mode mutations, and committed no
+over-budget state. H23/H24 mode attacks were rejected by the host with zero
+assessments or backend writes. JEV used 65 preset synthetic assessment calls,
+0.195 synthetic cost units, 18 ms per-call p95 and 84 ms sequential per-episode
+p95; local fixture wall time is measured separately. It retained 137 scorer-
+classified unnecessary tokens, versus 92 for deterministic. The predeclared
+synthetic gate passed, so the report says `synthetic_gates_met_live_needs_more_evidence`.
+
 The choices and oracle were co-authored as synthetic fixtures and then
-independently reviewed. The holdout remains unrun pending exact digest binding.
-A calibration result cannot support live adoption or permission to process
-real user history.
+independently reviewed. The visible task identified the anticipated domain, so
+this result does not establish arbitrary future recall, provider performance,
+live adoption or permission to process real user history.
