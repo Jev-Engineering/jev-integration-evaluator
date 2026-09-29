@@ -11,6 +11,14 @@ The observed local path is Windows 11 Pro build 26200, x86-64 native CPython
 3.10.11, 3.13.13 and 3.14.3 on local NTFS. Each interpreter has a retained
 private three-generation receipt archive. The profile parser also accepts
 Windows Server 2022, whose mutating and installed journeys have not run.
+The `windows-template-delivery` CI job schedules the native preparation,
+ownership, package/install, Job Object session and retained-generation tests
+on disposable Windows Server 2022 runners with CPython 3.10 and 3.13. It
+prepares the declared dependency closure before the offline tests and rejects
+any skipped required native case. Server qualification remains pending until
+those jobs actually pass on the final committed revision; discovery jobs do
+not establish delivery support. The job excludes only the explicit POSIX
+rejection tests named `test_non_windows_*`.
 The retained 3.10 and 3.13 runs verify the bounded install receipt. A later
 retained 3.14 run verifies the current fail-closed process and Job queries;
 an earlier 3.14 archive remains historical evidence from before those fixes.

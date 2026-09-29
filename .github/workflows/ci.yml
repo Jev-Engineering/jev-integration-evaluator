@@ -114,6 +114,58 @@ jobs:
       - name: Reject skipped or missing native Windows cases
         run: |
           python -c "import sys,xml.etree.ElementTree as E; r=E.parse(sys.argv[1]).getroot(); s=[r] if r.tag=='testsuite' else list(r.findall('testsuite')); n=sum(int(x.get('tests',0)) for x in s); k=sum(int(x.get('skipped',0)) for x in s); f=sum(int(x.get('failures',0))+int(x.get('errors',0)) for x in s); print(f'native Windows discovery cases: collected={n} skipped={k} failed={f}'); sys.exit(1 if n < 19 or k or f else 0)" "$env:RUNNER_TEMP\windows-discovery.xml"
+  windows-template-delivery:
+    # Native delivery runs on a disposable Server 2022 VM with no secrets.
+    # These synthetic off-mode fixtures do not grant provider authority.
+    runs-on: windows-2022
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Record native delivery runtime identity
+        run: python -c "import platform,sys; print(platform.platform()); print(sys.version); print(sys.executable)"
+      - name: Provision disposable filesystem fixtures
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $devMode = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock'
+          New-Item -Path $devMode -Force | Out-Null
+          New-ItemProperty -Path $devMode -Name AllowDevelopmentWithoutDevLicense `
+            -PropertyType DWord -Value 1 -Force | Out-Null
+          $fileSystem = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
+          New-ItemProperty -Path $fileSystem -Name LongPathsEnabled `
+            -PropertyType DWord -Value 1 -Force | Out-Null
+      - name: Prepare declared development dependencies and offline wheels
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          python -m pip install -e ".[test]" wheel
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $wheelhouse = Join-Path $env:RUNNER_TEMP 'jev-windows-template-wheelhouse'
+          python scripts/prepare_template_wheelhouse.py --out $wheelhouse
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          "JEV_WINDOWS_TEMPLATE_WHEELHOUSE=$wheelhouse" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Execute required native delivery and installed-host cases
+        run: >-
+          python -m pytest -q tests/test_windows_template_preflight.py
+          tests/test_windows_template_package_inputs.py tests/test_windows_template_owned.py
+          tests/test_windows_template_session.py tests/test_windows_template_delivery.py
+          tests/test_windows_template_run.py -k "not non_windows"
+          --junitxml "$env:RUNNER_TEMP\windows-template-delivery.xml"
+      - name: Reject skipped or missing required delivery cases
+        run: |
+          python -c "import sys,xml.etree.ElementTree as E; r=E.parse(sys.argv[1]).getroot(); s=[r] if r.tag=='testsuite' else list(r.findall('testsuite')); n=sum(int(x.get('tests',0)) for x in s); k=sum(int(x.get('skipped',0)) for x in s); f=sum(int(x.get('failures',0))+int(x.get('errors',0)) for x in s); print(f'native Windows delivery cases: collected={n} skipped={k} failed={f}'); sys.exit(1 if n < 31 or k or f else 0)" "$env:RUNNER_TEMP\windows-template-delivery.xml"
+      - run: python scripts/validate_package.py --check-manifest
   python-only:
     runs-on: ubuntu-latest
     steps:
