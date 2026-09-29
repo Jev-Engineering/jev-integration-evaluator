@@ -19,6 +19,9 @@ any skipped required native case. Server qualification remains pending until
 those jobs actually pass on the final committed revision; discovery jobs do
 not establish delivery support. The job excludes only the explicit POSIX
 rejection tests named `test_non_windows_*`.
+The disposable job disables Git newline conversion before checkout so source
+contract hashes and release checksums refer to committed bytes on both
+platforms. This changes only that runner's Git configuration.
 The retained 3.10 and 3.13 runs verify the bounded install receipt. A later
 retained 3.14 run verifies the current fail-closed process and Job queries;
 an earlier 3.14 archive remains historical evidence from before those fixes.

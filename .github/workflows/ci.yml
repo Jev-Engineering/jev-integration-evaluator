@@ -126,6 +126,8 @@ jobs:
       matrix:
         python: ["3.10", "3.13"]
     steps:
+      - name: Preserve committed bytes in the disposable checkout
+        run: git config --global core.autocrlf false
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
@@ -133,7 +135,9 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Record native delivery runtime identity
-        run: python -c "import platform,sys; print(platform.platform()); print(sys.version); print(sys.executable)"
+        run: |
+          git config --get core.autocrlf
+          python -c "import platform,sys; print(platform.platform()); print(sys.version); print(sys.executable)"
       - name: Provision disposable filesystem fixtures
         shell: pwsh
         run: |
