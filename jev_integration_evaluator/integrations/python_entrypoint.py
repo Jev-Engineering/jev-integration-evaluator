@@ -1,4 +1,4 @@
-"""Static, source-bound console entrypoint profile for reviewed Python C/E tasks."""
+"""Static, source-bound console entrypoint profile for reviewed Python C/E/H tasks."""
 from __future__ import annotations
 
 import ast
@@ -86,9 +86,9 @@ def inspect_entrypoint(root: Path, spec: dict, binding: dict) -> dict:
             or any(type(value) is not str or not _SYMBOL.fullmatch(value)
                    for value in binding['startup_inputs'].values())):
         raise InputError('Invalid explicit console entrypoint binding')
-    if (spec['recipe']['id'] not in ('python.C', 'python.E')
+    if (spec['recipe']['id'] not in ('python.C', 'python.E', 'python.H')
             or 'package_binding' not in spec or 'host_lifecycle' not in spec):
-        raise UnsupportedShape('Console profile requires a package-bound recipe C or E lifecycle')
+        raise UnsupportedShape('Console profile requires a package-bound recipe C, E or H lifecycle')
     if spec['package_binding']['namespace']:
         raise UnsupportedShape('Console profile requires a regular package')
     module, symbol = _script(root, binding['script'])
@@ -114,6 +114,8 @@ def inspect_entrypoint(root: Path, spec: dict, binding: dict) -> dict:
     kind = 'single-request-v1' if len(statements) == 2 else 'task-loop-v1'
     if spec['recipe']['id'] == 'python.E' and kind != 'task-loop-v1':
         raise UnsupportedShape('Completion console requires a bounded task loop returning 0')
+    if spec['recipe']['id'] == 'python.H' and kind != 'task-loop-v1':
+        raise UnsupportedShape('Retention console requires a bounded explicit request loop')
     item_name = None
     if kind == 'single-request-v1':
         if not isinstance(statements[1], ast.Return):

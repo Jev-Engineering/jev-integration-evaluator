@@ -19,7 +19,8 @@ The separate [L graph](references/graph-template-offline-v1.md),
 [M claim support](references/claim-template-offline-v1.md) and
 [H retention](references/retention-template-offline-v1.md) operator references
 describe their synthetic off-mode installed journeys and pending recipe-specific
-console binds except E's bounded task-loop binding. They do not establish
+console binds except E's bounded task-loop and H's explicit-choice bounded-loop
+bindings. They do not establish
 provider or benefit qualification.
 
 For offline Node recipe C packaging, collect the independently retained JS modified verification receipt, exact applied source and render lock, native pinned Node/npm, trusted TypeScript 5.8.3, private offline npm cache, off configuration and secret references. The separate `node-package-request-v1` stages an owned generation only after two exact approvals; see `references/template-node-installation-v1.md`. Missing tooling or a changed source fails closed. A separate Node session may launch only that installed off-mode command under an exact scope and independently checked ready/effect paths; it does not grant connected mode. The independently pinned ESM fixture in `tests/independent_hosts/esm_recipe_c` exercises installed off-mode launch, versioned upgrade and retained rollback with raw host effects.

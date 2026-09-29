@@ -126,7 +126,9 @@ def test_bound_template_installed_console_is_supervised_with_direct_effect(tmp_p
     launched = delivery.launch_session(session, scope=launch_scope,
         approved_scope_sha256=launch_scope['scope_sha256'])
     observed = launched
-    deadline = time.monotonic() + 10
+    # On a loaded runner, the fsynced ready marker can precede the effect by
+    # more than the original ten-second observation window.
+    deadline = time.monotonic() + 20
     while time.monotonic() < deadline:
         observed = delivery.observe_session(session,
             trusted_session_head=observed['session_head_sha256'])
