@@ -22,9 +22,31 @@ JEV_TEMPLATE_WHEELHOUSE=/absolute/private/wheelhouse \
   python3.13 -m pytest -q tests/test_use_case_completion_host.py
 ```
 
-The test creates a new source package, rescans and reviews its E seam, validates
-and materializes the template, then plans, baselines, applies and verifies the
-generated edit. It checks current implementation status with the modified
+For a separately reviewed E host with the same grammar, retain the current
+`template-request-v1` and use this exact binding input outside the target:
+
+```json
+{"version":"1.0","script":"completion-host","startup_inputs":{"budget_limits":"limits","audit_log":"audit","dependency_plan":"dependencies","startup_options":"options"}}
+```
+
+```bash
+jev-integration-evaluator template bind --repo /private/completion-host \
+  --request /private/e-request.json --binding /private/e-binding.json \
+  --out /private/e-bound
+jev-integration-evaluator template materialize --repo /private/completion-host \
+  --request /private/e-bound/template-request.json --out /private/e-render
+```
+
+Review and retain `binding-report.json` and the derived request digest before
+the separately approved implementation, package, install and session stages.
+The test's fixture builds those later exact plans and receipts through the
+same public APIs; the binding step alone grants no effect or provider access.
+
+The test creates a new source package, rescans and reviews its E seam, then
+uses `template bind` to derive a source-bound task-loop caller and own its
+console edit. It validates and materializes the bound template, then plans,
+baselines, applies and verifies the generated host and console edits. It checks
+current implementation status with the modified
 receipt digest. The #55 package/install plans bind the full applied tree,
 template, exact wheelhouse, build tools and off-mode configuration. Wrong
 approvals and changed consumer bytes are refused. The installed metadata
@@ -57,9 +79,20 @@ versions, not a real application's compatibility guarantee.
 
 ## Support boundary
 
-The current #54 console binder accepts recipe C only. This test uses the
-reviewed E request and #55 source/install receipts directly, so an E-specific
-`template bind` receipt is **pending**. Interrupted upgrade/recovery,
+The #54 console binder now accepts this package-bound E task-loop shape: one
+local zero-argument request factory returns a bounded list of dictionaries;
+the loop calls the imported one-argument host task, which directly returns
+the reviewed E seam, then the console returns zero. The four reviewed startup
+factories, lock and off configuration are source-bound. The generated caller
+starts one process-local runtime, completes the captured task ID after its
+effect, and shuts down in `finally`. The E single-request return form,
+decorators, dynamic imports and extra calls in the loop remain unsupported.
+The existing `python.bounded-tail-call@1.0.0` catalog manifest and archived C
+render locks keep their original binding capability string and bytes; this E
+extension is reported by its fresh binding report and the E matrix row.
+The fixture action writes the raw state and receipt before its separate ready
+marker and bounded observation hold. The host's `ok` report cannot replace
+the independent raw oracle. Interrupted upgrade/recovery,
 malformed or timed-out provider results, connected authority, a production
 host, and measured completion benefit are also pending. The fixture author
 controls its finite action and raw state; no model grants permission or adds

@@ -80,8 +80,9 @@ The [issue #59 use-case matrix](references/use-case-template-matrix-v1.md)
 pins six illustrative source contracts and five distinct offline host oracles.
 Its source match is read-only. Separate L graph, D retrieval, E completion, M claim support and H retention synthetic
 hosts have offline source-bound apply/install/supervised normal-console/disable/
-versioned upgrade/rollback journeys; their use-case-specific console binds
-remain pending. Other individual installs, provider modes and benefit remain
+versioned upgrade/rollback journeys. E completion also has a source-bound
+bounded task-loop console bind and owned edit. The other use-case-specific
+console binds remain pending. Other individual installs, provider modes and benefit remain
 pending. Keep `/prune` and `/compact` as separate
 explicit user choices.
 The finite offline use-case console fixture checks six separate fixture-emitted outcome records
