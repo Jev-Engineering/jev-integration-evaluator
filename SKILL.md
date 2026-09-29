@@ -91,7 +91,7 @@ not a supervised generation or five individual template transforms.
 For a proposed native Windows Python console host, use the read-only selected
 file preflight in `references/windows-template-preparation-v1.md`. Its receipt
 is preparation only and grants no apply, install, launch or provider authority.
-For a separately reviewed complete host file map and wheelhouse, the same
+For reviewed files in the declared traversal and selected wheels, the same
 reference describes a read-only package-input inventory API. It grants no
 build, install or launch authority.
 
