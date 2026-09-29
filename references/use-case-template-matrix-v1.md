@@ -83,6 +83,19 @@ missing approval, malformed assessment or failed audit leaves the graph intact.
 The in-memory fixture is not a graph database transaction. A real host needs its
 own atomic transaction proof and rollback ownership.
 
+The [L seam test](../tests/test_use_case_graph_host.py) now builds a separate
+synthetic host from the reviewed L recipe fixture, copies the matrix-pinned
+`entities.py` unchanged, and pins a small [graph effect
+adapter](../examples/use-case-host/graph_runtime.py) by byte hash. Its
+alternative effect calls `reconcile` with host approval, revision and an audit
+callback. A fresh inventory and source review bind the one-argument tail-call
+seam; the existing implementation planner, baseline/modified verifier, apply
+receipt and owned rollback execute on that host. This tests one L-specific
+source-bound application and deterministic in-memory graph effect. It does not
+install or normally launch that adapted host, authenticate the in-memory audit,
+or prove an atomic database transaction. The combined console fixture's L
+record remains a separate direct/installed fixture observation.
+
 ### D: retrieval evidence
 
 Bind a query, stable passage/source/span/claim IDs, stance metadata, retriever,
