@@ -50,7 +50,8 @@ def _observations(parent: Path, version: str, item: str) -> tuple[dict, dict, by
     paths = {'NODE_EFFECT_PATH': parent / 'effect.bin',
              'NODE_READY_PATH': parent / 'ready.bin',
              'NODE_INTEGRATION_PATH': parent / 'integration.bin'}
-    effect = f'read:{item}@{version}\n'.encode()
+    marker = ':v2' if version == '1.0.1' else ''
+    effect = f'read:{item}{marker}\n'.encode()
     checks = [{'role': role, 'path': str(paths[key]), 'before_sha256': None,
                'expected_sha256': hashlib.sha256(raw).hexdigest()}
               for key, role, raw in (
@@ -66,6 +67,20 @@ def _installed(tmp_path: Path, name: str, version: str, item: str,
     work = tmp_path / name
     work.mkdir(mode=0o700)
     source, request = request_for(work, 'typescript')
+    host_ts = source / 'host.ts'
+    if version == '1.0.1':
+        old_behavior = ("events.push(['read', request.item]); "
+                        "globalThis.__jev_probe_effect?.('read', request.item); "
+                        "return 'read:' + request.item;")
+        new_behavior = ("events.push(['read', request.item]); "
+                        "globalThis.__jev_probe_effect?.('read', request.item + ':v2'); "
+                        "return 'read:' + request.item + ':v2';")
+        text = host_ts.read_text(encoding='utf-8')
+        assert text.count(old_behavior) == 1
+        host_ts.write_text(text.replace(old_behavior, new_behavior), encoding='utf-8')
+        request['implementation_spec']['source']['sha256'] = file_hash(host_ts)
+    reviewed_host_source = host_ts.read_bytes()
+    marker = ':v2' if version == '1.0.1' else ''
     package_path, lock_path = source / 'package.json', source / 'package-lock.json'
     package, lock = (json.loads(path.read_text()) for path in (package_path, lock_path))
     package['version'] = lock['version'] = lock['packages']['']['version'] = version
@@ -79,12 +94,13 @@ def _installed(tmp_path: Path, name: str, version: str, item: str,
         'for (const key of ["NODE_EFFECT_PATH","NODE_READY_PATH","NODE_INTEGRATION_PATH"]) '
         'if (!process.env[key]) throw Error("missing path");\n'
         'globalThis.__jev_probe_effect = (action,item) => '
-        f'fs.writeFileSync(process.env.NODE_EFFECT_PATH, action+":"+item+"@{version}\\n", '
+        'fs.writeFileSync(process.env.NODE_EFFECT_PATH, action+":"+item+"\\n", '
         '{flag:"wx"});\n'
         'async function main() {\n'
         f'  const result = await seam({{task_id:"task",invocation_id:"normal-{version}",'
         f'item:"{item}",permit:true}});\n'
-        f'  if (result !== "read:{item}") throw Error("seam result");\n'
+        f'  if (result !== "read:{item}{marker}") '
+        'throw Error("seam result");\n'
         '  fs.writeFileSync(process.env.NODE_READY_PATH,"ready\\n",{flag:"wx"});\n'
         '  fs.writeFileSync(process.env.NODE_INTEGRATION_PATH,"integration\\n",{flag:"wx"});\n'
         '  await new Promise(resolve => setTimeout(resolve, 800));\n'
@@ -96,8 +112,9 @@ def _installed(tmp_path: Path, name: str, version: str, item: str,
     cases = [{'id': 'normal-' + version,
               'request': {'task_id': 'task', 'invocation_id': 'case-' + version,
                           'item': item, 'permit': True},
-              'result': 'read:' + item, 'events': [['read', item]],
-              'effects': [['read', item]]}]
+              'result': 'read:' + item + marker,
+              'events': [['read', item]],
+              'effects': [['read', item + marker]]}]
     request['implementation_spec']['verification_sha256'] = digest(cases)
     request['implementation_spec']['verification_cases_count'] = len(cases)
     rendered = tmp_path / (name + '-render')
@@ -115,6 +132,7 @@ def _installed(tmp_path: Path, name: str, version: str, item: str,
     verified = status_js(source, bundle, tooling_dir=tooling,
                          trusted_modified_sha256=modified['receipt_sha256'])
     assert verified['status'] == 'verified'
+    compiled_sha256 = file_hash(source / 'host.mjs')
     package_parent = tmp_path / (name + '-packages')
     environment_parent = tmp_path / 'generations'
     package_parent.mkdir(mode=0o700)
@@ -152,6 +170,8 @@ def _installed(tmp_path: Path, name: str, version: str, item: str,
     assert package_plan['toolchain']['typescript_tree_sha256'] == digest(
         installer._tree(tooling / 'node_modules/typescript'))
     return {'source': source, 'bundle': bundle, 'rollback_digest': verified['rollback_digest'],
+            'reviewed_host_source': reviewed_host_source,
+            'host_ts_sha256': file_hash(host_ts), 'compiled_sha256': compiled_sha256,
             'install_plan': install_plan, 'installed': installed, 'version': version,
             'item': item}
 
@@ -189,6 +209,12 @@ def test_real_installed_typescript_upgrade_and_retained_rollback(tmp_path):
     cache.mkdir(mode=0o700)
     old = _installed(tmp_path, 'version-one', '1.0.0', 'x', tooling, node, npm)
     new = _installed(tmp_path, 'version-two', '1.0.1', 'y', tooling, node, npm)
+    assert old['host_ts_sha256'] != new['host_ts_sha256']
+    assert old['compiled_sha256'] != new['compiled_sha256']
+    for host in (old, new):
+        app = Path(host['installed']['generation_path']) / 'app'
+        assert file_hash(app / 'host.ts') == host['host_ts_sha256']
+        assert file_hash(app / 'host.mjs') == host['compiled_sha256']
     assert old['installed']['generation_id'] != new['installed']['generation_id']
     assert old['installed']['source_sha256'] != new['installed']['source_sha256']
 
@@ -280,3 +306,5 @@ def test_real_installed_typescript_upgrade_and_retained_rollback(tmp_path):
         result = rollback_js(host['source'], host['bundle'], host['rollback_digest'],
                              tooling_dir=tooling)
         assert result['status'] == 'rolled_back'
+        assert (host['source'] / 'host.ts').read_bytes() == host['reviewed_host_source']
+        assert not (host['source'] / 'host.mjs').exists()

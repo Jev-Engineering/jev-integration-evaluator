@@ -189,7 +189,12 @@ command checks, but these two start faults have not run on those formats.
 
 The [installed TypeScript upgrade journey](../tests/test_node_template_installed_upgrade.py)
 uses two separately reviewed fixture packages, versions 1.0.0 and 1.0.1.
-Each has a distinct normal `start.mjs` command and a version-marked raw effect.
+The 1.0.1 `host.ts` changes the finite `original` function called by the
+reviewed one-tail-call `seam`: it appends `:v2` to the returned value and raw
+effect argument. The generated `host.mjs` has different compiled bytes. Both
+versions retain the registered `read` action and off-mode policy. Their normal
+`start.mjs` commands check the respective seam result, and their distinct
+external raw effects come from the host function.
 The test pins the trusted TypeScript 5.8.3 source tree digest
 `774ce18bba737b3bbaffec66946dfd9948afaac993cf7e8e3ece871536d6e42b`,
 copies it into a fresh private tooling directory and binds its complete tree
@@ -205,7 +210,7 @@ both owned JS source edits are then restored by their separate rollback
 digests. Both installed generations and their historical effects remain.
 The first generation's consumed observation paths do not permit a replay
 after rollback. These versions are synthetic and preserve the same finite
-decision rule; this does not prove a production migration, provider access,
+action policy; this does not prove a production migration, provider access,
 connected modes, or measured benefit.
 
 The build writes a durable owner intent in the private parent **before**
