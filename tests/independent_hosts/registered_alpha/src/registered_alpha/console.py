@@ -12,7 +12,7 @@ from .host import public_entry
 
 class Audit:
     def append(self, record) -> None:
-        path = Path(os.environ["JEV_ALPHA_AUDIT"])
+        path = Path(os.environ["REGISTERED_ALPHA_AUDIT"])
         if (not path.is_absolute() or path.is_symlink()
                 or any(parent.is_symlink() for parent in path.parents)
                 or path.parent.stat().st_uid != os.getuid()
@@ -58,20 +58,20 @@ def _binary_choice(name: str, default: str) -> bool:
 
 
 def make_request() -> dict:
-    intent = os.environ.get("JEV_ALPHA_INTENT", "inspect")
+    intent = os.environ.get("REGISTERED_ALPHA_INTENT", "inspect")
     if intent not in ("inspect", "summarize"):
         raise ValueError("invalid_jev_alpha_intent")
-    item = os.environ.get("JEV_ALPHA_ITEM", "fixture-one")
+    item = os.environ.get("REGISTERED_ALPHA_ITEM", "fixture-one")
     if item not in ("fixture-one", "fixture-two"):
         raise ValueError("invalid_jev_alpha_item")
-    task_id = os.environ.get("JEV_ALPHA_TASK_ID", "alpha-baseline")
+    task_id = os.environ.get("REGISTERED_ALPHA_TASK_ID", "alpha-baseline")
     if not task_id or len(task_id) > 64 or not task_id.isascii() or not all(
             character.isalnum() or character in "_-" for character in task_id):
         raise ValueError("invalid_jev_alpha_task_id")
     return {"task_id": task_id,
             "item": item, "intent": intent,
-            "permit": _binary_choice("JEV_ALPHA_PERMIT", "1"),
-            "approved": _binary_choice("JEV_ALPHA_APPROVED", "0")}
+            "permit": _binary_choice("REGISTERED_ALPHA_PERMIT", "1"),
+            "approved": _binary_choice("REGISTERED_ALPHA_APPROVED", "0")}
 
 
 def main() -> int:

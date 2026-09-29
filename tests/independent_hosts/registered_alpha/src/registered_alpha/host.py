@@ -21,8 +21,8 @@ ACTIONS = {"inspect", "summarize"}
 
 def _owned_path(variable: str) -> Path:
     value = os.environ.get(variable)
-    if not value and variable == "JEV_ALPHA_EFFECTS":
-        probe_directory = os.environ.get("JEV_ALPHA_PROBE_EFFECTS_DIR")
+    if not value and variable == "REGISTERED_ALPHA_EFFECTS":
+        probe_directory = os.environ.get("REGISTERED_ALPHA_PROBE_EFFECTS_DIR")
         if probe_directory:
             value = str(Path(probe_directory) / ("effects-" + str(os.getpid()) + ".jsonl"))
     if not value:
@@ -36,7 +36,7 @@ def _owned_path(variable: str) -> Path:
 
 
 def _events() -> list[dict]:
-    path = _owned_path("JEV_ALPHA_EFFECTS")
+    path = _owned_path("REGISTERED_ALPHA_EFFECTS")
     if not path.exists():
         return []
     if path.stat().st_size > 1_000_000:
@@ -49,7 +49,7 @@ def _events() -> list[dict]:
 
 
 def _record(request: dict, action: str) -> int:
-    path = _owned_path("JEV_ALPHA_EFFECTS")
+    path = _owned_path("REGISTERED_ALPHA_EFFECTS")
     flags = os.O_WRONLY | os.O_APPEND | os.O_CREAT | os.O_NOFOLLOW
     fd = os.open(path, flags, 0o600)
     try:
@@ -82,10 +82,10 @@ def summarize_item(request: dict) -> int:
 
 def _hold_if_requested() -> None:
     """Expose a live in-flight point with a finite timeout, not a fake health flag."""
-    if os.environ.get("JEV_ALPHA_HOLD") != "1":
+    if os.environ.get("REGISTERED_ALPHA_HOLD") != "1":
         return
-    ready = _owned_path("JEV_ALPHA_READY")
-    release = _owned_path("JEV_ALPHA_RELEASE")
+    ready = _owned_path("REGISTERED_ALPHA_READY")
+    release = _owned_path("REGISTERED_ALPHA_RELEASE")
     fd = os.open(ready, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
     try:
         os.write(fd, b"in-flight\n")

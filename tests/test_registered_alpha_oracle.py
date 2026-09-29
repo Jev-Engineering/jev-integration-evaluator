@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import time
@@ -14,7 +15,8 @@ from jev_integration_evaluator.io import file_hash, read_json
 from jev_integration_evaluator.config import load_config
 from jev_integration_evaluator.scanner import scan_repo
 from jev_integration_evaluator.template_catalog import prepare_template_binding, materialize_template
-from jev_integration_evaluator.integrations.lifecycle import plan_implementation
+from jev_integration_evaluator.integrations.lifecycle import plan_implementation, apply_implementation
+from jev_integration_evaluator.integrations.verification import verify_implementation
 from tests.independent_hosts.registered_alpha.qualification import source_matched_request
 
 
@@ -30,8 +32,8 @@ def _environment(private: Path, **choices: str) -> dict[str, str]:
     private.mkdir(mode=0o700, parents=True, exist_ok=True)
     os.chmod(private, 0o700)
     values = os.environ.copy()
-    values.update({'JEV_ALPHA_EFFECTS': str(private / 'effects.jsonl'),
-                   'JEV_ALPHA_AUDIT': str(private / 'audit.jsonl'), **choices})
+    values.update({'REGISTERED_ALPHA_EFFECTS': str(private / 'effects.jsonl'),
+                   'REGISTERED_ALPHA_AUDIT': str(private / 'audit.jsonl'), **choices})
     return values
 
 
@@ -87,12 +89,36 @@ def test_alpha_source_bound_template_bind_render_and_plan(tmp_path):
     assert {name: file_hash(ROOT / name) for name in original} == original
 
 
+def test_alpha_reviewed_source_verification_on_disposable_copy(tmp_path, monkeypatch):
+    host = tmp_path / 'host'
+    shutil.copytree(ROOT, host, ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
+    request, binding = source_matched_request(host)
+    bound = prepare_template_binding(host, request, binding)['request']
+    materialize_template(host, bound, tmp_path / 'render')
+    spec = bound['implementation_spec']
+    bundle = tmp_path / 'implementation'
+    plan = plan_implementation(host, bound['reviewed_inventory'], spec['candidate_id'],
+                               spec, bundle)
+    probe = tmp_path / 'probe-effects'
+    probe.mkdir(mode=0o700)
+    monkeypatch.setenv('REGISTERED_ALPHA_PROBE_EFFECTS_DIR', str(probe))
+    baseline = verify_implementation(host, bundle, 'baseline', approve_execution=True)
+    assert baseline['status'] == 'baseline_passed', baseline
+    apply_implementation(host, bundle, plan['bundle_digest'],
+                         baseline_sha256=baseline['receipt_sha256'])
+    modified = verify_implementation(host, bundle, 'modified', approve_execution=True,
+                                     baseline_sha256=baseline['receipt_sha256'])
+    assert modified['status'] == 'verified', modified
+    assert file_hash(ROOT / 'src/registered_alpha/host.py') == read_json(REVIEW)['files'][
+        'src/registered_alpha/host.py']
+
+
 @pytest.mark.parametrize('case', read_json(ORACLE)['cases'], ids=lambda case: case['id'])
 def test_frozen_independent_baseline_and_effects(tmp_path, case):
     private = tmp_path / 'evidence'
-    values = _environment(private, JEV_ALPHA_TASK_ID=case['task_id'],
-                          JEV_ALPHA_INTENT=case['intent'], JEV_ALPHA_ITEM=case['item'],
-                          JEV_ALPHA_PERMIT=case['permit'], JEV_ALPHA_APPROVED=case['approved'])
+    values = _environment(private, REGISTERED_ALPHA_TASK_ID=case['task_id'],
+                          REGISTERED_ALPHA_INTENT=case['intent'], REGISTERED_ALPHA_ITEM=case['item'],
+                          REGISTERED_ALPHA_PERMIT=case['permit'], REGISTERED_ALPHA_APPROVED=case['approved'])
     observed = []
     for expected in case['expected_exits']:
         process = subprocess.run(_command(), cwd=tmp_path, env=values,
@@ -108,9 +134,9 @@ def test_frozen_independent_baseline_and_effects(tmp_path, case):
 
 def test_interrupted_live_action_has_no_effect(tmp_path):
     private = tmp_path / 'evidence'
-    values = _environment(private, JEV_ALPHA_TASK_ID='alpha-cancel-1',
-                          JEV_ALPHA_HOLD='1', JEV_ALPHA_READY=str(private / 'ready'),
-                          JEV_ALPHA_RELEASE=str(private / 'release'))
+    values = _environment(private, REGISTERED_ALPHA_TASK_ID='alpha-cancel-1',
+                          REGISTERED_ALPHA_HOLD='1', REGISTERED_ALPHA_READY=str(private / 'ready'),
+                          REGISTERED_ALPHA_RELEASE=str(private / 'release'))
     process = subprocess.Popen(_command(), cwd=tmp_path, env=values,
                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     try:
@@ -127,11 +153,11 @@ def test_interrupted_live_action_has_no_effect(tmp_path):
             process.kill(); process.wait(timeout=5)
 
 
-@pytest.mark.parametrize('name,value', [('JEV_ALPHA_INTENT', 'delete'),
-                                        ('JEV_ALPHA_ITEM', 'other'),
-                                        ('JEV_ALPHA_TASK_ID', '../escape'),
-                                        ('JEV_ALPHA_PERMIT', 'yes'),
-                                        ('JEV_ALPHA_APPROVED', 'yes')])
+@pytest.mark.parametrize('name,value', [('REGISTERED_ALPHA_INTENT', 'delete'),
+                                        ('REGISTERED_ALPHA_ITEM', 'other'),
+                                        ('REGISTERED_ALPHA_TASK_ID', '../escape'),
+                                        ('REGISTERED_ALPHA_PERMIT', 'yes'),
+                                        ('REGISTERED_ALPHA_APPROVED', 'yes')])
 def test_invalid_caller_input_has_no_effect(tmp_path, name, value):
     private = tmp_path / 'evidence'
     values = _environment(private, **{name: value})
