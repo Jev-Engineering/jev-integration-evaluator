@@ -96,7 +96,8 @@ The source host can be Linux or local Windows NTFS for the current catalog
 materialization checks; this does not qualify installed host deployment on
 either platform.
 
-For a reviewed regular-package Python recipe C console command, use
+For a reviewed regular-package Python recipe C console command or bounded
+recipe E task-loop console, use
 [`template bind`](template-python-entrypoint-v1.md) to derive a current
 `entrypoint_binding` and the exact entrypoint edit before materialization.
 This profile supports one request or a bounded task loop and retains the

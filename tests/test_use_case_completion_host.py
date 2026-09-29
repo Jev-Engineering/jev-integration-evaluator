@@ -18,14 +18,17 @@ import pytest
 from jev_integration_evaluator import template_delivery as delivery
 from jev_integration_evaluator import template_installation as installer
 from jev_integration_evaluator.config import load_config
-from jev_integration_evaluator.io import digest, file_hash
+from jev_integration_evaluator.io import InputError, digest, file_hash
 from jev_integration_evaluator.scanner import scan_repo
 from jev_integration_evaluator.scoring import apply_reviews
 from jev_integration_evaluator.integrations.lifecycle import (
     apply_implementation, implementation_status, plan_implementation,
     rollback_implementation)
 from jev_integration_evaluator.integrations.verification import verify_implementation
-from jev_integration_evaluator.template_catalog import materialize_template, validate_template_request
+from jev_integration_evaluator.integrations.errors import UnsupportedShape
+from jev_integration_evaluator.integrations.recipes import host_lifecycle_marker
+from jev_integration_evaluator.template_catalog import (
+    materialize_template, prepare_template_binding, validate_template_request)
 from jev_integration_evaluator.use_case_templates import use_case_matrix
 from scripts.implementation_fixtures import fixture
 from tests.test_template_installation import _metadata
@@ -38,8 +41,10 @@ PROFILE = (sys.platform == "linux" and platform.machine().lower() == "x86_64"
 pytestmark = pytest.mark.skipif(not PROFILE, reason="E installed fixture requires Linux x86-64 CPython 3.13")
 
 
-def _source_host(target: Path, version: str = "1.0.0") -> tuple[dict, dict, dict]:
+def _source_host(target: Path, version: str = "1.0.0",
+                 task_ids: tuple[str, ...] = ("completion-task",)) -> tuple[dict, dict, dict]:
     assert version in ("1.0.0", "1.0.1")
+    assert task_ids and all(type(value) is str for value in task_ids)
     inventory, spec = fixture(target, "E", tag="raw_completion", layout="package",
                               package_name="completion_host")
     package = target / "completion_host"
@@ -57,11 +62,25 @@ def _source_host(target: Path, version: str = "1.0.0") -> tuple[dict, dict, dict
     old = ("STATE['effects'].append('first')\n"
            "    if not STATE['ineffective']: STATE['records'] += 1\n"
            "    return {'reported': 'ok'}")
+    task_paths = (
+        "        import os\n"
+        "        for template_key, output_key in (('E_RAW_STATE_TEMPLATE', 'E_RAW_STATE_PATH'), "
+        "('E_EFFECT_RECEIPT_TEMPLATE', 'E_EFFECT_RECEIPT_PATH')):\n"
+        "            if template_key in os.environ:\n"
+        "                os.environ[output_key] = os.environ[template_key].replace('{task_id}', request['task_id'])\n"
+        if len(task_ids) > 1 else "")
     new = ("STATE['effects'].append('first')\n"
            "    if not STATE['ineffective']:\n"
            "        from . import completion_consumer\n"
+           + task_paths +
            "        completion_consumer.commit(request, host_approved=STATE['approval'])\n"
            "        STATE['records'] += 1\n"
+           "        ready = __import__('os').environ.get('E_READY_PATH')\n"
+           "        if ready:\n"
+           "            from pathlib import Path\n"
+           "            with Path(ready).open('x', encoding='utf-8') as stream:\n"
+           "                stream.write('ready\\n')\n"
+           "            __import__('time').sleep(15)\n"
            "    return {'reported': 'ok'}")
     assert text.count(old) == 1
     host_source.write_text(text.replace(old, new), encoding="utf-8")
@@ -70,15 +89,23 @@ def _source_host(target: Path, version: str = "1.0.0") -> tuple[dict, dict, dict
     entry = spec["verification"]["entry_point"]
     (package / "console.py").write_text(
         f"from .{host_source.stem} import {entry}\n"
-        "from pathlib import Path\nimport os\nimport time\n"
+        "from pathlib import Path\nimport hashlib\n"
+        "class Audit:\n"
+        "    def __init__(self): self.records = []\n"
+        "    def append(self, record): self.records.append(record)\n"
+        "def limits():\n"
+        "    return dict(max_calls_per_task=2, max_cost_per_task=2, max_total_calls=2, max_total_cost=2, max_in_flight=1, max_tasks=2)\n"
+        "def audit():\n    return Audit()\n"
+        "def dependencies():\n"
+        "    base = Path(__file__).resolve().parent\n"
+        "    return {'files': [{'path': str(base / name), 'sha256': hashlib.sha256((base / name).read_bytes()).hexdigest()} for name in ('requirements.lock', 'runtime.json')]}\n"
+        "def options():\n    return {}\n"
+        "def make_requests():\n"
+        f"    return {[{'task_id': task_id, 'operation': 'close_and_label'} for task_id in task_ids]!r}\n"
         "def main():\n"
-        "    request = {'task_id':'completion-task','operation':'close_and_label'}\n"
-        f"    {entry}(request)\n"
-        "    ready = os.environ.get('E_READY_PATH')\n"
-        "    if ready:\n"
-        "        with Path(ready).open('x', encoding='utf-8') as stream:\n"
-        "            stream.write('ready\\n')\n"
-        "    time.sleep(15)\n"
+        "    requests = make_requests()\n"
+        "    for request in requests:\n"
+        f"        {entry}(request)\n"
         "    return 0\n"
         "if __name__ == '__main__':\n    raise SystemExit(main())\n",
         encoding="utf-8")
@@ -90,7 +117,25 @@ def _source_host(target: Path, version: str = "1.0.0") -> tuple[dict, dict, dict
         'requires-python = ">=3.13"\n'
         'dependencies = ["jev-integration-evaluator==1.3.0.dev12"]\n'
         '[project.scripts]\ncompletion-host = "completion_host.console:main"\n'
-        '[tool.setuptools.packages.find]\ninclude = ["completion_host*"]\n', encoding="utf-8")
+        '[tool.setuptools.packages.find]\ninclude = ["completion_host*"]\n'
+        '[tool.setuptools.package-data]\ncompletion_host = ["*.lock", "*.json"]\n', encoding="utf-8")
+    runtime_files = {
+        "requirements.lock": ("dependency_lock", "jev-integration-evaluator==1.3.0.dev1\n",
+                              "jev-integration-evaluator==1.3.0.dev12\n"),
+        "runtime.json": ("configuration", '{"jev_runtime":{"mode":"off","credential_ref":null}}\n',
+                         '{"jev_runtime":{"mode":"off","credential_ref":null,"feature_flag":false}}\n'),
+    }
+    for name, (kind, old, new) in runtime_files.items():
+        path = package / name
+        path.write_text(old, encoding="utf-8")
+        relative = path.relative_to(target).as_posix()
+        spec.setdefault("runtime_files", []).append({
+            "file": relative, "kind": kind,
+            "old_sha256": hashlib.sha256(old.encode()).hexdigest(), "new_content": new})
+        spec["output"]["permitted_edits"].append(relative)
+    spec["host_lifecycle"] = {"kind": "module-startup-v1",
+                               "startup": "start_jev_runtime", "shutdown": "stop_jev_runtime",
+                               "complete_task": "finish_jev_task"}
     cfg = load_config()
     cfg["repository"]["typescript_ast"] = False
     inventory = scan_repo(target, cfg)
@@ -109,6 +154,14 @@ def _source_host(target: Path, version: str = "1.0.0") -> tuple[dict, dict, dict
                            "source_sha256": candidate["source"]["source_sha256"]})
     spec["binding_review"].update({"source_sha256": candidate["source"]["source_sha256"],
                                     "reason": reason})
+    for name, (kind, old, _) in runtime_files.items():
+        relative = (package / name).relative_to(target).as_posix()
+        inventory["configuration_evidence"].append({
+            "file": relative, "sha256": hashlib.sha256(old.encode()).hexdigest()})
+    inventory["analysis_identity"]["configuration_digest"] = digest(inventory["configuration_evidence"])
+    inventory["scan_fingerprint"] = digest(inventory["analysis_identity"])
+    spec["inventory_sha256"] = digest(inventory)
+    spec["inventory_fingerprint"] = inventory["scan_fingerprint"]
     request = {"schema_version": "1.0", "template_id": "python.bounded-tail-call",
                "template_version": "1.0.0", "backend": "python",
                "profile": "module-tail-call-v1", "reviewed_inventory": inventory,
@@ -123,9 +176,65 @@ def _probe(tmp_path: Path, name: str) -> dict[str, str]:
             "E_EFFECT_RECEIPT_PATH": str(parent / "receipt-{pid}.json")}
 
 
-def _applied(tmp_path: Path, name: str, version: str) -> dict:
+def _binding() -> dict:
+    return {"version": "1.0", "script": "completion-host",
+            "startup_inputs": {"budget_limits": "limits", "audit_log": "audit",
+                               "dependency_plan": "dependencies", "startup_options": "options"}}
+
+
+def test_completion_console_binding_tracks_reviewed_caller(tmp_path):
+    target = tmp_path / "completion-bound"
+    _, _, request = _source_host(target)
+    prepared = prepare_template_binding(target, request, _binding())
+    entry = prepared["request"]["implementation_spec"]["entrypoint_binding"]
+    assert entry["kind"] == "task-loop-v1"
+    assert entry["file"] == "completion_host/console.py"
+    assert entry["pyproject_sha256"] == file_hash(target / "pyproject.toml")
+    assert entry["file_sha256"] == file_hash(target / entry["file"])
+    assert validate_template_request(target, prepared["request"])["status"] == "validated"
+    request_path, binding_path = tmp_path / "request.json", tmp_path / "binding.json"
+    request_path.write_text(json.dumps(request), encoding="utf-8")
+    binding_path.write_text(json.dumps(_binding()), encoding="utf-8")
+    output = tmp_path / "bound-by-cli"
+    command = [sys.executable, "-m", "jev_integration_evaluator", "template", "bind",
+               "--repo", str(target), "--request", str(request_path),
+               "--binding", str(binding_path), "--out", str(output)]
+    bound = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, timeout=30)
+    assert bound.returncode == 0, bound.stderr
+    assert json.loads((output / "binding-report.json").read_text()) == prepared["binding_report"]
+    assert json.loads((output / "template-request.json").read_text()) == prepared["request"]
+    console = target / entry["file"]
+    console.write_text(console.read_text(encoding="utf-8") + "\n# drift\n", encoding="utf-8")
+    with pytest.raises(InputError, match="drift|changed"):
+        validate_template_request(target, prepared["request"])
+
+
+def test_completion_bind_refuses_single_request_exit_shape(tmp_path):
+    target = tmp_path / "completion-unsupported-caller"
+    _, spec, request = _source_host(target)
+    console = target / "completion_host/console.py"
+    original = console.read_text(encoding="utf-8")
+    loop = ("    requests = make_requests()\n"
+            "    for request in requests:\n"
+            f"        {spec['verification']['entry_point']}(request)\n"
+            "    return 0\n")
+    assert original.count(loop) == 1
+    console.write_text(original.replace(loop,
+        "    request = make_requests()\n"
+        f"    return {spec['verification']['entry_point']}(request)\n"), encoding="utf-8")
+    with pytest.raises(UnsupportedShape, match="bounded task loop"):
+        prepare_template_binding(target, request, _binding())
+
+
+def _applied(tmp_path: Path, name: str, version: str,
+             task_ids: tuple[str, ...] = ("completion-task",)) -> dict:
     target = tmp_path / name
-    inventory, spec, request = _source_host(target, version)
+    inventory, spec, request = _source_host(target, version, task_ids)
+    prepared = prepare_template_binding(target, request, _binding())
+    request = prepared["request"]
+    spec = request["implementation_spec"]
+    assert spec["entrypoint_binding"]["kind"] == "task-loop-v1"
+    assert spec["entrypoint_binding"]["file"] == "completion_host/console.py"
     assert validate_template_request(target, request)["status"] == "validated"
     template = tmp_path / (name + "-template")
     materialize_template(target, request, template)
@@ -147,6 +256,101 @@ def _applied(tmp_path: Path, name: str, version: str) -> dict:
     return {"target": target, "bundle": bundle, "template": template,
             "version": version,
             "applied": applied, "modified": modified, "spec": spec}
+
+
+def test_completion_bound_source_applies_and_rolls_back_owned_caller(tmp_path):
+    host = _applied(tmp_path, "completion-bound-source", "1.0.0")
+    entry = host["spec"]["entrypoint_binding"]
+    console = host["target"] / entry["file"]
+    assert "finish_jev_task" in console.read_text(encoding="utf-8")
+    assert "stop_jev_runtime" in console.read_text(encoding="utf-8")
+    assert implementation_status(host["target"], host["bundle"],
+        trusted_receipt_sha256=host["modified"]["receipt_sha256"])["status"] == "verified"
+    rolled = rollback_implementation(host["target"], host["bundle"],
+                                     host["applied"]["rollback_digest"])
+    assert rolled["status"] == "rolled_back"
+    assert file_hash(console) == entry["file_sha256"]
+
+
+@pytest.mark.parametrize("task_ids,expected_error", [
+    (("alpha", "beta"), None),
+    (("alpha", "alpha"), "duplicate_task_identity"),
+    (tuple(f"task-{index}" for index in range(33)), "invalid_bounded_task_schedule"),
+])
+def test_completion_bound_loop_uses_one_owner_and_preflights_schedule(
+        tmp_path, task_ids, expected_error):
+    host = _applied(tmp_path, "completion-schedule", "1.0.0", task_ids)
+    target, spec = host["target"], host["spec"]
+    module = spec["package_binding"]["module"]
+    marker = host_lifecycle_marker(spec["host_lifecycle"], spec["bindings"]["runtime"],
+                                   spec["candidate_id"])
+    effects = tmp_path / "task-effects"
+    effects.mkdir(mode=0o700)
+    env = os.environ.copy()
+    env["PYTHONPATH"] = os.pathsep.join((str(target), str(ROOT)))
+    env["JEV_RUNTIME_MODE"] = "off"
+    env["E_RAW_STATE_TEMPLATE"] = str(effects / "state-{task_id}.json")
+    env["E_EFFECT_RECEIPT_TEMPLATE"] = str(effects / "receipt-{task_id}.json")
+    for name in ("E_RAW_STATE_PATH", "E_EFFECT_RECEIPT_PATH", "E_READY_PATH"):
+        env.pop(name, None)
+    runner = f'''
+import importlib, json
+host = importlib.import_module({module!r})
+console = importlib.import_module('completion_host.console')
+events = []
+start, finish, stop = (getattr(host, name) for name in
+    ('start_jev_runtime', 'finish_jev_task', 'stop_jev_runtime'))
+def observed_start(**kwargs):
+    owner = start(**kwargs)
+    events.append(['start', id(owner)])
+    return owner
+def observed_finish(task_id):
+    events.append(['finish', task_id, id(getattr(host, {marker!r}))])
+    return finish(task_id)
+def observed_stop():
+    events.append(['stop', id(getattr(host, {marker!r}))])
+    return stop()
+host.start_jev_runtime = observed_start
+host.finish_jev_task = observed_finish
+host.stop_jev_runtime = observed_stop
+try:
+    result = console.main()
+    error = None
+except BaseException as exc:
+    result = None
+    error = str(exc)
+print(json.dumps({{'result': result, 'error': error, 'events': events,
+                  'effects': host.STATE['effects'], 'records': host.STATE['records'],
+                  'started': getattr(host, {marker + '_started'!r}),
+                  'closed': getattr(host, {marker!r}) is None}}))
+'''
+    run = subprocess.run([sys.executable, "-c", runner], cwd=target, env=env,
+                         capture_output=True, text=True, timeout=30)
+    assert run.returncode == 0, run.stderr
+    observed = json.loads(run.stdout)
+    assert observed["error"] == expected_error
+    if expected_error:
+        assert observed["events"] == [] and observed["effects"] == []
+        assert observed["records"] == 0 and not observed["started"]
+        assert list(effects.iterdir()) == []
+    else:
+        assert observed["result"] == 0 and observed["records"] == 2
+        assert observed["effects"] == ["first", "first"]
+        assert [row[0] for row in observed["events"]] == ["start", "finish", "finish", "stop"]
+        owner = observed["events"][0][1]
+        assert [row[1] for row in observed["events"][1:3]] == list(task_ids)
+        assert all(row[-1] == owner for row in observed["events"])
+        assert observed["started"] and observed["closed"]
+        oracle = fixture_module("examples/coding-agent/completion_oracle.py", "two_task_e_oracle")
+        for task_id in task_ids:
+            raw_state, raw_receipt = _expected(task_id)
+            assert (effects / f"state-{task_id}.json").read_bytes() == raw_state
+            assert (effects / f"receipt-{task_id}.json").read_bytes() == raw_receipt
+            objective = {"task_id": task_id,
+                         "allowed_fields": ["task_id", "status", "revision", "labels", "unrequested"],
+                         "required_status": "closed", "required_labels": ["verified"],
+                         "required_unrequested": []}
+            assert oracle.exact_goal(json.loads(raw_state), objective)
 
 
 def _scope(status: dict, plan: dict, action: str, **additional) -> dict:
