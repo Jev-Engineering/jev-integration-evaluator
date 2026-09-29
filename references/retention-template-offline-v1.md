@@ -24,8 +24,35 @@ Run the focused offline journey only with a previously prepared wheelhouse:
 
 ```bash
 JEV_TEMPLATE_WHEELHOUSE=/absolute/owner-private/wheelhouse \
-  python3.13 -m pytest -q tests/test_use_case_retention_host.py
+  python3.13 -m pytest -q tests/test_use_case_retention_host.py tests/test_use_case_retention_bind.py
 ```
+
+For a separately reviewed H package with the documented caller grammar, use
+this explicit binding input outside the target:
+
+```json
+{"version":"1.0","script":"retention-host","startup_inputs":{"budget_limits":"limits","audit_log":"audit","dependency_plan":"dependencies","startup_options":"options"}}
+```
+
+```bash
+jev-integration-evaluator template bind --repo /private/retention-host \
+  --request /private/h-request.json --binding /private/h-binding.json \
+  --out /private/h-bound
+jev-integration-evaluator template materialize --repo /private/retention-host \
+  --request /private/h-bound/template-request.json --out /private/h-render
+```
+
+Review and retain `binding-report.json`, the bound request, current source
+hashes and the separate implementation/package/install receipts. Binding is
+read-only. The H console profile uses a regular package and a bounded loop
+that passes each unchanged request once to the reviewed H seam. The fixture
+supplies exactly one task and requires an explicit `H_COMMAND=/prune` at normal
+console invocation. Missing choice and `/compact` refuse before a retained
+state effect. The generated console starts one process-local runtime, completes
+the task and shuts down in `finally`. The bound installed check verifies the
+normal console's installed origin, raw retained bytes, pinned provenance and
+owned source rollback. The existing supervised H journey below uses a separate
+unbound fixture shape and retains its prior evidence.
 
 The launch environment supplies `H_RETAINED_PATH` and `H_READY_PATH` as fresh
 absolute paths outside the source, package, environment and session trees.
@@ -46,9 +73,10 @@ shows `/prune` can drop the reviewed unpinned item. It never treats a host
 
 `/compact`, changed selected source items, missing pins, reused output paths,
 source drift, unapproved package/install plans and non-off mode are unsupported
-or rejected. The #54 console binder currently accepts recipe C only; this H
-journey uses source-tree and entrypoint binding from the validated H request
-and #55 package/install receipts, without claiming a #54 H bind report.
+or rejected. The existing supervised H journey uses source-tree and entrypoint
+binding from the validated H request and #55 package/install receipts. The
+separate bound H journey now has an actual `template bind` report and owned
+console edit through the #54 API.
 The test installs a second reviewed host version (1.0.1), stops the first,
 stages the new generation with an exact upgrade scope, launches and observes
 its raw effect, then disables it and rolls back to the retained first

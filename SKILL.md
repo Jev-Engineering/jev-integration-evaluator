@@ -81,7 +81,9 @@ pins six illustrative source contracts and five distinct offline host oracles.
 Its source match is read-only. Separate L graph, D retrieval, E completion, M claim support and H retention synthetic
 hosts have offline source-bound apply/install/supervised normal-console/disable/
 versioned upgrade/rollback journeys. E completion also has a source-bound
-bounded task-loop console bind and owned edit. The other use-case-specific
+bounded task-loop console bind and owned edit. H retention separately has a
+bounded-loop bind with an explicit `/prune` choice and installed normal command.
+The other use-case-specific
 console binds remain pending. Other individual installs, provider modes and benefit remain
 pending. Keep `/prune` and `/compact` as separate
 explicit user choices.

@@ -1,7 +1,7 @@
 # Python console entrypoint binding v1
 
 `template bind` derives an exact, reviewed console caller contract for
-`python.bounded-tail-call@1.0.0` recipe C or E. It reads source and `pyproject.toml`
+`python.bounded-tail-call@1.0.0` recipe C, E or H. It reads source and `pyproject.toml`
 without importing the target. It writes a bound template request and a binding
 report outside the target. It does not modify, execute, install or activate the
 host. Existing `template validate`, `template materialize`, `implement-*` commands
@@ -11,7 +11,7 @@ and legacy receipts retain their original behavior.
 
 The execution profile is one process on Linux x86-64, Python 3.10 or
 newer, with a regular package in the repository root or `src/`, a
-`pyproject.toml` `[project.scripts]` console command, and a reviewed recipe C/E
+`pyproject.toml` `[project.scripts]` console command, and a reviewed recipe C/E/H
 `module-tail-call-v1` seam. The console function lives in a separate module in
 the same package. The selected host module owns the seam, a one-argument task
 caller that directly returns that seam call, all recipe C policy/registry/guard
@@ -50,8 +50,13 @@ Recipe E accepts only the bounded task-loop form ending in `return 0` because
 its seam may return a structured completion report, which is not a console
 exit code. The E task caller must still directly return the selected seam
 call. A one-request `return run_task(request)` E console is rejected before
-an edit is planned. Recipe C retains both existing forms. Other recipes remain
-unsupported by this binder.
+an edit is planned. Recipe H also accepts only the bounded task-loop form
+ending in `return 0`: the retained-ID list is not a console exit code. Its
+reviewed host consumer requires an explicit `/prune` choice and rejects
+`/compact`, missing pins and changed retained bytes before writing a raw
+effect. The binder verifies the unchanged request path and caller shape;
+the code-owned consumer enforces those H semantics. Recipe C retains both
+existing forms. Other recipes remain unsupported by this binder.
 
 The explicit binding file names the chosen script and existing host-owned
 startup factories. It cannot synthesize policy, credentials, approvals, audit
