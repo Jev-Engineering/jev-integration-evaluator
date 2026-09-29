@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from email.parser import BytesParser
+from contextlib import contextmanager
 import copy
 import hashlib
 import os
@@ -123,6 +124,68 @@ def _make_dangling_junction(root: Path, tmp_path: Path, label: str) -> Path:
     unrelated.rename(retained)
     assert os.path.lexists(root) and not root.exists()
     return retained
+
+
+@contextmanager
+def _deny_sharing(path: Path):
+    """Hold a real Win32 file handle that denies all concurrent opens."""
+    import ctypes
+    from ctypes import wintypes
+
+    kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+    kernel.CreateFileW.argtypes = (wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD,
+                                  ctypes.c_void_p, wintypes.DWORD, wintypes.DWORD,
+                                  wintypes.HANDLE)
+    kernel.CreateFileW.restype = wintypes.HANDLE
+    kernel.CloseHandle.argtypes = (wintypes.HANDLE,)
+    kernel.CloseHandle.restype = wintypes.BOOL
+    handle = kernel.CreateFileW(str(path), 0x80000000, 0, None, 3, 0x80, None)
+    if handle == wintypes.HANDLE(-1).value:
+        raise ctypes.WinError(ctypes.get_last_error())
+    try:
+        yield
+    finally:
+        assert kernel.CloseHandle(handle)
+
+
+def test_native_locked_install_config_blocks_status_replay_and_session(tmp_path):
+    request, _, _, _, _ = _request(tmp_path)
+    package_plan = plan_windows_template_package(request)
+    package = build_windows_template_package(
+        package_plan, approved_plan_sha256=package_plan['plan_sha256'])
+    install_plan = plan_windows_template_install(
+        package_plan, package, trusted_package_receipt_sha256=package['receipt_sha256'])
+    installed = install_windows_template_package(
+        install_plan, approved_plan_sha256=install_plan['plan_sha256'])
+    root = _install_generation(install_plan)
+    config = root / 'config.json'
+    original = config.read_bytes()
+    unrelated = tmp_path / 'unrelated.txt'
+    unrelated.write_bytes(b'preserve unrelated bytes\n')
+    assert windows_install_status(
+        install_plan, trusted_receipt_sha256=installed['receipt_sha256'])['status'] == 'installed_recorded'
+
+    session_dir = tmp_path / 'blocked-session'
+    with _deny_sharing(config):
+        with pytest.raises(InputError, match='windows_install_status_unavailable'):
+            windows_install_status(
+                install_plan, trusted_receipt_sha256=installed['receipt_sha256'])
+        with pytest.raises(InputError, match='windows_install_existing_generation_requires_status_review'):
+            install_windows_template_package(
+                install_plan, approved_plan_sha256=install_plan['plan_sha256'])
+        with pytest.raises(InputError, match='windows_install_status_unavailable'):
+            create_windows_template_session(
+                session_dir, install_plan, installed,
+                trusted_install_receipt_sha256=installed['receipt_sha256'])
+        assert not session_dir.exists()
+        assert unrelated.read_bytes() == b'preserve unrelated bytes\n'
+
+    assert config.read_bytes() == original
+    assert windows_install_status(
+        install_plan, trusted_receipt_sha256=installed['receipt_sha256']) == {
+            'status': 'installed_recorded', 'receipt_trust': 'externally_anchored',
+            'receipt_sha256': installed['receipt_sha256']}
+    assert unrelated.read_bytes() == b'preserve unrelated bytes\n'
 
 
 def test_native_dangling_generation_junction_blocks_status_and_replay(tmp_path):

@@ -72,6 +72,15 @@ Its receipt inventories every file hash, file/directory ACL and NTFS identity
 in the private venv so an added import hook such as `sitecustomize.py`, an ACL
 change or identical-byte replacement invalidates later status and launch. The
 venv's entire tree is rechecked immediately before release of the console gate.
+An exclusive sharing handle held on the installed `config.json` makes the
+existing native Windows install status unavailable and blocks a new child session;
+replaying the same generation is refused. Closing the handle restores exact
+receipt validation without deleting or rewriting the generation. A disposable
+installed-host test now covers this existing behavior with a real Win32 sharing
+lock and checks that no session directory is created and unrelated bytes remain
+intact. The unchanged `94d355b` implementation passes that same test. This
+qualifies one locked-file refusal, not the broader locked-root, ACL and
+interrupted-install matrix.
 The complete Python 3.10 venv inventory produced a 1,276,216-byte install
 receipt. This one named owner record has a finite 4 MB read/write limit;
 other owner records retain the 1 MB limit. Larger installs fail closed.
@@ -183,7 +192,8 @@ $env:JEV_WINDOWS_TEMPLATE_WHEELHOUSE = 'C:\private\reviewed-wheels'
 It executes fixture source binding, applied-source verification, offline
 wheel build/install, gated normal console invocation, duplicate-launch and
 owned-stop checks, plus installed-tree drift and dangling-generation-junction
-refusal. The separate
+refusal. It also checks exclusive-share lock refusal on the installed config
+and exact status recovery after that handle closes. The separate
 `tests/test_windows_template_run.py` exercises two installed versions,
 retained rollback, same-run interrupted-stage recovery, and separate ready
 and effect observations. It is a synthetic
