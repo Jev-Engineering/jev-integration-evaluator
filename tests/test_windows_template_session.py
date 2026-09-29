@@ -18,7 +18,9 @@ from jev_integration_evaluator.windows_template_owned import (
     create_private_directory, write_private_json_exclusive,
 )
 from jev_integration_evaluator.windows_template_session import (
-    _identity, _kernel, stop_windows_template_session, windows_session_status,
+    _identity, _job_members, _kernel, _kill_on_last_job_handle, _owned_process,
+    _start_guardian, _current_guardian_python, _verified_guardian_python,
+    stop_windows_template_session, windows_session_status,
 )
 
 
@@ -99,3 +101,51 @@ def test_package_plan_rejects_executable_setup_and_custom_build_hooks(tmp_path):
     files['pyproject.toml'] = hashlib.sha256(project.read_bytes()).hexdigest()
     with pytest.raises(InputError, match='nonstatic_build'):
         _static_build_guard(tmp_path, files)
+
+
+@pytest.mark.skipif(os.name != 'nt', reason='native Windows Job Object only')
+def test_guardian_retains_named_job_and_kills_owned_gate_on_exit(tmp_path):
+    gate = subprocess.Popen([sys._base_executable, '-I', '-c', 'import time;time.sleep(30)'],
+                            stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL,
+                            creationflags=subprocess.CREATE_NO_WINDOW)
+    kernel = _kernel()
+    job_name = 'Local\\jev-template-' + str(uuid.uuid4())
+    job = kernel.CreateJobObjectW(None, job_name)
+    keeper = None
+    try:
+        assert job and ctypes.get_last_error() != 183
+        _kill_on_last_job_handle(job, kernel)
+        assert kernel.AssignProcessToJobObject(job, int(gate._handle))
+        keeper, (keeper_created, keeper_image) = _start_guardian(
+            job, gate, tmp_path, kernel, Path(sys._base_executable))
+        gate_created, gate_image = _identity(int(gate._handle), kernel)
+        identity = {'pid': gate.pid, 'created_filetime': gate_created,
+                    'image': gate_image, 'job': job_name}
+        assert keeper_created > 0 and keeper_image.endswith('python.exe')
+        kernel.CloseHandle(job); job = None
+        assert _owned_process(identity)[0]
+        count, members = _job_members(identity)
+        assert count >= 1 and any(row['pid'] == gate.pid for row in members)
+        begun = time.monotonic()
+        keeper.terminate(); keeper.wait(timeout=5)
+        gate.wait(timeout=5)
+        assert time.monotonic() - begun < 5
+        assert not _owned_process(identity)[0]
+    finally:
+        if job:
+            kernel.CloseHandle(job)
+        if keeper is not None and keeper.poll() is None:
+            keeper.terminate(); keeper.wait(timeout=5)
+        if gate.poll() is None:
+            gate.terminate(); gate.wait(timeout=5)
+
+
+@pytest.mark.skipif(os.name != 'nt', reason='native Windows toolchain only')
+def test_guardian_interpreter_path_and_hash_are_exact():
+    path, sha = _current_guardian_python()
+    assert _verified_guardian_python({'guardian_python': path,
+                                      'guardian_python_sha256': sha}) == Path(path)
+    with pytest.raises(InputError, match='guardian_toolchain_drift'):
+        _verified_guardian_python({'guardian_python': path,
+                                   'guardian_python_sha256': '0' * 64})

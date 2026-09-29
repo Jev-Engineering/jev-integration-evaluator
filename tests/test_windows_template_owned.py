@@ -12,7 +12,7 @@ import pytest
 from jev_integration_evaluator.io import InputError
 from jev_integration_evaluator.windows_template_owned import (
     check_private_directory, create_private_directory, locked_private_directory,
-    write_private_json_exclusive,
+    read_private_json, write_private_json_exclusive,
 )
 
 
@@ -57,3 +57,28 @@ def test_non_windows_owner_primitives_rejected(tmp_path):
         pytest.skip('non-Windows rejection applies on POSIX')
     with pytest.raises(InputError, match='native_windows_preflight_required'):
         create_private_directory(tmp_path / 'owned')
+
+
+@pytest.mark.skipif(os.name != 'nt', reason='native Windows NTFS only')
+def test_native_lock_alias_and_record_acl_drift_refused(tmp_path):
+    owned = create_private_directory(tmp_path / 'owned')
+    root = Path(owned['path'])
+    lock_alias = root / 'lock-alias.bin'
+    os.link(root / 'delivery.lock', lock_alias)
+    try:
+        with pytest.raises(InputError, match='windows_owned_lock_invalid'):
+            with locked_private_directory(owned):
+                pass
+    finally:
+        lock_alias.unlink()
+    write_private_json_exclusive(owned, 'event.json', {'phase': 'reviewed'})
+    assert read_private_json(owned, 'event.json') == {'phase': 'reviewed'}
+    identity = subprocess.run(['whoami'], capture_output=True, text=True, timeout=10)
+    assert identity.returncode == 0
+    changed = subprocess.run(['icacls', str(root / 'event.json'), '/grant',
+                              identity.stdout.strip() + ':(R)'],
+                             capture_output=True, text=True, timeout=10)
+    if changed.returncode != 0:
+        pytest.skip('This account cannot change a disposable record ACL')
+    with pytest.raises(InputError, match='windows_owned_record_acl_changed'):
+        read_private_json(owned, 'event.json')

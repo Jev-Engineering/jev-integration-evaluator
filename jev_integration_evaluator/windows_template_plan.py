@@ -214,6 +214,8 @@ def plan_windows_template_package(request: dict) -> dict:
         return body
     except cap.CapabilityError as exc:
         raise InputError('windows_package_' + exc.code) from None
+    except InputError:
+        raise
     except (OSError, KeyError, TypeError, ValueError, zipfile.BadZipFile,
             importlib.metadata.PackageNotFoundError):
         raise InputError('windows_package_binding_unavailable') from None

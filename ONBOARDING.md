@@ -86,9 +86,11 @@ selected wheels; skipped directories remain outside that inventory;
 it does not verify an applied implementation or run a native installer.
 For a separately approved applied-source receipt and exact offline wheel
 inventory, use the [native Windows API checkpoint](references/windows-template-native-delivery-v1.md)
-for an owner-private package/install generation and one supervised off-mode
-normal console. Retain all receipt digests externally. Upgrade/rollback and
-the full native qualification matrix remain pending.
+for owner-private package/install generations, supervised off-mode normal
+consoles, and retained installed-version cutover and rollback. Retain all
+receipt digests externally. Local Windows 11 CPython 3.10/3.13/3.14 installed
+fixture runs have been observed, with a durable 3.10 receipt repeat pending.
+Windows Server mutating and installed qualification remains pending.
 
 For connected host runtime qualification, record the pinned endpoint/model,
 environment and reviewed source/configuration digests, budget scope, host-owned

@@ -10,6 +10,9 @@
     "created_filetime": {"type": "integer", "minimum": 1},
     "image": {"type": "string", "minLength": 1},
     "job": {"type": "string", "pattern": "^Local\\\\jev-template-[0-9a-f-]{36}$"},
+    "guardian_pid": {"type": "integer", "minimum": 1},
+    "guardian_created_filetime": {"type": "integer", "minimum": 1},
+    "guardian_image": {"type": "string", "minLength": 1},
     "identity_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
   }
 }

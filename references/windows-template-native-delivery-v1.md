@@ -2,13 +2,19 @@
 
 This API checkpoint builds and installs an already applied, independently
 verified Python console host, then launches its normal installed console in
-`off` mode under a Windows Job Object. It is a trusted local host execution
-profile. It does not isolate untrusted Python, authorize a provider, establish
-benefit, or qualify the complete #61 upgrade and rollback lifecycle.
+`off` mode under a Windows Job Object. A bounded run ledger can select a newer
+disjoint installed generation and return to a retained old generation through
+a fresh child session. It is a trusted local host execution profile. It does
+not isolate untrusted Python, authorize a provider, or establish benefit.
 
 The observed local path is Windows 11 Pro build 26200, x86-64 native CPython
-3.14.3 on local NTFS. The profile parser also accepts Windows Server 2022 and
-CPython 3.10/3.13, but their mutating and installed journeys have not run.
+3.10.11, 3.13.13 and 3.14.3 on local NTFS. The 3.10 three-generation run
+passed but its numbered pytest directory was pruned before receipt retention;
+the 3.13 and 3.14 runs have separately retained private receipts. The profile
+parser also accepts Windows Server 2022, whose mutating and installed journeys
+have not run.
+The retained 3.14 run predates the Python 3.10 receipt-size adjustment; the
+retained 3.13 run verifies the current bound and source code.
 WSL is a separate Linux target. UNC/mapped drives, non-NTFS volumes, Windows
 10, and virtualized or container delivery are unsupported.
 
@@ -62,6 +68,9 @@ Its receipt inventories every file hash, file/directory ACL and NTFS identity
 in the private venv so an added import hook such as `sitecustomize.py`, an ACL
 change or identical-byte replacement invalidates later status and launch. The
 venv's entire tree is rechecked immediately before release of the console gate.
+The complete Python 3.10 venv inventory produced a 1,276,216-byte install
+receipt. This one named owner record has a finite 4 MB read/write limit;
+other owner records retain the 1 MB limit. Larger installs fail closed.
 
 ## One supervised invocation
 
@@ -77,12 +86,33 @@ and disables user site and bytecode writes.
 The supervisor writes an immutable launch intent, starts a helper blocked on
 an inherited pipe, creates a unique named Job Object, assigns the helper,
 records PID, creation time, executable image and job name, rechecks the exact
-install, then releases one byte to run the normal console launcher. A repeated
-attempt is refused. `windows_session_status` reads the private records and
-checks the exact live process and job membership without importing target
-code. An exited console is `exited_unverified` until an independent host
+install, then releases one byte to run the normal console launcher. A trusted
+guardian retains the named Job handle until the exact gated process exits. The
+Job has kill-on-last-handle-close set, so guardian failure ends its owned
+members rather than leaving a live console outside the recorded Job. A
+session binds the trusted base CPython interpreter path and file hash used by
+the guardian; launch rechecks both before spawning it. Earlier session records
+without this binding remain readable for status and owned stop, but cannot
+authorize a fresh launch. A repeated attempt is refused.
+`windows_session_status` reads the private
+records and checks the exact live process and job membership without importing
+target code. An exited console is `exited_unverified` until an independent host
 observation verifies its effects. Status does not treat host success JSON as
 proof of integration or provider reachability.
+
+`observe_windows_template_session(session,
+approved_identity_sha256=..., phase='ready'|'effect', path=...,
+expected_sha256=...)` reads an external, predeclared marker with the exact
+recorded process and Job identity. A ready marker is accepted only while the
+Job member is running; an effect marker only after exit or owned stop. The
+caller supplies the expected bytes digest independently. A matched marker is
+host evidence, not a provider result or launch authority. The fixture writes
+an entry-ready marker during startup options, then a task-effect/cleanup JSON
+at process exit; the observer checks these as separate phases. The ready report
+also snapshots at most 64 live members of the exact named Job with PID,
+creation time and executable image. A changing or oversized member list blocks
+the observation; the snapshot is a point-in-time fact, not a persistent process
+handle.
 
 `stop_windows_template_session(session,
 approved_identity_sha256=...)` records stop intent and terminates only the
@@ -94,12 +124,44 @@ directory and externally retained digests for reconciliation. A later process
 with a reused PID, changed image/creation time, or changed job membership is
 never stopped by this API.
 
-This checkpoint does not provide session upgrade, automatic source rollback,
-provider-connected activation or a Windows isolation backend. Restore source
-only through the independently reviewed #54 exact rollback and its current
-ownership/ACL checks; do not delete retained package, install or session
-generations as a substitute. An interrupted install or launch requires
-read-only status and manual review before a fresh generation is authorized.
+## Retained installed-version run
+
+`create_windows_template_run(new_directory, install_plan, install_receipt,
+trusted_install_receipt_sha256=..., launch_environment=...)` records one
+owner-private run and its initial child session without launching it. Retain
+the returned `selection_sha256` outside the run directory. Launch the returned
+`selected_session` with its matching install plan and exact session digest;
+then observe and stop it through the session APIs above.
+
+After the old child has stopped, `upgrade_windows_template_run(directory,
+old_plan, new_plan, new_receipt, approved_selection_sha256=...,
+trusted_new_receipt_sha256=...)` requires the same project, a strictly newer
+PEP 440 version, a disjoint owned install, and current old/new receipt and
+source checks. It writes an immutable stage intent before creating the new
+child. After the new child stops, `rollback_windows_template_run(directory,
+retained_plan, retained_receipt, approved_selection_sha256=...,
+trusted_retained_receipt_sha256=...)` rechecks the retained old install and
+creates a fresh child there. Both operations keep the same `run_id`, preserve
+the old and new package/install/session directories, and never launch
+automatically. The maximum is three selected sessions: initial, upgrade and
+rollback. Further upgrade requires a newly reviewed run.
+
+`windows_template_run_status(directory,
+trusted_selection_sha256=...)` is read-only. Without an externally retained
+selection digest, it marks the recorded selection untrusted and does not return
+the selected session object. If a stage stops after its durable intent,
+`resume_windows_template_run(directory, plan, receipt,
+approved_intent_sha256=..., trusted_install_receipt_sha256=...)` can finish
+only that same stage and run. A complete, unlaunched child can be adopted after
+exact receipt and executable checks. A partial or possibly launched child
+blocks for review; it is never deleted or replayed. This rollback selects a
+retained installed version; it does not undo #54 source edits. Restore source
+only through the independently reviewed #54 exact rollback with current
+ownership/ACL checks.
+
+An interrupted install or launch still requires read-only status and manual
+review before a fresh generation is authorized. This checkpoint does not
+provide provider-connected activation or a Windows isolation backend.
 
 ## Local offline installed check
 
@@ -113,10 +175,16 @@ $env:JEV_WINDOWS_TEMPLATE_WHEELHOUSE = 'C:\private\reviewed-wheels'
 
 It executes fixture source binding, applied-source verification, offline
 wheel build/install, gated normal console invocation, duplicate-launch and
-owned-stop checks, plus installed-tree drift detection. It is a synthetic
+owned-stop checks, plus installed-tree drift detection. The separate
+`tests/test_windows_template_run.py` exercises two installed versions,
+retained rollback, same-run interrupted-stage recovery, and separate ready
+and effect observations. It is a synthetic
 host observation, not live provider or production evidence. The wheelhouse
 is explicit and must contain matching platform tags, all runtime dependencies,
-and exact pinned build wheels. The current local run used an isolated CPython
-3.14.3 venv and an owner-private wheelhouse; no global install or credentials.
-The required native matrix, upgrade/rollback, interruption and edge-case tests
-remain pending before marking issue #61 fully qualified.
+and exact pinned build wheels. The local runs used isolated CPython 3.10.11,
+3.13.13 and 3.14.3 venvs and owner-private, platform-specific wheelhouses;
+no global install or credentials. The 3.10 path passed but its receipt archive
+was lost to shared pytest retention, so durable readback remains pending on
+that interpreter. Windows Server mutating/installed runs, broader crash and
+filesystem edge cases, and provider qualification remain pending before
+marking issue #61 fully qualified.

@@ -50,7 +50,7 @@ def _wheel_name(path: Path) -> str:
         return BytesParser().parsebytes(archive.read(name))['Name']
 
 
-def _request(tmp_path):
+def _request(tmp_path, *, version='1.0.0', ready=False):
     wheelhouse = os.environ.get('JEV_WINDOWS_TEMPLATE_WHEELHOUSE')
     if not wheelhouse:
         pytest.skip('Explicit native Windows offline wheelhouse required')
@@ -60,10 +60,26 @@ def _request(tmp_path):
              for name in ('setuptools', 'wheel')}
     target, template_request, binding = _prepared(tmp_path, tag='windows_delivery')
     project = target / 'pyproject.toml'
-    project.write_text(project.read_text(encoding='utf-8').replace(
+    source = project.read_text(encoding='utf-8').replace(
         'requires = ["setuptools>=68"]',
         'requires = ["setuptools==' + tools['setuptools'] + '", "wheel==' +
-        tools['wheel'] + '"]'), encoding='utf-8')
+        tools['wheel'] + '"]')
+    if version != '1.0.0':
+        source = source.replace('version = "1.0.0"', f'version = "{version}"')
+    project.write_text(source, encoding='utf-8')
+    if ready:
+        entry = target / 'atlas_pkg' / 'console.py'
+        entry_source = entry.read_text(encoding='utf-8').replace(
+            'def options():\n    global CLIENT\n',
+            'def options():\n    global CLIENT\n'
+            '    Path(os.environ["JEV_FIXTURE_READY"]).write_bytes(b"entry-ready\\n")\n'
+            '    import time\n'
+            '    deadline = time.monotonic() + 180\n'
+            '    while not Path(os.environ["JEV_FIXTURE_RELEASE"]).is_file() and time.monotonic() < deadline:\n'
+            '        time.sleep(0.02)\n'
+            '    if not Path(os.environ["JEV_FIXTURE_RELEASE"]).is_file():\n'
+            '        raise RuntimeError("ready observation timeout")\n')
+        entry.write_text(entry_source, encoding='utf-8')
     prepared = prepare_template_binding(target, template_request, binding)
     spec = prepared['request']['implementation_spec']
     template = tmp_path / 'template'

@@ -168,6 +168,12 @@ def locked_private_directory(receipt: dict) -> Iterator[Path]:
             msvcrt.locking(stream.fileno(), msvcrt.LK_UNLCK, 1)
 
 
+def _record_limit(name: str) -> int:
+    # Python 3.10 venvs include pip and setuptools by default. Their complete
+    # file and ACL inventory can exceed 1 MB without exceeding schema bounds.
+    return 4_000_000 if name == 'install-receipt.json' else 1_000_000
+
+
 def write_private_json_exclusive(receipt: dict, name: str, value: dict) -> str:
     """Write one bounded canonical JSON event under the held owner directory lock."""
     _profile()
@@ -176,7 +182,7 @@ def write_private_json_exclusive(receipt: dict, name: str, value: dict) -> str:
         raise InputError('windows_owned_record_invalid')
     raw = (json.dumps(value, sort_keys=True, ensure_ascii=False,
                       separators=(',', ':')) + '\n').encode('utf-8')
-    if len(raw) > 1_000_000:
+    if len(raw) > _record_limit(name):
         raise InputError('windows_owned_record_size_limit')
     return write_private_bytes_exclusive(receipt, name, raw)
 
@@ -186,7 +192,7 @@ def write_private_bytes_exclusive(receipt: dict, name: str, raw: bytes) -> str:
     _profile()
     if (type(name) is not str or not cap._windows_safe_component(name)
             or '/' in name or '\\' in name or type(raw) is not bytes
-            or len(raw) > 1_000_000):
+            or len(raw) > _record_limit(name)):
         raise InputError('windows_owned_record_invalid')
     with locked_private_directory(receipt) as root:
         target = root / name
@@ -205,7 +211,7 @@ def write_private_bytes_exclusive(receipt: dict, name: str, raw: bytes) -> str:
             os.fsync(fd)
         finally:
             os.close(fd)
-        if (cap._windows_secure_input(target, 1_000_000) != raw
+        if (cap._windows_secure_input(target, _record_limit(name)) != raw
                 or acl_sha256(target) != receipt['lock_acl_sha256']):
             raise InputError('windows_owned_record_write_unverified')
         return hashlib.sha256(raw).hexdigest()
@@ -221,7 +227,7 @@ def read_private_json(receipt: dict, name: str) -> dict:
     try:
         if acl_sha256(path) != receipt['lock_acl_sha256']:
             raise InputError('windows_owned_record_acl_changed')
-        raw = cap._windows_secure_input(path, 1_000_000)
+        raw = cap._windows_secure_input(path, _record_limit(name))
         value = json.loads(raw)
         if type(value) is not dict:
             raise ValueError('record')
@@ -229,5 +235,7 @@ def read_private_json(receipt: dict, name: str) -> dict:
         return value
     except cap.CapabilityError:
         raise InputError('windows_owned_record_unavailable') from None
+    except InputError:
+        raise
     except (OSError, UnicodeError, ValueError):
         raise InputError('windows_owned_record_unavailable') from None
