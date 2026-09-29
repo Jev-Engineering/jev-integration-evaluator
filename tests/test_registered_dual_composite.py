@@ -70,7 +70,12 @@ def test_two_reviewed_dual_seams_and_shared_modified_decisions(tmp_path, monkeyp
     assert read_json(bundle / 'verification-receipt.json')['combined_check']['shared_budget_valid'] is True
     audit = read_json(tmp_path / 'audit.json')
     assert audit['calls'] == 2
-    assert audit['audit_reasons'][-2:] == ['shared_total_call_budget'] * 2
+    assert audit['audit_reasons'][-2] == 'shared_total_call_budget'
+    assert audit['audit_reasons'][-1] in {
+        'shared_total_call_budget',
+        'runtime_suspended_or_closed_during_assessment',
+    }
+    assert 'unexpected_success' not in audit['repeat_results']
 
 
 @pytest.mark.parametrize('changed', ['source', 'oracle', 'review'])

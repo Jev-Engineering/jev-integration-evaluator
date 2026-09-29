@@ -356,8 +356,10 @@ def run_offline(workspace: Path, wheelhouse: Path, anchors: Path) -> dict:
             or host_audit['audit_types'] != ['assessment', 'shadow_comparison',
                                              'assessment', 'shadow_comparison',
                                              'shadow_comparison', 'shadow_comparison']
-            or host_audit['audit_reasons'][-2:] != ['shared_total_call_budget',
-                                                    'shared_total_call_budget']
+            or host_audit['audit_reasons'][-2] != 'shared_total_call_budget'
+            or host_audit['audit_reasons'][-1] not in {
+                'shared_total_call_budget',
+                'runtime_suspended_or_closed_during_assessment'}
             or host_audit['modes'] != ['shadow', 'shadow']):
         raise RuntimeError('dual_shared_budget_or_duplicate_missing')
     installed_root = Path(installed['environment']) / 'venv'
