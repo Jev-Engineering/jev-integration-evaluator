@@ -82,3 +82,70 @@ counts missing latency observations, gives assessment p50/p95, and separately
 measures local fixture runner wall time. No provider, production executor or
 real agent was run. The synthetic result does not support live adoption or
 deployment.
+
+## Issue 49: safe synthetic history retention
+
+`agent.py::retain_history` remains the historical count-budget comparator,
+including its original one-argument `llm.choose(entries)` call. The separate
+`retention_study.py` compares it with a deterministic pinned-plus-recent policy
+and a bounded synthetic JEV item assessor. The guarded host accepts `/prune`
+only for verbatim item retention. `/compact` and invalid modes leave memory
+unchanged; generative compaction is a separate operation. It checks immutable
+host pins, item IDs and byte digests, provenance, revisions, exact token budgets,
+and a compare-and-swap fake-memory transaction with independent readback and
+rollback. A model cannot change pins, mode, budget or item text.
+
+The synthetic data in `retention/` separates original histories, host-only
+fault injections, mode attacks, co-authored synthetic choices, reader-visible
+later questions, and scorer-only answers/source IDs. The runner constructs
+allowlisted chooser and reader inputs; neither receives scorer answers or fault
+schedules. The independent oracle checks raw retained bytes/provenance and a
+later source-cited answer. Reviewed supersession edges are carried in an
+allowlisted reader provenance field so a successor and an unresolved conflict
+remain distinct. Tasks test anticipated-domain recall, not arbitrary
+future recall. Reports contain IDs and counts, not original item text.
+
+The schedule has eight calibration cases and 24 holdout cases: 20 `/prune`
+efficacy rows for all three arms and four mode-safety rows for guarded arms.
+The historical function has no mode argument and is N/A on those four rows.
+Every blocked, missing and failed outcome stays in its applicable denominator.
+Scorer-only summaries include unnecessary retained tokens, abstentions,
+`needs_review`, and failure classes; these labels never enter retention policy.
+Synthetic assessment costs and sequential per-call/per-episode latencies are
+predeclared assumptions; local runner wall time is measured separately. No
+user history, provider, production memory or generator is used.
+
+Independent semantic review by codex-rag45-independent and code review by
+graph44 on 2026-09-28 UTC are recorded in the scorer and study metadata. The
+study note anchors both approved pre-metadata digests. A single holdout was run
+from the externally checked exact post-metadata digest; its report is
+`validation/issue49-holdout-report.json`. To run calibration from the
+repository root with a new output path:
+
+```powershell
+python examples/coding-agent/retention_study.py --split calibration --out validation/issue49-calibration-report.json
+python -m pytest -q tests/test_coding_agent_retention.py
+```
+
+The 24-case synthetic holdout kept all 20 `/prune` efficacy rows and all 24
+guarded safety rows. Later task success was 8/20 historical, 7/20 deterministic,
+and 12/20 JEV. JEV rescued six cases and regressed two versus historical; it
+rescued five and regressed none versus deterministic. Its guarded arms lost no
+pins, provenance or bytes, made no wrong-mode mutations, and committed no
+over-budget state. H23/H24 mode attacks were rejected by the host with zero
+assessments or backend writes. JEV used 65 preset synthetic assessment calls,
+0.195 synthetic cost units, 18 ms per-call p95 and 84 ms sequential per-episode
+p95; local fixture wall time is measured separately. It retained 137 scorer-
+classified unnecessary tokens, versus 92 for deterministic. The predeclared
+synthetic gate passed, so the report says `synthetic_gates_met_live_needs_more_evidence`.
+
+Report reading notes: in H18, `fault_kind="keep"` records the raw proposed label,
+not the failure reason. Its 45 ms late response became `uncertain` and incurred
+the full 0.003 synthetic cost units. H07/H08 have no reviewed supersession edge;
+their single retained new-source answers do not show that dropping conflicting
+originals safely resolves contradictions in general.
+
+The choices and oracle were co-authored as synthetic fixtures and then
+independently reviewed. The visible task identified the anticipated domain, so
+this result does not establish arbitrary future recall, provider performance,
+live adoption or permission to process real user history.

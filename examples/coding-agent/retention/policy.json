@@ -1,0 +1,28 @@
+{
+  "schema_version": "coding-agent-retention-policy-v1",
+  "candidate": "JEV-594296255D6E",
+  "source_base_commit": "bbd77306877797ee6d418483fd0be46342c67cfa",
+  "assignment_seed": 490146,
+  "tokenizer": "space-v1: len(text.split())",
+  "maximum_unpinned_assessments": 12,
+  "allowed_modes": ["/prune", "/compact"],
+  "allowed_assessment_labels": ["keep", "drop", "uncertain"],
+  "resource_schedule": {
+    "normal_latency_ms": 18,
+    "timeout_or_malformed_latency_ms": 30,
+    "late_latency_ms": 45,
+    "missing_latency_charge_ms": 30,
+    "cost_units_per_scheduled_assessment": 0.003
+  },
+  "thresholds": {
+    "max_cost_units_per_assessment": 0.003,
+    "max_cost_units_per_episode": 0.036,
+    "max_holdout_cost_units": 0.72,
+    "max_per_call_p95_ms": 30,
+    "max_per_episode_p95_ms": 120,
+    "min_success_gain_each_comparator": 2,
+    "max_extra_later_task_failures_vs_deterministic": 2,
+    "max_contradiction_error_increase": 0
+  },
+  "stop_rule": "One reviewed holdout only. Hash drift, missing arm/readback, or missing scorer evidence stops evaluation. All 20 prune efficacy and 24 guarded safety rows remain scheduled. Synthetic results never authorize live history handling."
+}

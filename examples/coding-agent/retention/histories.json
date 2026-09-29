@@ -1,0 +1,2808 @@
+{
+  "cases": [
+    {
+      "category": "pinned",
+      "fake_memory_initial_digest": "a26d763d88eae04ddace8106d7d07b13c78439ff8e304e0a014427678fb3bcf6",
+      "id": "c01",
+      "items": [
+        {
+          "byte_sha256": "b020cebc78394b20d3643e333c39a2131a9abd2493e84d132deedf5434eab9c2",
+          "capture_revision": 7,
+          "id": "c01-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://c01/source/1",
+          "text": "deadline Tuesday",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "4ceefd4fd56e9243139e8a128887d4b2a38c618ebe0a0d8b19c6d1d54c38c541",
+          "capture_revision": 7,
+          "id": "c01-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://c01/source/2",
+          "text": "context for c01 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "c01-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://c01/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "c01-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://c01/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "145fec92caa43ad2930ebbe2bbd61e3d3d044289e9cd15fa8a1f781fad9c7a00",
+          "capture_revision": 7,
+          "id": "c01-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://c01/source/5",
+          "text": "color blue",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 3,
+      "mode": "/prune",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "c01-i04",
+          "reason": "preserve original records"
+        },
+        {
+          "authority": "host_task_invariant",
+          "id": "c01-i01",
+          "reason": "deadline or format constraint"
+        }
+      ],
+      "revision": 7,
+      "split": "calibration",
+      "supersession": [],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited release planning handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "recent",
+      "fake_memory_initial_digest": "2127dd996759a573299c33cd5106d28c25fafafea9fc5a820abe2addbb16e1b0",
+      "id": "c02",
+      "items": [
+        {
+          "byte_sha256": "d2f8a9eb96b06873ece23bf57e5c8826a2102519b0960165289fa38bc039210c",
+          "capture_revision": 7,
+          "id": "c02-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://c02/source/1",
+          "text": "owner Mira",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "343a41b2e742f71344ae72ceb066af1e0b39186961625252c6a147150edb1a26",
+          "capture_revision": 7,
+          "id": "c02-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://c02/source/2",
+          "text": "context for c02 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "c02-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://c02/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "c02-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://c02/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "a801b9da3e7aa0406d9f2f62309b5124148f5d4c54cf8332a18ed7ec84150c91",
+          "capture_revision": 7,
+          "id": "c02-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://c02/source/5",
+          "text": "channel amber",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 3,
+      "mode": "/prune",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "c02-i04",
+          "reason": "preserve original records"
+        }
+      ],
+      "revision": 7,
+      "split": "calibration",
+      "supersession": [],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited communications handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "rare",
+      "fake_memory_initial_digest": "6e3b93fbbb59167d809d164a7e46f697bd0882db808f94cba04b869559f967e1",
+      "id": "c03",
+      "items": [
+        {
+          "byte_sha256": "e0c00840b011237466f42247e0b2c573ebf4c7d7e29d1502af1cc16e3c80bb5f",
+          "capture_revision": 7,
+          "id": "c03-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://c03/source/1",
+          "text": "checksum quartz",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "205a07a9b97958fa5b0aec063649b9555c59545f1ae4cf066128a29357be938b",
+          "capture_revision": 7,
+          "id": "c03-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://c03/source/2",
+          "text": "context for c03 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "c03-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://c03/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "c03-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://c03/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "145fec92caa43ad2930ebbe2bbd61e3d3d044289e9cd15fa8a1f781fad9c7a00",
+          "capture_revision": 7,
+          "id": "c03-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://c03/source/5",
+          "text": "color blue",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 3,
+      "mode": "/prune",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "c03-i04",
+          "reason": "preserve original records"
+        }
+      ],
+      "revision": 7,
+      "split": "calibration",
+      "supersession": [],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited integrity review handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "superseded",
+      "fake_memory_initial_digest": "b465365ef8f0b898992dbfe253a058578bb98a68ee450bbad6678da37fbdca3d",
+      "id": "c04",
+      "items": [
+        {
+          "byte_sha256": "3395e3f6cdde071e9a9f1d65267f908b411c668b089d72bceb2b83f8069d23e2",
+          "capture_revision": 7,
+          "id": "c04-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://c04/source/1",
+          "text": "owner Nora",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "7492bca53019e81b5782bca85f93e3bb7c26f44f88fb597d46132d5a58ee48c2",
+          "capture_revision": 7,
+          "id": "c04-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://c04/source/2",
+          "text": "context for c04 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "c04-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://c04/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "c04-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://c04/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "c781034b4cc8ca6b1fb6c212b344605dbbcd0844bcc18f34f4965d5c79ecebd8",
+          "capture_revision": 7,
+          "id": "c04-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://c04/source/5",
+          "text": "owner Pavel",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 3,
+      "mode": "/prune",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "c04-i04",
+          "reason": "preserve original records"
+        }
+      ],
+      "revision": 7,
+      "split": "calibration",
+      "supersession": [
+        {
+          "authority": "host_reviewed",
+          "new_id": "c04-i05",
+          "old_id": "c04-i01"
+        }
+      ],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited staffing handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "conflict",
+      "fake_memory_initial_digest": "be6938e4a2e2ee93e232c3a978632e37fc2ec6f1e1b63f018a4a10da5b84b28f",
+      "id": "c05",
+      "items": [
+        {
+          "byte_sha256": "1f8bf08c9c14b8bbe1f012e0a4feb44324d2cbe0ef011b05290195dffd1a9615",
+          "capture_revision": 7,
+          "id": "c05-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://c05/source/1",
+          "text": "port alpha",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "187aeee107e4416c6b6383b937ee8af12621debc4456aa5b049129218cd45b7d",
+          "capture_revision": 7,
+          "id": "c05-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://c05/source/2",
+          "text": "context for c05 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "c05-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://c05/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "c05-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://c05/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "64364494e484d42490682117ee34cc7194f189f3be9590e23acf08b96edb009d",
+          "capture_revision": 7,
+          "id": "c05-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://c05/source/5",
+          "text": "port beta",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 3,
+      "mode": "/prune",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "c05-i04",
+          "reason": "preserve original records"
+        }
+      ],
+      "revision": 7,
+      "split": "calibration",
+      "supersession": [],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited connectivity review handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "pin_overflow",
+      "fake_memory_initial_digest": "7daecf62be1c35ba12a2fe61578b2a5e24b15cc91ccc82425df5085b52017eb1",
+      "id": "c06",
+      "items": [
+        {
+          "byte_sha256": "c15c469a6c6bd31f7a892237c55b20d8baff5a4a0860a37f5dc8e8295b5d025f",
+          "capture_revision": 7,
+          "id": "c06-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://c06/source/1",
+          "text": "deadline Friday",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "015130f99aad976389ea21707791a89ec37fd4459702941f805c8259e6213bfd",
+          "capture_revision": 7,
+          "id": "c06-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://c06/source/2",
+          "text": "context for c06 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "c06-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://c06/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "c06-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://c06/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "145fec92caa43ad2930ebbe2bbd61e3d3d044289e9cd15fa8a1f781fad9c7a00",
+          "capture_revision": 7,
+          "id": "c06-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://c06/source/5",
+          "text": "color blue",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 1,
+      "mode": "/prune",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "c06-i04",
+          "reason": "preserve original records"
+        },
+        {
+          "authority": "host_task_invariant",
+          "id": "c06-i01",
+          "reason": "deadline or format constraint"
+        }
+      ],
+      "revision": 7,
+      "split": "calibration",
+      "supersession": [],
+      "token_budget": 3,
+      "visible_task": "Prepare a source-cited release planning handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "malformed",
+      "fake_memory_initial_digest": "10c964c4cf0cd6b93c9e8c13833b0ac0acd39971bde142a93427f61f05193e83",
+      "id": "c07",
+      "items": [
+        {
+          "byte_sha256": "fe9cfada50d534e85fadc46fc5fff639e8e46e504a2f3d2676832ba485d1e616",
+          "capture_revision": 7,
+          "id": "c07-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://c07/source/1",
+          "text": "checksum copper",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "998a2ae2d007711eb9e362ad143992315b8dfa4ac287cdbbd2cc491c13b2f952",
+          "capture_revision": 7,
+          "id": "c07-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://c07/source/2",
+          "text": "context for c07 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "c07-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://c07/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "c07-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://c07/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "145fec92caa43ad2930ebbe2bbd61e3d3d044289e9cd15fa8a1f781fad9c7a00",
+          "capture_revision": 7,
+          "id": "c07-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://c07/source/5",
+          "text": "color blue",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 3,
+      "mode": "/prune",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "c07-i04",
+          "reason": "preserve original records"
+        }
+      ],
+      "revision": 7,
+      "split": "calibration",
+      "supersession": [],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited integrity review handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "mode",
+      "fake_memory_initial_digest": "290631e5c9456dbc6f0f38284582220e39ee5d85c430551c3ae15823737187e8",
+      "id": "c08",
+      "items": [
+        {
+          "byte_sha256": "a9085e007ba8c90122a005a1f4ce44146bda2a5433b4929c8afd00b3af82402d",
+          "capture_revision": 7,
+          "id": "c08-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://c08/source/1",
+          "text": "owner Rina",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "070c7abe57897b082ecbf9937117c093bbbff87a8de3e73da3fa609cc66ad489",
+          "capture_revision": 7,
+          "id": "c08-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://c08/source/2",
+          "text": "context for c08 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "c08-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://c08/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "c08-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://c08/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "145fec92caa43ad2930ebbe2bbd61e3d3d044289e9cd15fa8a1f781fad9c7a00",
+          "capture_revision": 7,
+          "id": "c08-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://c08/source/5",
+          "text": "color blue",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 3,
+      "mode": "/compact",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "c08-i04",
+          "reason": "preserve original records"
+        }
+      ],
+      "revision": 7,
+      "split": "calibration",
+      "supersession": [],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited staffing handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "pinned_recent",
+      "fake_memory_initial_digest": "7341c586a8d562f0b1cf8982e20210edfee9b412de0aaa87a900cb5fa1e6ece3",
+      "id": "h01",
+      "items": [
+        {
+          "byte_sha256": "8f76f505e01f1689b9d6c43d5dd2ad32e745a30da284f3c116d9f2ffabbf92a6",
+          "capture_revision": 7,
+          "id": "h01-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://h01/source/1",
+          "text": "deadline Monday",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "4303bf85b130d3d817caa2300d32fd42bb9a6dee61b022a7a6ccd84fed522743",
+          "capture_revision": 7,
+          "id": "h01-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://h01/source/2",
+          "text": "context for h01 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "h01-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://h01/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "h01-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://h01/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "e197951b7e41143384a646dacc157ee28017d71b840af0a380a683d07157608f",
+          "capture_revision": 7,
+          "id": "h01-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://h01/source/5",
+          "text": "color jade",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 3,
+      "mode": "/prune",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "h01-i04",
+          "reason": "preserve original records"
+        },
+        {
+          "authority": "host_task_invariant",
+          "id": "h01-i01",
+          "reason": "deadline or format constraint"
+        }
+      ],
+      "revision": 7,
+      "split": "holdout",
+      "supersession": [],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited release planning handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "pinned_recent",
+      "fake_memory_initial_digest": "3eaad7698a390bb442a7ad4d19062ab4ca9b56b50c5726cb9672eec8c72a4aa9",
+      "id": "h02",
+      "items": [
+        {
+          "byte_sha256": "93ea02eb7eff0f2e807752f9231096bde51261fb9eb854f453849560faeb5b38",
+          "capture_revision": 7,
+          "id": "h02-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://h02/source/1",
+          "text": "region north",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "0f982400124d178d2f3ff2f4cba965622cff450ecefbbbf694d564aa6f220a67",
+          "capture_revision": 7,
+          "id": "h02-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://h02/source/2",
+          "text": "context for h02 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "h02-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://h02/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "h02-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://h02/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "9e5a0200b53aa8cfa0cd34183327df09911464719b89c63712cfacee60d0c99b",
+          "capture_revision": 7,
+          "id": "h02-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://h02/source/5",
+          "text": "channel silver",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 3,
+      "mode": "/prune",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "h02-i04",
+          "reason": "preserve original records"
+        }
+      ],
+      "revision": 7,
+      "split": "holdout",
+      "supersession": [],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited communications handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "pinned_recent",
+      "fake_memory_initial_digest": "db3cf4dc8f7a5320c3a16e3b2228718f49e22544d580600d88f6cceb9b6b1211",
+      "id": "h03",
+      "items": [
+        {
+          "byte_sha256": "dc6c0cafc6cb4aad797f4571dc9baf225fba550a13a677606403f5e67c344dad",
+          "capture_revision": 7,
+          "id": "h03-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://h03/source/1",
+          "text": "owner Uma",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "1ce30f5b2393f31a7703dc87c8660891f3610da6c43ab9acce3f31a664504d02",
+          "capture_revision": 7,
+          "id": "h03-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://h03/source/2",
+          "text": "context for h03 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "h03-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://h03/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "h03-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://h03/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "46458e289c728599aeb00933c4956ddf87166003ee41dcd92c7bc91504604ae0",
+          "capture_revision": 7,
+          "id": "h03-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://h03/source/5",
+          "text": "color teal",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 3,
+      "mode": "/prune",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "h03-i04",
+          "reason": "preserve original records"
+        },
+        {
+          "authority": "host_task_invariant",
+          "id": "h03-i01",
+          "reason": "deadline or format constraint"
+        }
+      ],
+      "revision": 7,
+      "split": "holdout",
+      "supersession": [],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited staffing handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "pinned_recent",
+      "fake_memory_initial_digest": "f6775b1241eb4b17256ce6549cad51bb108e4dcb50220747851b615cd35b6f17",
+      "id": "h04",
+      "items": [
+        {
+          "byte_sha256": "faa9ed4f10c77418869be59468476de4477ad20d332cd26c2061702def67a352",
+          "capture_revision": 7,
+          "id": "h04-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://h04/source/1",
+          "text": "format csv",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "289fed8d1c5478775662c3c8fdb1c8a9ead37aa42e78ea222d074a1543e2391f",
+          "capture_revision": 7,
+          "id": "h04-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://h04/source/2",
+          "text": "context for h04 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "h04-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://h04/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "h04-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://h04/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8a07ce782b9e91bee236fe62fbc60ade504284bf340a42d3a9cb396e2b61c2e7",
+          "capture_revision": 7,
+          "id": "h04-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://h04/source/5",
+          "text": "reviewer Dax",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 3,
+      "mode": "/prune",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "h04-i04",
+          "reason": "preserve original records"
+        },
+        {
+          "authority": "host_task_invariant",
+          "id": "h04-i01",
+          "reason": "deadline or format constraint"
+        }
+      ],
+      "revision": 7,
+      "split": "holdout",
+      "supersession": [],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited data export handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "superseded",
+      "fake_memory_initial_digest": "cd20a0b877def87a0103e860942af66d095c02291a9284e5070c208256127e6b",
+      "id": "h05",
+      "items": [
+        {
+          "byte_sha256": "8ba9888f3a609bb310f4ee30c210d626a07b06f85cdd5cb1a6a241766a894c08",
+          "capture_revision": 7,
+          "id": "h05-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://h05/source/1",
+          "text": "owner Ada",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "97b3ed118e62e277c48b1c99cef210df59a906b8406d95dfe6ba9a6d869c660b",
+          "capture_revision": 7,
+          "id": "h05-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://h05/source/2",
+          "text": "context for h05 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "h05-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://h05/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "h05-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://h05/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "1dc0263e60a2fe5d1cfcaa6d78ac4fbd90089136dea86989030badce7f2d86d0",
+          "capture_revision": 7,
+          "id": "h05-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://h05/source/5",
+          "text": "owner Bea",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 3,
+      "mode": "/prune",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "h05-i04",
+          "reason": "preserve original records"
+        }
+      ],
+      "revision": 7,
+      "split": "holdout",
+      "supersession": [
+        {
+          "authority": "host_reviewed",
+          "new_id": "h05-i05",
+          "old_id": "h05-i01"
+        }
+      ],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited staffing handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "superseded",
+      "fake_memory_initial_digest": "aa034bf9f957969e208d477cab62b58e75a9fe57ad688c2b44928296edfd7798",
+      "id": "h06",
+      "items": [
+        {
+          "byte_sha256": "8d8e483d3e422092df0877adb0c3e4bc14096298af069d43ff22845a2329cb1a",
+          "capture_revision": 7,
+          "id": "h06-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://h06/source/1",
+          "text": "region east",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "1deb417b585c71aa84c463fd17b8895a7c1edf5ae4e92b38ea4b5db8a55f8e4f",
+          "capture_revision": 7,
+          "id": "h06-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://h06/source/2",
+          "text": "context for h06 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "h06-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://h06/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "h06-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://h06/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "743ebcad54495518d0fbe3197411b911abdef63b1d33fc05c9750019ad2e07d9",
+          "capture_revision": 7,
+          "id": "h06-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://h06/source/5",
+          "text": "region west",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 3,
+      "mode": "/prune",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "h06-i04",
+          "reason": "preserve original records"
+        }
+      ],
+      "revision": 7,
+      "split": "holdout",
+      "supersession": [
+        {
+          "authority": "host_reviewed",
+          "new_id": "h06-i05",
+          "old_id": "h06-i01"
+        }
+      ],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited deployment planning handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "changed_revision",
+      "fake_memory_initial_digest": "c4c3701639616de33e3f534fd9e8ee81f9717929e4024640772b1728855da944",
+      "id": "h07",
+      "items": [
+        {
+          "byte_sha256": "3ebc6ad698338a8a6a06d1d187054e0163b30ae0991069fbcd14eef3fe1ba484",
+          "capture_revision": 7,
+          "id": "h07-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://h07/source/1",
+          "text": "deadline June",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "b847f03cdf36986b7218b5deb4abeaf68be8afc80b5af7f86ca7127a5a235b2f",
+          "capture_revision": 7,
+          "id": "h07-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://h07/source/2",
+          "text": "context for h07 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "h07-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://h07/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "h07-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://h07/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "394a3225fa8b041ae00f54176033f8ac8b380c6888ac11fffd695681c669b482",
+          "capture_revision": 7,
+          "id": "h07-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://h07/source/5",
+          "text": "deadline July",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 3,
+      "mode": "/prune",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "h07-i04",
+          "reason": "preserve original records"
+        }
+      ],
+      "revision": 7,
+      "split": "holdout",
+      "supersession": [],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited release planning handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "stale_choice",
+      "fake_memory_initial_digest": "9999c0317c50c822cc88aa56544726e52fc84590450d751d2f46e78a9070270a",
+      "id": "h08",
+      "items": [
+        {
+          "byte_sha256": "58429021a16110c3a1f1226cdc043c3e6b0418733a35e0317dccf76f18dc4409",
+          "capture_revision": 7,
+          "id": "h08-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://h08/source/1",
+          "text": "channel green",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8ca35bae97fcdef464e56d3ccf477d2f1650f598e656f654833a5f67e0ddddd2",
+          "capture_revision": 7,
+          "id": "h08-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://h08/source/2",
+          "text": "context for h08 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "h08-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://h08/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "h08-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://h08/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "4b74f11353a001ee2153d0f299aecabdc9e708fc3539af19a661a5d616354ebd",
+          "capture_revision": 7,
+          "id": "h08-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://h08/source/5",
+          "text": "channel violet",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 3,
+      "mode": "/prune",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "h08-i04",
+          "reason": "preserve original records"
+        }
+      ],
+      "revision": 7,
+      "split": "holdout",
+      "supersession": [],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited communications handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "contradictory",
+      "fake_memory_initial_digest": "1d920d66d84c160395ac7b78f468712eccff635cc1395d33051d78794032105b",
+      "id": "h09",
+      "items": [
+        {
+          "byte_sha256": "177531e1e52f11318e759749ad67366653d378e470d70b65c2206f42c52f4723",
+          "capture_revision": 7,
+          "id": "h09-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://h09/source/1",
+          "text": "port cedar",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "ccaf2ee9fd83a28aecbe708114136f01e2bad06df161cf3cb26da893f63d792b",
+          "capture_revision": 7,
+          "id": "h09-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://h09/source/2",
+          "text": "context for h09 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "h09-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://h09/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "h09-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://h09/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "c074d3fce48204fce3ee681579ae809ea6b33197464e5ac403dfa38650ef62c6",
+          "capture_revision": 7,
+          "id": "h09-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://h09/source/5",
+          "text": "port birch",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 3,
+      "mode": "/prune",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "h09-i04",
+          "reason": "preserve original records"
+        }
+      ],
+      "revision": 7,
+      "split": "holdout",
+      "supersession": [],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited connectivity review handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "contradictory",
+      "fake_memory_initial_digest": "e0724b64433b51134e99ad817d2f05b271d0d7cfa9737da7df64f0cc7f739dcd",
+      "id": "h10",
+      "items": [
+        {
+          "byte_sha256": "f9d6d62b398f9e3d25a6253bc4095bfdef2484827ba4b891f323840e12a97369",
+          "capture_revision": 7,
+          "id": "h10-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://h10/source/1",
+          "text": "owner Ivo",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "c95344ce325209c81425db801d5ce05509205d8b82b8c1a85ebd4894d060ddb1",
+          "capture_revision": 7,
+          "id": "h10-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://h10/source/2",
+          "text": "context for h10 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "h10-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://h10/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "h10-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://h10/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "b0d95bb441284c11ba77f2d1e62719b171db23ea4bfc7423f221f3393a6e4c1e",
+          "capture_revision": 7,
+          "id": "h10-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://h10/source/5",
+          "text": "owner Lena",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 3,
+      "mode": "/prune",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "h10-i04",
+          "reason": "preserve original records"
+        }
+      ],
+      "revision": 7,
+      "split": "holdout",
+      "supersession": [
+        {
+          "authority": "host_reviewed",
+          "new_id": "h10-i05",
+          "old_id": "h10-i01"
+        }
+      ],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited staffing handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "contradictory",
+      "fake_memory_initial_digest": "0bd2373f60478b9b5bc469ebdb8e5a75c819c7df2c5c82de7195addca7ed178f",
+      "id": "h11",
+      "items": [
+        {
+          "byte_sha256": "fd3f1c07588ff969776fff97f369c26a1416fe17f6bd4aae2f9c29ccce5a54e9",
+          "capture_revision": 7,
+          "id": "h11-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://h11/source/1",
+          "text": "region south",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "ba0d1bc9d2899e6ad852c3df91b88f84daaeb145c1e08b080eccdf261b93289a",
+          "capture_revision": 7,
+          "id": "h11-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://h11/source/2",
+          "text": "context for h11 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "h11-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://h11/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "h11-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://h11/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "93ea02eb7eff0f2e807752f9231096bde51261fb9eb854f453849560faeb5b38",
+          "capture_revision": 7,
+          "id": "h11-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://h11/source/5",
+          "text": "region north",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 3,
+      "mode": "/prune",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "h11-i04",
+          "reason": "preserve original records"
+        }
+      ],
+      "revision": 7,
+      "split": "holdout",
+      "supersession": [],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited deployment planning handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "contradictory",
+      "fake_memory_initial_digest": "ac918723e2738f0010619fe1047b550fcb33e8e1efe9198994b71c530673a657",
+      "id": "h12",
+      "items": [
+        {
+          "byte_sha256": "1b6217a6e37c0ad7bcbb40ca2acb8828d8732026a6d40c3fdb872c5f31f93c8c",
+          "capture_revision": 7,
+          "id": "h12-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://h12/source/1",
+          "text": "format yaml",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "39a244abef432e405d4c4e9108d0c3c8570d426dc44127a585141332dc0adfe1",
+          "capture_revision": 7,
+          "id": "h12-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://h12/source/2",
+          "text": "context for h12 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "h12-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://h12/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "h12-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://h12/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "b7e7a7b0e79bc1efaf4ca5909d13d7f1abfe8806b5631f2b2ed54f068662273e",
+          "capture_revision": 7,
+          "id": "h12-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://h12/source/5",
+          "text": "format json",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 3,
+      "mode": "/prune",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "h12-i04",
+          "reason": "preserve original records"
+        }
+      ],
+      "revision": 7,
+      "split": "holdout",
+      "supersession": [],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited data export handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "sensitive_rare",
+      "fake_memory_initial_digest": "fc161b8a5c8c285308e74e67df99f70c7d4e05c34fe47a7f64c136b8769c56a8",
+      "id": "h13",
+      "items": [
+        {
+          "byte_sha256": "d5095c601bfef2c162791a44bdb2e465cae69af9f4df700d0f1dbad2ad9aeefd",
+          "capture_revision": 7,
+          "id": "h13-i01",
+          "sensitivity": "synthetic_placeholder",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://h13/source/1",
+          "text": "token_hint synthetic_only",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "7f27736a175b4efe290870306d78fd31307c3246f452af9b8558068e94ca060d",
+          "capture_revision": 7,
+          "id": "h13-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://h13/source/2",
+          "text": "context for h13 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "h13-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://h13/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "h13-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://h13/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "f80697f3bfefc7916b7b797ca8c58080f22a8af56fd2234475317c17c4f28d31",
+          "capture_revision": 7,
+          "id": "h13-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://h13/source/5",
+          "text": "color ochre",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 3,
+      "mode": "/prune",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "h13-i04",
+          "reason": "preserve original records"
+        }
+      ],
+      "revision": 7,
+      "split": "holdout",
+      "supersession": [],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited configuration review handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "sensitive_rare",
+      "fake_memory_initial_digest": "3c614c12a02bfb09cdbfaee1415958bef1f01f33e45665aac6ad98379cf3321e",
+      "id": "h14",
+      "items": [
+        {
+          "byte_sha256": "d14b6193069f2f54cf736a310d12ad183ccc4d1177b6221672e1e657cbf05f7c",
+          "capture_revision": 7,
+          "id": "h14-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://h14/source/1",
+          "text": "checksum basalt",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "21b66986802f9186cdfe1797fc08961572778d1f6cab23a483a59e466fc894ea",
+          "capture_revision": 7,
+          "id": "h14-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://h14/source/2",
+          "text": "context for h14 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "h14-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://h14/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "h14-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://h14/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "0c307a6dd2dc4ceb4a5895420cd33b118fba030f2307ccce43b76cf262e44168",
+          "capture_revision": 7,
+          "id": "h14-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://h14/source/5",
+          "text": "color plum",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 3,
+      "mode": "/prune",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "h14-i04",
+          "reason": "preserve original records"
+        }
+      ],
+      "revision": 7,
+      "split": "holdout",
+      "supersession": [],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited integrity review handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "sensitive_rare",
+      "fake_memory_initial_digest": "f7dd879bc287f49858489d5b2c52dc6b1db278f69612f8a96616b0dd531c4599",
+      "id": "h15",
+      "items": [
+        {
+          "byte_sha256": "2a699f6ede57cc9b8c4424bf75fdbbe5c184ae5ed8ebb8ccad22dd7a834fa5a1",
+          "capture_revision": 7,
+          "id": "h15-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "verified_source",
+          "source_ref": "synthetic://h15/source/1",
+          "text": "owner Niko",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "11559ae3b910448c105e2090043584f16dcb396544aced8991a3e078da2627de",
+          "capture_revision": 7,
+          "id": "h15-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://h15/source/2",
+          "text": "context for h15 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "h15-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://h15/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "h15-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://h15/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "58105e8d34c5b925e372b6d5b76270b2caf78bd79a6ccec4f05f61f39c8bb3d8",
+          "capture_revision": 7,
+          "id": "h15-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "unverified_echo",
+          "source_ref": "synthetic://h15/source/5",
+          "text": "owner Orla",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 3,
+      "mode": "/prune",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "h15-i04",
+          "reason": "preserve original records"
+        }
+      ],
+      "revision": 7,
+      "split": "holdout",
+      "supersession": [],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited staffing handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "sensitive_rare",
+      "fake_memory_initial_digest": "362e18e25798d85339d7a2e9e044c9cbe4c3e70fdfc9c1eaa195e63c6d737b74",
+      "id": "h16",
+      "items": [
+        {
+          "byte_sha256": "fa1d389b41ee2b3d57898928a458a8ac97d9497b7771d1269478b8bc45695a21",
+          "capture_revision": 7,
+          "id": "h16-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "verified_source",
+          "source_ref": "synthetic://h16/source/1",
+          "text": "region delta",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "aab695f7c3d3fcb99dce0a8200f5f6d548c37b450f35fdb48bca9653a026caa8",
+          "capture_revision": 7,
+          "id": "h16-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://h16/source/2",
+          "text": "context for h16 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "h16-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://h16/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "h16-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://h16/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "b9521377b4ab4234282f12971bebe740f8eae51e3c79d3abeba242791153310b",
+          "capture_revision": 7,
+          "id": "h16-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "unverified_echo",
+          "source_ref": "synthetic://h16/source/5",
+          "text": "region gamma",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 3,
+      "mode": "/prune",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "h16-i04",
+          "reason": "preserve original records"
+        }
+      ],
+      "revision": 7,
+      "split": "holdout",
+      "supersession": [],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited deployment planning handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "pin_overflow",
+      "fake_memory_initial_digest": "866099c703f637036b997be2381a6a2d0181e0f6116ae0a8bc7155d1503eb871",
+      "id": "h17",
+      "items": [
+        {
+          "byte_sha256": "0de36c0743d6a53e3067b4b01adaa3313aff5bfdf4c6389c267351075c182c5c",
+          "capture_revision": 7,
+          "id": "h17-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://h17/source/1",
+          "text": "deadline August",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8b1ee308305df83cff6fe28cbefc6bcc894b021e73d2cbdd573afb367bb0a407",
+          "capture_revision": 7,
+          "id": "h17-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://h17/source/2",
+          "text": "context for h17 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "h17-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://h17/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "h17-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://h17/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "145fec92caa43ad2930ebbe2bbd61e3d3d044289e9cd15fa8a1f781fad9c7a00",
+          "capture_revision": 7,
+          "id": "h17-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://h17/source/5",
+          "text": "color blue",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 1,
+      "mode": "/prune",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "h17-i04",
+          "reason": "preserve original records"
+        },
+        {
+          "authority": "host_task_invariant",
+          "id": "h17-i01",
+          "reason": "deadline or format constraint"
+        }
+      ],
+      "revision": 7,
+      "split": "holdout",
+      "supersession": [],
+      "token_budget": 3,
+      "visible_task": "Prepare a source-cited release planning handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "keep_overflow",
+      "fake_memory_initial_digest": "76eb95c58aec134a5d4bbd7311f1a83951488a5f537f18b73a3feefac0f99e31",
+      "id": "h18",
+      "items": [
+        {
+          "byte_sha256": "f4370ece3602df86c01a22391b6a9635929a0557326f00b349220f14d9ec52c5",
+          "capture_revision": 7,
+          "id": "h18-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://h18/source/1",
+          "text": "checksum amber",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "3838c13913d36005b3c35ae367a1697c1b6ffd310f14495d0fabf19814c9221b",
+          "capture_revision": 7,
+          "id": "h18-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://h18/source/2",
+          "text": "context for h18 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "h18-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://h18/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "h18-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://h18/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "689aeae844bea4220cf6772366b82ad9a66c68a0c882b6a291a91e1015a5703b",
+          "capture_revision": 7,
+          "id": "h18-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://h18/source/5",
+          "text": "color cyan",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 1,
+      "mode": "/prune",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "h18-i04",
+          "reason": "preserve original records"
+        }
+      ],
+      "revision": 7,
+      "split": "holdout",
+      "supersession": [],
+      "token_budget": 5,
+      "visible_task": "Prepare a source-cited integrity review handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "candidate_limit",
+      "fake_memory_initial_digest": "62e4e3616a24ae605bead11181e8c6f3234e6fd8b7b368e56cf5d8cb621f2f24",
+      "id": "h19",
+      "items": [
+        {
+          "byte_sha256": "9418a0933773802741287cfd7f27661d43ff3e315b0c6b0cb944d0158ed13b8d",
+          "capture_revision": 7,
+          "id": "h19-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://h19/source/1",
+          "text": "owner Sera",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "5b94b383d89c81e12086f7ea7ffef2d4a76919a5184f45e99a52ed1f88bc4fff",
+          "capture_revision": 7,
+          "id": "h19-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://h19/source/2",
+          "text": "context for h19 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "h19-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://h19/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "h19-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://h19/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "9872ded2e229f37bbfe9830de18edca2cb6cd844c4e66ffc752d1c3a2581f4b3",
+          "capture_revision": 7,
+          "id": "h19-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://h19/source/5",
+          "text": "color mint",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "264cbe25cc73efb2ce4ce82c0ad1305a577c6b64004f1c913ae6445e06b13dda",
+          "capture_revision": 7,
+          "id": "h19-i06",
+          "sensitivity": "ordinary",
+          "sequence": 6,
+          "source_kind": "log",
+          "source_ref": "synthetic://h19/source/6",
+          "text": "auxiliary note 6 is noncritical",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "6a57c0c29e388939151ee7e1fc36a6b032abe3c4f283326b9c0d3a0328c8c5ee",
+          "capture_revision": 7,
+          "id": "h19-i07",
+          "sensitivity": "ordinary",
+          "sequence": 7,
+          "source_kind": "log",
+          "source_ref": "synthetic://h19/source/7",
+          "text": "auxiliary note 7 is noncritical",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "958506562a1e8efce1daa0eefb5606b32c4a3c5a33550fee2aabc644928fcc33",
+          "capture_revision": 7,
+          "id": "h19-i08",
+          "sensitivity": "ordinary",
+          "sequence": 8,
+          "source_kind": "log",
+          "source_ref": "synthetic://h19/source/8",
+          "text": "auxiliary note 8 is noncritical",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "cb459937bb8042f1e2c0b8671af6b2cffc7ff98477eaa58b238e9d0691859390",
+          "capture_revision": 7,
+          "id": "h19-i09",
+          "sensitivity": "ordinary",
+          "sequence": 9,
+          "source_kind": "log",
+          "source_ref": "synthetic://h19/source/9",
+          "text": "auxiliary note 9 is noncritical",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "62dda4946f6a2825d9b05db68f752b201edd9ceb1f419974a236473cce80ecb2",
+          "capture_revision": 7,
+          "id": "h19-i10",
+          "sensitivity": "ordinary",
+          "sequence": 10,
+          "source_kind": "log",
+          "source_ref": "synthetic://h19/source/10",
+          "text": "auxiliary note 10 is noncritical",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "7f5b36f132cd564b6f2383312bb52e444dad39e06e695b9733496d80f6af16de",
+          "capture_revision": 7,
+          "id": "h19-i11",
+          "sensitivity": "ordinary",
+          "sequence": 11,
+          "source_kind": "log",
+          "source_ref": "synthetic://h19/source/11",
+          "text": "auxiliary note 11 is noncritical",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "b9dfa4305b260f8e54e178a7438887ac477826af4705b9a9be6b3f57a5e52656",
+          "capture_revision": 7,
+          "id": "h19-i12",
+          "sensitivity": "ordinary",
+          "sequence": 12,
+          "source_kind": "log",
+          "source_ref": "synthetic://h19/source/12",
+          "text": "auxiliary note 12 is noncritical",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "69dcaa82812ec2d6768fdd19757ff780235e2500f42a072cff263b58ab35d0ad",
+          "capture_revision": 7,
+          "id": "h19-i13",
+          "sensitivity": "ordinary",
+          "sequence": 13,
+          "source_kind": "log",
+          "source_ref": "synthetic://h19/source/13",
+          "text": "auxiliary note 13 is noncritical",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "4bb4b3f91f34934d2a0c290bf7056af3188d74c2b3e66d3b136f93b6dc899fa6",
+          "capture_revision": 7,
+          "id": "h19-i14",
+          "sensitivity": "ordinary",
+          "sequence": 14,
+          "source_kind": "log",
+          "source_ref": "synthetic://h19/source/14",
+          "text": "auxiliary note 14 is noncritical",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "fc23c796716a1d5132b6c8be8d6d3ea0ad2920769650190405723874e3ddbaa0",
+          "capture_revision": 7,
+          "id": "h19-i15",
+          "sensitivity": "ordinary",
+          "sequence": 15,
+          "source_kind": "log",
+          "source_ref": "synthetic://h19/source/15",
+          "text": "auxiliary note 15 is noncritical",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "2211e303ec113c811c8324ca3ac48f21ad2cc49929049db734639000904255f6",
+          "capture_revision": 7,
+          "id": "h19-i16",
+          "sensitivity": "ordinary",
+          "sequence": 16,
+          "source_kind": "log",
+          "source_ref": "synthetic://h19/source/16",
+          "text": "auxiliary note 16 is noncritical",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "2dbc6853e45d7b5be7b36d538eaa8695e23063823e6572772dfd8410bce40fde",
+          "capture_revision": 7,
+          "id": "h19-i17",
+          "sensitivity": "ordinary",
+          "sequence": 17,
+          "source_kind": "log",
+          "source_ref": "synthetic://h19/source/17",
+          "text": "auxiliary note 17 is noncritical",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "2ae4c0d0062a494a0f34aabf2f024d522917950256f6a963f25857ae047a85ad",
+          "capture_revision": 7,
+          "id": "h19-i18",
+          "sensitivity": "ordinary",
+          "sequence": 18,
+          "source_kind": "log",
+          "source_ref": "synthetic://h19/source/18",
+          "text": "auxiliary note 18 is noncritical",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 1,
+      "mode": "/prune",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "h19-i04",
+          "reason": "preserve original records"
+        }
+      ],
+      "revision": 7,
+      "split": "holdout",
+      "supersession": [],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited staffing handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "assessment_failure",
+      "fake_memory_initial_digest": "c4d496bdafeb6510df934efe792d18aa4d6005a58fd4cec2f5e3d60e0f7b2b2a",
+      "id": "h20",
+      "items": [
+        {
+          "byte_sha256": "723d5ec36cc179fa8c2e80a8e31a648562987df60da22c8909553d09180fcadf",
+          "capture_revision": 7,
+          "id": "h20-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://h20/source/1",
+          "text": "format toml",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "694444254344e2ce7779c4e172e495aba338fe239ed008d9decf34e5cf296d6a",
+          "capture_revision": 7,
+          "id": "h20-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://h20/source/2",
+          "text": "context for h20 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "h20-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://h20/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "h20-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://h20/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "27237e3255f3baf96e5eb017f33ddda96379645c6d32e495aa8f507cd7aa7750",
+          "capture_revision": 7,
+          "id": "h20-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://h20/source/5",
+          "text": "color coral",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 3,
+      "mode": "/prune",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "h20-i04",
+          "reason": "preserve original records"
+        }
+      ],
+      "revision": 7,
+      "split": "holdout",
+      "supersession": [],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited data export handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "mode_compact",
+      "fake_memory_initial_digest": "8e75db8253f0db5e8c937b21516c1be1d91cbba24a6c76f83ab326d832459eeb",
+      "id": "h21",
+      "items": [
+        {
+          "byte_sha256": "38b10c65f94447e47e3b360058cd7da13f4c3602e1eb3d0e14d7718e399a8bf2",
+          "capture_revision": 7,
+          "id": "h21-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://h21/source/1",
+          "text": "deadline May",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "c929660ccc2af9b8f23126f4879846d8db9606156884d2eedbaa4c6ffc633e9b",
+          "capture_revision": 7,
+          "id": "h21-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://h21/source/2",
+          "text": "context for h21 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "h21-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://h21/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "h21-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://h21/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "145fec92caa43ad2930ebbe2bbd61e3d3d044289e9cd15fa8a1f781fad9c7a00",
+          "capture_revision": 7,
+          "id": "h21-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://h21/source/5",
+          "text": "color blue",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 3,
+      "mode": "/compact",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "h21-i04",
+          "reason": "preserve original records"
+        }
+      ],
+      "revision": 7,
+      "split": "holdout",
+      "supersession": [],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited release planning handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "mode_invalid",
+      "fake_memory_initial_digest": "e3101736b97059bddcea89a6c835d9745f28cea298e1c23e1aa1d5363258e0e1",
+      "id": "h22",
+      "items": [
+        {
+          "byte_sha256": "743ebcad54495518d0fbe3197411b911abdef63b1d33fc05c9750019ad2e07d9",
+          "capture_revision": 7,
+          "id": "h22-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://h22/source/1",
+          "text": "region west",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "b72d061cb0d630696bf2457bc94d5c83cef349be719d14565790a2dce6709a4a",
+          "capture_revision": 7,
+          "id": "h22-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://h22/source/2",
+          "text": "context for h22 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "h22-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://h22/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "h22-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://h22/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "145fec92caa43ad2930ebbe2bbd61e3d3d044289e9cd15fa8a1f781fad9c7a00",
+          "capture_revision": 7,
+          "id": "h22-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://h22/source/5",
+          "text": "color blue",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 3,
+      "mode": "/unknown",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "h22-i04",
+          "reason": "preserve original records"
+        }
+      ],
+      "revision": 7,
+      "split": "holdout",
+      "supersession": [],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited deployment planning handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "mode_switch",
+      "fake_memory_initial_digest": "7f17b4dc64f0b4c026d405d2c6fddae6054c7534cf6b897439ab4638fe948484",
+      "id": "h23",
+      "items": [
+        {
+          "byte_sha256": "64d3c987f2582ddaa8ba3cc98bdf0082f65fe555ce8381a872e71843683ca9cb",
+          "capture_revision": 7,
+          "id": "h23-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://h23/source/1",
+          "text": "owner Vea",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "cd47be9b0064395410fea826603521b1e27aaa4f1168eca5d853e3d91b0cddce",
+          "capture_revision": 7,
+          "id": "h23-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://h23/source/2",
+          "text": "context for h23 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "h23-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://h23/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "h23-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://h23/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "145fec92caa43ad2930ebbe2bbd61e3d3d044289e9cd15fa8a1f781fad9c7a00",
+          "capture_revision": 7,
+          "id": "h23-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://h23/source/5",
+          "text": "color blue",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 3,
+      "mode": "/compact",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "h23-i04",
+          "reason": "preserve original records"
+        }
+      ],
+      "revision": 7,
+      "split": "holdout",
+      "supersession": [],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited staffing handoff; preserve constraints and any unresolved source disagreement."
+    },
+    {
+      "category": "mode_compact",
+      "fake_memory_initial_digest": "e28220aef0adc97796a6447624be63220d3db3169fa34c54b71c43c0e14db987",
+      "id": "h24",
+      "items": [
+        {
+          "byte_sha256": "c81c303e51c9206a74689ad548c36b7f4faa015a9850720c115df23e23f6f84d",
+          "capture_revision": 7,
+          "id": "h24-i01",
+          "sensitivity": "ordinary",
+          "sequence": 1,
+          "source_kind": "reviewed_note",
+          "source_ref": "synthetic://h24/source/1",
+          "text": "format md",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "96a5b1525f9e2f5dec8c847d4b70231691e3559ad504b77732c53e76c232ae91",
+          "capture_revision": 7,
+          "id": "h24-i02",
+          "sensitivity": "ordinary",
+          "sequence": 2,
+          "source_kind": "log",
+          "source_ref": "synthetic://h24/source/2",
+          "text": "context for h24 is archived",
+          "token_count": 5,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "8520184348886b5587f634799f96bda46e1fb6dba4118e585d7656aec4623a7b",
+          "capture_revision": 7,
+          "id": "h24-i03",
+          "sensitivity": "ordinary",
+          "sequence": 3,
+          "source_kind": "preference",
+          "source_ref": "synthetic://h24/source/3",
+          "text": "style preference concise",
+          "token_count": 3,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "79998a1a9b726aaaf04c12380cebe10cfd84ee37d67149ba6a4bcfd6d2e357ab",
+          "capture_revision": 7,
+          "id": "h24-i04",
+          "sensitivity": "ordinary",
+          "sequence": 4,
+          "source_kind": "user_constraint",
+          "source_ref": "synthetic://h24/source/4",
+          "text": "constraint preserve original records",
+          "token_count": 4,
+          "tokenizer": "space-v1: len(text.split())"
+        },
+        {
+          "byte_sha256": "145fec92caa43ad2930ebbe2bbd61e3d3d044289e9cd15fa8a1f781fad9c7a00",
+          "capture_revision": 7,
+          "id": "h24-i05",
+          "sensitivity": "ordinary",
+          "sequence": 5,
+          "source_kind": "reviewed_update",
+          "source_ref": "synthetic://h24/source/5",
+          "text": "color blue",
+          "token_count": 2,
+          "tokenizer": "space-v1: len(text.split())"
+        }
+      ],
+      "legacy_count_budget": 3,
+      "mode": "/compact",
+      "pins": [
+        {
+          "authority": "host_user_constraint",
+          "id": "h24-i04",
+          "reason": "preserve original records"
+        }
+      ],
+      "revision": 7,
+      "split": "holdout",
+      "supersession": [],
+      "token_budget": 9,
+      "visible_task": "Prepare a source-cited data export handoff; preserve constraints and any unresolved source disagreement."
+    }
+  ],
+  "schema_version": "issue49-draft-v1",
+  "tokenizer": "space-v1: len(text.split())"
+}

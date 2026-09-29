@@ -1,0 +1,197 @@
+{
+  "questions": [
+    {
+      "applicable": true,
+      "case_id": "c01",
+      "question": "What is the verified deadline value for the later task? Cite the retained original source.",
+      "reader_visible_only": true
+    },
+    {
+      "applicable": true,
+      "case_id": "c02",
+      "question": "What is the verified channel value for the later task? Cite the retained original source.",
+      "reader_visible_only": true
+    },
+    {
+      "applicable": true,
+      "case_id": "c03",
+      "question": "What is the verified checksum value for the later task? Cite the retained original source.",
+      "reader_visible_only": true
+    },
+    {
+      "applicable": true,
+      "case_id": "c04",
+      "question": "What is the verified owner value for the later task? Cite the retained original source.",
+      "reader_visible_only": true
+    },
+    {
+      "applicable": true,
+      "case_id": "c05",
+      "question": "Are the authoritative port sources reconciled? State the supported conclusion and cite sources.",
+      "reader_visible_only": true
+    },
+    {
+      "applicable": true,
+      "case_id": "c06",
+      "question": "What is the verified deadline value for the later task? Cite the retained original source.",
+      "reader_visible_only": true
+    },
+    {
+      "applicable": true,
+      "case_id": "c07",
+      "question": "What is the verified checksum value for the later task? Cite the retained original source.",
+      "reader_visible_only": true
+    },
+    {
+      "applicable": false,
+      "case_id": "c08",
+      "question": null,
+      "reader_visible_only": true
+    },
+    {
+      "applicable": true,
+      "case_id": "h01",
+      "question": "What is the verified deadline value for the later task? Cite the retained original source.",
+      "reader_visible_only": true
+    },
+    {
+      "applicable": true,
+      "case_id": "h02",
+      "question": "What is the verified channel value for the later task? Cite the retained original source.",
+      "reader_visible_only": true
+    },
+    {
+      "applicable": true,
+      "case_id": "h03",
+      "question": "What is the verified owner value for the later task? Cite the retained original source.",
+      "reader_visible_only": true
+    },
+    {
+      "applicable": true,
+      "case_id": "h04",
+      "question": "What is the verified format value for the later task? Cite the retained original source.",
+      "reader_visible_only": true
+    },
+    {
+      "applicable": true,
+      "case_id": "h05",
+      "question": "What is the verified owner value for the later task? Cite the retained original source.",
+      "reader_visible_only": true
+    },
+    {
+      "applicable": true,
+      "case_id": "h06",
+      "question": "What is the verified region value for the later task? Cite the retained original source.",
+      "reader_visible_only": true
+    },
+    {
+      "applicable": true,
+      "case_id": "h07",
+      "question": "What is the verified deadline value for the later task? Cite the retained original source.",
+      "reader_visible_only": true
+    },
+    {
+      "applicable": true,
+      "case_id": "h08",
+      "question": "What is the verified channel value for the later task? Cite the retained original source.",
+      "reader_visible_only": true
+    },
+    {
+      "applicable": true,
+      "case_id": "h09",
+      "question": "Are the authoritative port sources reconciled? State the supported conclusion and cite sources.",
+      "reader_visible_only": true
+    },
+    {
+      "applicable": true,
+      "case_id": "h10",
+      "question": "What is the verified owner value for the later task? Cite the retained original source.",
+      "reader_visible_only": true
+    },
+    {
+      "applicable": true,
+      "case_id": "h11",
+      "question": "Are the authoritative region sources reconciled? State the supported conclusion and cite sources.",
+      "reader_visible_only": true
+    },
+    {
+      "applicable": true,
+      "case_id": "h12",
+      "question": "Are the authoritative format sources reconciled? State the supported conclusion and cite sources.",
+      "reader_visible_only": true
+    },
+    {
+      "applicable": true,
+      "case_id": "h13",
+      "question": "What is the verified token_hint value for the later task? Cite the retained original source.",
+      "reader_visible_only": true
+    },
+    {
+      "applicable": true,
+      "case_id": "h14",
+      "question": "What is the verified checksum value for the later task? Cite the retained original source.",
+      "reader_visible_only": true
+    },
+    {
+      "applicable": true,
+      "case_id": "h15",
+      "question": "What is the verified owner value for the later task? Cite the retained original source.",
+      "reader_visible_only": true
+    },
+    {
+      "applicable": true,
+      "case_id": "h16",
+      "question": "What is the verified region value for the later task? Cite the retained original source.",
+      "reader_visible_only": true
+    },
+    {
+      "applicable": true,
+      "case_id": "h17",
+      "question": "What is the verified deadline value for the later task? Cite the retained original source.",
+      "reader_visible_only": true
+    },
+    {
+      "applicable": true,
+      "case_id": "h18",
+      "question": "What is the verified checksum value for the later task? Cite the retained original source.",
+      "reader_visible_only": true
+    },
+    {
+      "applicable": true,
+      "case_id": "h19",
+      "question": "What is the verified owner value for the later task? Cite the retained original source.",
+      "reader_visible_only": true
+    },
+    {
+      "applicable": true,
+      "case_id": "h20",
+      "question": "What is the verified format value for the later task? Cite the retained original source.",
+      "reader_visible_only": true
+    },
+    {
+      "applicable": false,
+      "case_id": "h21",
+      "question": null,
+      "reader_visible_only": true
+    },
+    {
+      "applicable": false,
+      "case_id": "h22",
+      "question": null,
+      "reader_visible_only": true
+    },
+    {
+      "applicable": false,
+      "case_id": "h23",
+      "question": null,
+      "reader_visible_only": true
+    },
+    {
+      "applicable": false,
+      "case_id": "h24",
+      "question": null,
+      "reader_visible_only": true
+    }
+  ],
+  "schema_version": "issue49-reader-questions-draft-v1"
+}

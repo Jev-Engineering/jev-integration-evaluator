@@ -1,0 +1,21 @@
+{
+  "attacks": [
+    {
+      "attempted_mode": "/prune",
+      "boundary": "mode_argument",
+      "case_id": "h23",
+      "expected_host_result": "requires_separate_compaction",
+      "maximum_assessment_calls": 0,
+      "maximum_prune_calls": 0
+    },
+    {
+      "attempted_mode": "/compact",
+      "boundary": "guarded_host_api_prune_request",
+      "case_id": "h24",
+      "expected_host_result": "requires_separate_compaction",
+      "maximum_assessment_calls": 0,
+      "maximum_prune_calls": 0
+    }
+  ],
+  "schema_version": "issue49-mode-attacks-draft-v1"
+}

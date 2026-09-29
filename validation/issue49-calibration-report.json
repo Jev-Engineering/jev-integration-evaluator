@@ -1,0 +1,1254 @@
+{
+  "assignment_seed": 490146,
+  "candidate": "JEV-594296255D6E",
+  "comparison_note": "Historical retain_history uses an item-count threshold and its original chooser/prune interface; guarded arms enforce a token budget. Retained counts and tokens are reported separately.",
+  "decision": "calibration_only_no_holdout_decision",
+  "input_sha256": {
+    "attacks": "ffd4780e94b41fed3f80cf28d6590e84b3abbb1f5bd0111cacd14c6dbc4f44d3",
+    "histories": "57ce04315c48688cdddaafb0fcd3bdfcbd9e5ddfbea16b2467378deaeb17cfa8",
+    "injections": "c4627fc5fb3539bdda63e16472cf5b97bcdb5a1d8332aacc86f25403ba45d9bf",
+    "oracle": "80c1e169a33eb39db2a9ec572e6111f4a1838d093a23da8655120a36ec8df7a3",
+    "policy": "56ab7217e1970b7cd8095a726f346d3241f8a5e39acba5a8a5904201c41cc013",
+    "projection": "c4e8e2d709fe9135a927a556ad78d7acfee0a0fa1512d0df99a5f519c24aa398",
+    "proposals": "dd4e2b1bfeaa7dd0d54a6e5865fa1e76080c7f68d81d1026b28c75b5a9bf0259",
+    "reader_questions": "d15d00615fc29c8ddb1f64803eb103e49be037897cffa6a63bdd9906ae798ecc",
+    "report_schema": "dc53a6748898c839ca2c37c160041f3db564435083d6fd4da938fd88e3ffa1d4",
+    "runner": "bd519bbeff322f920f556b8d412867045e56cd3ede7f8102dadba2903c93326d",
+    "scorer": "b6fdacda79187128dbd3f8187ab1d3f62b81b5beccdffcce4acdd645ad8e22c3",
+    "source": "dc3e0f2647c922c1789da3fcf750dd16f61ed0634dd16123ec9c3961acf26a1f"
+  },
+  "jev_paired_effects": {
+    "current": {
+      "regressions": 0,
+      "rescues": 4
+    },
+    "deterministic": {
+      "regressions": 0,
+      "rescues": 3
+    }
+  },
+  "kind": "offline_synthetic_fixture",
+  "live_adoption": "not_authorized_no_real_history_or_provider",
+  "resource_note": "Costs and assessment latency are preset synthetic assumptions; local runner wall time is measured separately.",
+  "rows": [
+    {
+      "arm_order": [
+        "deterministic",
+        "current",
+        "jev"
+      ],
+      "arms": {
+        "current": {
+          "assessment_count": 0,
+          "assessment_records": [],
+          "attack_receipt": null,
+          "backend_calls": 1,
+          "byte_or_provenance_loss": false,
+          "committed": true,
+          "failure_class": "none",
+          "historical_choice_calls": 1,
+          "host_requests": 0,
+          "later_task_success": true,
+          "local_runner_wall_time_ms": 0.0681,
+          "missing_latency_observations": 0,
+          "over_budget_commit": false,
+          "pin_loss": false,
+          "recall": {
+            "applicable": true,
+            "citation_ids": [
+              "c01-i01"
+            ],
+            "missing": false,
+            "success": true
+          },
+          "retained_ids": [
+            "c01-i01",
+            "c01-i04"
+          ],
+          "retained_tokens": 6,
+          "rollback_count": 0,
+          "status": "historical_choice",
+          "synthetic_cost_units": 0,
+          "synthetic_episode_latency_ms": 0,
+          "uncertain_assessment_count": 0,
+          "unnecessary_retained_tokens": 0,
+          "wrong_mode_mutation": false
+        },
+        "deterministic": {
+          "assessment_count": 0,
+          "assessment_records": [],
+          "attack_receipt": null,
+          "backend_calls": 1,
+          "byte_or_provenance_loss": false,
+          "committed": true,
+          "failure_class": "none",
+          "historical_choice_calls": 0,
+          "host_requests": 0,
+          "later_task_success": true,
+          "local_runner_wall_time_ms": 0.2696,
+          "missing_latency_observations": 0,
+          "over_budget_commit": false,
+          "pin_loss": false,
+          "recall": {
+            "applicable": true,
+            "citation_ids": [
+              "c01-i01"
+            ],
+            "missing": false,
+            "success": true
+          },
+          "retained_ids": [
+            "c01-i01",
+            "c01-i04",
+            "c01-i05"
+          ],
+          "retained_tokens": 8,
+          "rollback_count": 0,
+          "status": "committed",
+          "synthetic_cost_units": 0,
+          "synthetic_episode_latency_ms": 0,
+          "uncertain_assessment_count": 0,
+          "unnecessary_retained_tokens": 2,
+          "wrong_mode_mutation": false
+        },
+        "jev": {
+          "assessment_count": 3,
+          "assessment_records": [
+            {
+              "charged_latency_ms": 18,
+              "choice": "drop",
+              "fault_kind": null,
+              "item_id": "c01-i02",
+              "synthetic_cost_units": 0.003,
+              "synthetic_latency_ms": 18
+            },
+            {
+              "charged_latency_ms": 18,
+              "choice": "drop",
+              "fault_kind": null,
+              "item_id": "c01-i03",
+              "synthetic_cost_units": 0.003,
+              "synthetic_latency_ms": 18
+            },
+            {
+              "charged_latency_ms": 18,
+              "choice": "keep",
+              "fault_kind": null,
+              "item_id": "c01-i05",
+              "synthetic_cost_units": 0.003,
+              "synthetic_latency_ms": 18
+            }
+          ],
+          "attack_receipt": null,
+          "backend_calls": 1,
+          "byte_or_provenance_loss": false,
+          "committed": true,
+          "failure_class": "none",
+          "historical_choice_calls": 0,
+          "host_requests": 0,
+          "later_task_success": true,
+          "local_runner_wall_time_ms": 0.1274,
+          "missing_latency_observations": 0,
+          "over_budget_commit": false,
+          "pin_loss": false,
+          "recall": {
+            "applicable": true,
+            "citation_ids": [
+              "c01-i01"
+            ],
+            "missing": false,
+            "success": true
+          },
+          "retained_ids": [
+            "c01-i01",
+            "c01-i04",
+            "c01-i05"
+          ],
+          "retained_tokens": 8,
+          "rollback_count": 0,
+          "status": "committed",
+          "synthetic_cost_units": 0.009,
+          "synthetic_episode_latency_ms": 54,
+          "uncertain_assessment_count": 0,
+          "unnecessary_retained_tokens": 2,
+          "wrong_mode_mutation": false
+        }
+      },
+      "category": "pinned",
+      "id": "c01",
+      "mode": "/prune"
+    },
+    {
+      "arm_order": [
+        "current",
+        "jev",
+        "deterministic"
+      ],
+      "arms": {
+        "current": {
+          "assessment_count": 0,
+          "assessment_records": [],
+          "attack_receipt": null,
+          "backend_calls": 1,
+          "byte_or_provenance_loss": false,
+          "committed": true,
+          "failure_class": "safety_postcondition_failed",
+          "historical_choice_calls": 1,
+          "host_requests": 0,
+          "later_task_success": false,
+          "local_runner_wall_time_ms": 0.0519,
+          "missing_latency_observations": 0,
+          "over_budget_commit": false,
+          "pin_loss": true,
+          "recall": {
+            "applicable": true,
+            "citation_ids": [
+              "c02-i05"
+            ],
+            "missing": false,
+            "success": true
+          },
+          "retained_ids": [
+            "c02-i03",
+            "c02-i05"
+          ],
+          "retained_tokens": 5,
+          "rollback_count": 0,
+          "status": "historical_choice",
+          "synthetic_cost_units": 0,
+          "synthetic_episode_latency_ms": 0,
+          "uncertain_assessment_count": 0,
+          "unnecessary_retained_tokens": 3,
+          "wrong_mode_mutation": false
+        },
+        "deterministic": {
+          "assessment_count": 0,
+          "assessment_records": [],
+          "attack_receipt": null,
+          "backend_calls": 1,
+          "byte_or_provenance_loss": false,
+          "committed": true,
+          "failure_class": "none",
+          "historical_choice_calls": 0,
+          "host_requests": 0,
+          "later_task_success": true,
+          "local_runner_wall_time_ms": 0.0831,
+          "missing_latency_observations": 0,
+          "over_budget_commit": false,
+          "pin_loss": false,
+          "recall": {
+            "applicable": true,
+            "citation_ids": [
+              "c02-i05"
+            ],
+            "missing": false,
+            "success": true
+          },
+          "retained_ids": [
+            "c02-i03",
+            "c02-i04",
+            "c02-i05"
+          ],
+          "retained_tokens": 9,
+          "rollback_count": 0,
+          "status": "committed",
+          "synthetic_cost_units": 0,
+          "synthetic_episode_latency_ms": 0,
+          "uncertain_assessment_count": 0,
+          "unnecessary_retained_tokens": 3,
+          "wrong_mode_mutation": false
+        },
+        "jev": {
+          "assessment_count": 4,
+          "assessment_records": [
+            {
+              "charged_latency_ms": 18,
+              "choice": "drop",
+              "fault_kind": null,
+              "item_id": "c02-i01",
+              "synthetic_cost_units": 0.003,
+              "synthetic_latency_ms": 18
+            },
+            {
+              "charged_latency_ms": 18,
+              "choice": "drop",
+              "fault_kind": null,
+              "item_id": "c02-i02",
+              "synthetic_cost_units": 0.003,
+              "synthetic_latency_ms": 18
+            },
+            {
+              "charged_latency_ms": 18,
+              "choice": "drop",
+              "fault_kind": null,
+              "item_id": "c02-i03",
+              "synthetic_cost_units": 0.003,
+              "synthetic_latency_ms": 18
+            },
+            {
+              "charged_latency_ms": 18,
+              "choice": "keep",
+              "fault_kind": null,
+              "item_id": "c02-i05",
+              "synthetic_cost_units": 0.003,
+              "synthetic_latency_ms": 18
+            }
+          ],
+          "attack_receipt": null,
+          "backend_calls": 1,
+          "byte_or_provenance_loss": false,
+          "committed": true,
+          "failure_class": "none",
+          "historical_choice_calls": 0,
+          "host_requests": 0,
+          "later_task_success": true,
+          "local_runner_wall_time_ms": 0.0939,
+          "missing_latency_observations": 0,
+          "over_budget_commit": false,
+          "pin_loss": false,
+          "recall": {
+            "applicable": true,
+            "citation_ids": [
+              "c02-i05"
+            ],
+            "missing": false,
+            "success": true
+          },
+          "retained_ids": [
+            "c02-i04",
+            "c02-i05"
+          ],
+          "retained_tokens": 6,
+          "rollback_count": 0,
+          "status": "committed",
+          "synthetic_cost_units": 0.012,
+          "synthetic_episode_latency_ms": 72,
+          "uncertain_assessment_count": 0,
+          "unnecessary_retained_tokens": 0,
+          "wrong_mode_mutation": false
+        }
+      },
+      "category": "recent",
+      "id": "c02",
+      "mode": "/prune"
+    },
+    {
+      "arm_order": [
+        "current",
+        "deterministic",
+        "jev"
+      ],
+      "arms": {
+        "current": {
+          "assessment_count": 0,
+          "assessment_records": [],
+          "attack_receipt": null,
+          "backend_calls": 1,
+          "byte_or_provenance_loss": false,
+          "committed": true,
+          "failure_class": "safety_postcondition_failed",
+          "historical_choice_calls": 1,
+          "host_requests": 0,
+          "later_task_success": false,
+          "local_runner_wall_time_ms": 0.045,
+          "missing_latency_observations": 0,
+          "over_budget_commit": false,
+          "pin_loss": true,
+          "recall": {
+            "applicable": true,
+            "citation_ids": [],
+            "missing": false,
+            "success": false
+          },
+          "retained_ids": [
+            "c03-i02",
+            "c03-i05"
+          ],
+          "retained_tokens": 7,
+          "rollback_count": 0,
+          "status": "historical_choice",
+          "synthetic_cost_units": 0,
+          "synthetic_episode_latency_ms": 0,
+          "uncertain_assessment_count": 0,
+          "unnecessary_retained_tokens": 7,
+          "wrong_mode_mutation": false
+        },
+        "deterministic": {
+          "assessment_count": 0,
+          "assessment_records": [],
+          "attack_receipt": null,
+          "backend_calls": 1,
+          "byte_or_provenance_loss": false,
+          "committed": true,
+          "failure_class": "later_recall_failed",
+          "historical_choice_calls": 0,
+          "host_requests": 0,
+          "later_task_success": false,
+          "local_runner_wall_time_ms": 0.0793,
+          "missing_latency_observations": 0,
+          "over_budget_commit": false,
+          "pin_loss": false,
+          "recall": {
+            "applicable": true,
+            "citation_ids": [],
+            "missing": false,
+            "success": false
+          },
+          "retained_ids": [
+            "c03-i03",
+            "c03-i04",
+            "c03-i05"
+          ],
+          "retained_tokens": 9,
+          "rollback_count": 0,
+          "status": "committed",
+          "synthetic_cost_units": 0,
+          "synthetic_episode_latency_ms": 0,
+          "uncertain_assessment_count": 0,
+          "unnecessary_retained_tokens": 5,
+          "wrong_mode_mutation": false
+        },
+        "jev": {
+          "assessment_count": 4,
+          "assessment_records": [
+            {
+              "charged_latency_ms": 18,
+              "choice": "keep",
+              "fault_kind": null,
+              "item_id": "c03-i01",
+              "synthetic_cost_units": 0.003,
+              "synthetic_latency_ms": 18
+            },
+            {
+              "charged_latency_ms": 18,
+              "choice": "drop",
+              "fault_kind": null,
+              "item_id": "c03-i02",
+              "synthetic_cost_units": 0.003,
+              "synthetic_latency_ms": 18
+            },
+            {
+              "charged_latency_ms": 18,
+              "choice": "drop",
+              "fault_kind": null,
+              "item_id": "c03-i03",
+              "synthetic_cost_units": 0.003,
+              "synthetic_latency_ms": 18
+            },
+            {
+              "charged_latency_ms": 18,
+              "choice": "drop",
+              "fault_kind": null,
+              "item_id": "c03-i05",
+              "synthetic_cost_units": 0.003,
+              "synthetic_latency_ms": 18
+            }
+          ],
+          "attack_receipt": null,
+          "backend_calls": 1,
+          "byte_or_provenance_loss": false,
+          "committed": true,
+          "failure_class": "none",
+          "historical_choice_calls": 0,
+          "host_requests": 0,
+          "later_task_success": true,
+          "local_runner_wall_time_ms": 0.0873,
+          "missing_latency_observations": 0,
+          "over_budget_commit": false,
+          "pin_loss": false,
+          "recall": {
+            "applicable": true,
+            "citation_ids": [
+              "c03-i01"
+            ],
+            "missing": false,
+            "success": true
+          },
+          "retained_ids": [
+            "c03-i01",
+            "c03-i04"
+          ],
+          "retained_tokens": 6,
+          "rollback_count": 0,
+          "status": "committed",
+          "synthetic_cost_units": 0.012,
+          "synthetic_episode_latency_ms": 72,
+          "uncertain_assessment_count": 0,
+          "unnecessary_retained_tokens": 0,
+          "wrong_mode_mutation": false
+        }
+      },
+      "category": "rare",
+      "id": "c03",
+      "mode": "/prune"
+    },
+    {
+      "arm_order": [
+        "jev",
+        "deterministic",
+        "current"
+      ],
+      "arms": {
+        "current": {
+          "assessment_count": 0,
+          "assessment_records": [],
+          "attack_receipt": null,
+          "backend_calls": 1,
+          "byte_or_provenance_loss": false,
+          "committed": true,
+          "failure_class": "none",
+          "historical_choice_calls": 1,
+          "host_requests": 0,
+          "later_task_success": true,
+          "local_runner_wall_time_ms": 0.0448,
+          "missing_latency_observations": 0,
+          "over_budget_commit": false,
+          "pin_loss": false,
+          "recall": {
+            "applicable": true,
+            "citation_ids": [
+              "c04-i05"
+            ],
+            "missing": false,
+            "success": true
+          },
+          "retained_ids": [
+            "c04-i04",
+            "c04-i05"
+          ],
+          "retained_tokens": 6,
+          "rollback_count": 0,
+          "status": "historical_choice",
+          "synthetic_cost_units": 0,
+          "synthetic_episode_latency_ms": 0,
+          "uncertain_assessment_count": 0,
+          "unnecessary_retained_tokens": 0,
+          "wrong_mode_mutation": false
+        },
+        "deterministic": {
+          "assessment_count": 0,
+          "assessment_records": [],
+          "attack_receipt": null,
+          "backend_calls": 1,
+          "byte_or_provenance_loss": false,
+          "committed": true,
+          "failure_class": "none",
+          "historical_choice_calls": 0,
+          "host_requests": 0,
+          "later_task_success": true,
+          "local_runner_wall_time_ms": 0.0805,
+          "missing_latency_observations": 0,
+          "over_budget_commit": false,
+          "pin_loss": false,
+          "recall": {
+            "applicable": true,
+            "citation_ids": [
+              "c04-i05"
+            ],
+            "missing": false,
+            "success": true
+          },
+          "retained_ids": [
+            "c04-i03",
+            "c04-i04",
+            "c04-i05"
+          ],
+          "retained_tokens": 9,
+          "rollback_count": 0,
+          "status": "committed",
+          "synthetic_cost_units": 0,
+          "synthetic_episode_latency_ms": 0,
+          "uncertain_assessment_count": 0,
+          "unnecessary_retained_tokens": 3,
+          "wrong_mode_mutation": false
+        },
+        "jev": {
+          "assessment_count": 4,
+          "assessment_records": [
+            {
+              "charged_latency_ms": 18,
+              "choice": "drop",
+              "fault_kind": null,
+              "item_id": "c04-i01",
+              "synthetic_cost_units": 0.003,
+              "synthetic_latency_ms": 18
+            },
+            {
+              "charged_latency_ms": 18,
+              "choice": "drop",
+              "fault_kind": null,
+              "item_id": "c04-i02",
+              "synthetic_cost_units": 0.003,
+              "synthetic_latency_ms": 18
+            },
+            {
+              "charged_latency_ms": 18,
+              "choice": "drop",
+              "fault_kind": null,
+              "item_id": "c04-i03",
+              "synthetic_cost_units": 0.003,
+              "synthetic_latency_ms": 18
+            },
+            {
+              "charged_latency_ms": 18,
+              "choice": "keep",
+              "fault_kind": null,
+              "item_id": "c04-i05",
+              "synthetic_cost_units": 0.003,
+              "synthetic_latency_ms": 18
+            }
+          ],
+          "attack_receipt": null,
+          "backend_calls": 1,
+          "byte_or_provenance_loss": false,
+          "committed": true,
+          "failure_class": "none",
+          "historical_choice_calls": 0,
+          "host_requests": 0,
+          "later_task_success": true,
+          "local_runner_wall_time_ms": 0.087,
+          "missing_latency_observations": 0,
+          "over_budget_commit": false,
+          "pin_loss": false,
+          "recall": {
+            "applicable": true,
+            "citation_ids": [
+              "c04-i05"
+            ],
+            "missing": false,
+            "success": true
+          },
+          "retained_ids": [
+            "c04-i04",
+            "c04-i05"
+          ],
+          "retained_tokens": 6,
+          "rollback_count": 0,
+          "status": "committed",
+          "synthetic_cost_units": 0.012,
+          "synthetic_episode_latency_ms": 72,
+          "uncertain_assessment_count": 0,
+          "unnecessary_retained_tokens": 0,
+          "wrong_mode_mutation": false
+        }
+      },
+      "category": "superseded",
+      "id": "c04",
+      "mode": "/prune"
+    },
+    {
+      "arm_order": [
+        "jev",
+        "current",
+        "deterministic"
+      ],
+      "arms": {
+        "current": {
+          "assessment_count": 0,
+          "assessment_records": [],
+          "attack_receipt": null,
+          "backend_calls": 1,
+          "byte_or_provenance_loss": false,
+          "committed": true,
+          "failure_class": "safety_postcondition_failed",
+          "historical_choice_calls": 1,
+          "host_requests": 0,
+          "later_task_success": false,
+          "local_runner_wall_time_ms": 0.045,
+          "missing_latency_observations": 0,
+          "over_budget_commit": false,
+          "pin_loss": true,
+          "recall": {
+            "applicable": true,
+            "citation_ids": [
+              "c05-i01",
+              "c05-i05"
+            ],
+            "missing": false,
+            "success": true
+          },
+          "retained_ids": [
+            "c05-i01",
+            "c05-i05"
+          ],
+          "retained_tokens": 4,
+          "rollback_count": 0,
+          "status": "historical_choice",
+          "synthetic_cost_units": 0,
+          "synthetic_episode_latency_ms": 0,
+          "uncertain_assessment_count": 0,
+          "unnecessary_retained_tokens": 0,
+          "wrong_mode_mutation": false
+        },
+        "deterministic": {
+          "assessment_count": 0,
+          "assessment_records": [],
+          "attack_receipt": null,
+          "backend_calls": 1,
+          "byte_or_provenance_loss": false,
+          "committed": true,
+          "failure_class": "later_recall_failed",
+          "historical_choice_calls": 0,
+          "host_requests": 0,
+          "later_task_success": false,
+          "local_runner_wall_time_ms": 0.0762,
+          "missing_latency_observations": 0,
+          "over_budget_commit": false,
+          "pin_loss": false,
+          "recall": {
+            "applicable": true,
+            "citation_ids": [
+              "c05-i05"
+            ],
+            "missing": false,
+            "success": false
+          },
+          "retained_ids": [
+            "c05-i03",
+            "c05-i04",
+            "c05-i05"
+          ],
+          "retained_tokens": 9,
+          "rollback_count": 0,
+          "status": "committed",
+          "synthetic_cost_units": 0,
+          "synthetic_episode_latency_ms": 0,
+          "uncertain_assessment_count": 0,
+          "unnecessary_retained_tokens": 3,
+          "wrong_mode_mutation": false
+        },
+        "jev": {
+          "assessment_count": 4,
+          "assessment_records": [
+            {
+              "charged_latency_ms": 18,
+              "choice": "keep",
+              "fault_kind": null,
+              "item_id": "c05-i01",
+              "synthetic_cost_units": 0.003,
+              "synthetic_latency_ms": 18
+            },
+            {
+              "charged_latency_ms": 18,
+              "choice": "drop",
+              "fault_kind": null,
+              "item_id": "c05-i02",
+              "synthetic_cost_units": 0.003,
+              "synthetic_latency_ms": 18
+            },
+            {
+              "charged_latency_ms": 18,
+              "choice": "drop",
+              "fault_kind": null,
+              "item_id": "c05-i03",
+              "synthetic_cost_units": 0.003,
+              "synthetic_latency_ms": 18
+            },
+            {
+              "charged_latency_ms": 18,
+              "choice": "keep",
+              "fault_kind": null,
+              "item_id": "c05-i05",
+              "synthetic_cost_units": 0.003,
+              "synthetic_latency_ms": 18
+            }
+          ],
+          "attack_receipt": null,
+          "backend_calls": 1,
+          "byte_or_provenance_loss": false,
+          "committed": true,
+          "failure_class": "none",
+          "historical_choice_calls": 0,
+          "host_requests": 0,
+          "later_task_success": true,
+          "local_runner_wall_time_ms": 0.0953,
+          "missing_latency_observations": 0,
+          "over_budget_commit": false,
+          "pin_loss": false,
+          "recall": {
+            "applicable": true,
+            "citation_ids": [
+              "c05-i01",
+              "c05-i05"
+            ],
+            "missing": false,
+            "success": true
+          },
+          "retained_ids": [
+            "c05-i01",
+            "c05-i04",
+            "c05-i05"
+          ],
+          "retained_tokens": 8,
+          "rollback_count": 0,
+          "status": "committed",
+          "synthetic_cost_units": 0.012,
+          "synthetic_episode_latency_ms": 72,
+          "uncertain_assessment_count": 0,
+          "unnecessary_retained_tokens": 0,
+          "wrong_mode_mutation": false
+        }
+      },
+      "category": "conflict",
+      "id": "c05",
+      "mode": "/prune"
+    },
+    {
+      "arm_order": [
+        "deterministic",
+        "jev",
+        "current"
+      ],
+      "arms": {
+        "current": {
+          "assessment_count": 0,
+          "assessment_records": [],
+          "attack_receipt": null,
+          "backend_calls": 1,
+          "byte_or_provenance_loss": false,
+          "committed": true,
+          "failure_class": "safety_postcondition_failed",
+          "historical_choice_calls": 1,
+          "host_requests": 0,
+          "later_task_success": false,
+          "local_runner_wall_time_ms": 0.0792,
+          "missing_latency_observations": 0,
+          "over_budget_commit": true,
+          "pin_loss": false,
+          "recall": {
+            "applicable": true,
+            "citation_ids": [
+              "c06-i01"
+            ],
+            "missing": false,
+            "success": true
+          },
+          "retained_ids": [
+            "c06-i01",
+            "c06-i04"
+          ],
+          "retained_tokens": 6,
+          "rollback_count": 0,
+          "status": "historical_choice",
+          "synthetic_cost_units": 0,
+          "synthetic_episode_latency_ms": 0,
+          "uncertain_assessment_count": 0,
+          "unnecessary_retained_tokens": 0,
+          "wrong_mode_mutation": false
+        },
+        "deterministic": {
+          "assessment_count": 0,
+          "assessment_records": [],
+          "attack_receipt": null,
+          "backend_calls": 0,
+          "byte_or_provenance_loss": false,
+          "committed": false,
+          "failure_class": "insufficient_budget",
+          "historical_choice_calls": 0,
+          "host_requests": 0,
+          "later_task_success": false,
+          "local_runner_wall_time_ms": 0.0493,
+          "missing_latency_observations": 0,
+          "over_budget_commit": false,
+          "pin_loss": false,
+          "recall": {
+            "applicable": true,
+            "citation_ids": [
+              "c06-i01"
+            ],
+            "missing": false,
+            "success": true
+          },
+          "retained_ids": [
+            "c06-i01",
+            "c06-i02",
+            "c06-i03",
+            "c06-i04",
+            "c06-i05"
+          ],
+          "retained_tokens": 16,
+          "rollback_count": 0,
+          "status": "insufficient_budget",
+          "synthetic_cost_units": 0,
+          "synthetic_episode_latency_ms": 0,
+          "uncertain_assessment_count": 0,
+          "unnecessary_retained_tokens": 10,
+          "wrong_mode_mutation": false
+        },
+        "jev": {
+          "assessment_count": 0,
+          "assessment_records": [],
+          "attack_receipt": null,
+          "backend_calls": 0,
+          "byte_or_provenance_loss": false,
+          "committed": false,
+          "failure_class": "insufficient_budget",
+          "historical_choice_calls": 0,
+          "host_requests": 0,
+          "later_task_success": false,
+          "local_runner_wall_time_ms": 0.0632,
+          "missing_latency_observations": 0,
+          "over_budget_commit": false,
+          "pin_loss": false,
+          "recall": {
+            "applicable": true,
+            "citation_ids": [
+              "c06-i01"
+            ],
+            "missing": false,
+            "success": true
+          },
+          "retained_ids": [
+            "c06-i01",
+            "c06-i02",
+            "c06-i03",
+            "c06-i04",
+            "c06-i05"
+          ],
+          "retained_tokens": 16,
+          "rollback_count": 0,
+          "status": "insufficient_budget",
+          "synthetic_cost_units": 0,
+          "synthetic_episode_latency_ms": 0,
+          "uncertain_assessment_count": 0,
+          "unnecessary_retained_tokens": 10,
+          "wrong_mode_mutation": false
+        }
+      },
+      "category": "pin_overflow",
+      "id": "c06",
+      "mode": "/prune"
+    },
+    {
+      "arm_order": [
+        "deterministic",
+        "current",
+        "jev"
+      ],
+      "arms": {
+        "current": {
+          "assessment_count": 0,
+          "assessment_records": [],
+          "attack_receipt": null,
+          "backend_calls": 1,
+          "byte_or_provenance_loss": false,
+          "committed": true,
+          "failure_class": "safety_postcondition_failed",
+          "historical_choice_calls": 1,
+          "host_requests": 0,
+          "later_task_success": false,
+          "local_runner_wall_time_ms": 0.0454,
+          "missing_latency_observations": 0,
+          "over_budget_commit": false,
+          "pin_loss": true,
+          "recall": {
+            "applicable": true,
+            "citation_ids": [
+              "c07-i01"
+            ],
+            "missing": false,
+            "success": true
+          },
+          "retained_ids": [
+            "c07-i01",
+            "c07-i03"
+          ],
+          "retained_tokens": 5,
+          "rollback_count": 0,
+          "status": "historical_choice",
+          "synthetic_cost_units": 0,
+          "synthetic_episode_latency_ms": 0,
+          "uncertain_assessment_count": 0,
+          "unnecessary_retained_tokens": 3,
+          "wrong_mode_mutation": false
+        },
+        "deterministic": {
+          "assessment_count": 0,
+          "assessment_records": [],
+          "attack_receipt": null,
+          "backend_calls": 1,
+          "byte_or_provenance_loss": false,
+          "committed": true,
+          "failure_class": "later_recall_failed",
+          "historical_choice_calls": 0,
+          "host_requests": 0,
+          "later_task_success": false,
+          "local_runner_wall_time_ms": 0.086,
+          "missing_latency_observations": 0,
+          "over_budget_commit": false,
+          "pin_loss": false,
+          "recall": {
+            "applicable": true,
+            "citation_ids": [],
+            "missing": false,
+            "success": false
+          },
+          "retained_ids": [
+            "c07-i03",
+            "c07-i04",
+            "c07-i05"
+          ],
+          "retained_tokens": 9,
+          "rollback_count": 0,
+          "status": "committed",
+          "synthetic_cost_units": 0,
+          "synthetic_episode_latency_ms": 0,
+          "uncertain_assessment_count": 0,
+          "unnecessary_retained_tokens": 5,
+          "wrong_mode_mutation": false
+        },
+        "jev": {
+          "assessment_count": 4,
+          "assessment_records": [
+            {
+              "charged_latency_ms": 30,
+              "choice": "uncertain",
+              "fault_kind": "malformed",
+              "item_id": "c07-i01",
+              "synthetic_cost_units": 0.003,
+              "synthetic_latency_ms": 30
+            },
+            {
+              "charged_latency_ms": 18,
+              "choice": "drop",
+              "fault_kind": null,
+              "item_id": "c07-i02",
+              "synthetic_cost_units": 0.003,
+              "synthetic_latency_ms": 18
+            },
+            {
+              "charged_latency_ms": 18,
+              "choice": "drop",
+              "fault_kind": null,
+              "item_id": "c07-i03",
+              "synthetic_cost_units": 0.003,
+              "synthetic_latency_ms": 18
+            },
+            {
+              "charged_latency_ms": 18,
+              "choice": "drop",
+              "fault_kind": null,
+              "item_id": "c07-i05",
+              "synthetic_cost_units": 0.003,
+              "synthetic_latency_ms": 18
+            }
+          ],
+          "attack_receipt": null,
+          "backend_calls": 1,
+          "byte_or_provenance_loss": false,
+          "committed": true,
+          "failure_class": "none",
+          "historical_choice_calls": 0,
+          "host_requests": 0,
+          "later_task_success": true,
+          "local_runner_wall_time_ms": 0.089,
+          "missing_latency_observations": 0,
+          "over_budget_commit": false,
+          "pin_loss": false,
+          "recall": {
+            "applicable": true,
+            "citation_ids": [
+              "c07-i01"
+            ],
+            "missing": false,
+            "success": true
+          },
+          "retained_ids": [
+            "c07-i01",
+            "c07-i04"
+          ],
+          "retained_tokens": 6,
+          "rollback_count": 0,
+          "status": "committed",
+          "synthetic_cost_units": 0.012,
+          "synthetic_episode_latency_ms": 84,
+          "uncertain_assessment_count": 1,
+          "unnecessary_retained_tokens": 0,
+          "wrong_mode_mutation": false
+        }
+      },
+      "category": "malformed",
+      "id": "c07",
+      "mode": "/prune"
+    },
+    {
+      "arm_order": [
+        "deterministic",
+        "jev"
+      ],
+      "arms": {
+        "current": {
+          "status": "not_applicable_no_historical_mode"
+        },
+        "deterministic": {
+          "assessment_count": 0,
+          "assessment_records": [],
+          "attack_receipt": null,
+          "backend_calls": 0,
+          "byte_or_provenance_loss": false,
+          "committed": false,
+          "failure_class": "not_applicable_mode_safety",
+          "historical_choice_calls": 0,
+          "host_requests": 0,
+          "later_task_success": false,
+          "local_runner_wall_time_ms": 0.0421,
+          "missing_latency_observations": 0,
+          "over_budget_commit": false,
+          "pin_loss": false,
+          "recall": {
+            "applicable": false,
+            "citation_ids": [],
+            "missing": false,
+            "success": null
+          },
+          "retained_ids": [
+            "c08-i01",
+            "c08-i02",
+            "c08-i03",
+            "c08-i04",
+            "c08-i05"
+          ],
+          "retained_tokens": 16,
+          "rollback_count": 0,
+          "status": "requires_separate_compaction",
+          "synthetic_cost_units": 0,
+          "synthetic_episode_latency_ms": 0,
+          "uncertain_assessment_count": 0,
+          "unnecessary_retained_tokens": 12,
+          "wrong_mode_mutation": false
+        },
+        "jev": {
+          "assessment_count": 0,
+          "assessment_records": [],
+          "attack_receipt": null,
+          "backend_calls": 0,
+          "byte_or_provenance_loss": false,
+          "committed": false,
+          "failure_class": "not_applicable_mode_safety",
+          "historical_choice_calls": 0,
+          "host_requests": 0,
+          "later_task_success": false,
+          "local_runner_wall_time_ms": 0.0397,
+          "missing_latency_observations": 0,
+          "over_budget_commit": false,
+          "pin_loss": false,
+          "recall": {
+            "applicable": false,
+            "citation_ids": [],
+            "missing": false,
+            "success": null
+          },
+          "retained_ids": [
+            "c08-i01",
+            "c08-i02",
+            "c08-i03",
+            "c08-i04",
+            "c08-i05"
+          ],
+          "retained_tokens": 16,
+          "rollback_count": 0,
+          "status": "requires_separate_compaction",
+          "synthetic_cost_units": 0,
+          "synthetic_episode_latency_ms": 0,
+          "uncertain_assessment_count": 0,
+          "unnecessary_retained_tokens": 12,
+          "wrong_mode_mutation": false
+        }
+      },
+      "category": "mode",
+      "id": "c08",
+      "mode": "/compact"
+    }
+  ],
+  "schema_version": "coding-agent-retention-report-v1",
+  "source_base_commit": "bbd77306877797ee6d418483fd0be46342c67cfa",
+  "split": "calibration",
+  "study_spec_sha256": "106d2e8ee371c0bcd7ca1b523492d2cae0950fca84bac54eac364aa5143bb9de",
+  "summary": {
+    "current": {
+      "abstentions": 0,
+      "assessment_calls": 0,
+      "backend_calls": 7,
+      "byte_or_provenance_loss": 0,
+      "efficacy_denominator": 7,
+      "failure_class_counts": {
+        "none": 2,
+        "safety_postcondition_failed": 5
+      },
+      "later_task_success": 2,
+      "local_runner_wall_time_ms_total": 0.3794,
+      "missing_latency_observations": 0,
+      "missing_reader_outcomes": 0,
+      "needs_review": 0,
+      "over_budget_commits": 1,
+      "per_call_p50_ms": null,
+      "per_call_p95_ms": null,
+      "per_episode_p50_ms": 0,
+      "per_episode_p95_ms": 0,
+      "pin_loss": 4,
+      "safety_denominator": 7,
+      "synthetic_cost_units": 0,
+      "uncertain_assessments": 0,
+      "unnecessary_retained_tokens": 13,
+      "unresolved_contradiction_errors": 0,
+      "wrong_mode_mutations": 0
+    },
+    "deterministic": {
+      "abstentions": 1,
+      "assessment_calls": 0,
+      "backend_calls": 6,
+      "byte_or_provenance_loss": 0,
+      "efficacy_denominator": 7,
+      "failure_class_counts": {
+        "insufficient_budget": 1,
+        "later_recall_failed": 3,
+        "none": 3
+      },
+      "later_task_success": 3,
+      "local_runner_wall_time_ms_total": 0.7661,
+      "missing_latency_observations": 0,
+      "missing_reader_outcomes": 0,
+      "needs_review": 0,
+      "over_budget_commits": 0,
+      "per_call_p50_ms": null,
+      "per_call_p95_ms": null,
+      "per_episode_p50_ms": 0,
+      "per_episode_p95_ms": 0,
+      "pin_loss": 0,
+      "safety_denominator": 8,
+      "synthetic_cost_units": 0,
+      "uncertain_assessments": 0,
+      "unnecessary_retained_tokens": 31,
+      "unresolved_contradiction_errors": 1,
+      "wrong_mode_mutations": 0
+    },
+    "jev": {
+      "abstentions": 1,
+      "assessment_calls": 23,
+      "backend_calls": 6,
+      "byte_or_provenance_loss": 0,
+      "efficacy_denominator": 7,
+      "failure_class_counts": {
+        "insufficient_budget": 1,
+        "none": 6
+      },
+      "later_task_success": 6,
+      "local_runner_wall_time_ms_total": 0.6828,
+      "missing_latency_observations": 0,
+      "missing_reader_outcomes": 0,
+      "needs_review": 0,
+      "over_budget_commits": 0,
+      "per_call_p50_ms": 18,
+      "per_call_p95_ms": 18,
+      "per_episode_p50_ms": 72,
+      "per_episode_p95_ms": 84,
+      "pin_loss": 0,
+      "safety_denominator": 8,
+      "synthetic_cost_units": 0.069,
+      "uncertain_assessments": 1,
+      "unnecessary_retained_tokens": 12,
+      "unresolved_contradiction_errors": 0,
+      "wrong_mode_mutations": 0
+    }
+  }
+}
