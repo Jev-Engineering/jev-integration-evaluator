@@ -12,7 +12,8 @@ from . import capabilities as cap
 from .contracts import validate_contract
 from .io import InputError, digest, file_hash, loads
 from .windows_template_owned import (
-    check_private_directory, create_private_directory, read_private_json,
+    check_private_directory, create_private_directory, generation_root_present,
+    read_private_json,
     write_private_bytes_exclusive, write_private_json_exclusive,
 )
 from .windows_template_package_inputs import inspect_windows_template_package_inputs
@@ -231,7 +232,7 @@ def install_windows_template_package(plan: dict, *, approved_plan_sha256: str) -
                 plan['trusted_package_receipt_sha256'])):
         raise InputError('windows_install_exact_authority_or_plan_required')
     root = _generation(plan)
-    if root.exists():
+    if generation_root_present(root):
         raise InputError('windows_install_existing_generation_requires_status_review')
     owned = create_private_directory(root)
     write_private_json_exclusive(owned, 'owner.json', {'plan_sha256': plan['plan_sha256'],
@@ -299,7 +300,7 @@ def windows_install_status(plan: dict, *, trusted_receipt_sha256: str | None = N
     if plan['plan_sha256'] != digest({k: v for k, v in plan.items() if k != 'plan_sha256'}):
         raise InputError('windows_install_plan_digest_changed')
     root = _generation(plan)
-    if not root.exists():
+    if not generation_root_present(root):
         return {'status': 'absent', 'receipt_trust': 'absent'}
     try:
         owner = loads(cap._windows_secure_input(root / 'owner.json', 1_000_000))

@@ -42,6 +42,11 @@ trusted_package_receipt_sha256=...)`, review its digest, then
 the install receipt digest. `windows_package_status` and
 `windows_install_status` are read-only and distinguish absent, interrupted,
 recorded-untrusted and externally anchored results.
+Before returning `absent` or creating a generation, both stages inspect the
+plan-derived root without following its final component. An existing dangling
+NTFS junction blocks ownership and effect replay. A native disposable junction
+test covers package and install status and build/install entrypoints while
+checking that the unrelated target directory remains intact.
 The install planner rereads the package receipt from the plan-derived
 owner-private generation and requires the caller's entire receipt to equal
 that record. Session creation similarly rereads the private install receipt,
@@ -177,7 +182,8 @@ $env:JEV_WINDOWS_TEMPLATE_WHEELHOUSE = 'C:\private\reviewed-wheels'
 
 It executes fixture source binding, applied-source verification, offline
 wheel build/install, gated normal console invocation, duplicate-launch and
-owned-stop checks, plus installed-tree drift detection. The separate
+owned-stop checks, plus installed-tree drift and dangling-generation-junction
+refusal. The separate
 `tests/test_windows_template_run.py` exercises two installed versions,
 retained rollback, same-run interrupted-stage recovery, and separate ready
 and effect observations. It is a synthetic

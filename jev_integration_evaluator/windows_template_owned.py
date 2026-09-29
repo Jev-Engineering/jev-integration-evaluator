@@ -6,11 +6,31 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import stat
 from typing import Iterator
 
 from . import capabilities as cap
 from .io import InputError
 from .windows_template_preflight import _profile
+
+
+def generation_root_present(path: str | Path) -> bool:
+    """Distinguish an absent generation from a dangling NTFS reparse point."""
+    _profile()
+    target = Path(path)
+    try:
+        cap._windows_check_directory_path(target.parent, purpose='output')
+    except (cap.CapabilityError, OSError):
+        raise InputError('windows_owned_generation_parent_unavailable') from None
+    try:
+        info = os.lstat(target)
+    except FileNotFoundError:
+        return False
+    except OSError:
+        raise InputError('windows_owned_generation_unavailable') from None
+    if cap._windows_reparse_reason(info) or not stat.S_ISDIR(info.st_mode):
+        raise InputError('windows_owned_generation_reparse_or_non_directory')
+    return True
 
 
 def _security_descriptor():

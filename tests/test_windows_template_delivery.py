@@ -23,11 +23,11 @@ from jev_integration_evaluator.integrations.lifecycle import (
 from jev_integration_evaluator.integrations.verification import verify_implementation
 from jev_integration_evaluator.windows_template_plan import (
     build_windows_template_package, plan_windows_template_package,
-    windows_package_status,
+    windows_package_status, _generation as _package_generation,
 )
 from jev_integration_evaluator.windows_template_install import (
     install_windows_template_package, plan_windows_template_install,
-    windows_install_status,
+    windows_install_status, _generation as _install_generation,
 )
 from jev_integration_evaluator.windows_template_session import (
     create_windows_template_session, launch_windows_template_session,
@@ -110,6 +110,51 @@ def _request(tmp_path, *, version='1.0.0', ready=False):
                'console_script': binding['script'], 'interpreter': sys.executable,
                'configuration': config, 'reviewed_configuration_sha256': digest(config)}
     return request, applied, target, bundle, spec
+
+
+def _make_dangling_junction(root: Path, tmp_path: Path, label: str) -> Path:
+    unrelated = tmp_path / (label + '-unrelated')
+    unrelated.mkdir()
+    (unrelated / 'preserve.txt').write_text('unrelated\n', encoding='utf-8')
+    created = subprocess.run(['cmd', '/c', 'mklink', '/J', str(root), str(unrelated)],
+                             capture_output=True, text=True, timeout=10)
+    assert created.returncode == 0, created.stderr
+    retained = tmp_path / (label + '-retained')
+    unrelated.rename(retained)
+    assert os.path.lexists(root) and not root.exists()
+    return retained
+
+
+def test_native_dangling_generation_junction_blocks_status_and_replay(tmp_path):
+    request, _, _, _, _ = _request(tmp_path)
+    plan = plan_windows_template_package(request)
+    package_root = _package_generation(plan)
+    retained_package = _make_dangling_junction(package_root, tmp_path, 'package')
+    try:
+        with pytest.raises(InputError, match='windows_owned_generation_reparse'):
+            windows_package_status(plan)
+        with pytest.raises(InputError, match='windows_owned_generation_reparse'):
+            build_windows_template_package(plan,
+                                           approved_plan_sha256=plan['plan_sha256'])
+        assert (retained_package / 'preserve.txt').read_text() == 'unrelated\n'
+    finally:
+        package_root.rmdir()
+
+    package = build_windows_template_package(plan,
+                                             approved_plan_sha256=plan['plan_sha256'])
+    install_plan = plan_windows_template_install(
+        plan, package, trusted_package_receipt_sha256=package['receipt_sha256'])
+    install_root = _install_generation(install_plan)
+    retained_install = _make_dangling_junction(install_root, tmp_path, 'install')
+    try:
+        with pytest.raises(InputError, match='windows_owned_generation_reparse'):
+            windows_install_status(install_plan)
+        with pytest.raises(InputError, match='windows_owned_generation_reparse'):
+            install_windows_template_package(
+                install_plan, approved_plan_sha256=install_plan['plan_sha256'])
+        assert (retained_install / 'preserve.txt').read_text() == 'unrelated\n'
+    finally:
+        install_root.rmdir()
 
 
 def test_native_offline_package_install_and_normal_console(tmp_path):
