@@ -29,7 +29,7 @@ def merge(request: dict, state: dict) -> int:
         audit_rows.append(dict(row))
 
     receipt = graph.reconcile(Same(), store, left, right,
-                              state["approval"], state["revision"], audit=audit)
+                              state["approval"], state["expected_revision"], audit=audit)
     if receipt is None or len(store.merges) != 1 or audit_rows != store.merges:
         raise RuntimeError("graph merge did not satisfy host postconditions")
     path_name = os.environ.get("GRAPH_EFFECT_PATH")

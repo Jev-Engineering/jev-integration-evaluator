@@ -7,7 +7,11 @@ module is copied unchanged and its bytes are checked against the #59 matrix.
 from __future__ import annotations
 
 from pathlib import Path
+import importlib
+import json
 import shutil
+
+import pytest
 
 from jev_integration_evaluator.config import load_config
 from jev_integration_evaluator.io import digest, file_hash
@@ -21,7 +25,7 @@ from scripts.implementation_fixtures import fixture
 
 
 ROOT = Path(__file__).resolve().parents[1]
-GRAPH_RUNTIME_SHA256 = "deb1b903287a4da024957b8f8e97a4e7b32b2207720f8630b7ac92be859f7686"
+GRAPH_RUNTIME_SHA256 = "cfaa603585646ff0ff9751dbfc20194f420346ba5781999d909d75395bd688ac"
 
 
 def _graph_host(target: Path):
@@ -39,10 +43,14 @@ def _graph_host(target: Path):
     assert file_hash(package / "graph_runtime.py") == GRAPH_RUNTIME_SHA256
     source = target / spec["source"]["file"]
     raw = source.read_text(encoding="utf-8")
+    assert raw.count("'revision': 0") == 1
+    raw = raw.replace("'revision': 0", "'revision': 0, 'expected_revision': 0", 1)
     old = "STATE['revision'] += 1\n    return 'merged'"
     new = "from . import graph_runtime\n    STATE['revision'] = graph_runtime.merge(request, STATE)\n    return 'merged'"
     assert raw.count(old) == 1
     source.write_text(raw.replace(old, new), encoding="utf-8")
+    for case in spec["verification"]["cases"]:
+        case["initial_globals"]["STATE"]["expected_revision"] = 0
 
     cfg = load_config()
     cfg["repository"]["typescript_ast"] = False
@@ -79,3 +87,24 @@ def test_graph_host_source_bound_apply_verify_and_rollback(tmp_path):
                                      baseline_sha256=baseline["receipt_sha256"])
     assert modified["status"] == "verified"
     assert rollback_implementation(target, bundle, applied["rollback_digest"])["status"] == "rolled_back"
+
+
+def test_graph_host_current_revision_and_approval_are_independent(tmp_path, monkeypatch):
+    target = tmp_path / "graph-target"
+    _graph_host(target)
+    monkeypatch.syspath_prepend(str(target))
+    runtime = importlib.import_module("graph_host.graph_runtime")
+    effect = tmp_path / "graph-effect.json"
+    monkeypatch.setenv("GRAPH_EFFECT_PATH", str(effect))
+    for state in (
+        {"revision": 4, "expected_revision": 3, "approval": True},
+        {"revision": 4, "expected_revision": 4, "approval": False},
+    ):
+        with pytest.raises(RuntimeError, match="graph merge did not satisfy"):
+            runtime.merge({}, state)
+        assert not effect.exists() and state["revision"] == 4
+    assert runtime.merge({}, {"revision": 4, "expected_revision": 4,
+                              "approval": True}) == 5
+    observed = json.loads(effect.read_text(encoding="utf-8"))
+    assert observed["revision"] == 5
+    assert observed["receipt"] == observed["merges"][0] == observed["audits"][0]

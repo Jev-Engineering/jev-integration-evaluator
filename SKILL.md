@@ -62,12 +62,14 @@ target; never load target compiler configuration or plugins.
 
 The [issue #59 use-case matrix](references/use-case-template-matrix-v1.md)
 pins six illustrative source contracts and five distinct offline host oracles.
-Its source match is read-only; apply, install, launch, provider modes and benefit
-remain pending for these use cases. Keep `/prune` and `/compact` as separate
+Its source match is read-only; individual use-case install and supervised launch,
+provider modes and benefit remain pending. The L synthetic host has a separate
+source-bound apply/verify/rollback test. Keep `/prune` and `/compact` as separate
 explicit user choices.
 The finite offline use-case console fixture checks six separate fixture-emitted outcome records
-under mode `off`; it is a direct package-source run, not yet an installed or
-supervised generation.
+under mode `off`. Its source-pinned wheel is installed and invoked through its
+normal console on Linux CPython 3.13. This is a shared fixture installation,
+not a supervised generation or five individual template transforms.
 
 Run `scripts/run_implementation_demo.py --out NEW_PRIVATE_DIRECTORY`, the existing v1.1/v1.2 demos, full regressions, installed-wheel host checks and package validation for implementation changes. Publish only minimal synthetic validation metadata, never private target source, preimages, raw test output or activation fixtures. Prior validation reports remain historical.
 
