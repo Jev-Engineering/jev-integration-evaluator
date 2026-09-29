@@ -33,7 +33,7 @@ from tests.test_reusable_templates import fixture_module
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CONSUMER_SHA256 = "e096f472eee1e332d9f2b87c68d94595e820c19a926e789cb7186e79ea21e80d"
+CONSUMER_SHA256 = "687f86969341bd77d56f9ae5c7d13a2050b03faf829d28b424e3d1183173f127"
 pytestmark = pytest.mark.skipif(
     not (sys.platform == "linux" and platform.machine().lower() == "x86_64"
          and sys.implementation.name == "cpython" and sys.version_info[:2] == (3, 13)),
@@ -130,6 +130,19 @@ def _scope(result: dict, plan: dict, action: str) -> dict:
     return value
 
 
+def _probe_effect_path(tmp_path: Path, name: str) -> str:
+    parent = tmp_path / name
+    parent.mkdir(mode=0o700)
+    return str(parent / "retained-{pid}.json")
+
+
+def _assert_probe_effects(tmp_path: Path, name: str) -> None:
+    files = list((tmp_path / name).glob("retained-*.json"))
+    selections = {tuple(item["id"] for item in json.loads(path.read_text())) for path in files}
+    assert len(files) >= 2
+    assert {("pinned", "work"), ("pinned", "work", "old")} <= selections
+
+
 def test_retention_host_plan_apply_raw_effect_and_rollback(tmp_path):
     target = tmp_path / "retention-target"
     inventory, spec, request = _host(target)
@@ -137,13 +150,16 @@ def test_retention_host_plan_apply_raw_effect_and_rollback(tmp_path):
     materialize_template(target, request, tmp_path / "materialized")
     bundle = tmp_path / "bundle"
     planned = plan_implementation(target, inventory, spec["candidate_id"], spec, bundle)
-    baseline = verify_implementation(target, bundle, "baseline", approve_execution=True)
-    assert baseline["status"] == "baseline_passed"
-    applied = apply_implementation(target, bundle, planned["bundle_digest"],
-                                   baseline_sha256=baseline["receipt_sha256"])
-    modified = verify_implementation(target, bundle, "modified", approve_execution=True,
-                                     baseline_sha256=baseline["receipt_sha256"])
+    with pytest.MonkeyPatch.context() as probe_env:
+        probe_env.setenv("H_RETAINED_PATH", _probe_effect_path(tmp_path, "probe-effects"))
+        baseline = verify_implementation(target, bundle, "baseline", approve_execution=True)
+        assert baseline["status"] == "baseline_passed"
+        applied = apply_implementation(target, bundle, planned["bundle_digest"],
+                                       baseline_sha256=baseline["receipt_sha256"])
+        modified = verify_implementation(target, bundle, "modified", approve_execution=True,
+                                         baseline_sha256=baseline["receipt_sha256"])
     assert modified["status"] == "verified"
+    _assert_probe_effects(tmp_path, "probe-effects")
     assert implementation_status(target, bundle,
         trusted_receipt_sha256=modified["receipt_sha256"])["status"] == "verified"
     effects = tmp_path / "effects"
@@ -174,6 +190,19 @@ def test_retention_consumer_rejects_wrong_mode_pin_loss_and_source_drift(tmp_pat
     monkeypatch.setenv("H_RETAINED_PATH", str(effect))
     pinned = {"id": "pinned", "text": "never discard this constraint", "pinned": True}
     work = {"id": "work", "text": "current work"}
+    old = {"id": "old", "text": "obsolete"}
+    for missing in (None, ""):
+        if missing is None:
+            monkeypatch.delenv("H_RETAINED_PATH")
+        else:
+            monkeypatch.setenv("H_RETAINED_PATH", missing)
+        with pytest.raises(ValueError, match="H_RETAINED_PATH is required"):
+            consumer.commit({"command": "/prune"}, [pinned, work])
+        assert not effect.exists()
+    monkeypatch.setenv("H_RETAINED_PATH", str(effect))
+    with pytest.raises(ValueError, match="retention postcondition failed"):
+        consumer.commit({"command": "/prune"}, [pinned, work, old], token_budget=4)
+    assert not effect.exists()
     for request, selected in (
         ({"command": "/compact"}, [pinned, work]),
         ({"command": "/prune"}, [work]),
@@ -198,13 +227,16 @@ def test_retention_host_installed_supervised_offline_effect(tmp_path):
     materialize_template(target, request, template)
     bundle = tmp_path / "bundle"
     planned = plan_implementation(target, inventory, spec["candidate_id"], spec, bundle)
-    baseline = verify_implementation(target, bundle, "baseline", approve_execution=True)
-    assert baseline["status"] == "baseline_passed"
-    applied = apply_implementation(target, bundle, planned["bundle_digest"],
-                                   baseline_sha256=baseline["receipt_sha256"])
-    modified = verify_implementation(target, bundle, "modified", approve_execution=True,
-                                     baseline_sha256=baseline["receipt_sha256"])
+    with pytest.MonkeyPatch.context() as probe_env:
+        probe_env.setenv("H_RETAINED_PATH", _probe_effect_path(tmp_path, "probe-effects"))
+        baseline = verify_implementation(target, bundle, "baseline", approve_execution=True)
+        assert baseline["status"] == "baseline_passed"
+        applied = apply_implementation(target, bundle, planned["bundle_digest"],
+                                       baseline_sha256=baseline["receipt_sha256"])
+        modified = verify_implementation(target, bundle, "modified", approve_execution=True,
+                                         baseline_sha256=baseline["receipt_sha256"])
     assert modified["status"] == "verified"
+    _assert_probe_effects(tmp_path, "probe-effects")
     wheels = sorted(wheelhouse.glob("*.whl"))
     rows = [{"filename": path.name, "sha256": file_hash(path)} for path in wheels]
     requirements = [{"name": name, "version": version,
@@ -307,15 +339,18 @@ def test_retention_host_installed_supervised_offline_effect(tmp_path):
     new_bundle = tmp_path / "new-bundle"
     new_planned = plan_implementation(new_target, new_inventory, new_spec["candidate_id"],
                                       new_spec, new_bundle)
-    new_baseline = verify_implementation(new_target, new_bundle, "baseline",
-                                         approve_execution=True)
-    assert new_baseline["status"] == "baseline_passed"
-    new_applied = apply_implementation(new_target, new_bundle,
-                                       new_planned["bundle_digest"],
-                                       baseline_sha256=new_baseline["receipt_sha256"])
-    new_modified = verify_implementation(new_target, new_bundle, "modified",
-        approve_execution=True, baseline_sha256=new_baseline["receipt_sha256"])
+    with pytest.MonkeyPatch.context() as probe_env:
+        probe_env.setenv("H_RETAINED_PATH", _probe_effect_path(tmp_path, "new-probe-effects"))
+        new_baseline = verify_implementation(new_target, new_bundle, "baseline",
+                                             approve_execution=True)
+        assert new_baseline["status"] == "baseline_passed"
+        new_applied = apply_implementation(new_target, new_bundle,
+                                           new_planned["bundle_digest"],
+                                           baseline_sha256=new_baseline["receipt_sha256"])
+        new_modified = verify_implementation(new_target, new_bundle, "modified",
+            approve_execution=True, baseline_sha256=new_baseline["receipt_sha256"])
     assert new_modified["status"] == "verified"
+    _assert_probe_effects(tmp_path, "new-probe-effects")
     new_package_request = {**package_request, "host_root": str(new_target),
         "implementation_bundle": str(new_bundle),
         "trusted_modified_receipt_sha256": new_modified["receipt_sha256"],

@@ -39,7 +39,9 @@ def _fresh_effect(path_name: str) -> Path:
     return path
 
 
-def commit(request: dict, selected: list[dict]) -> list[str]:
+def commit(request: dict, selected: list[dict], *, token_budget: int = 6) -> list[str]:
+    if type(token_budget) is not int or not 0 <= token_budget <= 6:
+        raise ValueError("host token budget must be an integer in [0, 6]")
     if type(request) is not dict or request.get("command") != "/prune":
         raise ValueError("explicit /prune choice required; /compact is separate")
     if (type(selected) is not list or not selected
@@ -61,17 +63,18 @@ def commit(request: dict, selected: list[dict]) -> list[str]:
     if not set(selected_ids) <= set(by_id):
         raise ValueError("unknown retained ID")
     retained = [by_id[name] for name in selected_ids]
-    checks = retention_oracle.raw_postconditions(case, retained, True, "/prune", 6)
+    checks = retention_oracle.raw_postconditions(case, retained, True, "/prune", token_budget)
     if any(checks[name] for name in ("pin_loss", "byte_or_provenance_loss",
                                       "over_budget_commit", "wrong_mode_mutation")):
         raise ValueError("retention postcondition failed")
     path_name = os.environ.get("H_RETAINED_PATH")
-    if path_name:
-        path = _fresh_effect(path_name)
-        raw = (json.dumps(retained, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
-        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
-        with os.fdopen(os.open(path, flags, 0o600), "wb") as stream:
-            stream.write(raw)
-            stream.flush()
-            os.fsync(stream.fileno())
+    if not path_name:
+        raise ValueError("H_RETAINED_PATH is required for a retained-state effect")
+    path = _fresh_effect(path_name.replace("{pid}", str(os.getpid())))
+    raw = (json.dumps(retained, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
+    with os.fdopen(os.open(path, flags, 0o600), "wb") as stream:
+        stream.write(raw)
+        stream.flush()
+        os.fsync(stream.fileno())
     return selected_ids[:]

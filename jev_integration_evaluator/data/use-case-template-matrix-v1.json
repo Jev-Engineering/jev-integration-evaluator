@@ -176,7 +176,7 @@
       "source": "examples/coding-agent/retention_oracle.py",
       "source_sha256": "80c1e169a33eb39db2a9ec572e6111f4a1838d093a23da8655120a36ec8df7a3",
       "consumer_adapter": "examples/use-case-host/retention_consumer.py",
-      "consumer_adapter_sha256": "e096f472eee1e332d9f2b87c68d94595e820c19a926e789cb7186e79ea21e80d",
+      "consumer_adapter_sha256": "687f86969341bd77d56f9ae5c7d13a2050b03faf829d28b424e3d1183173f127",
       "host_consumer": "raw_postconditions / score_recall",
       "host_oracle": "raw installed pin/byte/budget/mode readback and separately scored later recall; off-mode fallback retains all",
       "offline_contract": "tested_fixture",

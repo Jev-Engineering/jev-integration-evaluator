@@ -31,7 +31,13 @@ The launch environment supplies `H_RETAINED_PATH` and `H_READY_PATH` as fresh
 absolute paths outside the source, package, environment and session trees.
 The retained-state parent must be owner-private `0700`. The consumer accepts
 only the exact reviewed selected item records and explicit `/prune`; it checks
-pins, raw bytes/provenance and a six-token budget before an exclusive write.
+pins, raw bytes/provenance and the host's finite token budget before an exclusive
+write. A missing or empty `H_RETAINED_PATH` refuses the commit. The isolated
+synthetic verifier supplies a `retained-{pid}.json` path under a private
+directory so each subprocess writes a distinct raw effect; the installed
+launch uses one exact path. The installed host budget is six tokens, while a
+separate direct consumer test lowers that host input to four and verifies that
+retaining all three items is refused without writing a file.
 The observer independently computes the expected file bytes and reads the raw
 items after launch. It separately scores later recall from that readback. The
 installed off-mode fallback retains all three items; a separate consumer case
