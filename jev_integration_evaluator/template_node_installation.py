@@ -349,8 +349,12 @@ def _owner(root: Path, plan_sha256: str, kind: str) -> dict:
 
 
 def _top_level(root: Path, allowed: set[str]) -> None:
-    if root.is_symlink() or not root.is_dir():
+    info = root.lstat()
+    if not stat.S_ISDIR(info.st_mode):
         raise InputError('Node owned root is not a directory')
+    if (info.st_uid != os.getuid() or stat.S_IMODE(info.st_mode) != 0o700
+            or info.st_dev != root.parent.stat().st_dev or os.path.ismount(root)):
+        raise InputError('Node owned root identity or permissions changed')
     names = {item.name for item in root.iterdir()}
     if not names <= allowed or any(item.is_symlink() for item in root.iterdir()):
         raise InputError('Node owned root contains an unrelated or linked path')

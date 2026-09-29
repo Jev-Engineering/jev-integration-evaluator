@@ -65,8 +65,10 @@ The build writes a durable owner intent in the private parent **before**
 creating its output directory. The install stage does the same for its
 generation. Status can identify interruption before the directory, between
 directory creation and its owner marker, and after the journal starts. The
-markerless-directory stage requires an exactly empty root; any content or a
-dangling root symlink is an unknown collision. An interruption while writing
+markerless-directory stage requires an exactly empty, privately owned `0700`
+directory on its parent's filesystem. Status also rejects permission or root
+identity drift in completed outputs; any content, mount root or dangling root
+symlink is an unknown collision. An interruption while writing
 the temporary intent, before its atomic rename, fails closed as `ownership
 intent precommit incomplete` and needs operator review. Status never adopts or
 deletes such a partial root automatically.

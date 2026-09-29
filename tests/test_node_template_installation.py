@@ -84,6 +84,11 @@ def test_offline_owned_package_install_and_drift(tmp_path, monkeypatch, extensio
         node_install.build_node_package(plan, approved_plan_sha256='0' * 64)
     package = node_install.build_node_package(plan, approved_plan_sha256=plan['plan_sha256'])
     assert node_install.package_status(plan, trusted_receipt_sha256=package['receipt_sha256'])['status'] == 'packaged_recorded'
+    package_root = Path(package['package_directory'])
+    os.chmod(package_root, 0o755)
+    with pytest.raises(InputError, match='identity or permissions'):
+        node_install.package_status(plan, trusted_receipt_sha256=package['receipt_sha256'])
+    os.chmod(package_root, 0o700)
     staged_entry = Path(package['package_directory']) / 'app' / entry
     original = staged_entry.read_bytes()
     staged_entry.write_text('changed\n', encoding='utf-8')
@@ -100,6 +105,11 @@ def test_offline_owned_package_install_and_drift(tmp_path, monkeypatch, extensio
     assert receipt['command'][0] == str(node) and receipt['mode'] == 'off'
     assert receipt['launch_status'] == 'not_started'
     assert node_install.installation_status(install_plan, trusted_receipt_sha256=receipt['receipt_sha256'])['status'] == 'installed_recorded'
+    generation_root = Path(receipt['generation_path'])
+    os.chmod(generation_root, 0o755)
+    with pytest.raises(InputError, match='identity or permissions'):
+        node_install.installation_status(install_plan, trusted_receipt_sha256=receipt['receipt_sha256'])
+    os.chmod(generation_root, 0o700)
     installed_entry = Path(receipt['command'][1])
     installed_entry.write_text('changed\n', encoding='utf-8')
     with pytest.raises(InputError, match='drift'):
@@ -125,6 +135,10 @@ def test_offline_owned_package_install_and_drift(tmp_path, monkeypatch, extensio
                            'stage': 'directory_created' if extension == 'cjs' else 'intent_recorded'}
     markerless_root = Path(interrupted_request['package_directory'])
     markerless_root.mkdir(exist_ok=True)
+    os.chmod(markerless_root, 0o755)
+    with pytest.raises(InputError, match='identity or permissions'):
+        node_install.package_status(interrupted_plan)
+    os.chmod(markerless_root, 0o700)
     (markerless_root / 'app').mkdir()
     with pytest.raises(InputError, match='markerless package root'):
         node_install.package_status(interrupted_plan)
@@ -192,6 +206,16 @@ def test_install_intent_classifies_pre_marker_interruption(tmp_path, monkeypatch
     root.mkdir(mode=0o700)
     assert node_install.installation_status(plan) == {
         'status': 'install_interrupted_review_required', 'stage': 'directory_created'}
+    original_ismount = os.path.ismount
+    with monkeypatch.context() as patch:
+        patch.setattr(os.path, 'ismount',
+                      lambda path: Path(path) == root or original_ismount(path))
+        with pytest.raises(InputError, match='identity or permissions'):
+            node_install.installation_status(plan)
+    os.chmod(root, 0o755)
+    with pytest.raises(InputError, match='identity or permissions'):
+        node_install.installation_status(plan)
+    os.chmod(root, 0o700)
     (root / 'app').mkdir()
     with pytest.raises(InputError, match='markerless generation root'):
         node_install.installation_status(plan)
