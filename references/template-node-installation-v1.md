@@ -177,6 +177,16 @@ head. `node-upgrade` additionally requires a new descriptor and its digest in
 read-only and may be called without a trusted head for diagnostics; passing a
 head requests an exact match.
 
+The native ESM installed journey also injects two supervisor start faults
+against its source-verified installed command. If the waiting child is started
+but its identity is not journaled, closing the private release pipe leaves
+zero raw output; same-run resume records an unreleased attempt, and a fresh
+scope permits one normal installed invocation. If the child identity is
+journaled but release fails, resume preserves `blocked_recovery`, refuses a
+retry, and no effect or readiness file appears. These are controlled offline
+faults before child release. CommonJS and TypeScript have installed normal
+command checks, but these two start faults have not run on those formats.
+
 The build writes a durable owner intent in the private parent **before**
 creating its output directory. The install stage does the same for its
 generation. Status can identify interruption before the directory, between
