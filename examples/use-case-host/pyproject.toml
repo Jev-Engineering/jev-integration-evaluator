@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jev-use-case-offline-fixture"
+version = "1.0.0"
+requires-python = ">=3.13"
+
+[project.scripts]
+use-case-offline = "use_case_fixture.console:main"
+
+[tool.setuptools.packages.find]
+include = ["use_case_fixture*"]

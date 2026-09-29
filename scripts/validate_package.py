@@ -166,6 +166,12 @@ def validate(check_manifest=False):
                  'scripts/build_javascript_template_schemas.py',
                  'tests/test_js_template_delivery.py',
                  'references/javascript-recipe-c-template-v1.md']
+    required += ['jev_integration_evaluator/use_case_templates.py',
+                 'jev_integration_evaluator/data/use-case-template-matrix-v1.json',
+                 'references/use-case-template-matrix-v1.md',
+                 'tests/test_reusable_templates.py',
+                 'schemas/use-case-template-matrix-v1.schema.json',
+                 'jev_integration_evaluator/data/use-case-template-matrix-v1.schema.json']
     required += [f'{directory}/{name}.schema.json'
                  for directory in ('schemas', 'jev_integration_evaluator/data')
                  for name in ('javascript-template-request-v1',
@@ -251,6 +257,11 @@ def validate(check_manifest=False):
         raise InputError('Packaged template catalog identity mismatch')
     if inspect_template('javascript.recipe-c')['template_id']!=list_templates()['templates'][1]['template_id']:
         raise InputError('Packaged JavaScript template catalog identity mismatch')
+    from jev_integration_evaluator.use_case_templates import use_case_matrix, inspect_use_case_source
+    use_cases=use_case_matrix()
+    jsonschema.validate(use_cases,schemas['use-case-template-matrix-v1'])
+    for row in use_cases['rows']:
+        inspect_use_case_source(ROOT,row['id'])
     jsonschema.validate(read_json(ROOT/'examples/implementation/composite-selection.example.json'),
                         schemas['composite-selection-v1'])
     jsonschema.validate(read_json(ROOT/'examples/repository-session/context.example.json'),
