@@ -321,6 +321,33 @@ def test_retrieval_answer_handoff_requires_complete_unopposed_provenance(tmp_pat
             rag.EvidenceBundle("approved", (forged,), unopposed.decisions, "ready"), rows[:1])
 
 
+def test_retrieval_answer_handoff_withholds_uncertain_only_opposition(tmp_path, monkeypatch):
+    target = tmp_path / "retrieval-uncertain"
+    _host(target, "1.0.0")
+    monkeypatch.syspath_prepend(str(target))
+    consumer = importlib.import_module("retrieval_host.retrieval_consumer")
+    rag = consumer.rag
+    corpus = json.loads((ROOT / "examples/use-case-host/retrieval_corpus_v1.json").read_text())
+    rows = [row for row in corpus["passages"] if row["id"] in {"hit", "maybe"}]
+    assert [row["id"] for row in rows] == ["hit", "maybe"]
+    passages = tuple(rag.Passage(row["id"], row["source_id"], row["span"],
+                                 row["text"], row["claim_id"], row["stance"])
+                     for row in rows)
+    bundle = rag.select_evidence("approved", passages, "lexical")
+    assert bundle.status == "ready"
+    assert bundle.decisions == (("hit", "relevant"), ("maybe", "irrelevant"))
+    handoff = consumer.answer_handoff("approved", bundle, rows)
+    validate_contract(handoff, "retrieval-answer-handoff-v1")
+    assert handoff["disposition"] == "withheld_conflict"
+    assert handoff["answer"] is None
+    assert handoff["missing_claim_ids"] == []
+    assert handoff["missing_passage_ids"] == []
+    assert [(item["passage_id"], item["stance"], item["provenance"],
+             item["initial_relevance"]) for item in handoff["passages"]] == [
+                 ("hit", "supports", "registry-one:0:15", "relevant"),
+                 ("maybe", "uncertain", "registry-three:0:14", "irrelevant")]
+
+
 def test_retrieval_installed_offline_upgrade_and_rollback(tmp_path):
     wheelhouse_name = os.environ.get("JEV_TEMPLATE_WHEELHOUSE")
     if not wheelhouse_name:
