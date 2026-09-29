@@ -13,6 +13,10 @@ For several repositories, scan each root separately with separate output directo
 When a caller asks for a reusable integration template, collect the current reviewed inventory and source-specific implementation specification first. `template validate` checks these inputs against the current host, and `template materialize` writes private planner inputs only. For a Python recipe C package with a reviewed console script, collect an explicit `template-entrypoint-binding-v1` file and use `template bind` before validation/materialization; see `references/template-python-entrypoint-v1.md`. None of these operations grants modification, execution, network, or activation authority. See `references/template-catalog-v1.md`.
 
 For the six issue #59 use cases, read the [source-contract matrix](references/use-case-template-matrix-v1.md) first. A matched fixture digest and offline oracle do not establish a target binding or installed journey; each host needs fresh review and separate effect authority.
+The separate [E completion](references/completion-template-offline-v1.md) and
+[H retention](references/retention-template-offline-v1.md) operator references
+describe their synthetic off-mode installed journeys and pending recipe-specific
+console binds. They do not establish provider or benefit qualification.
 
 For offline Node recipe C packaging, collect the independently retained JS modified verification receipt, exact applied source and render lock, native pinned Node/npm, trusted TypeScript 5.8.3, private offline npm cache, off configuration and secret references. The separate `node-package-request-v1` stages an owned generation only after two exact approvals; see `references/template-node-installation-v1.md`. Missing tooling or a changed source fails closed. A separate Node session may launch only that installed off-mode command under an exact scope and independently checked ready/effect paths; it does not grant connected mode.
 

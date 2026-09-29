@@ -1,8 +1,8 @@
 # Reusable use-case template contracts v1 (issue #59 checkpoint)
 
 This checkpoint records six distinct `use-case.<letter>@1.0.0` source contracts.
-It is an offline source and host-oracle inventory with one separately qualified
-offline H synthetic host. It does not connect any provider. The
+It is an offline source and host-oracle inventory with separately qualified
+offline E and H synthetic hosts. It does not connect any provider. The
 [machine-readable matrix](../jev_integration_evaluator/data/use-case-template-matrix-v1.json)
 is versioned and pins the exact fixture bytes. `use_case_matrix()` reads it;
 `inspect_use_case_source(root, id)` checks the current bytes without importing or
@@ -33,8 +33,8 @@ uninstalls the package. This proves normal installed invocation of the shared
 fixture host only. It does not provide a #54 implementation receipt, #55
 source-bound package/install receipt, #56 supervised session, independent raw
 effect observation, or any individual L/D/E/M/H template transform. The
-separate H journey below has its own #55/#56 receipts and raw retained-state
-effect; it is not inferred from this shared fixture.
+separate E and H journeys below have their own #55/#56 receipts and raw effects;
+neither is inferred from this shared fixture.
 Every new host requires a fresh source review and binding. The Python recipe
 catalog's `implemented_bounded_shape` is a transform capability for a narrow
 shape, not an installed use-case qualification.
@@ -44,7 +44,7 @@ shape, not an installed use-case qualification.
 | C registered tool | `python.C@1.0`; [coding-agent dispatch](../examples/coding-agent/agent.py), [#48](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/48) | Existing registered-action and at-most-once dispatch tests; complete installed journey is [#57](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/57) | Pending | Unknown |
 | L graph identity | `python.L@1.0`; [graph fixture](../examples/graph-system/entities.py), [#44](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/44) | Approval, exact entity snapshot, revision and audit before merge | Pending | Unknown |
 | D retrieval evidence | `python.D@1.0`; [RAG fixture](../examples/rag-system/pipeline.py), [#45](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/45) | Passage provenance, missing evidence and material contradiction retention | Pending | Unknown |
-| E completion | `python.E@1.0`; [raw-state oracle](../examples/coding-agent/completion_oracle.py), [#46](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/46) | Raw objective and effect receipts independent of executor success | Pending | Unknown |
+| E completion | `python.E@1.0`; [raw-state oracle](../examples/coding-agent/completion_oracle.py), [#46](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/46) | Raw objective and effect receipts independent of executor success | Offline synthetic E host: source-bound plan/apply/verify, #55 install, #56 normal-console observation/disable/versioned upgrade/generation rollback; #54 E console bind and provider pending | Unknown |
 | M claim support | `python.M@1.0`; [claim consumer](../examples/rag-system/pipeline.py), [#47](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/47) | Exact citation spans, critical-claim block, revision, audit before release | Pending | Unknown |
 | H retention | `python.H@1.0`; [memory oracle](../examples/coding-agent/retention_oracle.py) and [consumer adapter](../examples/use-case-host/retention_consumer.py), [#49](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/49) | Raw retained-item bytes, pinned provenance, budget and explicit `/prune` | Offline synthetic H host: source-bound plan/apply/verify, #55 install, #56 normal-console observation/disable/versioned upgrade/generation rollback; #54 H console bind and provider pending | Unknown |
 
@@ -120,6 +120,21 @@ checkpoint; partial, stale, or unrecorded effects fail. A real host must supply
 its own raw observer and action/retry authority. No extra action or attempt is
 authorized by an assessment.
 
+The [individual E installed journey](../tests/test_use_case_completion_host.py)
+builds a separate reviewed regular package around one E tail-call seam. It
+copies the unchanged matrix-pinned completion oracle and the byte-pinned
+[consumer adapter](../examples/use-case-host/completion_consumer.py), then
+resolves a fresh inventory and source review. The host-approved
+`close_and_label` consumer writes a raw final-state file and a separate
+effect-receipt file. An independent expected-byte schedule and the pinned
+oracle check actual completion; an executor's `ok` report alone is insufficient.
+The #55/#56 path binds exact source, packages and installs offline, supervises
+the normal off-mode console, observes both files, disables, upgrades a second
+reviewed fixture version and rolls back to the retained first generation.
+The #54 binder remains C-only, so E-specific `template bind` receipt linkage
+is pending. See the [E operator reference](completion-template-offline-v1.md)
+for inputs, commands, negative gates and limits.
+
 ### M: claim disposition
 
 Bind atomic claims, critical IDs, exact passage IDs/spans/quotes, a host release
@@ -171,8 +186,8 @@ version 1.0 for the narrow `module-tail-call-v1` transform. For each of A, B,
 F, G, I, J and K, use-case-specific source contract, installed execution,
 connected mode and benefit are **not qualified by this checkpoint**. C points
 to its separate #57 qualification; L has a source-bound synthetic apply test;
-D, E and M remain source/oracle only. H has the limited offline installed
-journey above. All connected cells remain pending. The separate JavaScript/TypeScript
+D and M remain source/oracle only. E and H have the limited offline installed
+journeys above. All connected cells remain pending. The separate JavaScript/TypeScript
 `javascript.C@1.0` flat async backend has its own source catalog; it has no
 L/D/E/M/H coverage and no installed Node journey from this checkpoint. All
 rows remain mode **off**. Shadow, canary and active require separate authenticated

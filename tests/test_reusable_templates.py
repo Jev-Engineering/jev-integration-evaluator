@@ -22,7 +22,7 @@ def fixture_module(relative, name):
     return module
 
 
-def test_six_rows_are_source_bound_and_limit_installed_claims_to_h():
+def test_six_rows_are_source_bound_and_limit_installed_claims_to_e_and_h():
     matrix = use_case_matrix()
     assert [row["id"] for row in matrix["rows"]] == ["C", "L", "D", "E", "M", "H"]
     for row in matrix["rows"]:
@@ -30,14 +30,13 @@ def test_six_rows_are_source_bound_and_limit_installed_claims_to_h():
         assert receipt["source_sha256"] == row["source_sha256"]
         assert not receipt["target_imported"] and not receipt["installed_verified"]
         assert row["mode"] == "off" and row["benefit"] == "unknown"
-        if row["id"] == "H":
+        if row["id"] in ("E", "H"):
             assert receipt["consumer_adapter_sha256"] == row["consumer_adapter_sha256"]
-            assert {row[k] for k in ("apply", "install", "launch")} == {
-                "qualified_offline_h_synthetic_host"}
+            state = f"qualified_offline_{row['id'].lower()}_synthetic_host"
+            assert {row[k] for k in ("apply", "install", "launch")} == {state}
             assert {row[k] for k in ("materialize", "verify", "status", "disable",
-                                     "upgrade", "rollback")} == {
-                "qualified_offline_h_synthetic_host"}
-            assert row["bind"] == "pending_h_console_binding"
+                                     "upgrade", "rollback")} == {state}
+            assert row["bind"] == f"pending_{row['id'].lower()}_console_binding"
             assert row["provider"] == "pending"
         else:
             assert {row[k] for k in ("apply", "install", "launch", "provider")} == {"pending"}
@@ -66,6 +65,18 @@ def test_retention_adapter_drift_fails_closed(tmp_path):
     adapter.write_bytes((ROOT / row["consumer_adapter"]).read_bytes() + b"\n# drift\n")
     with pytest.raises(InputError, match="adapter changed"):
         inspect_use_case_source(tmp_path, "H")
+
+
+def test_completion_adapter_drift_fails_closed(tmp_path):
+    row = next(row for row in use_case_matrix()["rows"] if row["id"] == "E")
+    source = tmp_path / row["source"]
+    source.parent.mkdir(parents=True)
+    source.write_bytes((ROOT / row["source"]).read_bytes())
+    adapter = tmp_path / row["consumer_adapter"]
+    adapter.parent.mkdir(parents=True)
+    adapter.write_bytes((ROOT / row["consumer_adapter"]).read_bytes() + b"\n# drift\n")
+    with pytest.raises(InputError, match="adapter changed"):
+        inspect_use_case_source(tmp_path, "E")
 
 
 def test_registered_tool_is_single_host_checked_dispatch():
