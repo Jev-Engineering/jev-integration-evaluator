@@ -65,9 +65,12 @@ Rollback does not erase prior claim effects.
 
 ## Support boundary
 
-The current #54 console binder accepts recipe C only. This M journey uses a
-freshly reviewed direct implementation spec and externally anchored modified
-receipt; an M-specific `template bind` receipt remains pending. The fixture
+The #54 console binder now accepts a separately reviewed M bounded task loop.
+Run `python3.13 -m pytest -q tests/test_use_case_claim_bind.py` to check a fresh
+M `template bind` report, owned console edit, baseline and modified receipts,
+source drift refusal and exact rollback. That bound caller is a separate
+synthetic fixture from the installed M release journey above; it does not
+prove that the bound console produced the installed claim effect. The fixture
 provides its own fixed passage and finite assertion. Connected assessment,
 real citation retrieval, host production audit, benefit, and interrupted
 install/upgrade recovery are pending. No model label can authorize a release.

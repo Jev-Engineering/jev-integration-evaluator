@@ -109,7 +109,9 @@ its normal off-mode console on Linux CPython 3.13. A separate
 separate source-bound offline package/install/supervised normal-console effects,
 versioned upgrade and owned rollback. E completion also has a source-bound
 bounded task-loop console bind and owned edit. H retention has a separate
-source-bound task-loop console bind and installed normal-command check. The other use-case-specific
+source-bound task-loop console bind and installed normal-command check. M claim
+support has a separate source-bound bounded-loop console bind and owned edit.
+The other use-case-specific
 console binds, other individual templates, provider modes and benefit remain pending.
 
 Want to see everything working first? Run the bundled offline demo:

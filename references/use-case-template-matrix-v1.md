@@ -45,7 +45,7 @@ shape, not an installed use-case qualification.
 | L graph identity | `python.L@1.0`; [graph fixture](../examples/graph-system/entities.py) and [pinned consumer](../examples/use-case-host/graph_runtime.py), [#44](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/44) | Approval, exact entity snapshot, revision and audit before merge | Offline synthetic L host: source-bound plan/apply/verify, #55 install, #56 normal-console observation/disable/versioned upgrade/generation rollback; #54 L bind and provider pending | Unknown |
 | D retrieval evidence | `python.D@1.0`; [RAG fixture](../examples/rag-system/pipeline.py), [pinned corpus](../examples/use-case-host/retrieval_corpus_v1.json) and [consumer](../examples/use-case-host/retrieval_consumer.py), [#45](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/45) | Passage provenance, missing evidence and material contradiction retention | Offline synthetic D host: source-bound plan/apply/verify, #55 install, #56 normal-console observation/disable/versioned upgrade/generation rollback; #54 D bind and provider pending | Unknown |
 | E completion | `python.E@1.0`; [raw-state oracle](../examples/coding-agent/completion_oracle.py), [#46](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/46) | Raw objective and effect receipts independent of executor success | Offline synthetic E host: source-bound #54 task-loop console bind/plan/apply/verify, #55 install, #56 normal-console observation/disable/versioned upgrade/generation rollback; provider pending | Unknown |
-| M claim support | `python.M@1.0`; [claim reviewer](../examples/rag-system/pipeline.py) and [pinned consumer](../examples/use-case-host/claim_consumer.py), [#47](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/47) | Exact citation spans, critical-claim block and audit before release | Offline synthetic M host: source-bound plan/apply/verify, #55 install, #56 normal-console observation/disable/versioned upgrade/generation rollback; #54 M bind and provider pending | Unknown |
+| M claim support | `python.M@1.0`; [claim reviewer](../examples/rag-system/pipeline.py) and [pinned consumer](../examples/use-case-host/claim_consumer.py), [#47](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/47) | Exact citation spans, critical-claim block and audit before release | Offline synthetic M host: separate source-bound #54 bounded-loop bind and plan/apply/verify/rollback, #55 install, #56 normal-console observation/disable/versioned upgrade/generation rollback; provider pending | Unknown |
 | H retention | `python.H@1.0`; [memory oracle](../examples/coding-agent/retention_oracle.py) and [consumer adapter](../examples/use-case-host/retention_consumer.py), [#49](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/49) | Raw retained-item bytes, pinned provenance, budget and explicit `/prune` | Offline synthetic H host: source-bound #54 bounded-loop console bind/plan/apply/verify and #55 installed normal command; separate #56 observation/disable/versioned upgrade/generation rollback; provider pending | Unknown |
 
 ## Operator use and binding limits
@@ -188,7 +188,9 @@ approval, corrupted raw readback, changed source and
 wrong operation scope. The #55/#56 journey installs, observes, disables,
 upgrades a second reviewed fixture version, and rolls back its retained
 generation and owned source edits. The fixture assessor is not a provider or
-real permit register. #54 M bind, production audit and benefit remain pending.
+real permit register. A separate #54 M bound caller test derives a fresh binding,
+owns the console edit and verifies exact rollback; it does not carry that bound
+caller through the installed release journey. Production audit and benefit remain pending.
 See the [M operator reference](claim-template-offline-v1.md).
 
 ### H: safe retention

@@ -1,0 +1,155 @@
+"""Source-bound M console caller; installed claim effects have a separate journey."""
+from __future__ import annotations
+
+import hashlib
+import json
+from pathlib import Path
+
+import pytest
+
+from jev_integration_evaluator.config import load_config
+from jev_integration_evaluator.io import InputError, digest, file_hash
+from jev_integration_evaluator.scanner import scan_repo
+from jev_integration_evaluator.scoring import apply_reviews
+from jev_integration_evaluator.template_catalog import (
+    bind_template, materialize_template, prepare_template_binding, validate_template_request,
+)
+from jev_integration_evaluator.integrations.errors import UnsupportedShape
+from jev_integration_evaluator.integrations.lifecycle import (
+    apply_implementation, plan_implementation, rollback_implementation,
+)
+from jev_integration_evaluator.integrations.verification import verify_implementation
+from tests.test_use_case_claim_host import PROFILE, _source_host
+
+
+BINDING = {'version': '1.0', 'script': 'claim-host',
+           'startup_inputs': {'budget_limits': 'limits', 'audit_log': 'audit',
+                              'dependency_plan': 'dependencies', 'startup_options': 'options'}}
+pytestmark = pytest.mark.skipif(not PROFILE, reason='M source-bound bind fixture requires Linux x86-64 CPython 3.13')
+
+
+def _bound_host(target: Path) -> tuple[dict, dict]:
+    _, spec, request = _source_host(target)
+    entry = spec['verification']['entry_point']
+    console = target / 'claim_host/console.py'
+    console.write_text(
+        f'from .{Path(spec["source"]["file"]).stem} import {entry}\n'
+        'from pathlib import Path\nimport hashlib\n'
+        'class Audit:\n'
+        '    def __init__(self): self.records = []\n'
+        '    def append(self, record): self.records.append(record)\n'
+        'def limits():\n'
+        '    return dict(max_calls_per_task=2, max_cost_per_task=2, '
+        'max_total_calls=2, max_total_cost=2, max_in_flight=1, max_tasks=1)\n'
+        'def audit():\n    return Audit()\n'
+        'def dependencies():\n'
+        '    base = Path(__file__).resolve().parent\n'
+        "    return {'files': [{'path': str(base / name), 'sha256': hashlib.sha256((base / name).read_bytes()).hexdigest()} for name in ('requirements.lock', 'runtime.json')]}\n"
+        'def options():\n    return {}\n'
+        'def make_requests():\n'
+        "    return [{'task_id': 'claim-task', 'evidence': ['fixture-permit-register-v1']}]\n"
+        'def main():\n'
+        '    requests = make_requests()\n'
+        '    for request in requests:\n'
+        f'        {entry}(request)\n'
+        '    return 0\n'
+        "if __name__ == '__main__':\n    raise SystemExit(main())\n",
+        encoding='utf-8')
+    runtime_files = {
+        'requirements.lock': ('dependency_lock', 'jev-integration-evaluator==1.3.0.dev1\n',
+                              'jev-integration-evaluator==1.3.0.dev12\n'),
+        'runtime.json': ('configuration', '{"jev_runtime":{"mode":"off","credential_ref":null}}\n',
+                         '{"jev_runtime":{"mode":"off","credential_ref":null,"feature_flag":false}}\n'),
+    }
+    for name, (kind, old, new) in runtime_files.items():
+        path = target / 'claim_host' / name
+        path.write_text(old, encoding='utf-8')
+        relative = path.relative_to(target).as_posix()
+        spec.setdefault('runtime_files', []).append({
+            'file': relative, 'kind': kind,
+            'old_sha256': hashlib.sha256(old.encode()).hexdigest(), 'new_content': new})
+        spec['output']['permitted_edits'].append(relative)
+    spec['host_lifecycle'] = {'kind': 'module-startup-v1',
+                              'startup': 'start_jev_runtime', 'shutdown': 'stop_jev_runtime',
+                              'complete_task': 'finish_jev_task'}
+    project = target / 'pyproject.toml'
+    project.write_text(project.read_text(encoding='utf-8') +
+        '[tool.setuptools.package-data]\nclaim_host = ["*.lock", "*.json"]\n',
+        encoding='utf-8')
+    cfg = load_config()
+    cfg['repository']['typescript_ast'] = False
+    inventory = scan_repo(target, cfg)
+    candidate = next(row for row in inventory['candidates']
+                     if row['source']['symbol'] == 'select_boundary_claim_support')
+    reason = ('Reviewed M caller has one task call per bounded request; '
+              'code-owned citation, support, audit and release checks remain outside this binder')
+    apply_reviews(inventory, {candidate['candidate_id']: {
+        'source_sha256': candidate['source']['source_sha256'], 'approved': True,
+        'reviewer': 'offline-claim-bind-author', 'reason': reason}}, cfg)
+    spec['candidate_id'] = candidate['candidate_id']
+    spec['experiment_id'] = candidate['recommended_experiment']['id']
+    spec['source'].update({'file_sha256': candidate['source']['file_sha256'],
+                           'source_sha256': candidate['source']['source_sha256']})
+    spec['binding_review'].update({'source_sha256': candidate['source']['source_sha256'],
+                                   'reason': reason})
+    for name, (kind, old, _) in runtime_files.items():
+        inventory['configuration_evidence'].append({
+            'file': 'claim_host/' + name,
+            'sha256': hashlib.sha256(old.encode()).hexdigest()})
+    inventory['analysis_identity']['configuration_digest'] = digest(inventory['configuration_evidence'])
+    inventory['scan_fingerprint'] = digest(inventory['analysis_identity'])
+    spec['inventory_sha256'] = digest(inventory)
+    spec['inventory_fingerprint'] = inventory['scan_fingerprint']
+    request['reviewed_inventory'] = inventory
+    request['implementation_spec'] = spec
+    return inventory, request
+
+
+def test_m_bound_console_source_and_owned_edit(tmp_path):
+    target = tmp_path / 'host'
+    inventory, request = _bound_host(target)
+    prepared = prepare_template_binding(target, request, BINDING)
+    entry = prepared['request']['implementation_spec']['entrypoint_binding']
+    assert entry['kind'] == 'task-loop-v1'
+    assert entry['file'] == 'claim_host/console.py'
+    assert entry['pyproject_sha256'] == file_hash(target / 'pyproject.toml')
+    bound = prepared['request']
+    assert validate_template_request(target, bound)['status'] == 'validated'
+    report = bind_template(target, request, BINDING, tmp_path / 'bound')
+    assert report['request_sha256'] == digest(bound)
+    assert json.loads((tmp_path / 'bound/template-request.json').read_text()) == bound
+    materialize_template(target, bound, tmp_path / 'template')
+    spec = bound['implementation_spec']
+    bundle = tmp_path / 'bundle'
+    planned = plan_implementation(target, inventory, spec['candidate_id'], spec, bundle)
+    baseline = verify_implementation(target, bundle, 'baseline', approve_execution=True)
+    assert baseline['status'] == 'baseline_passed'
+    applied = apply_implementation(target, bundle, planned['bundle_digest'],
+                                   baseline_sha256=baseline['receipt_sha256'])
+    modified = verify_implementation(target, bundle, 'modified', approve_execution=True,
+                                     baseline_sha256=baseline['receipt_sha256'])
+    assert modified['status'] == 'verified'
+    assert b'start_jev_runtime' in (target / 'claim_host/console.py').read_bytes()
+    assert rollback_implementation(target, bundle, applied['rollback_digest'])['status'] == 'rolled_back'
+
+
+def test_m_bound_console_rejects_drift_and_single_call(tmp_path):
+    target = tmp_path / 'host'
+    _, request = _bound_host(target)
+    prepared = prepare_template_binding(target, request, BINDING)
+    console = target / 'claim_host/console.py'
+    original = console.read_bytes()
+    console.write_bytes(original + b'\n# unreviewed caller\n')
+    with pytest.raises(InputError, match='drift|changed'):
+        validate_template_request(target, prepared['request'])
+    console.write_bytes(original)
+    entry = request['implementation_spec']['verification']['entry_point']
+    single = original.decode().replace(
+        '    requests = make_requests()\n    for request in requests:\n'
+        f'        {entry}(request)\n    return 0\n',
+        '    request = make_requests()\n'
+        f'    return {entry}(request)\n')
+    assert single != original.decode()
+    console.write_text(single, encoding='utf-8')
+    with pytest.raises(UnsupportedShape, match='bounded explicit request loop'):
+        prepare_template_binding(target, request, BINDING)

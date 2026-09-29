@@ -88,7 +88,8 @@ hosts have offline source-bound apply/install/supervised normal-console/disable/
 versioned upgrade/rollback journeys. E completion also has a source-bound
 bounded task-loop console bind and owned edit. H retention separately has a
 bounded-loop bind with an explicit `/prune` choice and installed normal command.
-The other use-case-specific
+M claim support has a separate source-bound bounded-loop bind and owned console
+edit; its installed claim effect remains a distinct journey. The other use-case-specific
 console binds remain pending. Other individual installs, provider modes and benefit remain
 pending. Keep `/prune` and `/compact` as separate
 explicit user choices.
