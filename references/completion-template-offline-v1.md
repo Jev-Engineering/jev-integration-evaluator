@@ -87,9 +87,16 @@ factories, lock and off configuration are source-bound. The generated caller
 starts one process-local runtime, completes the captured task ID after its
 effect, and shuts down in `finally`. The E single-request return form,
 decorators, dynamic imports and extra calls in the loop remain unsupported.
-The existing `python.bounded-tail-call@1.0.0` catalog manifest and archived C
-render locks keep their original binding capability string and bytes; this E
-extension is reported by its fresh binding report and the E matrix row.
+The focused E loop check binds two distinct requests to one runtime owner and
+checks each raw state and effect receipt with the independent completion oracle.
+Duplicate task IDs and schedules above the 32-task bound fail before startup.
+This two-request check exercises the applied source; the installed console
+journey above uses one request.
+The existing `python.bounded-tail-call@1.0.0` catalog manifest keeps its
+conservative C binding capability string; this E extension is reported by its
+fresh binding report and the E matrix row. Earlier C render locks and receipts
+remain historical evidence and require current engine/source validation before
+reuse; unchanged manifest bytes alone do not establish replay compatibility.
 The fixture action writes the raw state and receipt before its separate ready
 marker and bounded observation hold. The host's `ok` report cannot replace
 the independent raw oracle. Interrupted upgrade/recovery,

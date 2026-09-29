@@ -133,7 +133,7 @@
       "benefit": "unknown",
       "contract_id": "use-case.E@1.0.0",
       "materialize": "qualified_offline_e_synthetic_host",
-      "bind": "pending_e_console_binding",
+      "bind": "qualified_offline_e_synthetic_host",
       "verify": "qualified_offline_e_synthetic_host",
       "status": "qualified_offline_e_synthetic_host",
       "disable": "qualified_offline_e_synthetic_host",

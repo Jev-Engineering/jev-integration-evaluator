@@ -26,6 +26,7 @@ from jev_integration_evaluator.integrations.lifecycle import (
     rollback_implementation)
 from jev_integration_evaluator.integrations.verification import verify_implementation
 from jev_integration_evaluator.integrations.errors import UnsupportedShape
+from jev_integration_evaluator.integrations.recipes import host_lifecycle_marker
 from jev_integration_evaluator.template_catalog import (
     materialize_template, prepare_template_binding, validate_template_request)
 from jev_integration_evaluator.use_case_templates import use_case_matrix
@@ -40,8 +41,10 @@ PROFILE = (sys.platform == "linux" and platform.machine().lower() == "x86_64"
 pytestmark = pytest.mark.skipif(not PROFILE, reason="E installed fixture requires Linux x86-64 CPython 3.13")
 
 
-def _source_host(target: Path, version: str = "1.0.0") -> tuple[dict, dict, dict]:
+def _source_host(target: Path, version: str = "1.0.0",
+                 task_ids: tuple[str, ...] = ("completion-task",)) -> tuple[dict, dict, dict]:
     assert version in ("1.0.0", "1.0.1")
+    assert task_ids and all(type(value) is str for value in task_ids)
     inventory, spec = fixture(target, "E", tag="raw_completion", layout="package",
                               package_name="completion_host")
     package = target / "completion_host"
@@ -59,9 +62,17 @@ def _source_host(target: Path, version: str = "1.0.0") -> tuple[dict, dict, dict
     old = ("STATE['effects'].append('first')\n"
            "    if not STATE['ineffective']: STATE['records'] += 1\n"
            "    return {'reported': 'ok'}")
+    task_paths = (
+        "        import os\n"
+        "        for template_key, output_key in (('E_RAW_STATE_TEMPLATE', 'E_RAW_STATE_PATH'), "
+        "('E_EFFECT_RECEIPT_TEMPLATE', 'E_EFFECT_RECEIPT_PATH')):\n"
+        "            if template_key in os.environ:\n"
+        "                os.environ[output_key] = os.environ[template_key].replace('{task_id}', request['task_id'])\n"
+        if len(task_ids) > 1 else "")
     new = ("STATE['effects'].append('first')\n"
            "    if not STATE['ineffective']:\n"
            "        from . import completion_consumer\n"
+           + task_paths +
            "        completion_consumer.commit(request, host_approved=STATE['approval'])\n"
            "        STATE['records'] += 1\n"
            "        ready = __import__('os').environ.get('E_READY_PATH')\n"
@@ -90,7 +101,7 @@ def _source_host(target: Path, version: str = "1.0.0") -> tuple[dict, dict, dict
         "    return {'files': [{'path': str(base / name), 'sha256': hashlib.sha256((base / name).read_bytes()).hexdigest()} for name in ('requirements.lock', 'runtime.json')]}\n"
         "def options():\n    return {}\n"
         "def make_requests():\n"
-        "    return [{'task_id':'completion-task','operation':'close_and_label'}]\n"
+        f"    return {[{'task_id': task_id, 'operation': 'close_and_label'} for task_id in task_ids]!r}\n"
         "def main():\n"
         "    requests = make_requests()\n"
         "    for request in requests:\n"
@@ -215,9 +226,10 @@ def test_completion_bind_refuses_single_request_exit_shape(tmp_path):
         prepare_template_binding(target, request, _binding())
 
 
-def _applied(tmp_path: Path, name: str, version: str) -> dict:
+def _applied(tmp_path: Path, name: str, version: str,
+             task_ids: tuple[str, ...] = ("completion-task",)) -> dict:
     target = tmp_path / name
-    inventory, spec, request = _source_host(target, version)
+    inventory, spec, request = _source_host(target, version, task_ids)
     prepared = prepare_template_binding(target, request, _binding())
     request = prepared["request"]
     spec = request["implementation_spec"]
@@ -258,6 +270,87 @@ def test_completion_bound_source_applies_and_rolls_back_owned_caller(tmp_path):
                                      host["applied"]["rollback_digest"])
     assert rolled["status"] == "rolled_back"
     assert file_hash(console) == entry["file_sha256"]
+
+
+@pytest.mark.parametrize("task_ids,expected_error", [
+    (("alpha", "beta"), None),
+    (("alpha", "alpha"), "duplicate_task_identity"),
+    (tuple(f"task-{index}" for index in range(33)), "invalid_bounded_task_schedule"),
+])
+def test_completion_bound_loop_uses_one_owner_and_preflights_schedule(
+        tmp_path, task_ids, expected_error):
+    host = _applied(tmp_path, "completion-schedule", "1.0.0", task_ids)
+    target, spec = host["target"], host["spec"]
+    module = spec["package_binding"]["module"]
+    marker = host_lifecycle_marker(spec["host_lifecycle"], spec["bindings"]["runtime"],
+                                   spec["candidate_id"])
+    effects = tmp_path / "task-effects"
+    effects.mkdir(mode=0o700)
+    env = os.environ.copy()
+    env["PYTHONPATH"] = os.pathsep.join((str(target), str(ROOT)))
+    env["JEV_RUNTIME_MODE"] = "off"
+    env["E_RAW_STATE_TEMPLATE"] = str(effects / "state-{task_id}.json")
+    env["E_EFFECT_RECEIPT_TEMPLATE"] = str(effects / "receipt-{task_id}.json")
+    for name in ("E_RAW_STATE_PATH", "E_EFFECT_RECEIPT_PATH", "E_READY_PATH"):
+        env.pop(name, None)
+    runner = f'''
+import importlib, json
+host = importlib.import_module({module!r})
+console = importlib.import_module('completion_host.console')
+events = []
+start, finish, stop = (getattr(host, name) for name in
+    ('start_jev_runtime', 'finish_jev_task', 'stop_jev_runtime'))
+def observed_start(**kwargs):
+    owner = start(**kwargs)
+    events.append(['start', id(owner)])
+    return owner
+def observed_finish(task_id):
+    events.append(['finish', task_id, id(getattr(host, {marker!r}))])
+    return finish(task_id)
+def observed_stop():
+    events.append(['stop', id(getattr(host, {marker!r}))])
+    return stop()
+host.start_jev_runtime = observed_start
+host.finish_jev_task = observed_finish
+host.stop_jev_runtime = observed_stop
+try:
+    result = console.main()
+    error = None
+except BaseException as exc:
+    result = None
+    error = str(exc)
+print(json.dumps({{'result': result, 'error': error, 'events': events,
+                  'effects': host.STATE['effects'], 'records': host.STATE['records'],
+                  'started': getattr(host, {marker + '_started'!r}),
+                  'closed': getattr(host, {marker!r}) is None}}))
+'''
+    run = subprocess.run([sys.executable, "-c", runner], cwd=target, env=env,
+                         capture_output=True, text=True, timeout=30)
+    assert run.returncode == 0, run.stderr
+    observed = json.loads(run.stdout)
+    assert observed["error"] == expected_error
+    if expected_error:
+        assert observed["events"] == [] and observed["effects"] == []
+        assert observed["records"] == 0 and not observed["started"]
+        assert list(effects.iterdir()) == []
+    else:
+        assert observed["result"] == 0 and observed["records"] == 2
+        assert observed["effects"] == ["first", "first"]
+        assert [row[0] for row in observed["events"]] == ["start", "finish", "finish", "stop"]
+        owner = observed["events"][0][1]
+        assert [row[1] for row in observed["events"][1:3]] == list(task_ids)
+        assert all(row[-1] == owner for row in observed["events"])
+        assert observed["started"] and observed["closed"]
+        oracle = fixture_module("examples/coding-agent/completion_oracle.py", "two_task_e_oracle")
+        for task_id in task_ids:
+            raw_state, raw_receipt = _expected(task_id)
+            assert (effects / f"state-{task_id}.json").read_bytes() == raw_state
+            assert (effects / f"receipt-{task_id}.json").read_bytes() == raw_receipt
+            objective = {"task_id": task_id,
+                         "allowed_fields": ["task_id", "status", "revision", "labels", "unrequested"],
+                         "required_status": "closed", "required_labels": ["verified"],
+                         "required_unrequested": []}
+            assert oracle.exact_goal(json.loads(raw_state), objective)
 
 
 def _scope(status: dict, plan: dict, action: str, **additional) -> dict:
