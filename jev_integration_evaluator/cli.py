@@ -224,6 +224,21 @@ def parser():
         s=template_sub.add_parser(action,help='Request bounded drain of the exact owned console process')
         s.add_argument('--session',required=True); s.add_argument('--scope',required=True)
         s.add_argument('--approve-scope-sha256',required=True)
+    s=template_sub.add_parser('node-delivery-plan',help='Bind an anchored Node install to exact offline observations')
+    s.add_argument('--install-plan',required=True); s.add_argument('--trusted-install-receipt-sha256',required=True)
+    s.add_argument('--observation',required=True); s.add_argument('--launch-environment',required=True)
+    s.add_argument('--out',required=True)
+    s=template_sub.add_parser('node-session-create',help='Create an owned unlaunched Node session')
+    s.add_argument('--session',required=True); s.add_argument('--descriptor',required=True)
+    for action in ('node-launch','node-stop','node-disable','node-upgrade','node-rollback'):
+        s=template_sub.add_parser(action,help='Perform one exact scoped Node session action')
+        s.add_argument('--session',required=True); s.add_argument('--scope',required=True)
+        s.add_argument('--approve-scope-sha256',required=True)
+        if action=='node-upgrade': s.add_argument('--descriptor',required=True)
+    for action in ('node-resume','node-observe','node-status'):
+        s=template_sub.add_parser(action,help='Read or reconcile owned Node session state')
+        s.add_argument('--session',required=True)
+        s.add_argument('--trusted-session-head',required=action!='node-status')
     s=common("implement-composite-plan", "Plan one reviewed multi-placement transaction")
     s.add_argument("--repo",required=True); s.add_argument("--inventory",required=True)
     s.add_argument("--selection",required=True); s.add_argument("--specs",required=True); s.add_argument("--out",required=True)
@@ -298,6 +313,40 @@ def execute(args):
             return materialize_template(args.repo,request,args.out,tooling_dir=args.tooling)
         if args.template_action=='bind':
             return bind_template(args.repo,read_json(args.request),read_json(args.binding),args.out)
+        if args.template_action.startswith('node-'):
+            from .template_node_delivery import plan_node_delivery
+            from .template_node_session import (create_node_session, launch_node_session,
+                resume_node_session, observe_node_session, node_session_status,
+                stop_node_session, upgrade_node_session, rollback_node_session)
+            action=args.template_action
+            if action=='node-delivery-plan':
+                result=plan_node_delivery(read_json(args.install_plan),
+                    trusted_install_receipt_sha256=args.trusted_install_receipt_sha256,
+                    observation=read_json(args.observation),
+                    launch_environment=read_json(args.launch_environment))
+                from .template_installation import write_plan_exclusive
+                write_plan_exclusive(args.out,result,
+                    host_root=result['install_plan']['package_plan']['request']['host_root'])
+                return result
+            if action=='node-session-create':
+                return create_node_session(args.session,read_json(args.descriptor))
+            if action=='node-resume':
+                return resume_node_session(args.session,trusted_session_head=args.trusted_session_head)
+            if action=='node-observe':
+                return observe_node_session(args.session,trusted_session_head=args.trusted_session_head)
+            if action=='node-status':
+                return node_session_status(args.session,trusted_session_head=args.trusted_session_head)
+            scope=read_json(args.scope)
+            approved=args.approve_scope_sha256
+            if action=='node-launch':
+                return launch_node_session(args.session,scope=scope,approved_scope_sha256=approved)
+            if action=='node-upgrade':
+                return upgrade_node_session(args.session,read_json(args.descriptor),
+                    scope=scope,approved_scope_sha256=approved)
+            if action=='node-rollback':
+                return rollback_node_session(args.session,scope=scope,approved_scope_sha256=approved)
+            return stop_node_session(args.session,scope=scope,approved_scope_sha256=approved,
+                disable=action=='node-disable')
         if args.template_action in ('journey-create','journey-record','journey-status','journey-promote','journey-recover-promotion'):
             from .template_delivery_journey import (create_journey, record_journey,
                                                     journey_status, promote_journey,

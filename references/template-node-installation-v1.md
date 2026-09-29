@@ -87,16 +87,89 @@ ready/entrypoint/integration file transitions. The three allowed output-path
 environment values must match their respective observation roles exactly;
 linked, protected, traversing or changed outputs fail closed. Planning and
 validation may run bounded toolchain probes but do not launch the installed
-host. The descriptor is an input contract for a future #56 Node supervisor;
-the current #56 session API remains Python-console-only. A test runs the normal
+host. The descriptor is an input contract for the separate bounded Node
+supervisor described below; the #56 Python session API remains
+Python-console-only. A test runs the normal
 installed command under an explicit off-mode environment. Its start script
 calls the transformed `seam` and checks `read:x`; the raw host callback writes
 the entrypoint effect, followed by separate ready and integration files. The
 test checks all three external bytes after exit. Observation paths reject
 parent traversal and protected input/generation trees. The launch environment
 accepts only the three named fixture output paths, so loader variables such as
-`LD_PRELOAD` and `LD_LIBRARY_PATH` are rejected. That direct test has no durable process session,
-PID ownership, interruption recovery or upgrade/rollback authority.
+`LD_PRELOAD` and `LD_LIBRARY_PATH` are rejected. That direct test is separate
+from the durable supervisor path.
+
+## Owned offline Node session checkpoint
+
+`template_node_session` is a distinct Linux x86-64 API. It never passes a Node
+receipt to the Python console supervisor. `create_node_session` creates an
+owner-private session and saves the exact unlaunched descriptor under its
+digest. `launch_node_session` requires a fresh `template-delivery-scope-v1`
+whose `plan_sha256` is the **descriptor SHA-256**, `run_id` and trusted journal
+head match the session, and `launch` is granted. The scope's digest must also
+be supplied independently. The supervisor writes the launch intent, starts a
+private waiting helper, records Linux boot ID, PID and process start ticks,
+then releases that helper to exec the exact installed Node command. It sets
+only a fixed PATH, `JEV_RUNTIME_MODE=off`, and the descriptor's three reviewed
+output paths. It does not inherit loader, npm or credential variables.
+
+`observe_node_session` checks the separately declared ready, entrypoint and
+integration file hashes. Readiness requires the owned process to be alive at
+observation time; recorded observations are historical, while `process_alive`
+and `current_installation` are recomputed status. `stop_node_session` drains
+for at most 30 seconds, then uses a pidfd to signal only the matching process.
+`disable` is durable and a later `stop` cannot undo it. `resume_node_session`
+requires the current externally retained journal head. A launch interrupted
+before child identity is journaled can be retried with a fresh scope after
+the waiting pipe closes; a possibly executed child is never replayed. An
+uncertain dead child is `blocked_recovery` until independently reviewed.
+
+`upgrade_node_session` is valid only after stop. It rechecks the old installed
+generation, validates a fresh descriptor with independent unused output paths,
+and records the new selected generation without launching it. An interrupted
+selection resumes under the same run ID and journal. `rollback_node_session`
+requires the exact previous generation digest, a stopped current process and
+unchanged retained installation. It restores selection only; no source files
+or installed bytes are deleted and no process is launched. The previous
+descriptor's observation paths were consumed by its earlier run, so rollback
+does not by itself authorize another launch. Fresh source rollback stays with
+the existing JS lifecycle and its own receipt/scope.
+
+The CLI mirrors these APIs as `template node-delivery-plan`,
+`node-session-create`, `node-launch`, `node-observe`, `node-status`,
+`node-resume`, `node-stop`, `node-disable`, `node-upgrade`, and
+`node-rollback`. Keep session, descriptor, journal head, scope and scope digest
+in separately owned channels. Session creation interrupted before its first
+journal row leaves an owner-marked root requiring review; markerless or unknown
+content is never adopted. The supervisor remains offline and off-mode.
+
+```sh
+jev-integration-evaluator template node-delivery-plan \
+  --install-plan /private/node-install-plan.json \
+  --trusted-install-receipt-sha256 EXTERNALLY_RETAINED_DIGEST \
+  --observation /private/node-observation.json \
+  --launch-environment /private/node-output-paths.json \
+  --out /private/node-descriptor.json
+jev-integration-evaluator template node-session-create \
+  --session /private/node-session --descriptor /private/node-descriptor.json
+jev-integration-evaluator template node-launch \
+  --session /private/node-session --scope /private/exact-launch-scope.json \
+  --approve-scope-sha256 EXTERNALLY_APPROVED_SCOPE_DIGEST
+jev-integration-evaluator template node-observe \
+  --session /private/node-session --trusted-session-head EXTERNALLY_RETAINED_HEAD
+jev-integration-evaluator template node-disable \
+  --session /private/node-session --scope /private/exact-disable-scope.json \
+  --approve-scope-sha256 EXTERNALLY_APPROVED_SCOPE_DIGEST
+```
+
+The three output paths are unique and owner-private. A new effect action needs
+a new scope bearing the latest journal head; an old head is never inferred from
+the session itself. `node-resume` requires the same externally retained current
+head. `node-upgrade` additionally requires a new descriptor and its digest in
+`scope.upgrade_plan_sha256`; `node-rollback` requires the status-reported exact
+`previous_generation_rollback_digest` in its separate scope. `node-status` is
+read-only and may be called without a trusted head for diagnostics; passing a
+head requests an exact match.
 
 The build writes a durable owner intent in the private parent **before**
 creating its output directory. The install stage does the same for its
@@ -131,8 +204,8 @@ closed. Build or install interruption leaves an owned root and journal with
 `*_interrupted_review_required`; no automatic npm replay or recursive cleanup
 occurs. Retain the root for review and choose a new, separately approved output
 plan. Removing a completed or partial generation, or adopting it as a launch
-target, needs the future bounded owner-aware recovery contract. This checkpoint
-does not claim rollback or upgrade qualification.
+target, needs a separate bounded owner-aware recovery contract. This
+installation stage itself does not clean up interrupted build/install roots.
 
 The original ESM and CommonJS component tests stub the upstream source verifier
 and prove only the offline npm and owned-generation boundary. A separate native
@@ -143,7 +216,8 @@ package/install receipts, and the installed normal command for ESM, CommonJS
 and TypeScript. It checks a distinct external entrypoint effect file after the
 command. The trusted tooling reader verifies the package's declared version;
 substitution with 5.9.3 fails closed. These are finite synthetic off-mode
-host executions. The #56 supervisor remains Python-console-only; a versioned
-Node process lifecycle and independent observation adapter,
-interrupted-operation recovery, required full regressions and any connected
-authority remain pending before a complete issue #60 claim.
+host executions. The #56 supervisor remains Python-console-only. The separate
+Node session adds bounded offline process ownership and observation. Required
+full regressions, installed evaluator CLI three-format journeys, connected
+authority, async rejection/cancellation and cross-placement budget coverage
+remain pending before a complete issue #60 claim.

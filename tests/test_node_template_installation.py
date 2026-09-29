@@ -4,7 +4,9 @@ import os
 import platform
 import shutil
 import subprocess
+import time
 from pathlib import Path
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -12,6 +14,7 @@ from jev_integration_evaluator.io import InputError, digest, file_hash
 from jev_integration_evaluator import template_node_installation as node_install
 from jev_integration_evaluator import template_js_catalog
 from jev_integration_evaluator import template_node_delivery as node_delivery
+from jev_integration_evaluator import template_node_session as node_session
 from jev_integration_evaluator.template_catalog import materialize_template
 from jev_integration_evaluator.integrations.js_lifecycle import (
     plan_js, verify_js, apply_js, status_js)
@@ -68,6 +71,7 @@ def test_real_source_verified_node_install_and_normal_command(tmp_path, format_n
         '  if (result !== "read:x") throw Error("seam result");\n'
         '  fs.writeFileSync(process.env.NODE_READY_PATH,"ready\\n",{flag:"wx"});\n'
         '  fs.writeFileSync(process.env.NODE_INTEGRATION_PATH,"integration\\n",{flag:"wx"});\n'
+        '  await new Promise(resolve => setTimeout(resolve, 800));\n'
         '}\n')
     effect_code += ('main().catch(() => {process.exitCode = 1;});\n')
     entry.write_text(effect_code, encoding='utf-8')
@@ -207,6 +211,60 @@ def test_real_source_verified_node_install_and_normal_command(tmp_path, format_n
         assert file_hash(Path(row['path'])) == row['expected_sha256']
     with pytest.raises(InputError, match='observation baseline'):
         node_delivery.validate_node_delivery(descriptor)
+
+    supervised_paths = {key: tmp_path / ('supervised-' + key + '.bin') for key in environment}
+    supervised_observation = {'schema_version': '1.0',
+        'kind': 'template-delivery-observation-v1', 'checks': [
+            {**row, 'path': str(supervised_paths[next(key for key, value in environment.items()
+                                                     if value == row['path'])])}
+            for row in observation['checks']]}
+    supervised_env = {key: str(path) for key, path in supervised_paths.items()}
+    supervised = node_delivery.plan_node_delivery(install_plan,
+        trusted_install_receipt_sha256=installed['receipt_sha256'],
+        observation=supervised_observation, launch_environment=supervised_env)
+    owned_session = tmp_path / 'node-session'
+    created = node_session.create_node_session(owned_session, supervised)
+    assert created['stage'] == 'created' and created['current_installation'] == 'current_verified'
+    def scope(result, action):
+        value = {'schema_version': '1.0', 'kind': 'template-delivery-scope-v1',
+                 'reference': 'independent-native-test-operator', 'run_id': result['run_id'],
+                 'plan_sha256': supervised['descriptor_sha256'],
+                 'trusted_session_head': result['session_head_sha256'],
+                 'expires_at': (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat(),
+                 'revoked': False, 'grants': {name: name == action for name in
+                     ('launch', 'stop', 'disable', 'upgrade', 'rollback')}}
+        value['scope_sha256'] = digest(value)
+        return value
+    launch_scope = scope(created, 'launch')
+    source_file = host / 'package.json'
+    unchanged_source = source_file.read_bytes()
+    source_file.write_bytes(unchanged_source + b'\n')
+    with pytest.raises(InputError):
+        node_session.launch_node_session(owned_session, scope=launch_scope,
+            approved_scope_sha256=launch_scope['scope_sha256'])
+    assert node_session.node_session_status(owned_session)['stage'] == 'created'
+    assert not any(path.exists() for path in supervised_paths.values())
+    source_file.write_bytes(unchanged_source)
+    running = node_session.launch_node_session(owned_session, scope=launch_scope,
+        approved_scope_sha256=launch_scope['scope_sha256'])
+    observed = running
+    for _ in range(150):
+        observed = node_session.observe_node_session(owned_session,
+            trusted_session_head=observed['session_head_sha256'])
+        if observed['observations']['integration_reachable']:
+            break
+        time.sleep(.01)
+    assert observed['process_alive']
+    assert all(value for name, value in observed['observations'].items()
+               if name != 'outcome_verified')
+    for row in supervised_observation['checks']:
+        assert file_hash(Path(row['path'])) == row['expected_sha256']
+    disable_scope = scope(observed, 'disable')
+    disabled = node_session.stop_node_session(owned_session, scope=disable_scope,
+        approved_scope_sha256=disable_scope['scope_sha256'], disable=True, grace_seconds=0)
+    assert disabled['stage'] == 'disabled' and not disabled['process_alive']
+    assert node_session.node_session_status(owned_session,
+        trusted_session_head=disabled['session_head_sha256'])['run_id'] == created['run_id']
 
 
 def native_tools():

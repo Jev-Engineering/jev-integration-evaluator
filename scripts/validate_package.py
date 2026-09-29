@@ -174,14 +174,18 @@ def validate(check_manifest=False):
                  'jev_integration_evaluator/data/use-case-template-matrix-v1.schema.json']
     required += ['jev_integration_evaluator/template_node_installation.py',
                  'jev_integration_evaluator/template_node_delivery.py',
+                 'jev_integration_evaluator/template_node_session.py',
                  'references/template-node-installation-v1.md',
-                 'tests/test_node_template_installation.py']
+                 'tests/test_node_template_installation.py',
+                 'tests/test_node_template_session.py']
     required += [f'{directory}/{name}.schema.json'
                  for directory in ('schemas', 'jev_integration_evaluator/data')
                  for name in ('node-package-request-v1', 'node-package-plan-v1',
                               'node-package-receipt-v1', 'node-install-plan-v1',
                               'node-install-receipt-v1',
-                              'node-delivery-descriptor-v1')]
+                              'node-delivery-descriptor-v1',
+                              'node-delivery-session-v1',
+                              'node-delivery-status-v1')]
     required += [f'{directory}/{name}.schema.json'
                  for directory in ('schemas', 'jev_integration_evaluator/data')
                  for name in ('javascript-template-request-v1',

@@ -68,8 +68,10 @@ closed. Do not treat component tests with a stubbed upstream verifier as an
 end-to-end installed journey. A separate native test with a disposable trusted
 TypeScript 5.8.3 copy exercises real source verification, installation and the
 normal off-mode Node command with external effect files. The read-only Node
-delivery descriptor binds exact install and observation inputs; #56 supervised
-Node lifecycle and connected authority remain pending.
+delivery descriptor binds exact install and observation inputs. The separate
+Node session supervisor runs only the installed off-mode command under exact
+scope, observes independent files and preserves same-run recovery state.
+It does not extend the Python #56 supervisor or grant connected authority.
 
 The [issue #59 use-case matrix](references/use-case-template-matrix-v1.md)
 pins six illustrative source contracts and five distinct offline host oracles.
