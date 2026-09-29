@@ -38,7 +38,7 @@ def test_six_rows_are_source_bound_and_limit_installed_claims_to_l_d_e_m_and_h()
             assert {row[k] for k in ("apply", "install", "launch")} == {state}
             assert {row[k] for k in ("materialize", "verify", "status", "disable",
                                      "upgrade", "rollback")} == {state}
-            assert row["bind"] == (state if row["id"] in ("E", "H") else
+            assert row["bind"] == (state if row["id"] in ("E", "H", "M") else
                                    f"pending_{row['id'].lower()}_console_binding")
             assert row["provider"] == "pending"
         else:

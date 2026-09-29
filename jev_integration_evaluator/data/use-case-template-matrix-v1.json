@@ -166,7 +166,7 @@
       "benefit": "unknown",
       "contract_id": "use-case.M@1.0.0",
       "materialize": "qualified_offline_m_synthetic_host",
-      "bind": "pending_m_console_binding",
+      "bind": "qualified_offline_m_synthetic_host",
       "verify": "qualified_offline_m_synthetic_host",
       "status": "qualified_offline_m_synthetic_host",
       "disable": "qualified_offline_m_synthetic_host",
