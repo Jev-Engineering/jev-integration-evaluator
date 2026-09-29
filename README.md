@@ -84,7 +84,10 @@ pins offline host contracts for registered tools, graph identity, retrieval,
 completion, claim support and safe retention. The five new fixture oracles are
 tested offline. A shared fixture wheel is also installed and invoked through
 its normal off-mode console on Linux CPython 3.13. A separate
-[E completion host](references/completion-template-offline-v1.md) and
+[L graph host](references/graph-template-offline-v1.md),
+[D retrieval host](references/retrieval-template-offline-v1.md),
+[E completion host](references/completion-template-offline-v1.md),
+[M claim support host](references/claim-template-offline-v1.md) and
 [H retention host](references/retention-template-offline-v1.md) now have
 separate source-bound offline package/install/supervised normal-console effects,
 versioned upgrade and owned rollback. Their use-case-specific console binds,

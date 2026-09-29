@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import importlib
+import importlib.metadata
 import json
 import shutil
 
@@ -25,10 +26,11 @@ from scripts.implementation_fixtures import fixture
 
 
 ROOT = Path(__file__).resolve().parents[1]
-GRAPH_RUNTIME_SHA256 = "cfaa603585646ff0ff9751dbfc20194f420346ba5781999d909d75395bd688ac"
+GRAPH_RUNTIME_SHA256 = "325dd8350ddfe7b0c91a93840ed8f4cf851014b878d18eed5a637125d9faf2ba"
 
 
-def _graph_host(target: Path):
+def _graph_host(target: Path, version: str | None = None):
+    assert version in (None, "1.0.0", "1.0.1")
     inventory, spec = fixture(target, "L", tag="graph_consumer", layout="package",
                               package_name="graph_host")
     package = target / "graph_host"
@@ -45,12 +47,46 @@ def _graph_host(target: Path):
     raw = source.read_text(encoding="utf-8")
     assert raw.count("'revision': 0") == 1
     raw = raw.replace("'revision': 0", "'revision': 0, 'expected_revision': 0", 1)
+    primary = "STATE['effects'].append('first')\n    return 'first'"
+    primary_bound = ("from . import graph_runtime\n"
+                     "    STATE['revision'] = graph_runtime.merge(request, STATE)\n"
+                     "    STATE['effects'].append('first')\n"
+                     "    return 'first'")
+    assert raw.count(primary) == 1
+    raw = raw.replace(primary, primary_bound)
     old = "STATE['revision'] += 1\n    return 'merged'"
     new = "from . import graph_runtime\n    STATE['revision'] = graph_runtime.merge(request, STATE)\n    return 'merged'"
     assert raw.count(old) == 1
     source.write_text(raw.replace(old, new), encoding="utf-8")
     for case in spec["verification"]["cases"]:
         case["initial_globals"]["STATE"]["expected_revision"] = 0
+        case["request"]["graph_action"] = "reconcile_same"
+
+    if version is not None:
+        entry = spec["verification"]["entry_point"]
+        (package / "console.py").write_text(
+            f"from .{source.stem} import {entry}\n"
+            "from pathlib import Path\nimport os\nimport time\n"
+            "def main():\n"
+            "    request = {'task_id':'graph-task','graph_action':'reconcile_same'}\n"
+            f"    {entry}(request)\n"
+            "    ready = os.environ.get('GRAPH_READY_PATH')\n"
+            "    if ready:\n"
+            "        with Path(ready).open('x', encoding='utf-8') as stream:\n"
+            "            stream.write('ready\\n')\n"
+            "    time.sleep(15)\n"
+            "    return 0\n"
+            "if __name__ == '__main__':\n    raise SystemExit(main())\n",
+            encoding="utf-8")
+        tools = {name: importlib.metadata.version(name) for name in ("pip", "setuptools", "wheel")}
+        (target / "pyproject.toml").write_text(
+            '[build-system]\nrequires = ["setuptools==' + tools["setuptools"] +
+            '", "wheel==' + tools["wheel"] + '"]\nbuild-backend = "setuptools.build_meta"\n'
+            '[project]\nname = "jev-graph-host-fixture"\nversion = "' + version + '"\n'
+            'requires-python = ">=3.13"\n'
+            'dependencies = ["jev-integration-evaluator==1.3.0.dev12"]\n'
+            '[project.scripts]\ngraph-host = "graph_host.console:main"\n'
+            '[tool.setuptools.packages.find]\ninclude = ["graph_host*"]\n', encoding="utf-8")
 
     cfg = load_config()
     cfg["repository"]["typescript_ast"] = False
@@ -79,13 +115,18 @@ def test_graph_host_source_bound_apply_verify_and_rollback(tmp_path):
     inventory, spec = _graph_host(target)
     bundle = tmp_path / "bundle"
     planned = plan_implementation(target, inventory, spec["candidate_id"], spec, bundle)
-    baseline = verify_implementation(target, bundle, "baseline", approve_execution=True)
-    assert baseline["status"] == "baseline_passed"
-    applied = apply_implementation(target, bundle, planned["bundle_digest"],
-                                   baseline_sha256=baseline["receipt_sha256"])
-    modified = verify_implementation(target, bundle, "modified", approve_execution=True,
-                                     baseline_sha256=baseline["receipt_sha256"])
+    effects = tmp_path / "probe-effects"
+    effects.mkdir(mode=0o700)
+    with pytest.MonkeyPatch.context() as env:
+        env.setenv("GRAPH_EFFECT_PATH", str(effects / "graph-{pid}.json"))
+        baseline = verify_implementation(target, bundle, "baseline", approve_execution=True)
+        assert baseline["status"] == "baseline_passed"
+        applied = apply_implementation(target, bundle, planned["bundle_digest"],
+                                       baseline_sha256=baseline["receipt_sha256"])
+        modified = verify_implementation(target, bundle, "modified", approve_execution=True,
+                                         baseline_sha256=baseline["receipt_sha256"])
     assert modified["status"] == "verified"
+    assert list(effects.glob("graph-*.json"))
     assert rollback_implementation(target, bundle, applied["rollback_digest"])["status"] == "rolled_back"
 
 
@@ -94,17 +135,29 @@ def test_graph_host_current_revision_and_approval_are_independent(tmp_path, monk
     _graph_host(target)
     monkeypatch.syspath_prepend(str(target))
     runtime = importlib.import_module("graph_host.graph_runtime")
-    effect = tmp_path / "graph-effect.json"
+    effects = tmp_path / "effects"
+    effects.mkdir(mode=0o700)
+    effect = effects / "graph-effect.json"
+    monkeypatch.setenv("GRAPH_EFFECT_PATH", str(effect))
+    request = {"task_id": "graph-task", "graph_action": "reconcile_same"}
+    with pytest.raises(ValueError, match="finite graph action"):
+        runtime.merge({**request, "graph_action": "arbitrary"},
+                      {"revision": 4, "expected_revision": 4, "approval": True})
+    monkeypatch.delenv("GRAPH_EFFECT_PATH")
+    with pytest.raises(ValueError, match="GRAPH_EFFECT_PATH is required"):
+        runtime.merge(request, {"revision": 4, "expected_revision": 4,
+                                "approval": True})
     monkeypatch.setenv("GRAPH_EFFECT_PATH", str(effect))
     for state in (
         {"revision": 4, "expected_revision": 3, "approval": True},
         {"revision": 4, "expected_revision": 4, "approval": False},
     ):
         with pytest.raises(RuntimeError, match="graph merge did not satisfy"):
-            runtime.merge({}, state)
+            runtime.merge(request, state)
         assert not effect.exists() and state["revision"] == 4
-    assert runtime.merge({}, {"revision": 4, "expected_revision": 4,
+    assert runtime.merge(request, {"revision": 4, "expected_revision": 4,
                               "approval": True}) == 5
     observed = json.loads(effect.read_text(encoding="utf-8"))
     assert observed["revision"] == 5
     assert observed["receipt"] == observed["merges"][0] == observed["audits"][0]
+    assert observed["entities"]["left"]["provenance"] == "registry-left"

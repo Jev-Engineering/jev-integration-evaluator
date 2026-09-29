@@ -1,15 +1,15 @@
-"""Source-bound E fixture and independently read raw installed completion effects."""
+"""Source-bound D host, pinned corpus, and installed off-mode retrieval effect."""
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 import hashlib
+import importlib
 import importlib.metadata
 import json
 import os
 from pathlib import Path
 import platform
 import shutil
-import subprocess
 import sys
 import time
 
@@ -29,52 +29,67 @@ from jev_integration_evaluator.template_catalog import materialize_template, val
 from jev_integration_evaluator.use_case_templates import use_case_matrix
 from scripts.implementation_fixtures import fixture
 from tests.test_template_installation import _metadata
-from tests.test_reusable_templates import fixture_module
 
 
 ROOT = Path(__file__).resolve().parents[1]
 PROFILE = (sys.platform == "linux" and platform.machine().lower() == "x86_64"
            and sys.implementation.name == "cpython" and sys.version_info[:2] == (3, 13))
-pytestmark = pytest.mark.skipif(not PROFILE, reason="E installed fixture requires Linux x86-64 CPython 3.13")
+pytestmark = pytest.mark.skipif(not PROFILE, reason="D installed fixture requires Linux x86-64 CPython 3.13")
 
 
-def _source_host(target: Path, version: str = "1.0.0") -> tuple[dict, dict, dict]:
+def _corpus(parent: Path, name: str) -> Path:
+    directory = parent / name
+    directory.mkdir(mode=0o700)
+    source = ROOT / "examples/use-case-host/retrieval_corpus_v1.json"
+    path = directory / "corpus.json"
+    shutil.copyfile(source, path)
+    path.chmod(0o600)
+    return path
+
+
+def _host(target: Path, version: str) -> tuple[dict, dict, dict]:
     assert version in ("1.0.0", "1.0.1")
-    inventory, spec = fixture(target, "E", tag="raw_completion", layout="package",
-                              package_name="completion_host")
-    package = target / "completion_host"
-    row = next(row for row in use_case_matrix()["rows"] if row["id"] == "E")
+    inventory, spec = fixture(target, "D", tag="retrieval_handoff", layout="package",
+                              package_name="retrieval_host")
+    row = next(item for item in use_case_matrix()["rows"] if item["id"] == "D")
+    package = target / "retrieval_host"
     for source, destination, expected in (
-        (ROOT / row["source"], package / "completion_oracle.py", row["source_sha256"]),
-        (ROOT / row["consumer_adapter"], package / "completion_consumer.py",
+        (ROOT / row["source"], package / "retrieval_oracle.py", row["source_sha256"]),
+        (ROOT / row["consumer_adapter"], package / "retrieval_consumer.py",
          row["consumer_adapter_sha256"]),
     ):
         assert file_hash(source) == expected
         shutil.copyfile(source, destination)
         assert file_hash(destination) == expected
+    corpus_source = ROOT / row["consumer_corpus"]
+    assert file_hash(corpus_source) == row["consumer_corpus_sha256"]
+    passages = json.loads(corpus_source.read_text())["passages"]
     host_source = target / spec["source"]["file"]
     text = host_source.read_text(encoding="utf-8")
-    old = ("STATE['effects'].append('first')\n"
-           "    if not STATE['ineffective']: STATE['records'] += 1\n"
-           "    return {'reported': 'ok'}")
-    new = ("STATE['effects'].append('first')\n"
-           "    if not STATE['ineffective']:\n"
-           "        from . import completion_consumer\n"
-           "        completion_consumer.commit(request, host_approved=STATE['approval'])\n"
-           "        STATE['records'] += 1\n"
-           "    return {'reported': 'ok'}")
+    lines = text.splitlines()
+    index = next(i for i, line in enumerate(lines) if line.startswith("RECORDS = "))
+    lines[index] = "RECORDS = " + repr(passages)
+    text = "\n".join(lines) + "\n"
+    old = ("STATE['kept'] = [item['id'] for item in action]\n"
+           "    STATE['effects'].append('generate')\n"
+           "    return STATE['kept'][:]")
+    new = ("from . import retrieval_consumer\n"
+           "    STATE['kept'] = retrieval_consumer.commit(request, action, "
+           "host_approved=STATE['approval'])\n"
+           "    STATE['effects'].append('generate')\n"
+           "    return STATE['kept'][:]")
     assert text.count(old) == 1
     host_source.write_text(text.replace(old, new), encoding="utf-8")
     for case in spec["verification"]["cases"]:
-        case["request"].update({"operation": "close_and_label"})
+        case["request"].update({"query": "approved", "expected_revision": 7})
     entry = spec["verification"]["entry_point"]
     (package / "console.py").write_text(
         f"from .{host_source.stem} import {entry}\n"
         "from pathlib import Path\nimport os\nimport time\n"
         "def main():\n"
-        "    request = {'task_id':'completion-task','operation':'close_and_label'}\n"
+        "    request = {'task_id':'retrieval-task','query':'approved','expected_revision':7}\n"
         f"    {entry}(request)\n"
-        "    ready = os.environ.get('E_READY_PATH')\n"
+        "    ready = os.environ.get('D_READY_PATH')\n"
         "    if ready:\n"
         "        with Path(ready).open('x', encoding='utf-8') as stream:\n"
         "            stream.write('ready\\n')\n"
@@ -86,21 +101,21 @@ def _source_host(target: Path, version: str = "1.0.0") -> tuple[dict, dict, dict
     (target / "pyproject.toml").write_text(
         '[build-system]\nrequires = ["setuptools==' + tools["setuptools"] +
         '", "wheel==' + tools["wheel"] + '"]\nbuild-backend = "setuptools.build_meta"\n'
-        '[project]\nname = "jev-completion-host-fixture"\nversion = "' + version + '"\n'
+        '[project]\nname = "jev-retrieval-host-fixture"\nversion = "' + version + '"\n'
         'requires-python = ">=3.13"\n'
         'dependencies = ["jev-integration-evaluator==1.3.0.dev12"]\n'
-        '[project.scripts]\ncompletion-host = "completion_host.console:main"\n'
-        '[tool.setuptools.packages.find]\ninclude = ["completion_host*"]\n', encoding="utf-8")
+        '[project.scripts]\nretrieval-host = "retrieval_host.console:main"\n'
+        '[tool.setuptools.packages.find]\ninclude = ["retrieval_host*"]\n', encoding="utf-8")
     cfg = load_config()
     cfg["repository"]["typescript_ast"] = False
     inventory = scan_repo(target, cfg)
-    candidate = next(row for row in inventory["candidates"]
-                     if row["source"]["symbol"] == "select_boundary_raw_completion")
-    reason = ("Reviewed E tail-call seam: an executor report cannot certify raw completion; "
-              "the finite host action and independent effect receipt remain authoritative")
+    candidate = next(item for item in inventory["candidates"]
+                     if item["source"]["symbol"] == "select_boundary_retrieval_handoff")
+    reason = ("Reviewed D tail-call seam: pinned corpus provenance and material "
+              "conflicts are required before the deterministic generation handoff")
     apply_reviews(inventory, {candidate["candidate_id"]: {
         "source_sha256": candidate["source"]["source_sha256"], "approved": True,
-        "reviewer": "offline-completion-host-author", "reason": reason}}, cfg)
+        "reviewer": "offline-retrieval-host-author", "reason": reason}}, cfg)
     spec["candidate_id"] = candidate["candidate_id"]
     spec["experiment_id"] = candidate["recommended_experiment"]["id"]
     spec["inventory_sha256"] = digest(inventory)
@@ -116,24 +131,20 @@ def _source_host(target: Path, version: str = "1.0.0") -> tuple[dict, dict, dict
     return inventory, spec, request
 
 
-def _probe(tmp_path: Path, name: str) -> dict[str, str]:
-    parent = tmp_path / name
-    parent.mkdir(mode=0o700)
-    return {"E_RAW_STATE_PATH": str(parent / "state-{pid}.json"),
-            "E_EFFECT_RECEIPT_PATH": str(parent / "receipt-{pid}.json")}
-
-
 def _applied(tmp_path: Path, name: str, version: str) -> dict:
     target = tmp_path / name
-    inventory, spec, request = _source_host(target, version)
+    inventory, spec, request = _host(target, version)
     assert validate_template_request(target, request)["status"] == "validated"
     template = tmp_path / (name + "-template")
     materialize_template(target, request, template)
     bundle = tmp_path / (name + "-bundle")
     plan = plan_implementation(target, inventory, spec["candidate_id"], spec, bundle)
+    corpus = _corpus(tmp_path, name + "-corpus")
+    probe = tmp_path / (name + "-probe")
+    probe.mkdir(mode=0o700)
     with pytest.MonkeyPatch.context() as env:
-        for key, value in _probe(tmp_path, name + "-probe").items():
-            env.setenv(key, value)
+        env.setenv("D_CORPUS_PATH", str(corpus))
+        env.setenv("D_EFFECT_PATH", str(probe / "effect-{pid}.json"))
         baseline = verify_implementation(target, bundle, "baseline", approve_execution=True)
         assert baseline["status"] == "baseline_passed"
         applied = apply_implementation(target, bundle, plan["bundle_digest"],
@@ -143,51 +154,59 @@ def _applied(tmp_path: Path, name: str, version: str) -> dict:
     assert modified["status"] == "verified"
     assert implementation_status(target, bundle,
         trusted_receipt_sha256=modified["receipt_sha256"])["status"] == "verified"
-    assert len(list((tmp_path / (name + "-probe")).glob("state-*.json"))) >= 2
+    assert len(list(probe.glob("effect-*.json"))) >= 2
     return {"target": target, "bundle": bundle, "template": template,
-            "version": version,
-            "applied": applied, "modified": modified, "spec": spec}
+            "version": version, "applied": applied, "modified": modified,
+            "corpus": corpus}
 
 
-def _scope(status: dict, plan: dict, action: str, **additional) -> dict:
+def _scope(status: dict, plan: dict, action: str, **extra) -> dict:
     value = {"schema_version": "1.0", "kind": "template-delivery-scope-v1",
-             "reference": "independent-completion-fixture-operator", "run_id": status["run_id"],
-             "plan_sha256": plan["plan_sha256"],
+             "reference": "independent-retrieval-fixture-operator",
+             "run_id": status["run_id"], "plan_sha256": plan["plan_sha256"],
              "trusted_session_head": status["session_head_sha256"],
              "expires_at": (datetime.now(timezone.utc) + timedelta(minutes=10)).isoformat(),
-             "revoked": False, "grants": {name: name == action for name in
-                                           ("launch", "stop", "disable", "rollback", "upgrade")},
-             **additional}
+             "revoked": False,
+             "grants": {name: name == action for name in
+                        ("launch", "stop", "disable", "rollback", "upgrade")}, **extra}
     value["scope_sha256"] = digest(value)
     return value
 
 
-def _expected(task_id: str) -> tuple[bytes, bytes]:
-    initial = {"task_id": task_id, "status": "open", "revision": 0,
-               "labels": [], "unrequested": []}
-    final = {"task_id": task_id, "status": "closed", "revision": 2,
-             "labels": ["verified"], "unrequested": []}
-    raw = lambda value: (json.dumps(value, sort_keys=True, separators=(",", ":")) + "\n").encode()
-    receipt = {"task_id": task_id, "operation": "close_and_label",
-               "before_sha256": hashlib.sha256(raw(initial)).hexdigest(),
-               "after_sha256": hashlib.sha256(raw(final)).hexdigest()}
-    return raw(final), raw(receipt)
+def _expected_effect(corpus: Path) -> bytes:
+    rows = json.loads(corpus.read_text())["passages"]
+    assert [row["id"] for row in rows] == ["hit", "counter", "maybe", "noise"]
+    assert [row["source_id"] for row in rows[:3]] == [
+        "registry-one", "registry-two", "registry-three"]
+    assert [row["stance"] for row in rows[:3]] == [
+        "supports", "contradicts", "uncertain"]
+    citations = [{"passage_id": row["id"], "source_id": row["source_id"],
+                  "span": row["span"], "quote": row["text"],
+                  "claim_id": row["claim_id"], "stance": row["stance"]}
+                 for row in rows[:3]]
+    expected = {"corpus_revision": 7, "corpus_sha256": file_hash(corpus),
+                "status": "ready", "selected_ids": ["hit", "counter", "maybe"],
+                "decisions": [["hit", "relevant"], ["counter", "irrelevant"],
+                              ["maybe", "irrelevant"], ["noise", "irrelevant"]],
+                "answer": {"query": "approved",
+                           "summary": "conflicting and uncertain status evidence",
+                           "citations": citations}}
+    return (json.dumps(expected, sort_keys=True, separators=(",", ":")) + "\n").encode()
 
 
-def _observation(directory: Path) -> tuple[dict, dict, bytes, bytes]:
-    raw_state, raw_receipt = _expected("completion-task")
-    state, receipt, ready = (directory / name for name in ("state.json", "receipt.json", "ready.txt"))
+def _observation(directory: Path, corpus: Path) -> tuple[dict, dict, bytes]:
+    raw = _expected_effect(corpus)
+    effect, ready = directory / "effect.json", directory / "ready.txt"
     checks = [{"role": "ready", "path": str(ready), "before_sha256": None,
                "expected_sha256": hashlib.sha256(b"ready\n").hexdigest()}]
-    checks += [{"role": role, "path": str(state), "before_sha256": None,
-                "expected_sha256": hashlib.sha256(raw_state).hexdigest()}
-               for role in ("entrypoint_reached", "integration_reachable")]
-    checks += [{"role": "outcome_verified", "path": str(receipt), "before_sha256": None,
-                "expected_sha256": hashlib.sha256(raw_receipt).hexdigest()}]
+    checks += [{"role": role, "path": str(effect), "before_sha256": None,
+                "expected_sha256": hashlib.sha256(raw).hexdigest()}
+               for role in ("entrypoint_reached", "integration_reachable",
+                            "outcome_verified")]
     return ({"schema_version": "1.0", "kind": "template-delivery-observation-v1",
              "checks": checks},
-            {"E_RAW_STATE_PATH": str(state), "E_EFFECT_RECEIPT_PATH": str(receipt),
-             "E_READY_PATH": str(ready)}, raw_state, raw_receipt)
+            {"D_CORPUS_PATH": str(corpus), "D_EFFECT_PATH": str(effect),
+             "D_READY_PATH": str(ready)}, raw)
 
 
 def _observe(session: Path, status: dict) -> dict:
@@ -199,48 +218,61 @@ def _observe(session: Path, status: dict) -> dict:
                 and status["recorded_observations"]["outcome_verified"]):
             return status
         time.sleep(0.01)
-    raise AssertionError("independent completion receipt not observed")
+    raise AssertionError("retrieval effect not observed")
 
 
-def test_completion_consumer_refuses_permission_and_success_shaped_false_completion(tmp_path, monkeypatch):
-    import importlib.util
-    source = ROOT / "examples/use-case-host/completion_consumer.py"
-    spec = importlib.util.spec_from_file_location("completion_consumer_test", source)
-    assert spec and spec.loader
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    evidence = tmp_path / "effects"
-    evidence.mkdir(mode=0o700)
-    monkeypatch.setenv("E_RAW_STATE_PATH", str(evidence / "state.json"))
-    monkeypatch.setenv("E_EFFECT_RECEIPT_PATH", str(evidence / "receipt.json"))
-    request = {"task_id": "completion-task", "operation": "close_and_label"}
-    for unsafe, approved in ((request, False),
-                             ({**request, "operation": "arbitrary"}, True)):
-        with pytest.raises(ValueError, match="permission or operation refused"):
-            module.commit(unsafe, host_approved=approved)
-    assert list(evidence.iterdir()) == []
-    oracle = fixture_module("examples/coding-agent/completion_oracle.py", "completion_e_oracle")
-    initial = {"task_id": "completion-task", "status": "open", "revision": 0,
-               "labels": [], "unrequested": []}
-    objective = {"task_id": "completion-task", "allowed_fields": list(initial),
-                 "required_status": "closed", "required_labels": ["verified"],
-                 "required_unrequested": []}
-    assert not oracle.exact_goal({**initial, "executor_success": True}, objective)
-    assert module.commit(request, host_approved=True) == {"reported": "ok"}
-    raw_state, raw_receipt = _expected("completion-task")
-    assert (evidence / "state.json").read_bytes() == raw_state
-    assert (evidence / "receipt.json").read_bytes() == raw_receipt
-    assert oracle.exact_goal(json.loads(raw_state), objective)
-    with pytest.raises(ValueError, match="fresh and unlinked"):
-        module.commit(request, host_approved=True)
+def test_retrieval_consumer_refuses_missing_stale_and_unauthorized(tmp_path, monkeypatch):
+    target = tmp_path / "retrieval-target"
+    _host(target, "1.0.0")
+    monkeypatch.syspath_prepend(str(target))
+    consumer = importlib.import_module("retrieval_host.retrieval_consumer")
+    rows = json.loads((ROOT / "examples/use-case-host/retrieval_corpus_v1.json").read_text())["passages"]
+    corpus = _corpus(tmp_path, "corpus")
+    effects = tmp_path / "effects"
+    effects.mkdir(mode=0o700)
+    output = effects / "effect.json"
+    monkeypatch.setenv("D_CORPUS_PATH", str(corpus))
+    monkeypatch.setenv("D_EFFECT_PATH", str(output))
+    request = {"query": "approved", "expected_revision": 7}
+    for changed, selected, approved in (
+        (request, rows, False),
+        ({**request, "expected_revision": 6}, rows, True),
+        ({**request, "query": "unknown"}, rows, True),
+        (request, [rows[0], rows[3]], True),
+        (request, [rows[0], rows[0]], True),
+        (request, [], True),
+    ):
+        with pytest.raises(ValueError):
+            consumer.commit(changed, selected, host_approved=approved)
+        assert not output.exists()
+    monkeypatch.delenv("D_CORPUS_PATH")
+    with pytest.raises(ValueError, match="D_CORPUS_PATH is required"):
+        consumer.commit(request, rows, host_approved=True)
+    monkeypatch.setenv("D_CORPUS_PATH", str(corpus))
+    original = corpus.read_bytes()
+    corpus.write_bytes(original + b" ")
+    with pytest.raises(ValueError, match="reviewed corpus bytes changed"):
+        consumer.commit(request, rows, host_approved=True)
+    assert not output.exists()
+    corpus.write_bytes(original)
+    monkeypatch.delenv("D_EFFECT_PATH")
+    with pytest.raises(ValueError, match="D_EFFECT_PATH is required"):
+        consumer.commit(request, rows, host_approved=True)
+    assert not output.exists()
+    monkeypatch.setenv("D_EFFECT_PATH", str(output))
+    assert consumer.commit(request, rows, host_approved=True) == [
+        "hit", "counter", "maybe", "noise"]
+    assert output.read_bytes() == _expected_effect(corpus)
+    with pytest.raises(ValueError, match="fresh"):
+        consumer.commit(request, rows, host_approved=True)
 
 
-def test_completion_installed_offline_upgrade_and_rollback(tmp_path):
+def test_retrieval_installed_offline_upgrade_and_rollback(tmp_path):
     wheelhouse_name = os.environ.get("JEV_TEMPLATE_WHEELHOUSE")
     if not wheelhouse_name:
         pytest.skip("exact private offline wheelhouse required")
     wheelhouse = Path(wheelhouse_name).resolve(strict=True)
-    first = _applied(tmp_path, "completion-v1", "1.0.0")
+    first = _applied(tmp_path, "retrieval-v1", "1.0.0")
     wheels = sorted(wheelhouse.glob("*.whl"))
     wheel_rows = [{"filename": path.name, "sha256": file_hash(path)} for path in wheels]
     requirements = [{"name": name, "version": version, "wheel": path.name,
@@ -264,24 +296,22 @@ def test_completion_installed_offline_upgrade_and_rollback(tmp_path):
                    "requirements": requirements,
                    "package_directory": str(tmp_path / package_name),
                    "environment_parent": str(environments),
-                   "console_script": "completion-host", "configuration": configuration,
+                   "console_script": "retrieval-host", "configuration": configuration,
                    "secret_references": {}}
-        adapter = host["target"] / "completion_host/completion_consumer.py"
-        reviewed_bytes = adapter.read_bytes()
-        adapter.write_bytes(reviewed_bytes + b"\n# unreviewed drift\n")
+        adapter = host["target"] / "retrieval_host/retrieval_consumer.py"
+        reviewed = adapter.read_bytes()
+        adapter.write_bytes(reviewed + b"\n# drift\n")
         with pytest.raises(installer.InstallationError):
             installer.plan_package(request)
-        adapter.write_bytes(reviewed_bytes)
+        adapter.write_bytes(reviewed)
         package_plan = installer.plan_package(request)
         with pytest.raises(installer.InstallationError):
-            installer.build_package(package_plan,
-                approved_plan_sha256="0" * 64)
+            installer.build_package(package_plan, approved_plan_sha256="0" * 64)
         built = installer.build_package(package_plan,
             approved_plan_sha256=package_plan["plan_sha256"])
         install_plan = installer.plan_install(package_plan, built)
         with pytest.raises(installer.InstallationError):
-            installer.install_package(install_plan,
-                approved_plan_sha256="0" * 64)
+            installer.install_package(install_plan, approved_plan_sha256="0" * 64)
         installed = installer.install_package(install_plan,
             approved_plan_sha256=install_plan["plan_sha256"])
         assert installer.installation_status(install_plan)["status"] == "installed_recorded"
@@ -290,18 +320,17 @@ def test_completion_installed_offline_upgrade_and_rollback(tmp_path):
         assert python.is_relative_to(environment / "venv") and python.is_symlink()
         assert python.resolve(strict=True) == Path(sys.executable).resolve(strict=True)
         origin = Path(installed["installed"]["entrypoint_origin"])
-        assert origin == environment / "venv/lib/python3.13/site-packages/completion_host/console.py"
+        assert origin == environment / "venv/lib/python3.13/site-packages/retrieval_host/console.py"
         assert origin.is_file() and not origin.is_symlink()
-        assert (environment / "venv/lib/python3.13/site-packages/jev_integration_evaluator/__init__.py").is_file()
-        assert installed["installed"]["distributions"]["jev-completion-host-fixture"] == host["version"]
+        assert installed["installed"]["distributions"]["jev-retrieval-host-fixture"] == host["version"]
         return install_plan, installed
 
     original_plan, original_install = install(first, "package-v1")
     effects = tmp_path / "external-effects"
     effects.mkdir(mode=0o700)
-    original_effects = effects / "v1"
-    original_effects.mkdir(mode=0o700)
-    observation, launch_env, raw_state, raw_receipt = _observation(original_effects)
+    v1 = effects / "v1"
+    v1.mkdir(mode=0o700)
+    observation, launch_env, raw = _observation(v1, first["corpus"])
     original_delivery = delivery.plan_delivery(original_plan,
         trusted_install_receipt_sha256=original_install["receipt_sha256"],
         observation=observation, launch_environment=launch_env)
@@ -309,31 +338,28 @@ def test_completion_installed_offline_upgrade_and_rollback(tmp_path):
     created = delivery.create_session(session, original_delivery)
     start = _scope(created, original_delivery, "launch")
     with pytest.raises(delivery.DeliveryError):
-        delivery.launch_session(session, scope=start,
-            approved_scope_sha256="0" * 64)
-    assert list(original_effects.iterdir()) == []
+        delivery.launch_session(session, scope=start, approved_scope_sha256="0" * 64)
+    assert list(v1.iterdir()) == []
     observed = _observe(session, delivery.launch_session(session, scope=start,
         approved_scope_sha256=start["scope_sha256"]))
-    assert (original_effects / "state.json").read_bytes() == raw_state
-    assert (original_effects / "receipt.json").read_bytes() == raw_receipt
-    oracle = fixture_module("examples/coding-agent/completion_oracle.py", "installed_e_oracle")
-    objective = {"task_id": "completion-task", "allowed_fields": ["task_id", "status",
-                  "revision", "labels", "unrequested"], "required_status": "closed",
-                 "required_labels": ["verified"], "required_unrequested": []}
-    assert oracle.exact_goal(json.loads(raw_state), objective)
+    assert (v1 / "effect.json").read_bytes() == raw
+    assert (v1 / "ready.txt").read_bytes() == b"ready\n"
+    effect = json.loads((v1 / "effect.json").read_text())
+    assert effect["selected_ids"] == ["hit", "counter", "maybe"]
+    assert [row["source_id"] for row in effect["answer"]["citations"]] == [
+        "registry-one", "registry-two", "registry-three"]
     assert observed["recorded_observations"]["provider_reachable"] is False
     disable = _scope(observed, original_delivery, "disable")
     disabled = delivery.stop_session(session, scope=disable,
         approved_scope_sha256=disable["scope_sha256"], disable=True)
     assert disabled["stage"] == "disabled"
 
-    second = _applied(tmp_path, "completion-v2", "1.0.1")
+    second = _applied(tmp_path, "retrieval-v2", "1.0.1")
     new_plan, new_install = install(second, "package-v2")
-    assert new_plan["package_plan"]["project_version"] == "1.0.1"
     assert new_install["generation_id"] != original_install["generation_id"]
-    new_effects = effects / "v2"
-    new_effects.mkdir(mode=0o700)
-    new_observation, new_env, _, _ = _observation(new_effects)
+    v2 = effects / "v2"
+    v2.mkdir(mode=0o700)
+    new_observation, new_env, new_raw = _observation(v2, second["corpus"])
     new_delivery = delivery.plan_delivery(new_plan,
         trusted_install_receipt_sha256=new_install["receipt_sha256"],
         observation=new_observation, launch_environment=new_env)
@@ -345,8 +371,7 @@ def test_completion_installed_offline_upgrade_and_rollback(tmp_path):
     start_new = _scope(upgraded, new_delivery, "launch")
     observed_new = _observe(session, delivery.launch_session(session, scope=start_new,
         approved_scope_sha256=start_new["scope_sha256"]))
-    assert (new_effects / "state.json").read_bytes() == raw_state
-    assert (new_effects / "receipt.json").read_bytes() == raw_receipt
+    assert (v2 / "effect.json").read_bytes() == new_raw
     disable_new = _scope(observed_new, new_delivery, "disable")
     disabled_new = delivery.stop_session(session, scope=disable_new,
         approved_scope_sha256=disable_new["scope_sha256"], disable=True)

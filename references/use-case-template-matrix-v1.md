@@ -2,7 +2,7 @@
 
 This checkpoint records six distinct `use-case.<letter>@1.0.0` source contracts.
 It is an offline source and host-oracle inventory with separately qualified
-offline E and H synthetic hosts. It does not connect any provider. The
+offline L, D, E, M and H synthetic hosts. It does not connect any provider. The
 [machine-readable matrix](../jev_integration_evaluator/data/use-case-template-matrix-v1.json)
 is versioned and pins the exact fixture bytes. `use_case_matrix()` reads it;
 `inspect_use_case_source(root, id)` checks the current bytes without importing or
@@ -33,7 +33,7 @@ uninstalls the package. This proves normal installed invocation of the shared
 fixture host only. It does not provide a #54 implementation receipt, #55
 source-bound package/install receipt, #56 supervised session, independent raw
 effect observation, or any individual L/D/E/M/H template transform. The
-separate E and H journeys below have their own #55/#56 receipts and raw effects;
+separate L, D, E, M and H journeys below have their own #55/#56 receipts and raw effects;
 neither is inferred from this shared fixture.
 Every new host requires a fresh source review and binding. The Python recipe
 catalog's `implemented_bounded_shape` is a transform capability for a narrow
@@ -42,10 +42,10 @@ shape, not an installed use-case qualification.
 | Case | Recipe and source contract | Offline oracle | Apply/install/launch/provider | Benefit |
 | --- | --- | --- | --- | --- |
 | C registered tool | `python.C@1.0`; [coding-agent dispatch](../examples/coding-agent/agent.py), [#48](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/48) | Existing registered-action and at-most-once dispatch tests; complete installed journey is [#57](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/57) | Pending | Unknown |
-| L graph identity | `python.L@1.0`; [graph fixture](../examples/graph-system/entities.py), [#44](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/44) | Approval, exact entity snapshot, revision and audit before merge | Pending | Unknown |
-| D retrieval evidence | `python.D@1.0`; [RAG fixture](../examples/rag-system/pipeline.py), [#45](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/45) | Passage provenance, missing evidence and material contradiction retention | Pending | Unknown |
+| L graph identity | `python.L@1.0`; [graph fixture](../examples/graph-system/entities.py) and [pinned consumer](../examples/use-case-host/graph_runtime.py), [#44](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/44) | Approval, exact entity snapshot, revision and audit before merge | Offline synthetic L host: source-bound plan/apply/verify, #55 install, #56 normal-console observation/disable/versioned upgrade/generation rollback; #54 L bind and provider pending | Unknown |
+| D retrieval evidence | `python.D@1.0`; [RAG fixture](../examples/rag-system/pipeline.py), [pinned corpus](../examples/use-case-host/retrieval_corpus_v1.json) and [consumer](../examples/use-case-host/retrieval_consumer.py), [#45](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/45) | Passage provenance, missing evidence and material contradiction retention | Offline synthetic D host: source-bound plan/apply/verify, #55 install, #56 normal-console observation/disable/versioned upgrade/generation rollback; #54 D bind and provider pending | Unknown |
 | E completion | `python.E@1.0`; [raw-state oracle](../examples/coding-agent/completion_oracle.py), [#46](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/46) | Raw objective and effect receipts independent of executor success | Offline synthetic E host: source-bound plan/apply/verify, #55 install, #56 normal-console observation/disable/versioned upgrade/generation rollback; #54 E console bind and provider pending | Unknown |
-| M claim support | `python.M@1.0`; [claim consumer](../examples/rag-system/pipeline.py), [#47](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/47) | Exact citation spans, critical-claim block, revision, audit before release | Pending | Unknown |
+| M claim support | `python.M@1.0`; [claim reviewer](../examples/rag-system/pipeline.py) and [pinned consumer](../examples/use-case-host/claim_consumer.py), [#47](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/47) | Exact citation spans, critical-claim block and audit before release | Offline synthetic M host: source-bound plan/apply/verify, #55 install, #56 normal-console observation/disable/versioned upgrade/generation rollback; #54 M bind and provider pending | Unknown |
 | H retention | `python.H@1.0`; [memory oracle](../examples/coding-agent/retention_oracle.py) and [consumer adapter](../examples/use-case-host/retention_consumer.py), [#49](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/49) | Raw retained-item bytes, pinned provenance, budget and explicit `/prune` | Offline synthetic H host: source-bound plan/apply/verify, #55 install, #56 normal-console observation/disable/versioned upgrade/generation rollback; #54 H console bind and provider pending | Unknown |
 
 ## Operator use and binding limits
@@ -89,17 +89,24 @@ The [L seam test](../tests/test_use_case_graph_host.py) now builds a separate
 synthetic host from the reviewed L recipe fixture, copies the matrix-pinned
 `entities.py` unchanged, and pins a small [graph effect
 adapter](../examples/use-case-host/graph_runtime.py) by byte hash. Its
-alternative effect calls `reconcile` with host approval, a separately retained
+baseline and alternative effects call `reconcile` with host approval, a separately retained
 expected revision, the current graph revision and an audit
 callback. A fresh inventory and source review bind the one-argument tail-call
 seam; the existing implementation planner, baseline/modified verifier, apply
 receipt and owned rollback execute on that host. A focused negative test
 confirms stale expected revision or missing approval creates no merge record.
-This tests one L-specific
-source-bound application and deterministic in-memory graph effect. It does not
-install or normally launch that adapted host, authenticate the in-memory audit,
-or prove an atomic database transaction. The combined console fixture's L
-record remains a separate direct/installed fixture observation.
+The [individual installed L journey](../tests/test_use_case_graph_installed.py)
+extends that reviewed host with a normal console. Both the deterministic
+baseline and generated alternative invoke the same code-owned consumer. The
+#55/#56 path packages, installs, normally launches, observes raw in-memory
+entities/revision/merge/audit records, disables, upgrades a separately reviewed
+fixture version and rolls back its owned generation and source edits. The
+consumer requires a finite action, current revision, approval and fresh output
+path; the test reads the effect against independently constructed expected
+bytes. This is not a persistent graph database transaction or independent
+database readback. The combined console fixture's L record remains separate;
+#54 L-specific bind, provider authority and benefit are pending. See the
+[L operator reference](graph-template-offline-v1.md).
 
 ### D: retrieval evidence
 
@@ -110,6 +117,20 @@ bundle even when its initial relevance label is negative. Stance is metadata,
 not a truth label; the separate generator and independent answer evaluation
 remain necessary. Unsupported: missing provenance, ambiguous IDs, or a target
 without the reviewed handoff seam.
+
+The [individual D installed journey](../tests/test_use_case_retrieval_host.py)
+copies the unchanged matrix-pinned RAG source into a separate reviewed host,
+then binds a byte-pinned consumer and external finite corpus to a D tail-call.
+The host checks exact corpus bytes/revision, approval and retained material
+conflicts before a deterministic evidence formatter consumes the selected
+bundle. The #55/#56 path installs and normally launches the off-mode console,
+checks a raw cited effect against independently derived corpus expectations,
+disables, upgrades a second reviewed fixture version, and rolls back its owned
+generation and source edits. The formatter supplies an honest conflicting
+evidence report, not a generative answer or truth determination. #54 D console
+binding, provider operation and answer benefit remain pending. See the
+[D operator reference](retrieval-template-offline-v1.md) for exact inputs and
+limits.
 
 ### E: completion
 
@@ -144,6 +165,20 @@ assessments request more evidence. The answer is released only after host audit.
 Missing, fabricated or partly valid citations do not become supported by model
 labels. D's passage selection and M's claim disposition are separate consumers
 and experiments.
+
+The [individual M installed journey](../tests/test_use_case_claim_host.py)
+builds a reviewed finite host around the matrix-pinned claim reviewer and
+consumer. Its normal off-mode console permits only one exact assertion and
+passage; the code-owned reviewer checks the critical citation and exact span,
+then the consumer writes separate support, audit and release files. The test
+reads those fixture-authored files against independently constructed bytes and
+checks the release hashes bind the observed support and audit. It refuses
+missing or fabricated/partial citations, denied approval, changed source and
+wrong operation scope. The #55/#56 journey installs, observes, disables,
+upgrades a second reviewed fixture version, and rolls back its retained
+generation and owned source edits. The fixture assessor is not a provider or
+real permit register. #54 M bind, production audit and benefit remain pending.
+See the [M operator reference](claim-template-offline-v1.md).
 
 ### H: safe retention
 
@@ -185,8 +220,7 @@ Python recipes A, B, C, D, E, F, G, H, I, J, K, L and M remain catalogued at
 version 1.0 for the narrow `module-tail-call-v1` transform. For each of A, B,
 F, G, I, J and K, use-case-specific source contract, installed execution,
 connected mode and benefit are **not qualified by this checkpoint**. C points
-to its separate #57 qualification; L has a source-bound synthetic apply test;
-D and M remain source/oracle only. E and H have the limited offline installed
+to its separate #57 qualification. L, D, E, M and H have the limited offline installed
 journeys above. All connected cells remain pending. The separate JavaScript/TypeScript
 `javascript.C@1.0` flat async backend has its own source catalog; it has no
 L/D/E/M/H coverage and no installed Node journey from this checkpoint. All

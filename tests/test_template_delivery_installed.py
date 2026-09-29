@@ -119,17 +119,19 @@ def test_bound_template_installed_console_is_supervised_with_direct_effect(tmp_p
         trusted_install_receipt_sha256=installed['receipt_sha256'], observation=observation,
         launch_environment={'DELIVERY_EFFECT_PATH': str(sink),
                             'DELIVERY_READY_PATH': str(ready_marker),
-                            'DELIVERY_EFFECT_HOLD_SECONDS': '0.5'})
+                            'DELIVERY_EFFECT_HOLD_SECONDS': '15'})
     session = tmp_path / 'delivery-session'
     created = delivery.create_session(session, delivery_plan)
     launch_scope = _scope(created, delivery_plan, 'launch')
     launched = delivery.launch_session(session, scope=launch_scope,
         approved_scope_sha256=launch_scope['scope_sha256'])
     observed = launched
-    for _ in range(200):
+    deadline = time.monotonic() + 10
+    while time.monotonic() < deadline:
         observed = delivery.observe_session(session,
             trusted_session_head=observed['session_head_sha256'])
-        if observed['recorded_observations']['outcome_verified']:
+        if (observed['recorded_observations']['ready']
+                and observed['recorded_observations']['outcome_verified']):
             break
         time.sleep(0.01)
     assert observed['recorded_observations']['ready'] is True
