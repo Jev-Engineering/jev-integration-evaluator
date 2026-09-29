@@ -71,8 +71,9 @@ normal off-mode Node command with external effect files. The read-only Node
 delivery descriptor binds exact install and observation inputs. The separate
 Node session supervisor runs only the installed off-mode command under exact
 scope, observes independent files and preserves same-run recovery state.
-An installed TypeScript fixture tests two exact versions and distinct raw
-effects through supervised upgrade and retained rollback.
+Independent installed TypeScript and CommonJS fixtures test two exact versions
+and distinct raw effects through supervised upgrade and retained rollback.
+The CommonJS fixture also resumes an interrupted upgrade selection.
 It does not extend the Python #56 supervisor or grant connected authority.
 
 The [issue #59 use-case matrix](references/use-case-template-matrix-v1.md)
