@@ -55,8 +55,11 @@ From the evaluator checkout, run
 `JEV_REGISTERED_ALPHA_INSTALLED_PYTHON=/absolute/private/venv/bin/python JEV_REGISTERED_ALPHA_WHEELHOUSE=/absolute/private/wheelhouse python -m pytest -q tests/test_registered_alpha_installed_faults.py`.
 With either input absent, this opt-in test reports a skip. Its result validates
 `registered-alpha-offline-report-v1` against the packaged strict schema.
-The driver independently imports both installed distributions to check their
-module and entrypoint origins. It injects an interruption during the locked
+The driver checks both installed distributions' metadata and module/entrypoint
+paths without executing an interpreter during that audit. It rejects a changed
+interpreter symlink target before any origin probe. The separately scoped
+supervisor later starts the installed normal command. The driver injects an
+interruption during the locked
 dependency install, verifies the incomplete owned generation, refuses a blind
 repeat, and uses the public exact-generation recovery API before retrying.
 It then checks revoked launch scope, changed source and installed configuration,

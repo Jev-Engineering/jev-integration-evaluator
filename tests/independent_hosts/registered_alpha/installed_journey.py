@@ -106,34 +106,36 @@ def _create_release(path: Path) -> None:
         os.close(fd)
 
 
-def _installed_origins(installed: dict, workspace: Path) -> dict:
-    """Independently query both imports in the recorded installed interpreter."""
+def _installed_origins(installed: dict, install_plan: dict, workspace: Path) -> dict:
+    """Check exact installed metadata and module paths without executing them."""
     environment = Path(installed['environment'])
     python = Path(installed['installed']['python'])
-    if not python.is_relative_to(environment / 'venv'):
+    expected_python = Path(install_plan['profile']['executable_path']).resolve(strict=True)
+    if (not python.is_relative_to(environment / 'venv') or not python.is_symlink()
+            or python.resolve(strict=True) != expected_python):
         raise RuntimeError('registered_alpha_interpreter_origin_changed')
-    probe = ('import importlib.metadata,json,registered_alpha,jev_integration_evaluator;'
-             'print(json.dumps({"host":registered_alpha.__file__,'
-             '"evaluator":jev_integration_evaluator.__file__,'
-             '"host_version":importlib.metadata.version("jev-independent-registered-alpha"),'
-             '"evaluator_version":importlib.metadata.version("jev-integration-evaluator")}))')
-    result = subprocess.run([str(python), '-I', '-c', probe], cwd=environment,
-        env={'PATH': str(environment / 'venv/bin'), 'PYTHONNOUSERSITE': '1'},
-        capture_output=True, text=True, timeout=15, check=True)
-    origins = json.loads(result.stdout)
+    site = environment / 'venv/lib/python3.13/site-packages'
+    if not site.is_dir() or site.is_symlink():
+        raise RuntimeError('registered_alpha_site_origin_changed')
+    origins = {'host': site / 'registered_alpha/__init__.py',
+               'evaluator': site / 'jev_integration_evaluator/__init__.py'}
     for name in ('host', 'evaluator'):
-        path = Path(origins[name]).resolve(strict=True)
-        if not path.is_relative_to(environment / 'venv') or path.is_relative_to(workspace / 'host'):
+        path = origins[name]
+        if (path.is_symlink() or not path.is_file() or
+                not path.resolve(strict=True).is_relative_to(site.resolve(strict=True)) or
+                path.resolve().is_relative_to(workspace / 'host')):
             raise RuntimeError('registered_alpha_' + name + '_checkout_origin')
-    if (origins['host_version'] != installed['installed']['distributions'][
-            'jev-independent-registered-alpha']
-            or origins['evaluator_version'] != installed['installed']['distributions'][
-                'jev-integration-evaluator']):
-        raise RuntimeError('registered_alpha_distribution_origin_changed')
-    if Path(installed['installed']['entrypoint_origin']).resolve(strict=True) != Path(
-            origins['host']).with_name('console.py').resolve(strict=True):
+    for name in ('jev-independent-registered-alpha', 'jev-integration-evaluator'):
+        matching = [dist for dist in importlib.metadata.distributions(path=[str(site)])
+                    if dist.metadata['Name'].lower().replace('_', '-') == name]
+        if (len(matching) != 1 or
+                matching[0].version != installed['installed']['distributions'][name]):
+            raise RuntimeError('registered_alpha_distribution_origin_changed')
+    entry = Path(installed['installed']['entrypoint_origin'])
+    if (entry.is_symlink() or not entry.is_file() or
+            entry.resolve(strict=True) != origins['host'].with_name('console.py').resolve(strict=True)):
         raise RuntimeError('registered_alpha_entrypoint_origin_changed')
-    return {name: str(Path(origins[name]).resolve()) for name in ('host', 'evaluator')}
+    return {name: str(origins[name].resolve(strict=True)) for name in ('host', 'evaluator')}
 
 
 def _refused(action, exception: type[Exception], marker: str) -> None:
@@ -267,7 +269,7 @@ def run_offline(workspace: Path, wheelhouse: Path, anchors: Path) -> dict:
     installed = installer.install_package(install_plan,
         approved_plan_sha256=install_plan['plan_sha256'])
     _anchor(anchors, 'package_installed', installed['receipt_sha256'])
-    origins = _installed_origins(installed, workspace)
+    origins = _installed_origins(installed, install_plan, workspace)
     progress = _record(journey, journey_dir, progress, 'installed',
                        trusted_receipt_sha256=installed['receipt_sha256'])
     _anchor(anchors, 'journey_installed', progress['journey_head_sha256'])

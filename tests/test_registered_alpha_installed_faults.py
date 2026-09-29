@@ -10,12 +10,35 @@ import sys
 
 import pytest
 
+from tests.independent_hosts.registered_alpha import installed_journey
+
 
 SCRIPT = (Path(__file__).parent / 'independent_hosts' / 'registered_alpha'
           / 'installed_journey.py')
 CHECKS = {'install_interrupted_recovered', 'revoked_scope', 'source_drift', 'config_drift',
           'unreleased_start_recovered', 'duplicate_effect_twice',
           'post_disable_refusal', 'rollback_edit_refusal'}
+
+
+def test_origin_audit_refuses_interpreter_symlink_swap_without_execution(tmp_path, monkeypatch):
+    if sys.platform != 'linux':
+        pytest.skip('Linux installed interpreter symlink profile required')
+    environment = tmp_path / 'environment'
+    bin_dir = environment / 'venv/bin'
+    bin_dir.mkdir(parents=True)
+    python = bin_dir / 'python'
+    python.symlink_to(Path(sys.executable).resolve())
+    # Model a swap after the installer recorded and checked the valid target.
+    python.unlink()
+    python.symlink_to('/usr/bin/false')
+    calls = []
+    monkeypatch.setattr(subprocess, 'run', lambda *args, **kwargs: calls.append(args))
+    with pytest.raises(RuntimeError, match='interpreter_origin_changed'):
+        installed_journey._installed_origins(
+            {'environment': str(environment), 'installed': {'python': str(python)}},
+            {'profile': {'executable_path': str(Path(sys.executable).resolve())}},
+            tmp_path / 'workspace')
+    assert calls == []
 
 
 def test_installed_registered_alpha_fault_journey(tmp_path):
