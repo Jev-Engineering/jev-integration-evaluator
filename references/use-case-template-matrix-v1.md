@@ -122,13 +122,17 @@ The [individual D installed journey](../tests/test_use_case_retrieval_host.py)
 copies the unchanged matrix-pinned RAG source into a separate reviewed host,
 then binds a byte-pinned consumer and external finite corpus to a D tail-call.
 The host checks exact corpus bytes/revision, approval and retained material
-conflicts before a deterministic evidence formatter consumes the selected
-bundle. The #55/#56 path installs and normally launches the off-mode console,
-checks a raw cited effect against independently derived corpus expectations,
-disables, upgrades a second reviewed fixture version, and rolls back its owned
-generation and source edits. The formatter supplies an honest conflicting
-evidence report, not a generative answer or truth determination. #54 D console
-binding, provider operation and answer benefit remain pending. See the
+conflicts before a finite code-owned answer consumer receives the selected
+bundle. It retains passage/source/span/provenance and initial relevance,
+including initially irrelevant contradictory and uncertain passages. Missing
+material passages or an unresolved conflict withhold answer release. Only an
+unopposed exact `status approved` source span can produce the bounded
+reviewed-status sentence. This is deterministic offline answer construction,
+not model generation or source-truth adjudication. The #55/#56 path installs
+and normally launches the off-mode console, checks the raw withheld-answer
+effect against independently derived corpus expectations, disables, upgrades
+a second reviewed fixture version, and rolls back its owned generation and
+source edits. #54 D console binding, provider operation and answer benefit remain pending. See the
 [D operator reference](retrieval-template-offline-v1.md) for exact inputs and
 limits.
 
