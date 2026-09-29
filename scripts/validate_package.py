@@ -182,6 +182,22 @@ def validate(check_manifest=False):
                               'generated-adaptation-adapter-plan-v1',
                               'adaptation-runtime-caller-review-v1',
                               'adaptation-runtime-review-receipt-v1')]
+    required += ['jev_integration_evaluator/integrations/composite_console.py',
+                 'tests/test_composite_console_delivery.py']
+    required += ['jev_integration_evaluator/template_delivery.py',
+                 'jev_integration_evaluator/template_delivery_journey.py',
+                 'references/template-delivery-session-v1.md',
+                 'examples/template-delivery-observation.json',
+                 'tests/test_template_delivery_session.py',
+                 'tests/test_template_delivery_installed.py',
+                 'tests/test_template_delivery_composite.py']
+    required += [f'{directory}/{name}.schema.json'
+                 for directory in ('schemas', 'jev_integration_evaluator/data')
+                 for name in ('template-delivery-observation-v1',
+                              'template-delivery-plan-v1',
+                              'template-delivery-scope-v1',
+                              'template-delivery-session-v1',
+                              'template-delivery-journey-v1')]
     required += [f'{directory}/{name}.schema.json'
                  for directory in ('schemas', 'jev_integration_evaluator/data')
                  for name in ('template-request-v1', 'template-manifest-v1', 'template-lock-v1',
@@ -191,6 +207,13 @@ def validate(check_manifest=False):
                  for name in ('template-package-request-v1', 'template-package-plan-v1',
                               'template-package-receipt-v1', 'template-install-plan-v1',
                               'template-install-receipt-v1')]
+    required += [f'{directory}/{name}.schema.json'
+                 for directory in ('schemas', 'jev_integration_evaluator/data')
+                 for name in ('template-composite-package-request-v1',
+                              'template-composite-package-plan-v1',
+                              'template-composite-package-receipt-v1',
+                              'template-composite-install-plan-v1',
+                              'template-composite-install-receipt-v1')]
     required += [f'{directory}/{name}.schema.json'
                  for directory in ('schemas', 'jev_integration_evaluator/data')
                  for name in ('javascript-implementation-spec-v1',

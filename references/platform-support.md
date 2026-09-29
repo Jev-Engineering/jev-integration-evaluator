@@ -18,6 +18,12 @@ synthetic shadow for method, async, and fixed-positional seams. This does not
 qualify native isolation, Linux/WSL behavior, connected async routing, or live
 benefit; see `references/python-adaptation-runtime-v1.md`.
 
+The separate [delivery session v1](template-delivery-session-v1.md) has an
+offline installed-console profile only for Linux x86-64 CPython 3.13 with an
+owner-private environment and external observation files. Windows, macOS,
+other Python versions, service managers, connected provider activation and
+generic container or cloud delivery are not qualified by that profile.
+
 | Platform and filesystem | Repository discovery | Qualification |
 | --- | --- | --- |
 | Linux, including WSL2 Linux filesystems | Supported through POSIX descriptor-relative reads with `O_NOFOLLOW`. | Existing Linux CI and recorded Linux/WSL runs. This change does not restart or reconfigure WSL. |

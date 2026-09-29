@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "kind": "template-delivery-observation-v1",
+  "checks": [
+    {
+      "role": "ready",
+      "path": "/private/independent-host-ready.bin",
+      "before_sha256": null,
+      "expected_sha256": "ed1a545bb85e55816bbf9566b028b2a0bc456b88f49f6f266c0401048824194b"
+    },
+    {
+      "role": "integration_reachable",
+      "path": "/private/independent-host-effect.bin",
+      "before_sha256": null,
+      "expected_sha256": "b640e840b19d378660b32fb51ae18d67dccb4a8596a29e7bd72c1b2ae5928f41"
+    }
+  ]
+}

@@ -291,31 +291,68 @@ def _template_binding(directory: Path) -> dict:
 def plan_package(request: dict, *, _allow_existing_output: bool = False) -> dict:
     """Read-only plan for a pre-applied, independently verified host source."""
     validate_contract(request, 'template-package-request-v1')
+    return _plan_package(request, composite=False, _allow_existing_output=_allow_existing_output)
+
+
+def plan_composite_package(request: dict, *, _allow_existing_output: bool = False) -> dict:
+    """Read-only package plan bound to an anchored verified composite bundle."""
+    validate_contract(request, 'template-composite-package-request-v1')
+    return _plan_package(request, composite=True, _allow_existing_output=_allow_existing_output)
+
+
+def _plan_package(request: dict, *, composite: bool, _allow_existing_output: bool) -> dict:
     source = _absolute(request['host_root'])
     bundle = _absolute(request['implementation_bundle'])
-    template = _absolute(request['template_directory'])
+    templates = ({candidate: _absolute(path) for candidate, path in request['template_directories'].items()}
+                 if composite else {'single': _absolute(request['template_directory'])})
     wheelhouse = _absolute(request['wheelhouse'])
     output = _absolute(request['package_directory'], exists=False)
     if (output.exists() and not _allow_existing_output) or any(
             output == p or output.is_relative_to(p) or p.is_relative_to(output)
-            for p in (source, bundle, template, wheelhouse)):
+            for p in (source, bundle, wheelhouse, *templates.values())):
         raise InstallationError('package_output_collision_or_overlap')
     try:
-        lock = _template_binding(template)
-        status = implementation_status(source, bundle,
-                                       trusted_receipt_sha256=request['trusted_modified_receipt_sha256'])
+        locks = {candidate: _template_binding(path) for candidate, path in templates.items()}
+        if composite:
+            from .integrations.composite import status_composite
+            status = status_composite(source, bundle,
+                                      trusted_receipt_sha256=request['trusted_modified_receipt_sha256'])
+        else:
+            status = implementation_status(source, bundle,
+                                           trusted_receipt_sha256=request['trusted_modified_receipt_sha256'])
     except (OSError, ValueError, KeyError, TypeError):
         raise InstallationError('template_or_applied_source_verification_failed') from None
     if status['status'] != 'verified' or status['receipt_trust'] != 'externally_anchored_execution':
         raise InstallationError('applied_source_unverified')
-    spec = read_json(bundle / 'implementation-spec.json')
-    if (lock['spec_sha256'] != digest(spec) or lock['candidate_id'] != spec['candidate_id']):
-        raise InstallationError('template_bundle_binding_mismatch')
+    if composite:
+        composite_plan = read_json(bundle / 'composite-plan.json')
+        specs = read_json(bundle / 'specifications.json')
+        report = read_json(bundle / 'composite-console.json')
+        if (set(locks) != set(composite_plan['candidate_ids']) or
+                set(specs) != set(locks) or len(locks) != 2 or
+                status['bundle_digest'] != composite_plan['contract_digest'] or
+                status['selected_set_digest'] != composite_plan['selected_set_digest'] or
+                report['candidate_ids'] != composite_plan['candidate_ids'] or
+                report['selected_set_digest'] != composite_plan['selected_set_digest'] or
+                report['script'] != request['console_script'] or
+                any(locks[candidate]['spec_sha256'] != digest(specs[candidate]) or
+                    locks[candidate]['candidate_id'] != candidate
+                    for candidate in locks)):
+            raise InstallationError('composite_template_bundle_binding_mismatch')
+        lock_identity = digest({candidate: locks[candidate]['lock_sha256'] for candidate in sorted(locks)})
+    else:
+        spec = read_json(bundle / 'implementation-spec.json')
+        lock = locks['single']
+        if lock['spec_sha256'] != digest(spec) or lock['candidate_id'] != spec['candidate_id']:
+            raise InstallationError('template_bundle_binding_mismatch')
+        lock_identity = lock['lock_sha256']
     files = _tree(source)
     if digest(files) != request['reviewed_package_source_sha256']:
         raise InstallationError('reviewed_package_source_drift')
     if 'pyproject.toml' not in files:
         raise InstallationError('pyproject_missing')
+    if composite and file_hash(source / 'pyproject.toml') != report['pyproject_sha256']:
+        raise InstallationError('composite_console_project_drift')
     _profile()
     import tomllib
     try:
@@ -385,23 +422,33 @@ def plan_package(request: dict, *, _allow_existing_output: bool = False) -> dict
     if any(not value.startswith('env:') or not value[4:].isidentifier()
            for value in request['secret_references'].values()):
         raise InstallationError('secret_reference_invalid')
-    plan = {'schema_version': '1.0', 'kind': 'template-package-plan-v1',
-            'request': request, 'template_lock_sha256': lock['lock_sha256'],
+    plan = {'schema_version': '1.0', 'kind': ('template-composite-package-plan-v1' if composite
+                                            else 'template-package-plan-v1'),
+            'request': request,
             'implementation_bundle_digest': status['bundle_digest'],
             'source_files': files, 'source_sha256': digest(files),
             'project_name': metadata['name'], 'project_version': metadata['version'],
             'entry_point': scripts[request['console_script']], 'profile': profile,
             'operations': ['copy_verified_source', 'build_offline_wheel', 'hash_and_record_wheel'],
             'target_executed': False, 'runtime_activation_authorized': False}
+    if composite:
+        plan.update(template_locks_sha256=lock_identity,
+                    candidate_ids=composite_plan['candidate_ids'],
+                    selected_set_digest=composite_plan['selected_set_digest'],
+                    composite_console_sha256=report['file_sha256'])
+    else:
+        plan['template_lock_sha256'] = lock_identity
     plan = seal(plan, 'plan_sha256')
-    validate_contract(plan, 'template-package-plan-v1')
+    validate_contract(plan, 'template-composite-package-plan-v1' if composite else 'template-package-plan-v1')
     return plan
 
 
 def _check_package_plan(plan: dict) -> None:
-    validate_contract(plan, 'template-package-plan-v1')
+    composite = plan.get('kind') == 'template-composite-package-plan-v1'
+    validate_contract(plan, 'template-composite-package-plan-v1' if composite else 'template-package-plan-v1')
     verify(plan, 'plan_sha256')
-    current = plan_package(plan['request'], _allow_existing_output=True)
+    current = (plan_composite_package if composite else plan_package)(
+        plan['request'], _allow_existing_output=True)
     if current != plan:
         raise InstallationError('package_plan_drift')
 
@@ -431,6 +478,16 @@ def _effect_env(directory: Path) -> dict[str, str]:
 def build_package(plan: dict, *, approved_plan_sha256: str) -> dict:
     """Explicit build effect; a pending intent blocks automatic hook replay."""
     validate_contract(plan, 'template-package-plan-v1')
+    return _build_package(plan, approved_plan_sha256=approved_plan_sha256)
+
+
+def build_composite_package(plan: dict, *, approved_plan_sha256: str) -> dict:
+    """Build an anchored two-placement source without weakening single plans."""
+    validate_contract(plan, 'template-composite-package-plan-v1')
+    return _build_package(plan, approved_plan_sha256=approved_plan_sha256)
+
+
+def _build_package(plan: dict, *, approved_plan_sha256: str) -> dict:
     verify(plan, 'plan_sha256')
     parent = Path(plan['request']['package_directory']).parent
     with _effect_lock(parent, 'build-' + plan['plan_sha256'][:24]):
@@ -476,13 +533,22 @@ def _build_package_locked(plan: dict, *, approved_plan_sha256: str) -> dict:
     wheel = out / produced[0].name
     produced[0].replace(wheel)
     _pure_wheel(wheel)
-    receipt = seal({'schema_version': '1.0', 'kind': 'template-package-receipt-v1',
+    composite = plan['kind'] == 'template-composite-package-plan-v1'
+    receipt_body = {'schema_version': '1.0',
+                    'kind': ('template-composite-package-receipt-v1' if composite
+                             else 'template-package-receipt-v1'),
                     'plan_sha256': plan['plan_sha256'], 'source_sha256': plan['source_sha256'],
                     'wheel_filename': wheel.name, 'wheel_sha256': file_hash(wheel),
                     'project_name': plan['project_name'], 'project_version': plan['project_version'],
                     'entry_point': plan['entry_point'], 'profile': plan['profile'],
-                    'runtime_activation_authorized': False}, 'receipt_sha256')
-    validate_contract(receipt, 'template-package-receipt-v1')
+                    'runtime_activation_authorized': False}
+    if composite:
+        receipt_body.update(candidate_ids=plan['candidate_ids'],
+                            selected_set_digest=plan['selected_set_digest'],
+                            composite_console_sha256=plan['composite_console_sha256'])
+    receipt = seal(receipt_body, 'receipt_sha256')
+    validate_contract(receipt, 'template-composite-package-receipt-v1' if composite
+                      else 'template-package-receipt-v1')
     write_json(receipt_file, receipt)
     _record(out, plan['plan_sha256'], 'build_completed')
     return receipt
@@ -491,7 +557,8 @@ def _build_package_locked(plan: dict, *, approved_plan_sha256: str) -> dict:
 def recover_package(plan: dict, *, approved_plan_sha256: str,
                     approved_generation_sha256: str | None = None) -> dict:
     """Adopt a verified wheel or remove an independently inspected owned partial build."""
-    validate_contract(plan, 'template-package-plan-v1')
+    validate_contract(plan, 'template-composite-package-plan-v1' if plan.get('kind') ==
+                      'template-composite-package-plan-v1' else 'template-package-plan-v1')
     verify(plan, 'plan_sha256')
     parent = Path(plan['request']['package_directory']).parent
     with _effect_lock(parent, 'build-' + plan['plan_sha256'][:24]):
@@ -532,8 +599,14 @@ def recover_package(plan: dict, *, approved_plan_sha256: str,
 
 
 def _check_package_receipt(plan: dict, receipt: dict) -> Path:
-    validate_contract(receipt, 'template-package-receipt-v1')
+    composite = plan['kind'] == 'template-composite-package-plan-v1'
+    validate_contract(receipt, 'template-composite-package-receipt-v1' if composite
+                      else 'template-package-receipt-v1')
     verify(receipt, 'receipt_sha256')
+    if composite and (receipt['candidate_ids'] != plan['candidate_ids'] or
+                      receipt['selected_set_digest'] != plan['selected_set_digest'] or
+                      receipt['composite_console_sha256'] != plan['composite_console_sha256']):
+        raise InstallationError('composite_package_receipt_binding_drift')
     name = receipt['wheel_filename']
     if Path(name).name != name or not name.endswith('.whl') or '/' in name or '\\' in name:
         raise InstallationError('package_wheel_filename_invalid')
@@ -556,7 +629,8 @@ def _check_package_receipt(plan: dict, receipt: dict) -> Path:
 
 def package_status(plan: dict) -> dict:
     """Read-only package status and exact owned-tree review digest."""
-    validate_contract(plan, 'template-package-plan-v1')
+    validate_contract(plan, 'template-composite-package-plan-v1' if plan.get('kind') ==
+                      'template-composite-package-plan-v1' else 'template-package-plan-v1')
     verify(plan, 'plan_sha256')
     root = Path(plan['request']['package_directory'])
     if not root.exists():
@@ -586,13 +660,28 @@ def package_status(plan: dict) -> dict:
 
 def plan_install(package_plan: dict, package_receipt: dict) -> dict:
     """Read-only installation plan; no environment is created."""
+    if package_plan.get('kind') != 'template-package-plan-v1':
+        raise InstallationError('single_package_plan_required')
+    return _plan_install(package_plan, package_receipt, composite=False)
+
+
+def plan_composite_install(package_plan: dict, package_receipt: dict) -> dict:
+    """Read-only install plan retaining both source placements and one generation."""
+    if package_plan.get('kind') != 'template-composite-package-plan-v1':
+        raise InstallationError('composite_package_plan_required')
+    return _plan_install(package_plan, package_receipt, composite=True)
+
+
+def _plan_install(package_plan: dict, package_receipt: dict, *, composite: bool) -> dict:
     _check_package_plan(package_plan)
     req = package_plan['request']
     _check_package_receipt(package_plan, package_receipt)
     if package_status(package_plan)['status'] != 'built_recorded':
         raise InstallationError('package_generation_unverified')
     parent = _environment_parent(req)
-    plan = seal({'schema_version': '1.0', 'kind': 'template-install-plan-v1',
+    body = {'schema_version': '1.0',
+                 'kind': ('template-composite-install-plan-v1' if composite
+                          else 'template-install-plan-v1'),
                  'package_plan': package_plan, 'package_receipt': package_receipt,
                  'environment_parent': str(parent), 'wheelhouse': req['wheelhouse'],
                  'wheels': req['wheels'], 'requirements': req['requirements'],
@@ -601,9 +690,15 @@ def plan_install(package_plan: dict, package_receipt: dict) -> dict:
                  'console_script': req['console_script'], 'profile': package_plan['profile'],
                  'operations': ['create_owned_venv', 'install_hash_checked_wheels',
                                 'verify_metadata_and_import_origin', 'write_off_configuration'],
-                 'runtime_activation_authorized': False}, 'plan_sha256')
+                 'runtime_activation_authorized': False}
+    if composite:
+        body.update(candidate_ids=package_plan['candidate_ids'],
+                    selected_set_digest=package_plan['selected_set_digest'],
+                    composite_bundle_digest=package_plan['implementation_bundle_digest'])
+    plan = seal(body, 'plan_sha256')
     _check_environment_disjoint(plan)
-    validate_contract(plan, 'template-install-plan-v1')
+    validate_contract(plan, 'template-composite-install-plan-v1' if composite
+                      else 'template-install-plan-v1')
     return plan
 
 
@@ -620,7 +715,11 @@ def _check_environment_disjoint(plan: dict) -> None:
     req = plan['package_plan']['request']
     root = _environment(plan)
     inputs = [Path(req[name]) for name in ('host_root', 'implementation_bundle',
-                                            'template_directory', 'wheelhouse', 'package_directory')]
+                                            'wheelhouse', 'package_directory')]
+    if plan['kind'] == 'template-composite-install-plan-v1':
+        inputs.extend(Path(path) for path in req['template_directories'].values())
+    else:
+        inputs.append(Path(req['template_directory']))
     if any(root == item or root.is_relative_to(item) or item.is_relative_to(root)
            for item in inputs):
         raise InstallationError('environment_generation_overlap')
@@ -710,6 +809,16 @@ print(json.dumps({'distributions':out,'files_sha256':hashes,'entrypoint_origin':
 def install_package(plan: dict, *, approved_plan_sha256: str) -> dict:
     """Explicit offline install; an incomplete generation is preserved for recovery."""
     validate_contract(plan, 'template-install-plan-v1')
+    return _install_package(plan, approved_plan_sha256=approved_plan_sha256)
+
+
+def install_composite_package(plan: dict, *, approved_plan_sha256: str) -> dict:
+    """Install a verified two-placement wheel into one owned offline environment."""
+    validate_contract(plan, 'template-composite-install-plan-v1')
+    return _install_package(plan, approved_plan_sha256=approved_plan_sha256)
+
+
+def _install_package(plan: dict, *, approved_plan_sha256: str) -> dict:
     verify(plan, 'plan_sha256')
     parent = Path(plan['environment_parent'])
     with _effect_lock(parent, 'install-' + plan['plan_sha256'][:24]):
@@ -717,11 +826,14 @@ def install_package(plan: dict, *, approved_plan_sha256: str) -> dict:
 
 
 def _install_package_locked(plan: dict, *, approved_plan_sha256: str) -> dict:
-    validate_contract(plan, 'template-install-plan-v1')
+    composite = plan.get('kind') == 'template-composite-install-plan-v1'
+    validate_contract(plan, 'template-composite-install-plan-v1' if composite else 'template-install-plan-v1')
     verify(plan, 'plan_sha256')
     if approved_plan_sha256 != plan['plan_sha256']:
         raise InstallationError('exact_install_authority_required')
-    if plan_install(plan['package_plan'], plan['package_receipt']) != plan:
+    replanned = (plan_composite_install if composite else plan_install)(
+        plan['package_plan'], plan['package_receipt'])
+    if replanned != plan:
         raise InstallationError('install_plan_drift')
     root = _environment(plan)
     if root.exists():
@@ -741,7 +853,8 @@ def _install_package_locked(plan: dict, *, approved_plan_sha256: str) -> dict:
         if not receipt_file.is_file():
             raise InstallationError('install_interrupted_recovery_required')
         receipt = read_json(receipt_file)
-        validate_contract(receipt, 'template-install-receipt-v1')
+        validate_contract(receipt, 'template-composite-install-receipt-v1' if composite
+                          else 'template-install-receipt-v1')
         verify(receipt, 'receipt_sha256')
         installed = _validate_venv(plan, root, execute_entrypoint_import=False)
         if receipt != _install_receipt(plan, root, installed):
@@ -785,7 +898,8 @@ def _install_package_locked(plan: dict, *, approved_plan_sha256: str) -> dict:
     write_json(root / 'config.json', plan['configuration'])
     installed = _validate_venv(plan, root)
     receipt = _install_receipt(plan, root, installed)
-    validate_contract(receipt, 'template-install-receipt-v1')
+    validate_contract(receipt, 'template-composite-install-receipt-v1' if composite
+                      else 'template-install-receipt-v1')
     write_json(root / 'install-receipt.json', receipt)
     write_json(root / 'install-intent.json', {'schema_version': '1.0', 'phase': 'complete',
                                              'plan_sha256': plan['plan_sha256']})
@@ -794,21 +908,41 @@ def _install_package_locked(plan: dict, *, approved_plan_sha256: str) -> dict:
 
 
 def _install_receipt(plan: dict, root: Path, installed: dict) -> dict:
-    return seal({'schema_version': '1.0', 'kind': 'template-install-receipt-v1',
+    composite = plan['kind'] == 'template-composite-install-plan-v1'
+    body = {'schema_version': '1.0',
+                 'kind': ('template-composite-install-receipt-v1' if composite
+                          else 'template-install-receipt-v1'),
                  'plan_sha256': plan['plan_sha256'],
                  'package_receipt_sha256': plan['package_receipt']['receipt_sha256'],
                  'environment': str(root), 'generation_id': root.name,
                  'configuration_sha256': digest(plan['configuration']),
                  'secret_references_sha256': digest(plan['secret_references']),
                  'installed': installed, 'mode': 'off', 'launched': False,
-                 'provider_reachable': False, 'runtime_activation_authorized': False},
-                'receipt_sha256')
+                 'provider_reachable': False, 'runtime_activation_authorized': False}
+    if composite:
+        body.update(candidate_ids=plan['candidate_ids'],
+                    selected_set_digest=plan['selected_set_digest'],
+                    composite_bundle_digest=plan['composite_bundle_digest'])
+    return seal(body, 'receipt_sha256')
 
 
 def recover_installation(plan: dict, *, approved_plan_sha256: str,
                          approved_generation_sha256: str | None = None) -> dict:
     """Adopt verified bytes or remove a separately inspected exact owned snapshot."""
     validate_contract(plan, 'template-install-plan-v1')
+    return _recover_installation(plan, approved_plan_sha256=approved_plan_sha256,
+                                 approved_generation_sha256=approved_generation_sha256)
+
+
+def recover_composite_installation(plan: dict, *, approved_plan_sha256: str,
+                                   approved_generation_sha256: str | None = None) -> dict:
+    validate_contract(plan, 'template-composite-install-plan-v1')
+    return _recover_installation(plan, approved_plan_sha256=approved_plan_sha256,
+                                 approved_generation_sha256=approved_generation_sha256)
+
+
+def _recover_installation(plan: dict, *, approved_plan_sha256: str,
+                          approved_generation_sha256: str | None) -> dict:
     verify(plan, 'plan_sha256')
     parent = Path(plan['environment_parent'])
     with _effect_lock(parent, 'install-' + plan['plan_sha256'][:24]):
@@ -818,9 +952,12 @@ def recover_installation(plan: dict, *, approved_plan_sha256: str,
 
 def _recover_installation_locked(plan: dict, *, approved_plan_sha256: str,
                                  approved_generation_sha256: str | None) -> dict:
-    validate_contract(plan, 'template-install-plan-v1')
+    composite = plan.get('kind') == 'template-composite-install-plan-v1'
+    validate_contract(plan, 'template-composite-install-plan-v1' if composite else 'template-install-plan-v1')
     verify(plan, 'plan_sha256')
-    if approved_plan_sha256 != plan['plan_sha256'] or plan_install(plan['package_plan'], plan['package_receipt']) != plan:
+    replanned = (plan_composite_install if composite else plan_install)(
+        plan['package_plan'], plan['package_receipt'])
+    if approved_plan_sha256 != plan['plan_sha256'] or replanned != plan:
         raise InstallationError('exact_recovery_authority_required')
     root = _environment(plan)
     if not root.exists():
@@ -846,7 +983,8 @@ def _recover_installation_locked(plan: dict, *, approved_plan_sha256: str,
 
 def installation_status(plan: dict) -> dict:
     """Read current owned bytes; a receipt alone does not establish health."""
-    validate_contract(plan, 'template-install-plan-v1')
+    composite = plan.get('kind') == 'template-composite-install-plan-v1'
+    validate_contract(plan, 'template-composite-install-plan-v1' if composite else 'template-install-plan-v1')
     verify(plan, 'plan_sha256')
     root = _environment(plan)
     if not root.exists():
@@ -860,7 +998,8 @@ def installation_status(plan: dict) -> dict:
     else:
         try:
             receipt = read_json(root / 'install-receipt.json')
-            validate_contract(receipt, 'template-install-receipt-v1')
+            validate_contract(receipt, 'template-composite-install-receipt-v1' if composite
+                              else 'template-install-receipt-v1')
             verify(receipt, 'receipt_sha256')
             if receipt != _install_receipt(plan, root, _validate_venv(plan, root,
                                                                        execute_entrypoint_import=False)):
@@ -882,3 +1021,9 @@ def installation_status(plan: dict) -> dict:
             'generation_sha256': generation_sha256,
             'journal_head_sha256': journal_head_sha256,
             'launched': False, 'provider_reachable': False, 'runtime_activation_authorized': False}
+
+
+def composite_installation_status(plan: dict) -> dict:
+    """Read-only status for one exact composite generation."""
+    validate_contract(plan, 'template-composite-install-plan-v1')
+    return installation_status(plan)

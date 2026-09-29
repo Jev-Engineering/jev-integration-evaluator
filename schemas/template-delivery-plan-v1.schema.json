@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "kind", "install_plan", "trusted_install_receipt_sha256", "generation_id", "environment", "console_script", "console_script_sha256", "entrypoint_origin", "observation", "launch_environment", "requested_mode", "runtime_activation_authorized", "plan_sha256"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "template-delivery-plan-v1"},
+    "install_plan": {"type": "object"},
+    "trusted_install_receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "generation_id": {"type": "string", "minLength": 1},
+    "environment": {"type": "string", "minLength": 1},
+    "console_script": {"type": "string", "minLength": 1},
+    "console_script_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "entrypoint_origin": {"type": "string", "minLength": 1},
+    "observation": {"type": "object"},
+    "launch_environment": {"type": "object", "maxProperties": 16, "propertyNames": {"pattern": "^[A-Za-z_][A-Za-z0-9_]*$"}, "additionalProperties": {"type": "string", "maxLength": 4096}},
+    "requested_mode": {"const": "off"},
+    "runtime_activation_authorized": {"const": false},
+    "plan_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

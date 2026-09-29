@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "kind", "run_id", "stage", "source_kind", "source_root", "bundle", "bundle_digest", "baseline_receipt_sha256", "modified_receipt_sha256", "package_plan_sha256", "package_receipt_sha256", "install_plan_sha256", "install_receipt_sha256", "delivery_plan_sha256"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "template-delivery-journey-v1"},
+    "run_id": {"type": "string", "format": "uuid"},
+    "stage": {"enum": ["source_planned", "baseline_anchored", "source_verified", "package_planned", "package_built", "install_planned", "installed", "promotion_pending", "runtime_creation_recovered", "runtime_session"]},
+    "source_kind": {"enum": ["single", "composite"]},
+    "source_root": {"type": "string", "minLength": 1},
+    "bundle": {"type": "string", "minLength": 1},
+    "bundle_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "baseline_receipt_sha256": {"anyOf": [{"type": "null"}, {"type": "string", "pattern": "^[0-9a-f]{64}$"}]},
+    "modified_receipt_sha256": {"anyOf": [{"type": "null"}, {"type": "string", "pattern": "^[0-9a-f]{64}$"}]},
+    "package_plan_sha256": {"anyOf": [{"type": "null"}, {"type": "string", "pattern": "^[0-9a-f]{64}$"}]},
+    "package_receipt_sha256": {"anyOf": [{"type": "null"}, {"type": "string", "pattern": "^[0-9a-f]{64}$"}]},
+    "install_plan_sha256": {"anyOf": [{"type": "null"}, {"type": "string", "pattern": "^[0-9a-f]{64}$"}]},
+    "install_receipt_sha256": {"anyOf": [{"type": "null"}, {"type": "string", "pattern": "^[0-9a-f]{64}$"}]},
+    "delivery_plan_sha256": {"anyOf": [{"type": "null"}, {"type": "string", "pattern": "^[0-9a-f]{64}$"}]}
+  }
+}
