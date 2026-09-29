@@ -49,11 +49,12 @@ anchor files retain stage-specific receipt and session heads.
 | Frozen source oracle and source-bound recipe C plan | Offline fixture test |
 | Exact installed package/console, raw `enqueue`, disable and rollback | Opt-in installed test |
 | Interrupted pre-release start and duplicate job effect | Opt-in installed test |
-| Composite two-placement shared budget and identity | Pending distinct fixture |
+| Composite two-placement shared budget and identity | Qualified separately by `tests/independent_hosts/registered_dual` in one installed package and one process-local owner |
 | Connected provider, authorized mode and measured benefit | Pending external authority and study |
 
-This is a second **single-placement offline fixture**. It is not a composite
-shared-budget qualification, provider connection, authorized canary/active
-operation, measured benefit, or a production host. The prior Alpha fault slice
-remains the stronger interruption/drift matrix; this host demonstrates a fresh
-naming/layout instantiation without hand editing generated source.
+This is a second **single-placement offline fixture**. The separate dual-host
+fixture qualifies one process-local composite shared budget. Neither fixture
+establishes provider connection, authorized canary/active operation, measured
+benefit, or production-host behavior. The prior Alpha fault slice remains the
+stronger interruption/drift matrix; this host demonstrates a fresh naming/layout
+instantiation without hand editing generated source.
