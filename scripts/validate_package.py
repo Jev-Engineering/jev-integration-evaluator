@@ -148,6 +148,14 @@ def validate(check_manifest=False):
                  'tests/test_js_backend_trusted.py',
                  'tests/test_js_entrypoint.py', 'tests/js_transform.test.cjs',
                  'tests/native_js_runtime.test.cjs']
+    required += ['jev_integration_evaluator/template_catalog.py',
+                 'jev_integration_evaluator/data/python-bounded-tail-call.template.json',
+                 'references/template-catalog-v1.md',
+                 'tests/test_template_catalog.py',
+                 'tests/test_template_materialization_wheel.py']
+    required += [f'{directory}/{name}.schema.json'
+                 for directory in ('schemas', 'jev_integration_evaluator/data')
+                 for name in ('template-request-v1', 'template-manifest-v1', 'template-lock-v1')]
     required += [f'{directory}/{name}.schema.json'
                  for directory in ('schemas', 'jev_integration_evaluator/data')
                  for name in ('javascript-implementation-spec-v1',
@@ -176,6 +184,11 @@ def validate(check_manifest=False):
         schema=read_json(path);jsonschema.Draft202012Validator.check_schema(schema)
         if schema!=read_json(ROOT/'jev_integration_evaluator/data'/path.name):raise InputError('Packaged schema mismatch: '+path.name)
         schemas[path.name.removesuffix('.schema.json')]=schema
+    from jev_integration_evaluator.template_catalog import inspect_template, list_templates
+    template_manifest=read_json(ROOT/'jev_integration_evaluator/data/python-bounded-tail-call.template.json')
+    jsonschema.validate(template_manifest, schemas['template-manifest-v1'])
+    if inspect_template('python.bounded-tail-call')['template_id']!=list_templates()['templates'][0]['template_id']:
+        raise InputError('Packaged template catalog identity mismatch')
     jsonschema.validate(read_json(ROOT/'examples/implementation/composite-selection.example.json'),
                         schemas['composite-selection-v1'])
     jsonschema.validate(read_json(ROOT/'examples/repository-session/context.example.json'),

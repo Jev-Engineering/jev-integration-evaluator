@@ -99,6 +99,7 @@ Each stage rechecks source identity and requires its own explicit authorization 
 | Understand the 13 A–M placement patterns | [`references/placement-patterns.md`](references/placement-patterns.md) |
 | Pick a placement to prepare | [`references/experimental-selection.md`](references/experimental-selection.md) · [`references/placement-selection-v1.md`](references/placement-selection-v1.md) |
 | Generate and apply a reviewed code change | [`references/executable-integrations.md`](references/executable-integrations.md) |
+| Render versioned source-bound planner inputs | [`references/template-catalog-v1.md`](references/template-catalog-v1.md) |
 | Modify JavaScript/TypeScript hosts | [`references/javascript-typescript-backend-v1.md`](references/javascript-typescript-backend-v1.md) |
 | Run rigorous before/after experiments | [`references/experimental-methodology.md`](references/experimental-methodology.md) · [`references/lifecycle-and-evidence.md`](references/lifecycle-and-evidence.md) |
 | Inspect synthetic coding-agent completion and retention studies | [`examples/coding-agent/README.md`](examples/coding-agent/README.md) |

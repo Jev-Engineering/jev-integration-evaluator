@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Source-bound template request v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "template_id", "template_version", "backend", "profile", "reviewed_inventory", "implementation_spec"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "template_id": {"const": "python.bounded-tail-call"},
+    "template_version": {"const": "1.0.0"},
+    "backend": {"const": "python"},
+    "profile": {"const": "module-tail-call-v1"},
+    "reviewed_inventory": {"type": "object"},
+    "implementation_spec": {"type": "object"}
+  }
+}
