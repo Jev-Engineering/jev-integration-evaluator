@@ -193,7 +193,10 @@ It executes fixture source binding, applied-source verification, offline
 wheel build/install, gated normal console invocation, duplicate-launch and
 owned-stop checks, plus installed-tree drift and dangling-generation-junction
 refusal. It also checks exclusive-share lock refusal on the installed config
-and exact status recovery after that handle closes. The separate
+and exact status recovery after that handle closes. A native hard-link check
+refuses status and session creation when an installed console module gains an
+external NTFS link, then confirms status recovers when that link is removed.
+The separate
 `tests/test_windows_template_run.py` exercises two installed versions,
 retained rollback, same-run interrupted-stage recovery, and separate ready
 and effect observations. It is a synthetic
