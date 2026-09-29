@@ -169,6 +169,22 @@ def parser():
         s=template_sub.add_parser(action,help='Validate current source and strict template parameters' if action=='validate' else 'Create exclusive external planner inputs without changing the host')
         s.add_argument('--repo',required=True); s.add_argument('--request',required=True)
         if action=='materialize': s.add_argument('--out',required=True)
+    s=template_sub.add_parser('package',help='Plan offline packaging of an already applied and verified Python host')
+    s.add_argument('--request',required=True); s.add_argument('--out',required=True)
+    s=template_sub.add_parser('package-build',help='Run explicitly approved offline PEP 517 build')
+    s.add_argument('--plan',required=True); s.add_argument('--approve-plan-sha256',required=True)
+    s=template_sub.add_parser('package-status',help='Inspect an owned package generation without building')
+    s.add_argument('--plan',required=True)
+    s=template_sub.add_parser('install-plan',help='Plan an owned offline environment from a built wheel')
+    s.add_argument('--package-plan',required=True); s.add_argument('--package-receipt',required=True); s.add_argument('--out',required=True)
+    for action in ('install','install-status','install-recover'):
+        s=template_sub.add_parser(action,help='Install, inspect, or explicitly recover one owned environment')
+        s.add_argument('--plan',required=True)
+        if action!='install-status': s.add_argument('--approve-plan-sha256',required=True)
+        if action=='install-recover': s.add_argument('--approve-generation-sha256')
+    s=template_sub.add_parser('package-recover',help='Adopt a verified wheel or remove an independently inspected partial build')
+    s.add_argument('--plan',required=True); s.add_argument('--approve-plan-sha256',required=True)
+    s.add_argument('--approve-generation-sha256')
     s=common("implement-composite-plan", "Plan one reviewed multi-placement transaction")
     s.add_argument("--repo",required=True); s.add_argument("--inventory",required=True)
     s.add_argument("--selection",required=True); s.add_argument("--specs",required=True); s.add_argument("--out",required=True)
@@ -234,11 +250,38 @@ def execute(args):
     if cmd=='template':
         from .template_catalog import (list_templates, inspect_template,
                                        validate_template_request, materialize_template)
+        from .io import write_json
         if args.template_action=='list': return list_templates()
         if args.template_action=='inspect': return inspect_template(args.template_id,args.version)
-        request=read_json(args.request)
-        if args.template_action=='validate': return validate_template_request(args.repo,request)
-        return materialize_template(args.repo,request,args.out)
+        if args.template_action in ('validate','materialize'):
+            request=read_json(args.request)
+            if args.template_action=='validate': return validate_template_request(args.repo,request)
+            return materialize_template(args.repo,request,args.out)
+        from .template_installation import (plan_package, build_package, package_status, plan_install,
+                                            install_package, installation_status, recover_installation,
+                                            recover_package, write_plan_exclusive)
+        def private_json(path):
+            try: return read_json(path)
+            except (OSError, ValueError): raise InputError('template_installation_input_unavailable_or_invalid') from None
+        if args.template_action=='package':
+            result=plan_package(private_json(args.request))
+            write_plan_exclusive(args.out,result,host_root=result['request']['host_root']); return result
+        if args.template_action=='package-build':
+            return build_package(private_json(args.plan),approved_plan_sha256=args.approve_plan_sha256)
+        if args.template_action=='package-status':
+            return package_status(private_json(args.plan))
+        if args.template_action=='package-recover':
+            return recover_package(private_json(args.plan),approved_plan_sha256=args.approve_plan_sha256,
+                                   approved_generation_sha256=args.approve_generation_sha256)
+        if args.template_action=='install-plan':
+            result=plan_install(private_json(args.package_plan),private_json(args.package_receipt))
+            write_plan_exclusive(args.out,result,host_root=result['package_plan']['request']['host_root']); return result
+        plan=private_json(args.plan)
+        if args.template_action=='install-status': return installation_status(plan)
+        if args.template_action=='install-recover':
+            return recover_installation(plan,approved_plan_sha256=args.approve_plan_sha256,
+                                        approved_generation_sha256=args.approve_generation_sha256)
+        return install_package(plan,approved_plan_sha256=args.approve_plan_sha256)
     if cmd=="implementation-recipes":
         from .integrations.recipes import recipe_catalog
         return recipe_catalog()
@@ -565,7 +608,15 @@ def main(argv=None):
             return capabilities_main(forwarded)
         result=execute(args)
         # Artifacts contain details; concise stdout remains useful in scripts.
-        if getattr(args,"out",None) and args.command not in ("scan","architecture","report","scaffold","implement-plan","implement-verify","implement-composite-plan","template"):
+        if args.command=='template' and args.template_action in (
+                'package','package-build','package-status','package-recover','install-plan',
+                'install','install-status','install-recover'):
+            display={'schema_version':'1.0','status': result.get('status') or {
+                'package':'planned','package-build':'built','install-plan':'planned',
+                'install':'installed'}.get(args.template_action,'recorded')}
+            for field in ('plan_sha256','receipt_sha256','generation_sha256','journal_head_sha256'):
+                if field in result: display[field]=result[field]
+        elif getattr(args,"out",None) and args.command not in ("scan","architecture","report","scaffold","implement-plan","implement-verify","implement-composite-plan","template"):
             display={"status":"written","output":args.out}
             if isinstance(result,dict):
                 for k in ("recommendation","pair_count","evidence_type","status"): 
@@ -586,6 +637,10 @@ def main(argv=None):
         # Input errors include only invariant names and paths, never request bodies or credentials.
         if args.command=='template':
             from .template_catalog import template_error
+            if args.template_action in ('package','package-build','package-status',
+                    'package-recover','install-plan','install','install-status',
+                    'install-recover') and isinstance(exc,OSError):
+                exc=InputError('template_installation_io_unavailable')
             print(json.dumps(template_error(exc)),file=sys.stderr)
             return 2
         error={"error":type(exc).__name__,"message":str(exc)}

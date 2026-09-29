@@ -57,6 +57,12 @@ jobs:
       - name: Record Linux test runtime identity
         run: python -c "import platform,sys; print(platform.platform()); print(sys.version); print(sys.executable)"
       - run: python -m pip install -e ".[test]"
+      - name: Prepare explicit offline template wheelhouse
+        if: matrix.python == '3.13'
+        run: |
+          python -m pip install wheel
+          python scripts/prepare_template_wheelhouse.py --out "$RUNNER_TEMP/jev-template-wheelhouse"
+          echo "JEV_TEMPLATE_WHEELHOUSE=$RUNNER_TEMP/jev-template-wheelhouse" >> "$GITHUB_ENV"
       - run: npm install --ignore-scripts --no-audit --no-fund --package-lock=false
       - run: python -m pytest -q
       - run: python scripts/validate_package.py --check-manifest

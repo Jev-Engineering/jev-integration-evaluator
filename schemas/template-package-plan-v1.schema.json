@@ -1,0 +1,309 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "request",
+    "template_lock_sha256",
+    "implementation_bundle_digest",
+    "source_files",
+    "source_sha256",
+    "project_name",
+    "project_version",
+    "entry_point",
+    "profile",
+    "operations",
+    "target_executed",
+    "runtime_activation_authorized",
+    "plan_sha256"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "template-package-plan-v1"
+    },
+    "request": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "host_root",
+        "implementation_bundle",
+        "trusted_modified_receipt_sha256",
+        "template_directory",
+        "reviewed_package_source_sha256",
+        "reviewed_configuration_sha256",
+        "interpreter",
+        "wheelhouse",
+        "package_directory",
+        "environment_parent",
+        "console_script",
+        "build_tools",
+        "wheels",
+        "requirements",
+        "configuration",
+        "secret_references"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "1.0"
+        },
+        "host_root": {
+          "type": "string",
+          "minLength": 1
+        },
+        "implementation_bundle": {
+          "type": "string",
+          "minLength": 1
+        },
+        "trusted_modified_receipt_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "template_directory": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reviewed_package_source_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "reviewed_configuration_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "interpreter": {
+          "type": "string",
+          "minLength": 1
+        },
+        "wheelhouse": {
+          "type": "string",
+          "minLength": 1
+        },
+        "package_directory": {
+          "type": "string",
+          "minLength": 1
+        },
+        "environment_parent": {
+          "type": "string",
+          "minLength": 1
+        },
+        "console_script": {
+          "type": "string",
+          "minLength": 1
+        },
+        "build_tools": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "pip",
+            "setuptools",
+            "wheel"
+          ],
+          "properties": {
+            "pip": {
+              "type": "string",
+              "minLength": 1
+            },
+            "setuptools": {
+              "type": "string",
+              "minLength": 1
+            },
+            "wheel": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "wheels": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 256,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "filename",
+              "sha256"
+            ],
+            "properties": {
+              "filename": {
+                "type": "string",
+                "pattern": "^[^/\\\\]+\\.whl$"
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            }
+          }
+        },
+        "requirements": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 256,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "version",
+              "wheel",
+              "sha256"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._+!-]*$"
+              },
+              "wheel": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            }
+          }
+        },
+        "configuration": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "jev_runtime"
+          ],
+          "properties": {
+            "jev_runtime": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "mode",
+                "credential_ref"
+              ],
+              "properties": {
+                "mode": {
+                  "const": "off"
+                },
+                "credential_ref": {
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "type": "string",
+                      "pattern": "^env:[A-Za-z_][A-Za-z0-9_]*$"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "secret_references": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^env:[A-Za-z_][A-Za-z0-9_]*$"
+          }
+        }
+      }
+    },
+    "template_lock_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "implementation_bundle_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "source_files": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      }
+    },
+    "source_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "project_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "project_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "entry_point": {
+      "type": "string",
+      "minLength": 1
+    },
+    "profile": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "python",
+        "soabi",
+        "platform",
+        "interpreter_sha256",
+        "executable_path",
+        "sys_prefix"
+      ],
+      "properties": {
+        "python": {
+          "type": "string",
+          "minLength": 1
+        },
+        "soabi": {
+          "type": "string",
+          "minLength": 1
+        },
+        "platform": {
+          "type": "string",
+          "minLength": 1
+        },
+        "interpreter_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "executable_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sys_prefix": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "operations": {
+      "const": [
+        "copy_verified_source",
+        "build_offline_wheel",
+        "hash_and_record_wheel"
+      ]
+    },
+    "target_executed": {
+      "const": false
+    },
+    "runtime_activation_authorized": {
+      "const": false
+    },
+    "plan_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}
