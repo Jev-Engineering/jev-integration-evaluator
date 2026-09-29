@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import shutil
 import subprocess
 import sys
 
@@ -15,6 +16,47 @@ from tests.independent_hosts.work_queue import installed_journey
 
 SCRIPT = (Path(__file__).parent / 'independent_hosts' / 'work_queue'
           / 'installed_journey.py')
+
+
+@pytest.mark.parametrize('drift_stage', ['source', 'copied', 'review'])
+def test_installed_queue_refuses_unreviewed_bytes_before_effects(tmp_path, monkeypatch,
+                                                                   drift_stage):
+    if (sys.platform != 'linux' or platform.machine().lower() != 'x86_64' or
+            sys.version_info[:2] != (3, 13)):
+        pytest.skip('declared Linux x86-64 CPython 3.13 profile required')
+    authored = tmp_path / 'authored'
+    shutil.copytree(installed_journey.ROOT, authored,
+                    ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
+    monkeypatch.setattr(installed_journey, 'ROOT', authored)
+    if drift_stage == 'source':
+        (authored / 'src/work_queue/engine.py').write_text(
+            (authored / 'src/work_queue/engine.py').read_text() + '\n# drift\n')
+    elif drift_stage == 'review':
+        review = authored / 'review-v1.json'
+        review.write_text(review.read_text() + ' ')
+    else:
+        original_copytree = installed_journey.shutil.copytree
+
+        def changed_copy(*args, **kwargs):
+            copied = original_copytree(*args, **kwargs)
+            if Path(args[0]) == authored:
+                source = Path(copied) / 'src/work_queue/engine.py'
+                source.write_text(source.read_text() + '\n# copied drift\n')
+            return copied
+
+        monkeypatch.setattr(installed_journey.shutil, 'copytree', changed_copy)
+    calls = []
+    monkeypatch.setattr(installed_journey._qualification, 'source_matched_request',
+                        lambda *args: calls.append(args))
+    wheelhouse = tmp_path / 'wheelhouse'
+    wheelhouse.mkdir(mode=0o700)
+    workspace, anchors = tmp_path / 'workspace', tmp_path / 'anchors'
+    with pytest.raises(RuntimeError, match='work_queue_frozen_(source|review)_changed'):
+        installed_journey.run_offline(workspace, wheelhouse, anchors)
+    assert calls == []
+    assert not (workspace / 'journey').exists()
+    assert not (workspace / 'external-effects').exists()
+    assert not (workspace / 'implementation').exists()
 
 
 def test_queue_origin_audit_refuses_swapped_interpreter(tmp_path, monkeypatch):

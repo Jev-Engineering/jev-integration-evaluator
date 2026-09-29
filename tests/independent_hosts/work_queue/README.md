@@ -18,7 +18,10 @@ uses PID-separated probe effects; it is not installed-host evidence.
 `installed_journey.py` requires Linux x86-64 CPython 3.13, an owner-private
 offline wheelhouse containing the exact evaluator wheel and dependency closure,
 and separate owner-private workspace and external anchor directories. It copies
-the authored host, uses the public template APIs for binding, planning,
+the authored host, checks the pinned `review-v1.json` digest and every reviewed
+source/build file before and after copying, and rejects unexpected source tree
+entries before a fresh source scan can select a candidate. It then uses the
+public template APIs for binding, planning,
 verification, package/install, journey promotion, supervised off-mode normal
 command, observation, disable and owned source rollback. Its read-only origin
 audit checks the pinned interpreter symlink, both installed distributions and
@@ -27,6 +30,8 @@ pre-release start interruption is reconciled under the same run ID; one later
 normal invocation writes the independently expected `enqueue` event. A repeat
 of that installed command with the same job ID is refused by the host ledger.
 The output follows strict `work-queue-offline-report-v1` with a packaged mirror.
+Focused negative tests change authored bytes, copied bytes, and the review itself;
+each stops before source matching, planning, or an external effect.
 
 For the opt-in test, set `JEV_WORK_QUEUE_INSTALLED_PYTHON` to an evaluator
 interpreter installed from the exact reviewed wheel and

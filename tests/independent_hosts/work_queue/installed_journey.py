@@ -35,10 +35,51 @@ if _qualification_spec is None or _qualification_spec.loader is None:
 _qualification = importlib.util.module_from_spec(_qualification_spec)
 _qualification_spec.loader.exec_module(_qualification)
 ROOT = _qualification.ROOT
+FROZEN_REVIEW_SHA256 = 'c78deab0d89125e1debebfcd300930d00850522953ed3ef3e53bf2c2018d5067'
+REVIEWED_FILES = frozenset({
+    'pyproject.toml', 'src/work_queue/__init__.py', 'src/work_queue/engine.py',
+    'src/work_queue/cli.py', 'src/work_queue/requirements.lock',
+    'src/work_queue/runtime.json',
+})
+FIXTURE_FILES = frozenset({
+    'README.md', 'qualification.py', 'installed_journey.py',
+    'review-v1.json', 'oracle-v1.json', 'pyproject.toml', 'src',
+})
 
 
 def _sha(raw: bytes) -> str:
     return hashlib.sha256(raw).hexdigest()
+
+
+def _check_frozen_review(root: Path) -> dict:
+    """Reject source drift before making a fresh scan authoritative."""
+    review_path = root / 'review-v1.json'
+    if (review_path.is_symlink() or not review_path.is_file() or
+            file_hash(review_path) != FROZEN_REVIEW_SHA256):
+        raise RuntimeError('work_queue_frozen_review_changed')
+    review = read_json(review_path)
+    if (review.get('status') != 'source_reviewed_for_offline_qualification' or
+            set(review.get('files', {})) != REVIEWED_FILES):
+        raise RuntimeError('work_queue_frozen_review_shape_changed')
+    root_entries = {path.name for path in root.iterdir() if path.name != '__pycache__'}
+    if root_entries != FIXTURE_FILES:
+        raise RuntimeError('work_queue_frozen_root_tree_changed')
+    source = root / 'src'
+    actual_source = {path.relative_to(root).as_posix() for path in source.rglob('*')
+                     if (path.is_file() or path.is_symlink()) and
+                     '__pycache__' not in path.parts and path.suffix != '.pyc'}
+    if actual_source != {name for name in REVIEWED_FILES if name.startswith('src/')}:
+        raise RuntimeError('work_queue_frozen_source_tree_changed')
+    for relative, expected in review['files'].items():
+        path = root / relative
+        current = root
+        linked = False
+        for part in Path(relative).parts:
+            current = current / part
+            linked |= current.is_symlink()
+        if linked or not path.is_file() or file_hash(path) != expected:
+            raise RuntimeError('work_queue_frozen_source_changed:' + relative)
+    return review
 
 
 def _private(path: Path, *, create: bool) -> Path:
@@ -143,8 +184,20 @@ def run_offline(workspace: Path, wheelhouse: Path, anchors: Path) -> dict:
     if anchors == workspace or anchors.is_relative_to(workspace):
         raise ValueError('work_queue_external_anchors_required')
     host = workspace / 'host'
+    _check_frozen_review(ROOT)
     shutil.copytree(ROOT, host, ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
+    review = _check_frozen_review(host)
     request, binding = _qualification.source_matched_request(host)
+    candidate = request['implementation_spec']
+    frozen_candidate = review['candidate']
+    if (candidate['candidate_id'] != frozen_candidate['id'] or
+            candidate['source']['file'] != frozen_candidate['file'] or
+            candidate['source']['symbol'] != frozen_candidate['symbol'] or
+            candidate['source']['source_sha256'] != frozen_candidate['source_sha256'] or
+            candidate['source']['file_sha256'] != frozen_candidate['file_sha256'] or
+            candidate['recipe']['id'] != 'python.C' or
+            frozen_candidate['pattern'] != 'C'):
+        raise RuntimeError('work_queue_frozen_candidate_changed')
     bound = prepare_template_binding(host, request, binding)['request']
     template = workspace / 'template'
     materialize_template(host, bound, template)
