@@ -21,7 +21,9 @@ import uuid
 from . import capabilities as cap
 from .contracts import validate_contract
 from .io import InputError, digest
-from .windows_template_install import plan_windows_template_install, windows_install_status
+from .windows_template_install import (
+    owned_windows_install_receipt, plan_windows_template_install,
+)
 from .windows_template_owned import (create_private_directory, read_private_json,
                                      write_private_json_exclusive)
 from .windows_template_preflight import _profile
@@ -148,13 +150,11 @@ def create_windows_template_session(directory: str | Path, install_plan: dict,
             install_plan['package_plan'], install_plan['package_receipt'],
             trusted_package_receipt_sha256=install_plan['trusted_package_receipt_sha256']):
         raise InputError('windows_session_install_plan_drift')
-    status = windows_install_status(install_plan,
-                                    trusted_receipt_sha256=trusted_install_receipt_sha256)
-    if (status['status'] != 'installed_recorded'
-            or status['receipt_trust'] != 'externally_anchored'
-            or status['receipt_sha256'] != install_receipt.get('receipt_sha256')):
-        raise InputError('windows_session_install_unverified')
-    python = Path(install_receipt['installed']['python'])
+    canonical = owned_windows_install_receipt(install_plan,
+                                              trusted_install_receipt_sha256)
+    if install_receipt != canonical:
+        raise InputError('windows_session_install_receipt_substituted')
+    python = Path(canonical['installed']['python'])
     if launch_environment is None:
         launch_environment = {}
     _environment(Path(directory), python, launch_environment)
@@ -163,10 +163,10 @@ def create_windows_template_session(directory: str | Path, install_plan: dict,
             'run_id': str(uuid.uuid4()), 'owned_directory': owned,
             'install_plan_sha256': install_plan['plan_sha256'],
             'install_receipt_sha256': trusted_install_receipt_sha256,
-            'install_environment': install_receipt['environment'],
-            'python': str(python), 'python_sha256': install_receipt['installed']['python_sha256'],
-            'console_script': install_receipt['installed']['console_script'],
-            'console_script_sha256': install_receipt['installed']['console_script_sha256'],
+            'install_environment': canonical['environment'],
+            'python': str(python), 'python_sha256': canonical['installed']['python_sha256'],
+            'console_script': canonical['installed']['console_script'],
+            'console_script_sha256': canonical['installed']['console_script_sha256'],
             'launch_environment': launch_environment, 'mode': 'off'}
     body['session_sha256'] = digest(body)
     validate_contract(body, 'windows-template-session-v1')
@@ -197,14 +197,20 @@ def _checked_session(session: dict, *, check_executables: bool = True) -> tuple[
 def launch_windows_template_session(session: dict, install_plan: dict, *,
                                     approved_session_sha256: str) -> dict:
     """Launch once, with a gated helper and an exact named Job Object."""
-    root, owned = _checked_session(session)
+    root, owned = _checked_session(session, check_executables=False)
+    canonical = owned_windows_install_receipt(
+        install_plan, session['install_receipt_sha256'])
     if (install_plan != plan_windows_template_install(
             install_plan['package_plan'], install_plan['package_receipt'],
             trusted_package_receipt_sha256=install_plan['trusted_package_receipt_sha256'])
             or install_plan['plan_sha256'] != session['install_plan_sha256']
-            or windows_install_status(install_plan, trusted_receipt_sha256=
-                session['install_receipt_sha256'])['receipt_trust'] != 'externally_anchored'):
+            or session['install_environment'] != canonical['environment']
+            or session['python'] != canonical['installed']['python']
+            or session['python_sha256'] != canonical['installed']['python_sha256']
+            or session['console_script'] != canonical['installed']['console_script']
+            or session['console_script_sha256'] != canonical['installed']['console_script_sha256']):
         raise InputError('windows_session_install_drift')
+    _checked_session(session)
     if approved_session_sha256 != session['session_sha256']:
         raise InputError('windows_session_exact_launch_authority_required')
     if (root / 'launch-intent.json').exists():
@@ -247,8 +253,8 @@ def launch_windows_template_session(session: dict, install_plan: dict, *,
         identity['identity_sha256'] = digest(identity)
         validate_contract(identity, 'windows-template-process-v1')
         write_private_json_exclusive(owned, 'launch-identity.json', identity)
-        if windows_install_status(install_plan, trusted_receipt_sha256=
-                session['install_receipt_sha256'])['receipt_trust'] != 'externally_anchored':
+        if owned_windows_install_receipt(
+                install_plan, session['install_receipt_sha256']) != canonical:
             raise InputError('windows_session_install_changed_before_release')
         os.write(write_fd, b'G')
         write_private_json_exclusive(owned, 'launch-released.json',

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from email.parser import BytesParser
+import copy
 import hashlib
 import os
 from pathlib import Path
@@ -104,6 +105,19 @@ def test_native_offline_package_install_and_normal_console(tmp_path):
                                              approved_plan_sha256=plan['plan_sha256'])
     assert windows_package_status(plan, trusted_receipt_sha256=
                                   package['receipt_sha256'])['receipt_trust'] == 'externally_anchored'
+    forged_root = tmp_path / 'forged-package'
+    (forged_root / 'dist').mkdir(parents=True)
+    original_wheel = Path(package['package_directory']) / 'dist' / package['wheel_filename']
+    forged_wheel = forged_root / 'dist' / package['wheel_filename']
+    forged_wheel.write_bytes(original_wheel.read_bytes() + b'\nsubstituted wheel bytes')
+    assert _wheel_name(forged_wheel) == _wheel_name(original_wheel)
+    forged_package = copy.deepcopy(package)
+    forged_package['package_directory'] = str(forged_root)
+    forged_package['wheel_sha256'] = _hash(forged_wheel)
+    assert forged_package['receipt_sha256'] == package['receipt_sha256']
+    with pytest.raises(InputError, match='windows_install_package_unverified'):
+        plan_windows_template_install(
+            plan, forged_package, trusted_package_receipt_sha256=package['receipt_sha256'])
     install_plan = plan_windows_template_install(
         plan, package, trusted_package_receipt_sha256=package['receipt_sha256'])
     assert windows_install_status(install_plan)['status'] == 'absent'
@@ -111,6 +125,18 @@ def test_native_offline_package_install_and_normal_console(tmp_path):
         install_plan, approved_plan_sha256=install_plan['plan_sha256'])
     assert windows_install_status(install_plan, trusted_receipt_sha256=
                                   installed['receipt_sha256'])['status'] == 'installed_recorded'
+    forged_install = copy.deepcopy(installed)
+    forged_install['installed']['python'] = sys.executable
+    forged_install['installed']['python_sha256'] = _hash(Path(sys.executable))
+    forged_install['installed']['console_script'] = sys.executable
+    forged_install['installed']['console_script_sha256'] = _hash(Path(sys.executable))
+    assert forged_install['receipt_sha256'] == installed['receipt_sha256']
+    forged_session_dir = tmp_path / 'forged-session'
+    with pytest.raises(InputError, match='windows_session_install_receipt_substituted'):
+        create_windows_template_session(
+            forged_session_dir, install_plan, forged_install,
+            trusted_install_receipt_sha256=installed['receipt_sha256'])
+    assert not forged_session_dir.exists()
     marker = __import__('jev_integration_evaluator.integrations.recipes',
                         fromlist=['host_lifecycle_marker']).host_lifecycle_marker(
                             spec['host_lifecycle'], spec['bindings']['runtime'], spec['candidate_id'])

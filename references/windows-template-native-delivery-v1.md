@@ -37,6 +37,12 @@ trusted_package_receipt_sha256=...)`, review its digest, then
 the install receipt digest. `windows_package_status` and
 `windows_install_status` are read-only and distinguish absent, interrupted,
 recorded-untrusted and externally anchored results.
+The install planner rereads the package receipt from the plan-derived
+owner-private generation and requires the caller's entire receipt to equal
+that record. Session creation similarly rereads the private install receipt,
+requires exact equality, and binds the native Python and console paths to
+the owned venv. The launch rechecks that binding before any process release;
+an authentic digest attached to substituted caller fields grants no authority.
 
 The build stage copies **only** the reviewed selected files into an exclusively
 created owner-private source directory. Excluded `.git`, `.pytest_cache`,

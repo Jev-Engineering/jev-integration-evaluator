@@ -17,7 +17,8 @@ from .windows_template_owned import (
 )
 from .windows_template_package_inputs import inspect_windows_template_package_inputs
 from .windows_template_plan import (
-    _effect_environment, _requirements_lock, _run, plan_windows_template_package,
+    _effect_environment, _generation as _package_generation,
+    _requirements_lock, _run, plan_windows_template_package,
     windows_package_status,
 )
 from .windows_template_owned import acl_sha256
@@ -29,6 +30,61 @@ def _generation(plan: dict) -> Path:
         'jev-env-' + plan['plan_sha256'][:24])
 
 
+def _owned_package_receipt(package_plan: dict, trusted_sha256: str) -> dict:
+    """Read the package receipt from the plan-derived private generation."""
+    root = _package_generation(package_plan)
+    try:
+        owner = loads(cap._windows_secure_input(root / 'owner.json', 1_000_000))
+        owned = owner['owned_directory']
+        check_private_directory(owned)
+        if owner['plan_sha256'] != package_plan['plan_sha256'] or owned['path'] != str(root):
+            raise InputError('windows_install_package_receipt_unavailable')
+        canonical = read_private_json(owned, 'package-receipt.json')
+    except (OSError, KeyError, TypeError, ValueError, cap.CapabilityError):
+        raise InputError('windows_install_package_receipt_unavailable') from None
+    validate_contract(canonical, 'windows-template-package-receipt-v1')
+    if (canonical['owned_directory'] != owned
+            or canonical['package_directory'] != str(root)
+            or canonical['plan_sha256'] != package_plan['plan_sha256']
+            or canonical['receipt_sha256'] != trusted_sha256
+            or digest({key: value for key, value in canonical.items()
+                       if key != 'receipt_sha256'}) != trusted_sha256):
+        raise InputError('windows_install_package_receipt_unverified')
+    return canonical
+
+
+def owned_windows_install_receipt(plan: dict, trusted_sha256: str) -> dict:
+    """Return the exact private installed receipt after full read-only status."""
+    status = windows_install_status(plan, trusted_receipt_sha256=trusted_sha256)
+    if (status['status'] != 'installed_recorded'
+            or status['receipt_trust'] != 'externally_anchored'):
+        raise InputError('windows_session_install_unverified')
+    root = _generation(plan)
+    try:
+        owner = loads(cap._windows_secure_input(root / 'owner.json', 1_000_000))
+        owned = owner['owned_directory']
+        check_private_directory(owned)
+        if owner['plan_sha256'] != plan['plan_sha256'] or owned['path'] != str(root):
+            raise InputError('windows_session_install_receipt_unavailable')
+        canonical = read_private_json(owned, 'install-receipt.json')
+    except (OSError, KeyError, TypeError, ValueError, cap.CapabilityError):
+        raise InputError('windows_session_install_receipt_unavailable') from None
+    validate_contract(canonical, 'windows-template-install-receipt-v1')
+    expected_python = root / 'venv' / 'Scripts' / 'python.exe'
+    expected_console = (root / 'venv' / 'Scripts' /
+                        (plan['package_plan']['inputs']['console_script'] + '.exe'))
+    if (canonical['receipt_sha256'] != trusted_sha256
+            or digest({key: value for key, value in canonical.items()
+                       if key != 'receipt_sha256'}) != trusted_sha256
+            or canonical['plan_sha256'] != plan['plan_sha256']
+            or canonical['owned_directory'] != owned
+            or canonical['environment'] != str(root)
+            or canonical['installed']['python'] != str(expected_python)
+            or canonical['installed']['console_script'] != str(expected_console)):
+        raise InputError('windows_session_install_receipt_unverified')
+    return canonical
+
+
 def plan_windows_template_install(package_plan: dict, package_receipt: dict,
                                   *, trusted_package_receipt_sha256: str) -> dict:
     """Plan one native Scripts/python.exe generation after anchored package build."""
@@ -36,11 +92,13 @@ def plan_windows_template_install(package_plan: dict, package_receipt: dict,
     validate_contract(package_receipt, 'windows-template-package-receipt-v1')
     status = windows_package_status(package_plan,
                                     trusted_receipt_sha256=trusted_package_receipt_sha256)
+    canonical = _owned_package_receipt(package_plan, trusted_package_receipt_sha256)
     if (package_plan != plan_windows_template_package(package_plan['request'])
             or trusted_package_receipt_sha256 != package_receipt['receipt_sha256']
             or status['status'] != 'built_recorded'
             or status['receipt_trust'] != 'externally_anchored'
-            or status['receipt_sha256'] != package_receipt['receipt_sha256']):
+            or status['receipt_sha256'] != package_receipt['receipt_sha256']
+            or package_receipt != canonical):
         raise InputError('windows_install_package_unverified')
     config = package_plan['request']['configuration']
     if config['jev_runtime']['mode'] != 'off':
