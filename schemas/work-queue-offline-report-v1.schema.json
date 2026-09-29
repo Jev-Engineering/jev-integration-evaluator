@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Independent work-queue installed offline report v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "kind", "classification", "run_id",
+    "source_candidate_id", "source_sha256", "modified_receipt_sha256",
+    "install_receipt_sha256", "raw_effect_sha256", "installed_origins",
+    "observed_operation", "effect_count", "start_recovered_same_run",
+    "duplicate_refused", "provider_qualification", "measured_benefit", "final_stage"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "work-queue-offline-report-v1"},
+    "classification": {"const": "second_independent_installed_host"},
+    "run_id": {"type": "string", "format": "uuid"},
+    "source_candidate_id": {"type": "string", "minLength": 1},
+    "source_sha256": {"$ref": "#/$defs/sha"},
+    "modified_receipt_sha256": {"$ref": "#/$defs/sha"},
+    "install_receipt_sha256": {"$ref": "#/$defs/sha"},
+    "raw_effect_sha256": {"$ref": "#/$defs/sha"},
+    "installed_origins": {"type": "object", "additionalProperties": false,
+      "required": ["host", "evaluator"], "properties": {
+        "host": {"type": "string", "pattern": "^/"},
+        "evaluator": {"type": "string", "pattern": "^/"}
+      }},
+    "observed_operation": {"const": "enqueue"},
+    "effect_count": {"const": 1},
+    "start_recovered_same_run": {"const": true},
+    "duplicate_refused": {"const": true},
+    "provider_qualification": {"const": "not_run"},
+    "measured_benefit": {"const": false},
+    "final_stage": {"const": "rolled_back"}
+  },
+  "$defs": {"sha": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+}

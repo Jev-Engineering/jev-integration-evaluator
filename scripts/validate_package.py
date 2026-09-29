@@ -217,7 +217,19 @@ def validate(check_manifest=False):
     required += ['tests/independent_hosts/registered_alpha/installed_journey.py',
                  'tests/independent_hosts/registered_alpha/README.md',
                  'tests/test_registered_alpha_installed_faults.py']
+    required += ['tests/independent_hosts/work_queue/README.md',
+                 'tests/independent_hosts/work_queue/pyproject.toml',
+                 'tests/independent_hosts/work_queue/src/work_queue/engine.py',
+                 'tests/independent_hosts/work_queue/src/work_queue/cli.py',
+                 'tests/independent_hosts/work_queue/qualification.py',
+                 'tests/independent_hosts/work_queue/installed_journey.py',
+                 'tests/independent_hosts/work_queue/review-v1.json',
+                 'tests/independent_hosts/work_queue/oracle-v1.json',
+                 'tests/test_work_queue_oracle.py',
+                 'tests/test_work_queue_installed.py']
     required += [f'{directory}/registered-alpha-offline-report-v1.schema.json'
+                 for directory in ('schemas', 'jev_integration_evaluator/data')]
+    required += [f'{directory}/work-queue-offline-report-v1.schema.json'
                  for directory in ('schemas', 'jev_integration_evaluator/data')]
     required += [f'{directory}/{name}.schema.json'
                  for directory in ('schemas', 'jev_integration_evaluator/data')

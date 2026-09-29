@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "status": "source_reviewed_for_offline_qualification",
+  "candidate": {
+    "id": "JEV-197C4BBF3EC5",
+    "pattern": "C",
+    "file": "src/work_queue/engine.py",
+    "symbol": "choose_operation",
+    "source_sha256": "699646626985360579dc29ce72915cc0bcdd9f04758dfb0476e63bd2352963d6",
+    "file_sha256": "36d0e0f67ebe1ef710eca6442fc9ee7c40feb1cc9fc34ea9650f337f25caa4d1"
+  },
+  "files": {
+    "pyproject.toml": "0eaffb3487a739b93b96127dfd9381f550e37ae305a417c7c2fc48fe1e3d6e73",
+    "src/work_queue/__init__.py": "8d4ee1d50b8299cf13e0fd5090ff0cb9287fc81432240692438369856ad110e3",
+    "src/work_queue/engine.py": "36d0e0f67ebe1ef710eca6442fc9ee7c40feb1cc9fc34ea9650f337f25caa4d1",
+    "src/work_queue/cli.py": "10a13ead07b7fa9273879b17037bb6bd447ed76974d6e679a4e1b2f54da987bc",
+    "src/work_queue/requirements.lock": "40502e31c4d3328640e117b1048e2b3af594feef10c4dcb1a48f807bfe9b8ee6",
+    "src/work_queue/runtime.json": "6551e1fa27fd8dbd093dbc4cdd839613492f866386cfa400cb27c9ab5288b8ca"
+  },
+  "qualification": {
+    "platform": "linux-x86_64-cpython3.13",
+    "mode": "off",
+    "provider_contacted": false,
+    "activation_authorized": false,
+    "measured_benefit": false
+  }
+}

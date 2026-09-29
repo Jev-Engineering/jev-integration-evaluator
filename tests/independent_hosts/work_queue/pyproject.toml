@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools==84.0.0", "wheel==0.48.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jev-independent-work-queue"
+version = "1.0.0"
+description = "Independent offline registered-operation host fixture"
+requires-python = ">=3.13"
+dependencies = ["jev-integration-evaluator==1.3.0.dev12"]
+
+[project.scripts]
+work-queue = "work_queue.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["work_queue*"]
+
+[tool.setuptools.package-data]
+work_queue = ["*.lock", "*.json"]
