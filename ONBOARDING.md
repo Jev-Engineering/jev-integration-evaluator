@@ -15,7 +15,8 @@ When a caller asks for a reusable integration template, collect the current revi
 For the six issue #59 use cases, read the [source-contract matrix](references/use-case-template-matrix-v1.md) first. A matched fixture digest and offline oracle do not establish a target binding or installed journey; each host needs fresh review and separate effect authority.
 The separate [L graph](references/graph-template-offline-v1.md),
 [D retrieval](references/retrieval-template-offline-v1.md),
-[E completion](references/completion-template-offline-v1.md) and
+[E completion](references/completion-template-offline-v1.md),
+[M claim support](references/claim-template-offline-v1.md) and
 [H retention](references/retention-template-offline-v1.md) operator references
 describe their synthetic off-mode installed journeys and pending recipe-specific
 console binds. They do not establish provider or benefit qualification.
