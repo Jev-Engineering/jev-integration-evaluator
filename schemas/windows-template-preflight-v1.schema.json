@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "status", "profile", "source_manifest_sha256", "source_files", "file_count", "target_modified", "target_executed", "apply_authorized", "install_authorized", "launch_authorized", "output_private_creation", "execution_boundary"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "status": {"const": "preparation_only"},
+    "profile": {
+      "type": "object", "additionalProperties": false,
+      "required": ["os", "build", "architecture", "python", "filesystem"],
+      "properties": {
+        "os": {"enum": ["windows_11", "windows_server_2022"]},
+        "build": {"type": "integer", "minimum": 20348},
+        "architecture": {"const": "x86_64"},
+        "python": {"type": "string", "pattern": "^3\\.(10|13|14)\\.[0-9]+$"},
+        "filesystem": {"const": "local_ntfs"}
+      }
+    },
+    "source_manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "source_files": {"type": "object", "minProperties": 1, "maxProperties": 32, "additionalProperties": {"type": "string", "pattern": "^[0-9a-f]{64}$"}},
+    "file_count": {"type": "integer", "minimum": 1, "maximum": 32},
+    "target_modified": {"const": false},
+    "target_executed": {"const": false},
+    "apply_authorized": {"const": false},
+    "install_authorized": {"const": false},
+    "launch_authorized": {"const": false},
+    "output_private_creation": {"const": "pending"},
+    "execution_boundary": {"const": "trusted_local_host_no_isolation"}
+  }
+}

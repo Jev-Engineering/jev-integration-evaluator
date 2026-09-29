@@ -77,6 +77,11 @@ off-mode configuration and external trusted tooling before using the
 [JS template catalog](references/javascript-recipe-c-template-v1.md).
 Catalog materialization does not request install or launch authority.
 
+For native Windows Python console work, inspect the read-only NTFS preparation
+contract in [Windows template preparation](references/windows-template-preparation-v1.md)
+before proposing any apply or installed journey. A preparation receipt is not
+runtime or mutation authority.
+
 For connected host runtime qualification, record the pinned endpoint/model,
 environment and reviewed source/configuration digests, budget scope, host-owned
 ledger location, and the independent authority that verifies egress,

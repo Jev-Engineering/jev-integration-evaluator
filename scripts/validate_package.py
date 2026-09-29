@@ -286,6 +286,12 @@ def validate(check_manifest=False):
                  for name in ('repository-run-context-v1', 'repository-run-scope-v1',
                               'repository-run-selection-v1',
                               'repository-session-v1', 'repository-offline-agent-review-v1')]
+    required += ['jev_integration_evaluator/windows_template_preflight.py',
+                 'scripts/windows_template_preflight.py',
+                 'tests/test_windows_template_preflight.py',
+                 'references/windows-template-preparation-v1.md']
+    required += [f'{directory}/windows-template-preflight-v1.schema.json'
+                 for directory in ('schemas', 'jev_integration_evaluator/data')]
     for item in required:
         if not (ROOT/item).is_file():raise InputError('Required package file missing: '+item)
     front=(ROOT/'SKILL.md').read_text(encoding='utf-8').split('---',2)

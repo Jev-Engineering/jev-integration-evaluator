@@ -24,6 +24,21 @@ owner-private environment and external observation files. Windows, macOS,
 other Python versions, service managers, connected provider activation and
 generic container or cloud delivery are not qualified by that profile.
 
+The proposed [native Windows template preparation](windows-template-preparation-v1.md)
+checks selected reviewed file bytes and local NTFS paths without changing the
+host. It is not native template delivery. Current stage support is:
+
+| Native Windows stage | Current qualification |
+| --- | --- |
+| Repository discovery | Qualified only as recorded below. |
+| Selected source/path preparation | Read-only local Windows 11 Pro build 26200, CPython 3.14.3 observation; Server 2022 candidates need independent runs. |
+| Implementation planning and mutation | No complete native Windows template-delivery qualification. |
+| Repository session | POSIX journal contract; native Windows unsupported. |
+| Package build and install | Existing template installer is Linux x86-64 CPython 3.13 only. |
+| Normal console launch, observation and owned stop | Native Windows adapter and installed journey pending; #56 delivery session is Linux only. |
+| Verification and execution isolation | No Windows seccomp-equivalent target isolation in this profile. |
+| Provider-connected runtime | Pending independent authority and live qualification. |
+
 | Platform and filesystem | Repository discovery | Qualification |
 | --- | --- | --- |
 | Linux, including WSL2 Linux filesystems | Supported through POSIX descriptor-relative reads with `O_NOFOLLOW`. | Existing Linux CI and recorded Linux/WSL runs. This change does not restart or reconfigure WSL. |
