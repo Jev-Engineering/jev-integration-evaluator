@@ -39,18 +39,21 @@ def raw_postconditions(case, retained, committed, mode, token_budget):
     }
 
 
-def reader_projection(question, retained):
+def reader_projection(question, retained, supersession):
     """Construct a new allowlisted object; scorer and chooser objects are absent."""
     if type(question) is not str or not question:
         raise ValueError("reader question missing")
     allowed = ("id", "text", "byte_sha256", "source_kind", "source_ref", "capture_revision")
-    return {"question": question, "retained_items": [
-        {key: item[key] for key in allowed} for item in retained
-    ]}
+    edge_keys = ("old_id", "new_id", "authority")
+    edges = [{key: edge[key] for key in edge_keys} for edge in supersession
+             if edge["authority"] == "host_reviewed"]
+    return {"question": question,
+            "retained_items": [{key: item[key] for key in allowed} for item in retained],
+            "supersession": edges}
 
 
 def read_later(projection):
-    if set(projection) != {"question", "retained_items"}:
+    if set(projection) != {"question", "retained_items", "supersession"}:
         raise ValueError("reader projection shape")
     match = re.search(r"(?:authoritative|verified) ([a-z_]+) (?:sources|value)", projection["question"])
     if match is None:
@@ -63,6 +66,13 @@ def read_later(projection):
     if verified:
         source = verified[-1]
         return {"answer": source["text"].split(" ", 1)[1], "citation_ids": [source["id"]]}
+    by_id = {item["id"]: item for item in sources}
+    reviewed_successors = [by_id[edge["new_id"]] for edge in projection["supersession"]
+                           if edge["authority"] == "host_reviewed" and
+                           edge["old_id"] in by_id and edge["new_id"] in by_id]
+    if reviewed_successors:
+        source = reviewed_successors[-1]
+        return {"answer": source["text"].split(" ", 1)[1], "citation_ids": [source["id"]]}
     values = {item["text"].split(" ", 1)[1] for item in sources}
     if len(values) > 1:
         return {"answer": "unresolved", "citation_ids": [item["id"] for item in sources]}
@@ -70,12 +80,12 @@ def read_later(projection):
     return {"answer": source["text"].split(" ", 1)[1], "citation_ids": [source["id"]]}
 
 
-def score_recall(question, scorer, retained, *, missing_reader=False):
+def score_recall(question, scorer, retained, supersession, *, missing_reader=False):
     if not scorer["applicable"]:
         return {"applicable": False, "success": None, "missing": False, "citation_ids": []}
     if missing_reader:
         return {"applicable": True, "success": False, "missing": True, "citation_ids": []}
-    projection = reader_projection(question, retained)
+    projection = reader_projection(question, retained, supersession)
     result = read_later(projection)
     original_digests = {item["id"]: item["byte_sha256"] for item in retained}
     required = set(scorer["required_source_ids"])

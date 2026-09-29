@@ -100,13 +100,17 @@ fault injections, mode attacks, co-authored synthetic choices, reader-visible
 later questions, and scorer-only answers/source IDs. The runner constructs
 allowlisted chooser and reader inputs; neither receives scorer answers or fault
 schedules. The independent oracle checks raw retained bytes/provenance and a
-later source-cited answer. Tasks test anticipated-domain recall, not arbitrary
+later source-cited answer. Reviewed supersession edges are carried in an
+allowlisted reader provenance field so a successor and an unresolved conflict
+remain distinct. Tasks test anticipated-domain recall, not arbitrary
 future recall. Reports contain IDs and counts, not original item text.
 
 The schedule has eight calibration cases and 24 holdout cases: 20 `/prune`
 efficacy rows for all three arms and four mode-safety rows for guarded arms.
 The historical function has no mode argument and is N/A on those four rows.
 Every blocked, missing and failed outcome stays in its applicable denominator.
+Scorer-only summaries include unnecessary retained tokens, abstentions,
+`needs_review`, and failure classes; these labels never enter retention policy.
 Synthetic assessment costs and sequential per-call/per-episode latencies are
 predeclared assumptions; local runner wall time is measured separately. No
 user history, provider, production memory or generator is used.
@@ -123,6 +127,4 @@ python -m pytest -q tests/test_coding_agent_retention.py
 
 The draft choices and oracle were co-authored as synthetic fixtures; independent
 adjudication and a frozen holdout remain required. A calibration result cannot
-support live adoption or permission to process real user history. The reader
-currently sees item provenance labels but no explicit supersession edge; cases
-whose answer depends on that edge can be undercounted as downstream successes.
+support live adoption or permission to process real user history.

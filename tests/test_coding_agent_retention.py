@@ -52,7 +52,7 @@ def test_strict_chooser_and_reader_projections_ignore_hidden_mutations():
     altered["fault"] = {"kind": "forged"}
     altered["items"][0]["required_source_ids"] = scorer["required_source_ids"]
     assert study.chooser_projection(altered, contract) == before
-    reader = oracle.reader_projection(question, case["items"])
+    reader = oracle.reader_projection(question, case["items"], case["supersession"])
     assert set(reader) == set(contract["reader"]["exact_top_level_keys"])
     assert set(reader["retained_items"][0]) == set(contract["reader"]["item_keys"])
     assert "expected_answer" not in json.dumps(reader)
@@ -68,9 +68,14 @@ def test_pin_only_shortfall_and_compact_are_no_write():
         store, status, assessments = study.guarded(case, arm, proposal, fault, None, study.load("projection"))
         assert status == "requires_separate_compaction" and assessments == []
         assert store.backend_calls == 0 and store.load() == case["items"]
-        attack = {"boundary": "guarded_host_api_prune_request", "attempted_mode": "/compact"}
-        store, status, assessments = study.guarded(case, arm, proposal, fault, attack, study.load("projection"))
-        assert status == "requires_separate_compaction" and assessments == [] and store.backend_calls == 0
+        for attack in ({"boundary": "mode_argument", "attempted_mode": "/prune"},
+                       {"boundary": "guarded_host_api_prune_request", "attempted_mode": "/compact"}):
+            store, status, assessments = study.guarded(case, arm, proposal, fault, attack, study.load("projection"))
+            assert status == "requires_separate_compaction" and assessments == [] and store.backend_calls == 0
+            assert store.host_requests == 1 and store.attack_receipt["rejected"] is True
+            assert store.attack_receipt["boundary"] == attack["boundary"]
+            assert store.attack_receipt.get("attempted_mode", store.attack_receipt.get("attempted_operation")) == (
+                "/prune" if attack["boundary"] == "mode_argument" else "prune")
 
 
 def test_keep_overflow_and_assessment_limit_fail_closed_on_calibration_clone():
@@ -87,6 +92,14 @@ def test_keep_overflow_and_assessment_limit_fail_closed_on_calibration_clone():
         many["items"].append(extra)
     store, status, assessments = study.guarded(many, "jev", proposal, fault, None, study.load("projection"))
     assert status == "assessment_limit_exceeded" and assessments == [] and store.backend_calls == 0
+
+
+def test_deterministic_recency_uses_immutable_sequence_not_input_order():
+    case, _, _, _, _ = calibration("c03")
+    selected = study.deterministic_ids(case)
+    reordered = copy.deepcopy(case)
+    reordered["items"] = list(reversed(reordered["items"]))
+    assert study.deterministic_ids(reordered) == selected
 
 
 def test_stale_binding_and_atomic_false_success_rollback():
@@ -139,13 +152,23 @@ def test_transaction_rechecks_mode_budget_pins_and_revision_before_write():
 
 def test_reader_requires_original_source_citation_and_postconditions():
     case, _, _, question, scorer = calibration("c03")
-    result = oracle.score_recall(question, scorer, case["items"])
+    result = oracle.score_recall(question, scorer, case["items"], case["supersession"])
     assert result["success"] is True
     missing = [item for item in case["items"] if item["id"] != scorer["required_source_ids"][0]]
-    assert oracle.score_recall(question, scorer, missing)["success"] is False
+    assert oracle.score_recall(question, scorer, missing, case["supersession"])["success"] is False
     mutated = copy.deepcopy(case["items"])
     mutated[0]["source_ref"] = "synthetic://forged"
     assert oracle.raw_postconditions(case, mutated, True, "/prune", case["token_budget"])["byte_or_provenance_loss"]
+
+
+def test_reviewed_successor_and_unresolved_conflict_are_distinct():
+    successor_case, _, _, successor_question, successor_scorer = calibration("c04")
+    assert oracle.score_recall(successor_question, successor_scorer, successor_case["items"],
+                               successor_case["supersession"])["success"] is True
+    assert oracle.score_recall(successor_question, successor_scorer, successor_case["items"], [])["success"] is False
+    conflict_case, _, _, conflict_question, conflict_scorer = calibration("c05")
+    assert conflict_case["supersession"] == []
+    assert oracle.score_recall(conflict_question, conflict_scorer, conflict_case["items"], [])["success"] is True
 
 
 def test_static_holdout_fault_and_mode_schedule_only():
@@ -185,6 +208,8 @@ def test_calibration_schema_denominators_and_holdout_gate():
     assert report["decision"] == "calibration_only_no_holdout_decision"
     assert report["summary"]["jev"]["per_call_p95_ms"] is not None
     assert report["summary"]["jev"]["per_episode_p95_ms"] is not None
+    assert report["summary"]["jev"]["unnecessary_retained_tokens"] >= 0
+    assert sum(report["summary"]["jev"]["failure_class_counts"].values()) == 7
     altered = copy.deepcopy(report)
     del altered["summary"]["jev"]["per_episode_p95_ms"]
     with pytest.raises(ValidationError):

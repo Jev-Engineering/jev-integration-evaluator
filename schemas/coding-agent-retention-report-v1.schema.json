@@ -30,8 +30,10 @@
   },
   "$defs": {
     "hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-    "arm": {"type": "object", "required": ["status", "backend_calls", "rollback_count", "committed", "assessment_count", "missing_latency_observations", "synthetic_cost_units", "synthetic_episode_latency_ms", "local_runner_wall_time_ms", "pin_loss", "byte_or_provenance_loss", "over_budget_commit", "wrong_mode_mutation", "retained_tokens", "recall", "later_task_success"], "properties": {
+    "arm": {"type": "object", "required": ["status", "backend_calls", "host_requests", "attack_receipt", "rollback_count", "committed", "assessment_count", "missing_latency_observations", "synthetic_cost_units", "synthetic_episode_latency_ms", "local_runner_wall_time_ms", "pin_loss", "byte_or_provenance_loss", "over_budget_commit", "wrong_mode_mutation", "retained_tokens", "recall", "later_task_success", "unnecessary_retained_tokens", "uncertain_assessment_count", "failure_class"], "properties": {
       "status": {"type": "string"}, "backend_calls": {"type": "integer", "minimum": 0},
+      "host_requests": {"type": "integer", "minimum": 0},
+      "attack_receipt": {"type": ["object", "null"]},
       "rollback_count": {"type": "integer", "minimum": 0}, "committed": {"type": "boolean"},
       "assessment_count": {"type": "integer", "minimum": 0, "maximum": 12},
       "missing_latency_observations": {"type": "integer", "minimum": 0},
@@ -42,13 +44,21 @@
       "over_budget_commit": {"type": "boolean"}, "wrong_mode_mutation": {"type": "boolean"},
       "retained_tokens": {"type": "integer", "minimum": 0},
       "recall": {"type": "object", "required": ["applicable", "success", "missing", "citation_ids"]},
-      "later_task_success": {"type": "boolean"}
+      "later_task_success": {"type": "boolean"},
+      "unnecessary_retained_tokens": {"type": "integer", "minimum": 0},
+      "uncertain_assessment_count": {"type": "integer", "minimum": 0},
+      "failure_class": {"type": "string"}
     }},
-    "summary_arm": {"type": "object", "required": ["efficacy_denominator", "safety_denominator", "later_task_success", "unresolved_contradiction_errors", "pin_loss", "byte_or_provenance_loss", "over_budget_commits", "wrong_mode_mutations", "assessment_calls", "missing_latency_observations", "synthetic_cost_units", "per_call_p50_ms", "per_call_p95_ms", "per_episode_p50_ms", "per_episode_p95_ms", "local_runner_wall_time_ms_total"], "properties": {
+    "summary_arm": {"type": "object", "required": ["efficacy_denominator", "safety_denominator", "later_task_success", "unresolved_contradiction_errors", "unnecessary_retained_tokens", "abstentions", "needs_review", "uncertain_assessments", "failure_class_counts", "pin_loss", "byte_or_provenance_loss", "over_budget_commits", "wrong_mode_mutations", "assessment_calls", "missing_latency_observations", "synthetic_cost_units", "per_call_p50_ms", "per_call_p95_ms", "per_episode_p50_ms", "per_episode_p95_ms", "local_runner_wall_time_ms_total"], "properties": {
       "efficacy_denominator": {"type": "integer", "minimum": 0},
       "safety_denominator": {"type": "integer", "minimum": 0},
       "later_task_success": {"type": "integer", "minimum": 0},
       "unresolved_contradiction_errors": {"type": "integer", "minimum": 0},
+      "unnecessary_retained_tokens": {"type": "integer", "minimum": 0},
+      "abstentions": {"type": "integer", "minimum": 0},
+      "needs_review": {"type": "integer", "minimum": 0},
+      "uncertain_assessments": {"type": "integer", "minimum": 0},
+      "failure_class_counts": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
       "pin_loss": {"type": "integer", "minimum": 0},
       "byte_or_provenance_loss": {"type": "integer", "minimum": 0},
       "over_budget_commits": {"type": "integer", "minimum": 0},

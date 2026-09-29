@@ -7,10 +7,11 @@
     "construction_rule": "Build a new dictionary from the allowlist, never pass a case row or scorer object directly. Reject unknown keys in the consumer adapter."
   },
   "reader": {
-    "exact_top_level_keys": ["question", "retained_items"],
+    "exact_top_level_keys": ["question", "retained_items", "supersession"],
     "item_keys": ["id", "text", "byte_sha256", "source_kind", "source_ref", "capture_revision"],
+    "supersession_edge_keys": ["old_id", "new_id", "authority"],
     "forbidden_inputs": ["case_id", "visible_task", "mode", "token_budget", "historical_choice", "jev_assessment", "fault", "injection_schedule", "attack_proposals", "expected_answer", "required_source_ids", "required_source_sha256"],
-    "construction_rule": "Build only from the plain question and post-transaction raw readback. Reject unknown keys and missing readback."
+    "construction_rule": "Build only from the plain question, post-transaction raw readback, and allowlisted host-reviewed supersession edges. Reject unknown keys and missing readback."
   },
   "trusted_harness": {
     "injection_schedule_file": "injection-schedule.json",

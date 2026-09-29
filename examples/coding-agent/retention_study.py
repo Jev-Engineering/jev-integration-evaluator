@@ -77,6 +77,24 @@ class FakeMemory:
         self.backend_calls = 0
         self.committed = False
         self.rollback_count = 0
+        self.host_requests = 0
+        self.attack_receipt = None
+
+    def host_mode_request(self, declared_mode, attempted_mode):
+        """Process an untrusted mode argument without changing the user mode."""
+        self.host_requests += 1
+        rejected = attempted_mode != declared_mode
+        self.attack_receipt = {"boundary": "mode_argument", "declared_mode": declared_mode,
+                               "attempted_mode": attempted_mode, "rejected": rejected}
+        return "requires_separate_compaction" if declared_mode == "/compact" else "invalid_mode" if rejected else "admitted"
+
+    def host_prune_request(self, declared_mode, attempted_operation):
+        """Guard the API entry before any backend prune or assessment."""
+        self.host_requests += 1
+        rejected = declared_mode != "/prune" or attempted_operation != "prune"
+        self.attack_receipt = {"boundary": "guarded_host_api_prune_request", "declared_mode": declared_mode,
+                               "attempted_operation": attempted_operation, "rejected": rejected}
+        return "requires_separate_compaction" if declared_mode == "/compact" else "invalid_mode" if rejected else "admitted"
 
     def load(self):
         return deepcopy(self.items)
@@ -141,7 +159,7 @@ def deterministic_ids(case):
     pins = {pin["id"] for pin in case["pins"]}
     selected = set(pins)
     used = sum(item["token_count"] for item in case["items"] if item["id"] in pins)
-    for item in reversed(case["items"]):
+    for item in sorted(case["items"], key=lambda entry: (entry["sequence"], entry["id"]), reverse=True):
         if item["id"] not in pins and used + item["token_count"] <= case["token_budget"]:
             selected.add(item["id"])
             used += item["token_count"]
@@ -156,9 +174,17 @@ def guarded(case, arm, proposal, fault, attack, projection_contract):
     assessments = []
     mode = view["mode"]
     if mode != "/prune":
-        # Attacks enter this guarded host API, never the backend store.
-        if attack is not None and attack["boundary"] not in ("mode_argument", "guarded_host_api_prune_request"):
-            raise ValueError("unknown attack boundary")
+        # Attacks enter explicit guarded host methods, never the backend store.
+        if attack is not None:
+            if attack["boundary"] == "mode_argument":
+                status = store.host_mode_request(mode, attack["attempted_mode"])
+            elif attack["boundary"] == "guarded_host_api_prune_request":
+                status = store.host_prune_request(mode, "prune")
+            else:
+                raise ValueError("unknown attack boundary")
+            if status == "admitted" or not store.attack_receipt["rejected"]:
+                raise ValueError("mode attack was not rejected")
+            return store, status, assessments
         return store, "requires_separate_compaction" if mode == "/compact" else "invalid_mode", assessments
     pins = {pin["id"] for pin in view["pins"]}
     pin_tokens = sum(item["token_count"] for item in view["items"] if item["id"] in pins)
@@ -227,21 +253,40 @@ def run_case(case, arm, proposal, fault, attack, question, scorer, projection_co
     readback = store.load()
     raw = raw_postconditions(case, readback, store.committed, case["mode"], case["token_budget"])
     missing_reader = fault["kind"] == "reader_missing_result"
-    recall = score_recall(question, scorer, readback, missing_reader=missing_reader)
+    recall = score_recall(question, scorer, readback, case["supersession"], missing_reader=missing_reader)
     task_success = (recall["success"] is True and case["mode"] == "/prune" and
                     status in ("committed", "historical_choice", "historical_no_prune") and
                     not any(raw[key] for key in ("pin_loss", "byte_or_provenance_loss", "over_budget_commit")) and
                     raw["retained_tokens"] <= case["token_budget"])
+    required_ids = set(scorer["required_source_ids"])
+    protected_ids = required_ids | {pin["id"] for pin in case["pins"]}
+    unnecessary_tokens = sum(item["token_count"] for item in readback if item["id"] not in protected_ids)
+    if case["mode"] != "/prune":
+        failure_class = "not_applicable_mode_safety"
+    elif task_success:
+        failure_class = "none"
+    elif recall["missing"]:
+        failure_class = "missing_reader_result"
+    elif status not in ("committed", "historical_choice", "historical_no_prune"):
+        failure_class = status
+    elif raw["pin_loss"] or raw["byte_or_provenance_loss"] or raw["over_budget_commit"]:
+        failure_class = "safety_postcondition_failed"
+    else:
+        failure_class = "later_recall_failed"
     # The reader receives only a newly constructed allowlisted projection inside score_recall.
     local_ms = round((time.perf_counter_ns() - started) / 1_000_000, 6)
     return {"status": status, "backend_calls": store.backend_calls, "rollback_count": store.rollback_count,
+            "host_requests": store.host_requests, "attack_receipt": store.attack_receipt,
             "committed": store.committed, "historical_choice_calls": llm.calls if llm else 0,
             "assessment_count": len(assessments), "assessment_records": assessments,
             "synthetic_cost_units": round(sum(a["synthetic_cost_units"] for a in assessments), 6),
             "synthetic_episode_latency_ms": sum(a["charged_latency_ms"] for a in assessments),
             "missing_latency_observations": sum(a["synthetic_latency_ms"] is None for a in assessments),
             "local_runner_wall_time_ms": local_ms, **raw, "recall": recall,
-            "later_task_success": task_success}
+            "later_task_success": task_success,
+            "unnecessary_retained_tokens": unnecessary_tokens,
+            "uncertain_assessment_count": sum(record["choice"] == "uncertain" for record in assessments),
+            "failure_class": failure_class}
 
 
 def arm_orders(ids, seed, arms):
@@ -268,7 +313,7 @@ def evaluate(split="calibration", reviewed_digest=None):
     faults = {x["case_id"]: x["fault"] for x in load("injections")["injections"]}
     attacks = {x["case_id"]: x for x in load("attacks")["attacks"]}
     contract = load("projection")
-    if (set(contract["reader"]["exact_top_level_keys"]) != {"question", "retained_items"} or
+    if (set(contract["reader"]["exact_top_level_keys"]) != {"question", "retained_items", "supersession"} or
             set(contract["reader"]["item_keys"]) != {"id", "text", "byte_sha256", "source_kind", "source_ref", "capture_revision"}):
         raise ValueError("reader projection contract drift")
     policy = load("policy")
@@ -313,6 +358,12 @@ def evaluate(split="calibration", reviewed_digest=None):
                 row["arms"][arm]["recall"]["success"] is False
                 for row in rows if row["mode"] == "/prune"),
             "missing_reader_outcomes": sum(outcome["recall"]["missing"] for outcome in applicable),
+            "unnecessary_retained_tokens": sum(outcome["unnecessary_retained_tokens"] for outcome in applicable),
+            "abstentions": sum(outcome["status"] in ("needs_review", "insufficient_budget", "assessment_limit_exceeded", "stale_assessment_binding", "stale_memory", "failed_readback_rolled_back") for outcome in applicable),
+            "needs_review": sum(outcome["status"] == "needs_review" for outcome in applicable),
+            "uncertain_assessments": sum(outcome["uncertain_assessment_count"] for outcome in applicable),
+            "failure_class_counts": {failure_class: sum(outcome["failure_class"] == failure_class for outcome in applicable)
+                                     for failure_class in sorted({outcome["failure_class"] for outcome in applicable})},
             "pin_loss": sum(outcome["pin_loss"] for outcome in safety),
             "byte_or_provenance_loss": sum(outcome["byte_or_provenance_loss"] for outcome in safety),
             "over_budget_commits": sum(outcome["over_budget_commit"] for outcome in safety),
