@@ -202,6 +202,20 @@ an early new effect. Disable and exact selection rollback retain both
 generations and both historical effects; owned JS source rollback restores
 the reviewed pre-edit files. The ESM child-release fault cases remain separate.
 
+The separate [independent ESM fixture](../tests/independent_hosts/esm_recipe_c/README.md)
+pins two complete source/package versions before materialization. Its installed
+evaluator CLI materializes the 1.0.0 source from an offline wheel, and the
+normal installed `node start.mjs` command reaches the transformed `seam` under
+the off-mode supervisor. Version 1.0.1 changes the actual `host.mjs` return
+and host callback argument. Independent raw files record `read:alpha` and
+`read:beta:v2`, with separate live ready and integration checks. The journey
+retains both exact installed generations and receipts, rejects source drift
+before upgrade, resumes a pre-release interrupted start under the same run ID,
+disables the new generation and selects the old generation with the exact
+rollback digest. Both reviewed source trees are then restored through their
+owned JS rollback digests. This is a bounded offline ESM fixture, not
+connected provider or measured benefit evidence.
+
 The [installed TypeScript upgrade journey](../tests/test_node_template_installed_upgrade.py)
 uses two separately reviewed fixture packages, versions 1.0.0 and 1.0.1.
 The 1.0.1 `host.ts` changes the finite `original` function called by the

@@ -192,7 +192,16 @@ def validate(check_manifest=False):
                  'references/template-node-installation-v1.md',
                  'tests/test_node_template_installation.py',
                  'tests/test_node_template_installed_upgrade.py',
+                 'tests/test_node_template_installed_esm.py',
                  'tests/test_node_template_session.py']
+    required += [f'{directory}/independent-esm-recipe-c-review-v1.schema.json'
+                 for directory in ('schemas', 'jev_integration_evaluator/data')]
+    required += ['tests/independent_hosts/esm_recipe_c/README.md',
+                 'tests/independent_hosts/esm_recipe_c/review-v1.json']
+    required += [f'tests/independent_hosts/esm_recipe_c/{prefix}{name}'
+                 for prefix in ('', 'versions/1.0.1/')
+                 for name in ('host.mjs', 'start.mjs', 'package.json',
+                              'package-lock.json')]
     required += [f'{directory}/{name}.schema.json'
                  for directory in ('schemas', 'jev_integration_evaluator/data')
                  for name in ('node-package-request-v1', 'node-package-plan-v1',
