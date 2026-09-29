@@ -31,6 +31,17 @@ For executable-integration changes, also run `python scripts/run_implementation_
 
 For template catalog changes, keep the packaged manifest, mirrored request/manifest/lock schemas, CLI/API, lifecycle matrix, references and wheel checks aligned. Run `tests/test_template_catalog.py` and `tests/test_template_materialization_wheel.py`, then rebuild `SHA256SUMS` after final edits and run `python scripts/validate_package.py --check-manifest`. Template materialization is an offline planner-input gate, not installed host delivery.
 
+For template installation changes, keep the five mirrored package/install
+schemas, CLI/API, Linux profile, recovery journal, reference and clean-host
+test aligned. Ordinary tests never acquire packages. When explicitly scoped,
+prepare a private wheelhouse with
+`python scripts/prepare_template_wheelhouse.py --out NEW_EXTERNAL_DIRECTORY`
+and set `JEV_TEMPLATE_WHEELHOUSE` before running
+`tests/test_template_installation.py` on Linux x86-64 CPython 3.13. The hosted
+3.13 job prepares this wheelhouse before the test suite. Record the wheelhouse
+source, interpreter, skips and exact failure stage. Rebuild checksums after
+the final edit.
+
 For dev3 changes, retain the observation-contract, full-schedule receipt, unavailable-command, real process-termination and source-fidelity regressions. Re-verification after interruption must not reuse a historical pass as current evidence.
 
 For discovery changes, run all `tests/test_capabilities*.py` suites on a supported

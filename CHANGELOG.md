@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased — offline template package and installation
+
+- Add strict source-bound package and install plans for an already applied,
+  externally verified Linux CPython 3.13 host; build a pure host wheel and
+  install a hash-checked offline dependency set into a private versioned venv.
+- Add exact artifact/ABI/config/secret-reference receipts, effect journals,
+  read-only status and explicit owned-generation recovery. A clean synthetic
+  installed host reaches its declared console entry; provider use and benefit
+  remain unqualified.
+
 ## Unreleased — versioned template catalog
 
 - Package `python.bounded-tail-call@1.0.0` with strict request, manifest and

@@ -12,6 +12,16 @@ For several repositories, scan each root separately with separate output directo
 
 When a caller asks for a reusable integration template, collect the current reviewed inventory and source-specific implementation specification first. `template validate` checks these inputs against the current host, and `template materialize` writes private planner inputs only. Neither operation grants modification, execution, network, or activation authority. See `references/template-catalog-v1.md`.
 
+For installed Python host delivery, collect the externally trusted modified
+implementation receipt, a reviewed full package-source digest, exact CPython
+3.13/Linux x86-64 interpreter and build-tool pins, an offline hash-checked
+wheelhouse, strict off configuration and secret references, and an owner-private
+environment parent. `template package` and `template install-plan` are
+read-only plans; build/install/recovery effects need their own exact scope.
+Retain each plan/receipt digest outside its directory. Never infer launch,
+connected mode, or measured benefit from an install receipt. See
+`references/template-installation-v1.md`.
+
 Example answered intake:
 
 ```json

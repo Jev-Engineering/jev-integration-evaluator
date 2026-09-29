@@ -153,9 +153,19 @@ def validate(check_manifest=False):
                  'references/template-catalog-v1.md',
                  'tests/test_template_catalog.py',
                  'tests/test_template_materialization_wheel.py']
+    required += ['jev_integration_evaluator/template_installation.py',
+                 'references/template-installation-v1.md',
+                 'scripts/build_template_installation_schemas.py',
+                 'scripts/prepare_template_wheelhouse.py',
+                 'tests/test_template_installation.py']
     required += [f'{directory}/{name}.schema.json'
                  for directory in ('schemas', 'jev_integration_evaluator/data')
                  for name in ('template-request-v1', 'template-manifest-v1', 'template-lock-v1')]
+    required += [f'{directory}/{name}.schema.json'
+                 for directory in ('schemas', 'jev_integration_evaluator/data')
+                 for name in ('template-package-request-v1', 'template-package-plan-v1',
+                              'template-package-receipt-v1', 'template-install-plan-v1',
+                              'template-install-receipt-v1')]
     required += [f'{directory}/{name}.schema.json'
                  for directory in ('schemas', 'jev_integration_evaluator/data')
                  for name in ('javascript-implementation-spec-v1',
