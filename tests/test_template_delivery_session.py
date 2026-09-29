@@ -408,3 +408,83 @@ def test_upgrade_retains_old_generation_and_requires_new_launch_scope(tmp_path, 
     assert restored['stage'] == 'rolled_back'
     assert restored['generation_id'] == old['generation_id']
     assert Path(new['environment']).is_dir()
+
+
+def test_partial_upgrade_and_rollback_pending_recover_without_relaunch(tmp_path, monkeypatch):
+    receipts = {}
+    old, old_effect = _fake_installed(tmp_path / 'old', monkeypatch, pause=0.05,
+                                      receipts=receipts)
+    new, new_effect = _fake_installed(tmp_path / 'new', monkeypatch, pause=0.05,
+                                      receipts=receipts)
+    session = tmp_path / 'session'
+    created = delivery.create_session(session, old)
+    launched_scope = _scope(created, old, launch=True)
+    launched = delivery.launch_session(session, scope=launched_scope,
+        approved_scope_sha256=launched_scope['scope_sha256'])
+    stop_scope = _scope(launched, old, stop=True)
+    stopped = delivery.stop_session(session, scope=stop_scope,
+        approved_scope_sha256=stop_scope['scope_sha256'], grace_seconds=2)
+    assert old_effect.read_bytes() == b'actual-owned-effect'
+    upgrade_scope = _scope(stopped, old)
+    upgrade_scope['grants']['upgrade'] = True
+    upgrade_scope['upgrade_plan_sha256'] = new['plan_sha256']
+    upgrade_scope['scope_sha256'] = digest({k: v for k, v in upgrade_scope.items()
+                                             if k != 'scope_sha256'})
+    original_append = delivery._append
+
+    def interrupt_upgrade(path, rows, event, state):
+        if event == 'upgrade_staged':
+            raise RuntimeError('injected_after_plan_archive')
+        return original_append(path, rows, event, state)
+
+    monkeypatch.setattr(delivery, '_append', interrupt_upgrade)
+    with pytest.raises(RuntimeError, match='injected_after_plan_archive'):
+        delivery.upgrade_session(session, new, scope=upgrade_scope,
+            approved_scope_sha256=upgrade_scope['scope_sha256'])
+    unchanged = delivery.session_status(session,
+        trusted_session_head=stopped['session_head_sha256'])
+    assert unchanged['generation_id'] == old['generation_id']
+    assert unchanged['recorded_observations']['launched'] is True
+    assert not new_effect.exists()
+    monkeypatch.setattr(delivery, '_append', original_append)
+    upgraded = delivery.upgrade_session(session, new, scope=upgrade_scope,
+        approved_scope_sha256=upgrade_scope['scope_sha256'])
+    assert upgraded['stage'] == 'upgrade_staged'
+    assert upgraded['recorded_observations']['launched'] is False
+    assert not new_effect.exists()
+    # A cutover never carries old launch authority into the new generation.
+    with pytest.raises(delivery.DeliveryError, match='exact_delivery_scope'):
+        delivery.launch_session(session, scope=launched_scope,
+            approved_scope_sha256=launched_scope['scope_sha256'])
+    launch_new_scope = _scope(upgraded, new, launch=True)
+    launched_new = delivery.launch_session(session, scope=launch_new_scope,
+        approved_scope_sha256=launch_new_scope['scope_sha256'])
+    stop_new_scope = _scope(launched_new, new, stop=True)
+    stopped_new = delivery.stop_session(session, scope=stop_new_scope,
+        approved_scope_sha256=stop_new_scope['scope_sha256'], grace_seconds=2)
+    assert new_effect.read_bytes() == b'actual-owned-effect'
+    rollback_scope = _scope(stopped_new, new)
+    rollback_scope['grants']['rollback'] = True
+    rollback_scope['rollback_digest'] = stopped_new['previous_generation_rollback_digest']
+    rollback_scope['scope_sha256'] = digest({k: v for k, v in rollback_scope.items()
+                                              if k != 'scope_sha256'})
+
+    def interrupt_rollback(path, rows, event, state):
+        if event == 'rolled_back':
+            raise RuntimeError('injected_after_rollback_pending')
+        return original_append(path, rows, event, state)
+
+    monkeypatch.setattr(delivery, '_append', interrupt_rollback)
+    with pytest.raises(RuntimeError, match='injected_after_rollback_pending'):
+        delivery.rollback_session(session, scope=rollback_scope,
+            approved_scope_sha256=rollback_scope['scope_sha256'])
+    pending = delivery.session_status(session)
+    assert pending['stage'] == 'rollback_pending'
+    assert pending['generation_id'] == new['generation_id']
+    monkeypatch.setattr(delivery, '_append', original_append)
+    recovered = delivery.resume_session(session,
+        trusted_session_head=pending['session_head_sha256'])
+    assert recovered['stage'] == 'rolled_back'
+    assert recovered['generation_id'] == old['generation_id']
+    assert recovered['recorded_observations']['launched'] is False
+    assert Path(new['environment']).is_dir()
