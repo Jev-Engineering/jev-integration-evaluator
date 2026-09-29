@@ -182,6 +182,14 @@ def plan_composite(root, inventory, selection, specs, output):
         if row['file'] in discovery and discovery[row['file']] != value:
             raise InputError('Composite source scope conflicts with reviewed inventory')
         discovery[row['file']] = value
+    console_report = None
+    if any('entrypoint_binding' in spec for spec in checked.values()):
+        from .composite_console import render_composite_console
+        console_text, console_report = render_composite_console(root, selection, checked)
+        rel = console_report['file']
+        if set(candidate for candidate, _ in revisions.get(rel, [])) != set(selection['candidate_ids']):
+            raise InputError('Composite console ownership differs from selected placements')
+        revisions[rel] = [(selection['candidate_ids'][0], console_text.encode('utf-8'))]
     changes = [{'file':rel,'new_content':_compose_file(root,rel,items)} for rel,items in sorted(revisions.items())]
     patch = make_patch_plan(root, changes, selection['candidate_ids'])
     if any(stat.S_IMODE(safe_child(root,row['file']).stat().st_mode) & 0o7000
@@ -202,6 +210,8 @@ def plan_composite(root, inventory, selection, specs, output):
                  'specifications.json':checked,'patch-plan.json':patch,
                  'derived-manifests.json':{key:{k:v for k,v in value.items() if k!='changes'}
                                            for key,value in derived.items()}}
+    if console_report is not None:
+        artifacts['composite-console.json'] = console_report
     for name,value in artifacts.items(): write_json(bundle/name,value)
     hashes = {name:file_hash(bundle/name) for name in artifacts}
     hashes.update({row['preimage']:file_hash(safe_child(bundle,row['preimage']))
@@ -230,6 +240,8 @@ def _load(root, bundle, *, current_engine=False):
         raise InputError('Composite engine changed; replan and review')
     expected = {'selection.json','reviewed-inventory.json','specifications.json',
                 'patch-plan.json','derived-manifests.json'}
+    if 'composite-console.json' in plan['artifacts']:
+        expected.add('composite-console.json')
     expected.update(row['preimage'] for row in plan['owned_files'] if row['preimage'])
     if set(plan['artifacts']) != expected:
         raise InputError('Composite artifact set differs from reviewed plan')
@@ -250,6 +262,17 @@ def _load(root, bundle, *, current_engine=False):
             patch['candidate_ids'] != plan['candidate_ids'] or
             patch['repository_identity'] != digest(str(root))):
         raise InputError('Composite selected set, source or patch identity changed')
+    if any('entrypoint_binding' in spec for spec in specs.values()):
+        if 'composite-console.json' not in plan['artifacts']:
+            raise InputError('Composite console binding report missing')
+        report = read_json(bundle/'composite-console.json')
+        edits = [row for row in patch['changes'] if row['file'] == report.get('file')]
+        if (report.get('candidate_ids') != plan['candidate_ids'] or
+                report.get('selected_set_digest') != plan['selected_set_digest'] or
+                len(edits) != 1 or report.get('file_sha256') != edits[0]['new_sha256']):
+            raise InputError('Composite console binding differs from reviewed patch')
+    elif 'composite-console.json' in plan['artifacts']:
+        raise InputError('Unreviewed composite console report')
     for cid,spec in specs.items():
         validate_spec(spec)
         if cid != spec['candidate_id'] or spec['inventory_sha256'] != plan['inventory_sha256']:
@@ -385,6 +408,12 @@ def apply_composite(root,bundle,approval,*,baseline_sha256):
             validate_inventory(root,inventory,specs[cid])
             for change in transform(root,specs[cid])['changes']:
                 reproduced.setdefault(change['file'],[]).append((cid,change['new_content'].encode('utf-8')))
+        if 'composite-console.json' in plan['artifacts']:
+            from .composite_console import render_composite_console
+            console_text, report = render_composite_console(root, selection, specs)
+            if report != read_json(bundle/'composite-console.json'):
+                raise InputError('Composite console source binding changed before apply')
+            reproduced[report['file']] = [(selection['candidate_ids'][0], console_text.encode('utf-8'))]
         expected = {rel:_compose_file(root,rel,items) for rel,items in reproduced.items()}
         if expected != {row['file']:row['new_content'] for row in patch['changes']}:
             raise InputError('Composite patch differs from independently reproduced recipes')

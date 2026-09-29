@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "plan_sha256",
+    "package_receipt_sha256",
+    "environment",
+    "generation_id",
+    "configuration_sha256",
+    "secret_references_sha256",
+    "installed",
+    "mode",
+    "launched",
+    "provider_reachable",
+    "runtime_activation_authorized",
+    "receipt_sha256",
+    "candidate_ids",
+    "selected_set_digest",
+    "composite_bundle_digest"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "template-composite-install-receipt-v1"
+    },
+    "plan_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "package_receipt_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "environment": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generation_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "configuration_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "secret_references_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "installed": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "python",
+        "console_script",
+        "console_script_sha256",
+        "entrypoint_origin",
+        "installed_files_sha256",
+        "distributions"
+      ],
+      "properties": {
+        "python": {
+          "type": "string",
+          "minLength": 1
+        },
+        "console_script": {
+          "type": "string",
+          "minLength": 1
+        },
+        "console_script_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "entrypoint_origin": {
+          "type": "string",
+          "minLength": 1
+        },
+        "installed_files_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "distributions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "mode": {
+      "const": "off"
+    },
+    "launched": {
+      "const": false
+    },
+    "provider_reachable": {
+      "const": false
+    },
+    "runtime_activation_authorized": {
+      "const": false
+    },
+    "receipt_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "candidate_ids": {
+      "maxItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 2,
+      "type": "array"
+    },
+    "selected_set_digest": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "composite_bundle_digest": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    }
+  }
+}

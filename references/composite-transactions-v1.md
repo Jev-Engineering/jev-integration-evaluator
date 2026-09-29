@@ -1,5 +1,33 @@
 # Reviewed composite implementation transaction v1
 
+## Installed two-console profile
+
+A narrow additional profile binds two independently reviewed recipe-C console
+placements in one Python package. Both declared scripts must be different
+functions in the same console source; their host modules and generated adapters
+must be distinct, and the current source must match both entrypoint bindings.
+The primary script calls both original finite host task functions with one
+stable task ID. One `HostRuntimeLifecycle` supplies both bindings and a shared
+coordinator; the generated console checks the reviewed per-task budget and
+combined dependency hashes before binding either host. The host must supply
+`observe_composite_runtime(runtime, request, candidate_ids)` to check actual
+audit and effect state. The second task's failure propagates; the first task
+is not retried. Planning only reads source and never imports target modules.
+
+The source plan includes `composite-console.json` and its exact rendered file
+hash. The composite package/install APIs in
+`jev_integration_evaluator.template_installation` accept a distinct
+`template-composite-package-request-v1` with both candidate/template locks,
+the composite bundle digest and an independently trusted modified verification
+receipt. Their separate plan/receipt schemas bind the selected set. Build and
+install use the same offline, private generation journal as the single-host
+installer; `recover_composite_installation` rechecks that journal and bytes
+before adoption or removal. A real installed console is tested on Linux
+x86-64 CPython 3.13 with synthetic local effects. Connected composite mode is
+unsupported, and installation alone does not establish launch readiness,
+provider reachability or benefit. The installed lifecycle supervisor belongs
+to issue #56.
+
 `implement-composite-*` is an additive synthetic, trusted-host workflow for two
 to four bounded Python recipes. It does not change the original single-placement
 CLI, its receipts, or its source-drift rules. The planner reads one reviewed
