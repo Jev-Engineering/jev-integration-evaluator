@@ -26,9 +26,10 @@ the driver checks the raw files against the oracle independently.
 The driver interrupts the waiting child before release, reconciles the same
 delivery run, then launches once. It calls both transformed seams again while
 the shared owner is still live: the two-call budget permits no new assessment,
-and the audit records `shared_total_call_budget` twice. Both host effect
-ledgers reject the repeated task. A separate invocation
-with the same task ID is also rejected. The driver disables the session and
+and the audit records a `shared_total_call_budget` denial. A later repeat
+may also record a fail-closed runtime suspension after the two-call budget
+has been spent. Both host effect ledgers reject the repeated task. A separate
+invocation with the same task ID is also rejected. The driver disables the session and
 rolls back the owned composite source edits. Its strict report schema has an
 identical packaged copy.
 
