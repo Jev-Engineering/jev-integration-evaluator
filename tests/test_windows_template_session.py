@@ -11,6 +11,7 @@ import uuid
 
 import pytest
 
+from jev_integration_evaluator import windows_template_session as native_session
 from jev_integration_evaluator.io import digest
 from jev_integration_evaluator.io import InputError
 from jev_integration_evaluator.windows_template_plan import _static_build_guard
@@ -20,12 +21,13 @@ from jev_integration_evaluator.windows_template_owned import (
 from jev_integration_evaluator.windows_template_session import (
     _identity, _job_members, _kernel, _kill_on_last_job_handle, _owned_process,
     _start_guardian, _current_guardian_python, _verified_guardian_python,
-    stop_windows_template_session, windows_session_status,
+    observe_windows_template_session, stop_windows_template_session,
+    windows_session_status,
 )
 
 
 @pytest.mark.skipif(os.name != 'nt', reason='native Windows Job Object only')
-def test_owned_job_stop_does_not_touch_unrelated_process(tmp_path):
+def test_owned_job_stop_does_not_touch_unrelated_process(tmp_path, monkeypatch):
     owned = create_private_directory(tmp_path / 'session')
     zero = '0' * 64
     session = {'schema_version': '1.0', 'kind': 'windows-template-session-v1',
@@ -64,6 +66,53 @@ def test_owned_job_stop_does_not_touch_unrelated_process(tmp_path):
                                      {'identity_sha256': identity['identity_sha256'],
                                       'status': 'released'})
         assert windows_session_status(session)['process_alive']
+        class UncertainKernel:
+            def __init__(self, mode):
+                self.mode = mode
+
+            def __getattr__(self, name):
+                return getattr(kernel, name)
+
+            def OpenProcess(self, *args):
+                if self.mode == 'process_denied':
+                    ctypes.set_last_error(5)
+                    return 0
+                return kernel.OpenProcess(*args)
+
+            def OpenJobObjectW(self, *args):
+                if self.mode in ('job_denied', 'job_missing'):
+                    ctypes.set_last_error(5 if self.mode == 'job_denied' else 2)
+                    return 0
+                return kernel.OpenJobObjectW(*args)
+
+            def IsProcessInJob(self, process, job, member):
+                if self.mode == 'membership_denied':
+                    ctypes.set_last_error(5)
+                    return 0
+                if self.mode == 'membership_changed':
+                    member._obj.value = 0
+                    return 1
+                return kernel.IsProcessInJob(process, job, member)
+
+        for mode, reason in (
+                ('process_denied', 'process_open_unavailable'),
+                ('job_denied', 'job_open_unavailable'),
+                ('job_missing', 'job_open_unavailable'),
+                ('membership_denied', 'job_membership_unavailable'),
+                ('membership_changed', 'job_membership_changed')):
+            with monkeypatch.context() as patch:
+                patch.setattr(native_session, '_kernel', lambda: UncertainKernel(mode))
+                with pytest.raises(InputError, match=reason):
+                    windows_session_status(session)
+                with pytest.raises(InputError, match=reason):
+                    observe_windows_template_session(
+                        session, approved_identity_sha256=identity['identity_sha256'],
+                        phase='effect', path=tmp_path.parent / 'effect.json',
+                        expected_sha256=zero)
+                with pytest.raises(InputError, match=reason):
+                    stop_windows_template_session(
+                        session, approved_identity_sha256=identity['identity_sha256'])
+            assert target.poll() is None
         stopped = stop_windows_template_session(session,
                                                  approved_identity_sha256=identity['identity_sha256'])
         target.wait(timeout=5)

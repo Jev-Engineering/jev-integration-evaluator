@@ -205,7 +205,9 @@ def _owned_process(identity: dict, *, terminate: bool = False) -> tuple[bool, ob
     kernel = _kernel()
     process = kernel.OpenProcess(0x101000, False, identity['pid'])
     if not process:
-        return False, None, None
+        if ctypes.get_last_error() in (87, 1168):  # no process with this PID
+            return False, None, None
+        raise InputError('windows_session_process_open_unavailable')
     job = None
     retained = False
     try:
@@ -220,10 +222,12 @@ def _owned_process(identity: dict, *, terminate: bool = False) -> tuple[bool, ob
         job = kernel.OpenJobObjectW(0x000c if terminate else 0x0004,
                                     False, identity['job'])
         if not job:
-            return False, None, None
+            raise InputError('windows_session_job_open_unavailable')
         member = wintypes.BOOL()
-        if not kernel.IsProcessInJob(process, job, ctypes.byref(member)) or not member.value:
-            return False, None, None
+        if not kernel.IsProcessInJob(process, job, ctypes.byref(member)):
+            raise InputError('windows_session_job_membership_unavailable')
+        if not member.value:
+            raise InputError('windows_session_job_membership_changed')
         if terminate:
             retained = True
             return True, process, job

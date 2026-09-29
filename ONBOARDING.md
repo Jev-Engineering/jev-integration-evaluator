@@ -89,7 +89,7 @@ inventory, use the [native Windows API checkpoint](references/windows-template-n
 for owner-private package/install generations, supervised off-mode normal
 consoles, and retained installed-version cutover and rollback. Retain all
 receipt digests externally. Local Windows 11 CPython 3.10/3.13/3.14 installed
-fixture runs have been observed, with a durable 3.10 receipt repeat pending.
+fixture runs have retained private receipts.
 Windows Server mutating and installed qualification remains pending.
 
 For connected host runtime qualification, record the pinned endpoint/model,

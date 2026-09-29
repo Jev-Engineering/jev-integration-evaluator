@@ -71,9 +71,9 @@ inspect reviewed files on local NTFS. A separate
 [offline native API checkpoint](references/windows-template-native-delivery-v1.md)
 has a locally observed Windows 11 package/install, supervised normal-console
 path, and retained installed-version cutover and rollback under one run ID.
-Local Windows 11 CPython 3.10/3.13/3.14 installed fixture runs have been
-observed; the 3.10 receipt archive is pending a durable repeat. Windows Server
-mutating runs, broader recovery edges and provider qualification remain pending.
+Local Windows 11 CPython 3.10/3.13/3.14 installed fixture runs have retained
+private receipts. Windows Server mutating runs, broader recovery edges and
+provider qualification remain pending.
 
 The separate [JavaScript recipe C template catalog](references/javascript-recipe-c-template-v1.md)
 validates reviewed ESM, CommonJS and TypeScript source through trusted external

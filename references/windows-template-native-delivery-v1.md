@@ -8,13 +8,12 @@ a fresh child session. It is a trusted local host execution profile. It does
 not isolate untrusted Python, authorize a provider, or establish benefit.
 
 The observed local path is Windows 11 Pro build 26200, x86-64 native CPython
-3.10.11, 3.13.13 and 3.14.3 on local NTFS. The 3.10 three-generation run
-passed but its numbered pytest directory was pruned before receipt retention;
-the 3.13 and 3.14 runs have separately retained private receipts. The profile
-parser also accepts Windows Server 2022, whose mutating and installed journeys
-have not run.
-The retained 3.14 run predates the Python 3.10 receipt-size adjustment; the
-retained 3.13 run verifies the current bound and source code.
+3.10.11, 3.13.13 and 3.14.3 on local NTFS. Each interpreter has a retained
+private three-generation receipt archive. The profile parser also accepts
+Windows Server 2022, whose mutating and installed journeys have not run.
+The retained 3.10 and 3.13 runs verify the bounded install receipt. A later
+retained 3.14 run verifies the current fail-closed process and Job queries;
+an earlier 3.14 archive remains historical evidence from before those fixes.
 WSL is a separate Linux target. UNC/mapped drives, non-NTFS volumes, Windows
 10, and virtualized or container delivery are unsupported.
 
@@ -98,7 +97,10 @@ authorize a fresh launch. A repeated attempt is refused.
 records and checks the exact live process and job membership without importing
 target code. An exited console is `exited_unverified` until an independent host
 observation verifies its effects. Status does not treat host success JSON as
-proof of integration or provider reachability.
+proof of integration or provider reachability. Unknown process access, a
+missing or inaccessible Job while the exact process is live, and uncertain
+membership block status, effect observation and owned stop. Only a confirmed
+signaled process handle or a known absent PID counts as exit.
 
 `observe_windows_template_session(session,
 approved_identity_sha256=..., phase='ready'|'effect', path=...,
@@ -183,8 +185,8 @@ host observation, not live provider or production evidence. The wheelhouse
 is explicit and must contain matching platform tags, all runtime dependencies,
 and exact pinned build wheels. The local runs used isolated CPython 3.10.11,
 3.13.13 and 3.14.3 venvs and owner-private, platform-specific wheelhouses;
-no global install or credentials. The 3.10 path passed but its receipt archive
-was lost to shared pytest retention, so durable readback remains pending on
-that interpreter. Windows Server mutating/installed runs, broader crash and
+no global install or credentials. A fixed private pytest root retained the
+passing 3.10 run receipts, alongside separate 3.13 and 3.14 archives. Windows
+Server mutating/installed runs, broader crash and
 filesystem edge cases, and provider qualification remain pending before
 marking issue #61 fully qualified.
