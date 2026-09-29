@@ -291,3 +291,31 @@ def test_actual_changed_version_upgrade_and_incompatible_schema_refusal(tmp_path
     with pytest.raises(delivery.DeliveryError, match='exact_delivery_scope'):
         delivery.launch_session(session, scope=launch_scope,
             approved_scope_sha256=launch_scope['scope_sha256'])
+    new_launch_scope = _scope(upgraded, new, 'launch')
+    new_launched = delivery.launch_session(session, scope=new_launch_scope,
+        approved_scope_sha256=new_launch_scope['scope_sha256'])
+    new_stop_scope = _scope(new_launched, new, 'stop')
+    new_stopped = delivery.stop_session(session, scope=new_stop_scope,
+        approved_scope_sha256=new_stop_scope['scope_sha256'])
+    assert new_stopped['stage'] == 'stopped'
+    rollback_scope = _scope(new_stopped, new, 'rollback')
+    rollback_scope['rollback_digest'] = new_stopped['previous_generation_rollback_digest']
+    rollback_scope['scope_sha256'] = digest({k: v for k, v in rollback_scope.items()
+                                              if k != 'scope_sha256'})
+    restored = delivery.rollback_session(session, scope=rollback_scope,
+        approved_scope_sha256=rollback_scope['scope_sha256'])
+    assert restored['stage'] == 'rolled_back'
+    assert restored['run_id'] == created['run_id']
+    assert restored['generation_id'] == old['generation_id']
+    assert delivery._open(session)[2]['plan_sha256'] == old['plan_sha256']
+    assert restored['recorded_observations']['launched'] is False
+    assert restored['generation_history'] == []
+    retained_receipt = delivery._check_plan(old)
+    assert retained_receipt['receipt_sha256'] == old_receipt['receipt_sha256']
+    assert retained_receipt['installed']['entrypoint_origin'] == old_receipt['installed']['entrypoint_origin']
+    assert Path(new_receipt['environment']).is_dir()
+    assert delivery.session_status(session,
+        trusted_session_head=restored['session_head_sha256'])['current_installation'] == 'current_verified'
+    with pytest.raises(delivery.DeliveryError, match='exact_delivery_scope'):
+        delivery.launch_session(session, scope=new_launch_scope,
+            approved_scope_sha256=new_launch_scope['scope_sha256'])

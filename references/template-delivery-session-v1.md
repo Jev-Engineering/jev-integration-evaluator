@@ -187,6 +187,10 @@ retry can use the archived plan. An interruption after `rollback_pending` for
 a prior owned generation is reconciled by `resume` from the current externally
 retained head, without invoking either console again. These are local
 single-controller boundaries, not a distributed cutover protocol.
+The offline installed regression builds distinct `0.1.0` and `0.2.0` host
+generations, launches and stops each under separate scopes, then restores the
+retained `0.1.0` generation under an exact rollback digest. It checks the
+selected receipt and entrypoint origin, with no automatic launch on rollback.
 An incompatible delivery schema, stale receipt, active old process or reused
 environment blocks upgrade. `rollback` after a stopped generation requires
 the exact returned `previous_generation_rollback_digest` in its scope; it
@@ -214,7 +218,11 @@ installed supervised off-mode fixture checks distinct raw effects for both
 placements plus a separate ready marker. A separately invoked installed
 normal console fixture opts into synthetic shadow observation and records two
 assessment IDs, one task hash, one coordinator token, and a two-call shared
-budget alongside the distinct effect files. Its injected second-placement
+budget alongside the distinct effect files. The installed console runs with a
+minimal explicit environment, and its Python prefix plus evaluator and host
+module origins are checked against the installed generation. Later calls to
+both placements under the same task produce baseline effects without further
+assessments after the shared call limit. Its injected second-placement
 failure retains only the first effect. This is offline fixture evidence, not a
 connected provider or measured-benefit claim. The delivery supervisor still
 forces `JEV_RUNTIME_MODE=off` for its owned launch.

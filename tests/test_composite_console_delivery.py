@@ -141,6 +141,13 @@ def _delivery_audit():
     if not path:
         return
     from . import host_one, host_two
+    import jev_integration_evaluator as evaluator
+    import sys
+    third_result = None
+    if os.environ.get('DELIVERY_THIRD_ATTEMPT') == '1':
+        repeated = {'task_id': 'shared-task', 'objective': 'offline fixture',
+                    'command': '/prune'}
+        third_result = [public_entry_one(repeated), public_entry_two(repeated)]
     assessments = [row for row in EVENTS if row.get('type') == 'assessment']
     Path(path).write_text(json.dumps({
         'assessed': [row['candidate_id'] for row in assessments],
@@ -148,8 +155,18 @@ def _delivery_audit():
         'modes': [row['mode'] for row in assessments],
         'tokens': COMPOSITE_OBSERVATION.get('tokens', []),
         'calls': COMPOSITE_OBSERVATION.get('calls'),
+        'third_result': third_result,
+        'audit_types': [row.get('type') for row in EVENTS],
         'one': host_one.STATE['effects'],
         'two': host_two.STATE['effects'],
+        'python_prefix': sys.prefix,
+        'python_executable': sys.executable,
+        'module_origins': {
+            'console': str(Path(__file__).resolve()),
+            'host_one': str(Path(host_one.__file__).resolve()),
+            'host_two': str(Path(host_two.__file__).resolve()),
+            'evaluator': str(Path(evaluator.__file__).resolve()),
+        },
     }), encoding='utf-8')
 ''', encoding='utf-8')
     runtime = {
@@ -363,16 +380,29 @@ def test_verified_composite_builds_and_installs_one_owned_generation(tmp_path):
     assert install_receipt['candidate_ids'] == selection['candidate_ids']
     assert installer.composite_installation_status(install_plan)['status'] == 'installed_recorded'
     command = install_receipt['installed']['console_script']
+    installed_venv = Path(install_receipt['environment']) / 'venv'
+    installed_env = {'PATH': '/usr/bin:/bin', 'PYTHONNOUSERSITE': '1',
+                     'JEV_RUNTIME_MODE': 'off', 'JEV_TEST_SHADOW': '1'}
+
+    def assert_installed_origin(observed):
+        assert Path(observed['python_prefix']).resolve() == installed_venv.resolve()
+        assert Path(observed['python_executable']).parent == installed_venv / 'bin'
+        assert set(observed['module_origins']) == {'console', 'host_one', 'host_two',
+                                                   'evaluator'}
+        assert all(Path(origin).is_relative_to(installed_venv.resolve())
+                   for origin in observed['module_origins'].values())
+
     audit = tmp_path / 'installed-audit.json'
     one = tmp_path / 'installed-effect-one.bin'
     two = tmp_path / 'installed-effect-two.bin'
     run = subprocess.run([command], cwd=tmp_path, capture_output=True, text=True,
-                         timeout=25, env={**os.environ, 'JEV_TEST_SHADOW': '1',
+                         timeout=25, env={**installed_env,
                                           'DELIVERY_AUDIT_PATH': str(audit),
                                           'DELIVERY_EFFECT_PATH_ONE': str(one),
                                           'DELIVERY_EFFECT_PATH_TWO': str(two)})
     assert run.returncode == 0, run.stderr
     observed = json.loads(audit.read_text(encoding='utf-8'))
+    assert_installed_origin(observed)
     assert sorted(observed['assessed']) == selection['candidate_ids']
     assert observed['modes'] == ['shadow', 'shadow']
     assert len(set(observed['task_hashes'])) == 1
@@ -380,12 +410,29 @@ def test_verified_composite_builds_and_installs_one_owned_generation(tmp_path):
     assert observed['calls'] == 2
     assert observed['one'] == observed['two'] == ['first']
     assert one.read_bytes() == two.read_bytes() == b'first\n'
+    exhausted_one = tmp_path / 'exhausted-effect-one.bin'
+    exhausted_two = tmp_path / 'exhausted-effect-two.bin'
+    exhausted_audit = tmp_path / 'exhausted-audit.json'
+    exhausted = subprocess.run([command], cwd=tmp_path, capture_output=True, text=True,
+                               timeout=25, env={**installed_env,
+                                                'DELIVERY_THIRD_ATTEMPT': '1',
+                                                'DELIVERY_AUDIT_PATH': str(exhausted_audit),
+                                                'DELIVERY_EFFECT_PATH_ONE': str(exhausted_one),
+                                                'DELIVERY_EFFECT_PATH_TWO': str(exhausted_two)})
+    assert exhausted.returncode == 0, exhausted.stderr
+    limited = json.loads(exhausted_audit.read_text(encoding='utf-8'))
+    assert_installed_origin(limited)
+    assert limited['third_result'] == [0, 0]
+    assert sorted(limited['assessed']) == selection['candidate_ids']
+    assert limited['calls'] == 2
+    assert limited['audit_types'] == ['assessment', 'shadow_comparison',
+                                      'assessment', 'shadow_comparison']
+    assert exhausted_one.read_bytes() == exhausted_two.read_bytes() == b'first\nfirst\n'
     failed_one = tmp_path / 'failed-effect-one.bin'
     failed_two = tmp_path / 'failed-effect-two.bin'
     failed_audit = tmp_path / 'failed-audit.json'
     failed = subprocess.run([command], cwd=tmp_path, capture_output=True, text=True,
-                            timeout=25, env={**os.environ, 'JEV_TEST_SHADOW': '1',
-                                             'JEV_TEST_FAIL_SECOND': '1',
+                            timeout=25, env={**installed_env, 'JEV_TEST_FAIL_SECOND': '1',
                                              'DELIVERY_AUDIT_PATH': str(failed_audit),
                                              'DELIVERY_EFFECT_PATH_ONE': str(failed_one),
                                              'DELIVERY_EFFECT_PATH_TWO': str(failed_two)})
@@ -393,6 +440,7 @@ def test_verified_composite_builds_and_installs_one_owned_generation(tmp_path):
     assert failed_one.read_bytes() == b'first\n'
     assert not failed_two.exists()
     failure = json.loads(failed_audit.read_text(encoding='utf-8'))
+    assert_installed_origin(failure)
     assert sorted(failure['assessed']) == selection['candidate_ids']
     assert len(set(failure['task_hashes'])) == 1
     assert installer.install_composite_package(
