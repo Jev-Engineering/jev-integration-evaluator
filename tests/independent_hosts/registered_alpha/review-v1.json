@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "status": "source_reviewed_for_offline_qualification",
+  "reviewer": "independent_fixture_author",
+  "candidate": {
+    "id": "JEV-CEE60D2ED512",
+    "pattern": "C",
+    "file": "src/registered_alpha/host.py",
+    "symbol": "select_registered_tool",
+    "source_sha256": "6ffd699882cfb7913a1fb200408d789535ad7899f67b580e40e81376167dd54e",
+    "file_sha256": "097d23c5ce68b53c59038fb8ac195744d8ab9adafa2bdf1ce1939ed91a67d4e5"
+  },
+  "files": {
+    "pyproject.toml": "b1da52cfc898bda9f2d6614a8c420d2c5d0520b29fe8f80f7ec93d653cd53e9b",
+    "src/registered_alpha/host.py": "097d23c5ce68b53c59038fb8ac195744d8ab9adafa2bdf1ce1939ed91a67d4e5",
+    "src/registered_alpha/console.py": "bdd3fe57542578af4332037b325617e784a5818bddc1b2bc66b89d62fa8cdc6f",
+    "oracle-v1.json": "32dedb0ae94324ae8c0a86ebee7feff74281949b315e1b5b2bf15b3b38865431"
+  },
+  "semantic_review": {
+    "approved_for_offline_preparation": true,
+    "reason": "The caller asks which of two registered operations fits a finite item and intent. The existing host retains permission, approval, validation, locking, fallback and effect ownership.",
+    "legal_actions": ["inspect", "summarize"],
+    "deterministic_baseline": "inspect",
+    "uncertainty_action": "baseline",
+    "excluded_from_model_authority": ["permission", "approval", "argument_validation", "duplicate_effect_prevention", "task_completion", "provider_egress"]
+  },
+  "qualification": {
+    "observed": ["source_identity", "normal_source_console_baseline", "independent_effect_file", "one_effect_per_shared_task_id"],
+    "pending": ["installed_target_console", "provider_connected_shadow", "authorized_canary", "authorized_active", "independent_measured_benefit"],
+    "activation_authorized": false,
+    "provider_contacted": false
+  }
+}
