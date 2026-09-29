@@ -190,6 +190,15 @@ An interrupted install or launch still requires read-only status and manual
 review before a fresh generation is authorized. This checkpoint does not
 provide provider-connected activation or a Windows isolation backend.
 
+The native installed-host interruption test injects an exception after the
+durable launch intent and after the durable process identity, and before the
+release receipt after the console gate has already been released. The last
+case reaches the normal console's independent ready marker, then stops only
+the exact recorded Job. All three retain `blocked_recovery`, refuse replay,
+preserve unrelated files and a separate process, and leave the host effect
+unreleased. These are controlled journal-write failure cases; they do not
+qualify abrupt process death, power-loss durability or interrupted installation.
+
 ## Local offline installed check
 
 In a disposable workspace with an owner-private wheelhouse containing the
