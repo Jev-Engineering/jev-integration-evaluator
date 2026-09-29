@@ -120,6 +120,10 @@ def test_m_bound_console_source_and_owned_edit(tmp_path):
     assert json.loads((tmp_path / 'bound/template-request.json').read_text()) == bound
     materialize_template(target, bound, tmp_path / 'template')
     spec = bound['implementation_spec']
+    preimages = {name: (target / name).read_bytes() for name in (
+        spec['source']['file'], 'claim_host/console.py',
+        'claim_host/requirements.lock', 'claim_host/runtime.json',
+        'claim_host/claim_consumer.py')}
     bundle = tmp_path / 'bundle'
     planned = plan_implementation(target, inventory, spec['candidate_id'], spec, bundle)
     baseline = verify_implementation(target, bundle, 'baseline', approve_execution=True)
@@ -131,6 +135,7 @@ def test_m_bound_console_source_and_owned_edit(tmp_path):
     assert modified['status'] == 'verified'
     assert b'start_jev_runtime' in (target / 'claim_host/console.py').read_bytes()
     assert rollback_implementation(target, bundle, applied['rollback_digest'])['status'] == 'rolled_back'
+    assert {name: (target / name).read_bytes() for name in preimages} == preimages
 
 
 def test_m_bound_console_rejects_drift_and_single_call(tmp_path):
