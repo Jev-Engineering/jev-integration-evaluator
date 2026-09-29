@@ -163,3 +163,14 @@ observation contract. Generic daemons, Windows, cloud deployment, service
 registration, arbitrary network endpoints and production provider authority
 are outside this version. A later Node adapter must supply its own exact
 installation and executable provenance before the supervisor can accept it.
+
+The composite variant accepts a `template-composite-install-plan-v1` and its
+externally anchored composite install receipt. Its source transaction remains
+the one owned #54 composite bundle: `status_composite` authenticates the
+modified receipt and `rollback_composite` restores exactly that bundle under
+its rollback digest. Two reviewed recipe C placements can share one normal
+console startup, one lifecycle/coordinator and task identity. The offline
+installed fixture checks distinct raw effects for both placements plus a
+separate ready marker. Source-level combined verification checks the shared
+budget and cross-placement failure behavior; this is not a connected provider
+or measured-benefit claim.
