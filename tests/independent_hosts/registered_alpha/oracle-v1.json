@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "evidence_class": "independent_offline_host_oracle",
+  "cases": [
+    {
+      "id": "permitted_baseline_even_with_summarize_intent",
+      "task_id": "alpha-intent-1",
+      "intent": "summarize",
+      "item": "fixture-one",
+      "permit": "1",
+      "approved": "1",
+      "expected_exits": [0],
+      "expected_effects": [{"task_id": "alpha-intent-1", "action": "inspect", "item": "fixture-one"}]
+    },
+    {
+      "id": "permission_denied_before_effect",
+      "task_id": "alpha-denied-1",
+      "intent": "summarize",
+      "item": "fixture-two",
+      "permit": "0",
+      "approved": "1",
+      "expected_exits": [2],
+      "expected_effects": []
+    },
+    {
+      "id": "duplicate_task_cannot_repeat_effect",
+      "task_id": "alpha-duplicate-1",
+      "intent": "inspect",
+      "item": "fixture-two",
+      "permit": "1",
+      "approved": "0",
+      "expected_exits": [0, 1],
+      "expected_effects": [{"task_id": "alpha-duplicate-1", "action": "inspect", "item": "fixture-two"}]
+    }
+  ],
+  "pending_connected_cases": ["provider_shadow", "authorized_canary", "authorized_active", "provider_timeout", "provider_malformed"],
+  "benefit_claim": "none"
+}
