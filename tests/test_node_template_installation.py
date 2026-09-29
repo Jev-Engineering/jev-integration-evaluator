@@ -225,16 +225,98 @@ def test_real_source_verified_node_install_and_normal_command(tmp_path, format_n
     owned_session = tmp_path / 'node-session'
     created = node_session.create_node_session(owned_session, supervised)
     assert created['stage'] == 'created' and created['current_installation'] == 'current_verified'
-    def scope(result, action):
+    def scope(result, action, selected=supervised):
         value = {'schema_version': '1.0', 'kind': 'template-delivery-scope-v1',
                  'reference': 'independent-native-test-operator', 'run_id': result['run_id'],
-                 'plan_sha256': supervised['descriptor_sha256'],
+                 'plan_sha256': selected['descriptor_sha256'],
                  'trusted_session_head': result['session_head_sha256'],
                  'expires_at': (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat(),
                  'revoked': False, 'grants': {name: name == action for name in
                      ('launch', 'stop', 'disable', 'upgrade', 'rollback')}}
         value['scope_sha256'] = digest(value)
         return value
+    if format_name == 'esm':
+        # Exercise the installed Node command through two real waiting-child
+        # interruptions. Neither helper receives the release byte.
+        for interruption in ('before_identity', 'before_release'):
+            fault_paths = {key: tmp_path / f'{interruption}-{key}.bin'
+                           for key in environment}
+            fault_observation = {'schema_version': '1.0',
+                'kind': 'template-delivery-observation-v1', 'checks': [
+                    {**row, 'path': str(fault_paths[next(key for key, value in environment.items()
+                                                       if value == row['path'])])}
+                    for row in observation['checks']]}
+            fault_descriptor = node_delivery.plan_node_delivery(
+                install_plan, trusted_install_receipt_sha256=installed['receipt_sha256'],
+                observation=fault_observation,
+                launch_environment={key: str(path) for key, path in fault_paths.items()})
+            fault_session = tmp_path / ('node-session-' + interruption)
+            fault_created = node_session.create_node_session(fault_session, fault_descriptor)
+            fault_scope = scope(fault_created, 'launch', fault_descriptor)
+            if interruption == 'before_identity':
+                original_append = node_session._append
+                def interrupt_append(directory, rows, event, state):
+                    if event == 'launched':
+                        raise RuntimeError('injected_before_identity')
+                    return original_append(directory, rows, event, state)
+                node_session._append = interrupt_append
+            else:
+                original_write = os.write
+                def interrupt_release(fd, raw):
+                    if raw == b'G':
+                        raise RuntimeError('injected_before_release')
+                    return original_write(fd, raw)
+                node_session.os.write = interrupt_release
+            try:
+                with pytest.raises(RuntimeError, match='injected_before_'):
+                    node_session.launch_node_session(
+                        fault_session, scope=fault_scope,
+                        approved_scope_sha256=fault_scope['scope_sha256'])
+            finally:
+                if interruption == 'before_identity':
+                    node_session._append = original_append
+                else:
+                    node_session.os.write = original_write
+            pending = node_session.node_session_status(fault_session)
+            assert pending['stage'] == ('launch_pending' if interruption ==
+                'before_identity' else 'running')
+            assert pending['pending'] == 'launch'
+            assert pending['run_id'] == fault_created['run_id']
+            assert not any(path.exists() for path in fault_paths.values())
+            recovered = node_session.resume_node_session(
+                fault_session, trusted_session_head=pending['session_head_sha256'])
+            assert recovered['attempts']['launch'] == 1
+            assert not any(path.exists() for path in fault_paths.values())
+            if interruption == 'before_identity':
+                assert recovered['stage'] == 'created'
+                retry_scope = scope(recovered, 'launch', fault_descriptor)
+                retried = node_session.launch_node_session(
+                    fault_session, scope=retry_scope,
+                    approved_scope_sha256=retry_scope['scope_sha256'])
+                for _ in range(150):
+                    if all(path.is_file() for path in fault_paths.values()):
+                        break
+                    time.sleep(.01)
+                for row in fault_observation['checks']:
+                    assert file_hash(Path(row['path'])) == row['expected_sha256']
+                stop_scope = scope(retried, 'stop', fault_descriptor)
+                stopped = node_session.stop_node_session(
+                    fault_session, scope=stop_scope,
+                    approved_scope_sha256=stop_scope['scope_sha256'], grace_seconds=0)
+                assert stopped['stage'] == 'stopped' and not stopped['process_alive']
+            else:
+                assert recovered['stage'] == 'blocked_recovery'
+                retry_scope = scope(recovered, 'launch', fault_descriptor)
+                with pytest.raises(InputError, match='launch_blocked'):
+                    node_session.launch_node_session(
+                        fault_session, scope=retry_scope,
+                        approved_scope_sha256=retry_scope['scope_sha256'])
+                for _ in range(100):
+                    if not node_session.node_session_status(fault_session)['process_alive']:
+                        break
+                    time.sleep(.01)
+                assert not node_session.node_session_status(fault_session)['process_alive']
+                assert not any(path.exists() for path in fault_paths.values())
     launch_scope = scope(created, 'launch')
     source_file = host / 'package.json'
     unchanged_source = source_file.read_bytes()

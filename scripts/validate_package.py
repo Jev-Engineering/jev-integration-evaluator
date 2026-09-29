@@ -189,6 +189,7 @@ def validate(check_manifest=False):
                  'jev_integration_evaluator/template_node_session.py',
                  'references/template-node-installation-v1.md',
                  'tests/test_node_template_installation.py',
+                 'tests/test_node_template_installed_upgrade.py',
                  'tests/test_node_template_session.py']
     required += [f'{directory}/{name}.schema.json'
                  for directory in ('schemas', 'jev_integration_evaluator/data')

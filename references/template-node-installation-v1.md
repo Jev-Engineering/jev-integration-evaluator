@@ -177,6 +177,42 @@ head. `node-upgrade` additionally requires a new descriptor and its digest in
 read-only and may be called without a trusted head for diagnostics; passing a
 head requests an exact match.
 
+The native ESM installed journey also injects two supervisor start faults
+against its source-verified installed command. If the waiting child is started
+but its identity is not journaled, closing the private release pipe leaves
+zero raw output; same-run resume records an unreleased attempt, and a fresh
+scope permits one normal installed invocation. If the child identity is
+journaled but release fails, resume preserves `blocked_recovery`, refuses a
+retry, and no effect or readiness file appears. These are controlled offline
+faults before child release. CommonJS and TypeScript have installed normal
+command checks, but these two start faults have not run on those formats.
+
+The [installed TypeScript upgrade journey](../tests/test_node_template_installed_upgrade.py)
+uses two separately reviewed fixture packages, versions 1.0.0 and 1.0.1.
+The 1.0.1 `host.ts` changes the finite `original` function called by the
+reviewed one-tail-call `seam`: it appends `:v2` to the returned value and raw
+effect argument. The generated `host.mjs` has different compiled bytes. Both
+versions retain the registered `read` action and off-mode policy. Their normal
+`start.mjs` commands check the respective seam result, and their distinct
+external raw effects come from the host function.
+The test pins the trusted TypeScript 5.8.3 source tree digest
+`774ce18bba737b3bbaffec66946dfd9948afaac993cf7e8e3ece871536d6e42b`,
+copies it into a fresh private tooling directory and binds its complete tree
+digest, the exact Node 24.18.0
+and npm 11.16.0 bytes, source review, baseline/modified verification receipts,
+offline package/install receipts and fresh external observation paths. The
+first installed command is observed and stopped before an exact new descriptor
+is selected. The second installed command produces its distinct raw effect
+under the same session run ID. Wrong receipt/scope digests, source drift and
+installed entrypoint drift refuse before the new launch. After disabling the
+second generation, exact rollback selects the retained first installation;
+both owned JS source edits are then restored by their separate rollback
+digests. Both installed generations and their historical effects remain.
+The first generation's consumed observation paths do not permit a replay
+after rollback. These versions are synthetic and preserve the same finite
+action policy; this does not prove a production migration, provider access,
+connected modes, or measured benefit.
+
 The build writes a durable owner intent in the private parent **before**
 creating its output directory. The install stage does the same for its
 generation. Status can identify interruption before the directory, between

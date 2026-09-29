@@ -76,7 +76,9 @@ command with external effect files. A read-only Node delivery descriptor binds
 exact installation and observation inputs. A separate offline Node supervisor
 now records an owned process, checks independent ready/effect paths, and
 supports bounded stop, disable and retained generation selection under exact
-scopes. Complete three-format installed evaluator CLI and provider qualification
+scopes. A synthetic installed TypeScript journey now exercises two reviewed
+fixture versions, distinct raw effects, exact upgrade and retained rollback.
+Complete three-format installed evaluator CLI and provider qualification
 remain pending; live benefit is unknown.
 
 The [six-use-case source matrix](references/use-case-template-matrix-v1.md)
