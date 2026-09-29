@@ -206,6 +206,8 @@ def parser():
     s=template_sub.add_parser('journey-promote',help='Create an off-mode runtime child with the existing run ID')
     s.add_argument('--session',required=True); s.add_argument('--trusted-journey-head',required=True)
     s.add_argument('--observation',required=True); s.add_argument('--launch-environment')
+    s=template_sub.add_parser('journey-recover-promotion',help='Complete an exact interrupted pre-launch child creation')
+    s.add_argument('--session',required=True); s.add_argument('--trusted-journey-head',required=True)
     s=template_sub.add_parser('deploy',help='Create a private delivery session or launch its exact installed console')
     s.add_argument('--session',required=True); s.add_argument('--plan'); s.add_argument('--scope')
     s.add_argument('--approve-scope-sha256')
@@ -296,9 +298,10 @@ def execute(args):
             return materialize_template(args.repo,request,args.out,tooling_dir=args.tooling)
         if args.template_action=='bind':
             return bind_template(args.repo,read_json(args.request),read_json(args.binding),args.out)
-        if args.template_action in ('journey-create','journey-record','journey-status','journey-promote'):
+        if args.template_action in ('journey-create','journey-record','journey-status','journey-promote','journey-recover-promotion'):
             from .template_delivery_journey import (create_journey, record_journey,
-                                                    journey_status, promote_journey)
+                                                    journey_status, promote_journey,
+                                                    recover_journey_promotion)
             if args.template_action=='journey-create':
                 return create_journey(args.session,source_root=args.source_root,
                                       bundle=args.bundle,source_kind=args.source_kind)
@@ -309,6 +312,9 @@ def execute(args):
                     trusted_receipt_sha256=args.trusted_receipt_sha256)
             if args.template_action=='journey-status':
                 return journey_status(args.session,trusted_journey_head=args.trusted_journey_head)
+            if args.template_action=='journey-recover-promotion':
+                return recover_journey_promotion(args.session,
+                    trusted_journey_head=args.trusted_journey_head)
             return promote_journey(args.session,trusted_journey_head=args.trusted_journey_head,
                 observation=read_json(args.observation),
                 launch_environment=read_json(args.launch_environment) if args.launch_environment else {})

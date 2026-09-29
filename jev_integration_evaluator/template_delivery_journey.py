@@ -15,8 +15,10 @@ import uuid
 from .contracts import validate_contract
 from .io import InputError, canonical, digest, file_hash, read_json
 from .template_delivery import (DeliveryError, _locked, _now, _owned_file,
+                                _pending_prefix, _publish_exact,
                                 _private, _safe_directory, create_session,
-                                plan_delivery, session_status)
+                                inspect_unlaunched_session, plan_delivery,
+                                recover_unlaunched_session, session_status)
 from .template_installation import (installation_status, package_status,
                                     plan_install, plan_package)
 from .integrations.lifecycle import implementation_status
@@ -24,7 +26,8 @@ from .integrations.lifecycle import implementation_status
 
 _STAGES = ('source_planned', 'baseline_anchored', 'source_verified',
            'package_planned', 'package_built', 'install_planned',
-           'installed', 'promotion_pending', 'runtime_session')
+           'installed', 'promotion_pending', 'runtime_creation_recovered',
+           'runtime_session')
 _MAX_EVENTS = 32
 
 
@@ -71,21 +74,15 @@ def _archive(directory: Path, value: dict, sha: str) -> None:
     parent = directory / 'plans'
     _private(parent)
     path = parent / (sha + '.json')
+    raw = canonical(value) + b'\n'
+    _pending_prefix(path.with_name(path.name + '.pending'), raw,
+                    remove=path.exists())
     if path.exists():
         _owned_file(path, maximum=2_000_000)
         if read_json(path) != value:
             raise DeliveryError('journey_plan_archive_collision')
         return
-    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
-    with os.fdopen(fd, 'wb') as stream:
-        stream.write(canonical(value) + b'\n')
-        stream.flush()
-        os.fsync(stream.fileno())
-    fd = os.open(parent, os.O_RDONLY | os.O_DIRECTORY)
-    try:
-        os.fsync(fd)
-    finally:
-        os.close(fd)
+    _publish_exact(path, raw)
 
 
 def _load_plan(directory: Path, sha: str) -> dict:
@@ -216,10 +213,20 @@ def _current(directory: Path, state: dict) -> dict:
         result['install_status'] = 'unplanned'
     runtime = directory / 'runtime'
     if runtime.exists():
-        child = session_status(runtime)
-        if child['run_id'] != state['run_id']:
-            raise DeliveryError('journey_runtime_run_identity_changed')
-        result['runtime_status'] = child['stage']
+        if state['delivery_plan_sha256'] is None:
+            raise DeliveryError('journey_runtime_without_promoted_plan')
+        delivery_plan = _load_plan(directory, state['delivery_plan_sha256'])
+        events = runtime / 'events.jsonl'
+        if not events.exists() or events.stat().st_size == 0:
+            inspect_unlaunched_session(runtime, delivery_plan)
+            result['runtime_status'] = 'creation_recovery_required'
+        else:
+            child = session_status(runtime)
+            if child['run_id'] != state['run_id']:
+                raise DeliveryError('journey_runtime_run_identity_changed')
+            if read_json(runtime / 'delivery-plan.json') != delivery_plan:
+                raise DeliveryError('journey_runtime_plan_changed')
+            result['runtime_status'] = child['stage']
     else:
         result['runtime_status'] = 'absent'
     return result
@@ -260,6 +267,8 @@ def _next(state: dict, current: dict) -> str:
         return 'review_install_generation'
     if state['install_receipt_sha256'] is None:
         return 'anchor_install_receipt'
+    if current['runtime_status'] == 'creation_recovery_required':
+        return 'recover_exact_unlaunched_runtime'
     if current['runtime_status'] == 'absent':
         return 'promote_verified_installation'
     return 'use_owned_runtime_session'
@@ -397,6 +406,8 @@ def promote_journey(directory: str | Path, *, trusted_journey_head: str,
             _append(target, rows, 'promotion_pending', state)
         runtime = target / 'runtime'
         if runtime.exists():
+            if current['runtime_status'] == 'creation_recovery_required':
+                raise DeliveryError('journey_runtime_creation_recovery_required')
             existing = session_status(runtime)
             if existing['run_id'] != state['run_id']:
                 raise DeliveryError('journey_runtime_run_identity_changed')
@@ -404,6 +415,29 @@ def promote_journey(directory: str | Path, *, trusted_journey_head: str,
                 raise DeliveryError('journey_runtime_plan_changed')
         else:
             create_session(runtime, delivery_plan, run_id=state['run_id'])
+        state['stage'] = 'runtime_session'
+        head = _append(target, rows, 'runtime_session', state)
+    return journey_status(target, trusted_journey_head=head)
+
+
+def recover_journey_promotion(directory: str | Path, *, trusted_journey_head: str) -> dict:
+    """Complete a proven pre-launch child creation under the same outer run."""
+    target = _safe_directory(directory, exists=True)
+    with _locked(target):
+        _, rows, state = _open(target)
+        if rows[-1]['record_sha256'] != trusted_journey_head:
+            raise DeliveryError('externally_retained_journey_head_required')
+        current = _current(target, state)
+        if (state['stage'] != 'promotion_pending'
+                or current['runtime_status'] != 'creation_recovery_required'
+                or current['install_status'] != 'installed_recorded'):
+            raise DeliveryError('journey_runtime_recovery_unavailable')
+        plan = _load_plan(target, state['delivery_plan_sha256'])
+        recovered = recover_unlaunched_session(target / 'runtime', plan,
+                                               run_id=state['run_id'])
+        if recovered['run_id'] != state['run_id']:
+            raise DeliveryError('journey_runtime_run_identity_changed')
+        _append(target, rows, 'runtime_creation_recovered', state)
         state['stage'] = 'runtime_session'
         head = _append(target, rows, 'runtime_session', state)
     return journey_status(target, trusted_journey_head=head)

@@ -27,6 +27,13 @@ does not launch the host. The journey state is
 [`template-delivery-journey-v1`](../schemas/template-delivery-journey-v1.schema.json)
 and has a separate owner-private hash-chain journal. This is a bridge between
 existing effect owners, not a second executor.
+If promotion stops before the child journal's first row, `journey-status`
+returns `recover_exact_unlaunched_runtime` only when all existing child bytes
+match the expected pre-launch create prefix. Use
+`template journey-recover-promotion --session ... --trusted-journey-head ...`
+with the externally retained current journey head. Unknown files, changed
+plans, a nonempty torn child journal, or a different run identity block
+recovery. The recovery event is recorded under the original run ID.
 
 ```bash
 jev-integration-evaluator template journey-create \
@@ -67,11 +74,23 @@ both paths and expected bytes with the independently reviewed host contract.
 Each check states a role, absolute external regular-file path, its current
 SHA-256 or `null` if absent, and a distinct expected SHA-256. The checks come
 from an independent host contract, not the generated adapter's success output.
+Plans must schedule `ready`, `entrypoint_reached`, and
+`integration_reachable`; the ready and integration checks use different paths.
 `ready` means an expected ready marker was observed while the owned process was
 alive. `integration_reachable` requires a separate expected effect or probe.
 For a finite console command, readiness is observed during its bounded
 in-flight interval; it is not an always-on health promise. If the process has
 already exited, current readiness is false even when its earlier marker remains.
+The process identity is checked again after matching ready bytes, though
+the observation remains a bounded sample rather than atomic service health.
+`mode_authorized` records approval of the requested `off` launch. It does not
+measure the target's effective mode. The supervisor reserves `JEV_*` runtime
+variables from caller supplied launch environment and sets `JEV_RUNTIME_MODE`
+to `off` after adding permitted host parameters.
+In the composite offline fixture, `integration_reachable` and
+`outcome_verified` are separate recorded fields derived from the same second
+raw effect file; they are not independent outcome probes. The two placement
+effects themselves use distinct files and are checked separately.
 
 ```bash
 jev-integration-evaluator template delivery-plan \

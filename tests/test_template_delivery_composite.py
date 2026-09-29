@@ -68,6 +68,21 @@ def _record(session, status, stage, **kwargs):
     return result
 
 
+def test_journey_archive_partial_write_retries_only_exact_prefix(tmp_path):
+    directory = tmp_path / 'journey'
+    directory.mkdir(mode=0o700)
+    plans = directory / 'plans'
+    plans.mkdir(mode=0o700)
+    value = {'plan_sha256': 'a' * 64, 'example': 'reviewed'}
+    pending = plans / ('a' * 64 + '.json.pending')
+    raw = journey.canonical(value) + b'\n'
+    pending.write_bytes(raw[:9])
+    pending.chmod(0o600)
+    journey._archive(directory, value, 'a' * 64)
+    assert (plans / ('a' * 64 + '.json')).read_bytes() == raw
+    assert not pending.exists()
+
+
 def test_interrupted_composite_apply_blocks_replay_under_same_journey(tmp_path, monkeypatch):
     root, inventory, selection, specs = _prepared(tmp_path)
     bundle = tmp_path / 'bundle'
@@ -217,9 +232,25 @@ def test_composite_journey_to_supervised_installed_two_effects(tmp_path, monkeyp
                    'DELIVERY_EFFECT_PATH_ONE': str(one),
                    'DELIVERY_EFFECT_PATH_TWO': str(two),
                    'DELIVERY_EFFECT_HOLD_SECONDS': '0.7'}
-    promoted = journey.promote_journey(session,
-        trusted_journey_head=recorded['journey_head_sha256'],
-        observation=observation, launch_environment=environment)
+    original_append = delivery._append
+    def interrupted_created_row(path, rows, event, state):
+        if event == 'created':
+            raise RuntimeError('injected_before_first_runtime_row')
+        return original_append(path, rows, event, state)
+    monkeypatch.setattr(delivery, '_append', interrupted_created_row)
+    with pytest.raises(RuntimeError, match='injected_before_first_runtime_row'):
+        journey.promote_journey(session,
+            trusted_journey_head=recorded['journey_head_sha256'],
+            observation=observation, launch_environment=environment)
+    pending = journey.journey_status(session)
+    assert pending['run_id'] == created['run_id']
+    assert pending['next_action'] == 'recover_exact_unlaunched_runtime'
+    with pytest.raises(delivery.DeliveryError, match='externally_retained_journey_head_required'):
+        journey.recover_journey_promotion(session,
+            trusted_journey_head=recorded['journey_head_sha256'])
+    monkeypatch.setattr(delivery, '_append', original_append)
+    promoted = journey.recover_journey_promotion(session,
+        trusted_journey_head=pending['journey_head_sha256'])
     assert promoted['run_id'] == created['run_id']
     assert promoted['runtime'] == 'installed'
     runtime = session / 'runtime'

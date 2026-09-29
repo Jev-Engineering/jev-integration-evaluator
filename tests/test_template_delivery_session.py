@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 import os
 from pathlib import Path
 import platform
+import subprocess
 import sys
 
 import pytest
@@ -38,10 +39,12 @@ def _fake_installed(tmp_path, monkeypatch, *, pause=5, receipts=None):
     script = root / 'venv/bin/fixture-console'
     script.parent.mkdir(parents=True)
     marker = tmp_path / 'effect.bin'
+    ready = tmp_path / 'ready.bin'
     content = f'''#!{sys.executable}
 import os,time
 from pathlib import Path
 Path(os.environ["DELIVERY_EFFECT_PATH"]).write_bytes(b"actual-owned-effect")
+Path(os.environ["DELIVERY_READY_PATH"]).write_bytes(b"ready")
 time.sleep({pause})
 '''
     script.write_text(content, encoding='utf-8')
@@ -56,6 +59,9 @@ time.sleep({pause})
                         lambda install_plan, _anchor: receipts[install_plan['fake_generation']])
     observation = {'schema_version': '1.0', 'kind': 'template-delivery-observation-v1',
                    'checks': [
+                       {'role': 'ready', 'path': str(ready), 'before_sha256': None,
+                        'expected_sha256': digest_bytes(b'ready')}]
+                   + [
                        {'role': role, 'path': str(marker), 'before_sha256': None,
                         'expected_sha256': digest_bytes(b'actual-owned-effect')}
                        for role in ('entrypoint_reached', 'integration_reachable', 'outcome_verified')
@@ -63,7 +69,8 @@ time.sleep({pause})
     plan = delivery.plan_delivery({'schema_version': '1.0', 'fake_generation': str(root)},
                                   trusted_install_receipt_sha256='a' * 64,
                                   observation=observation,
-                                  launch_environment={'DELIVERY_EFFECT_PATH': str(marker)})
+                                  launch_environment={'DELIVERY_EFFECT_PATH': str(marker),
+                                                      'DELIVERY_READY_PATH': str(ready)})
     return plan, marker
 
 
@@ -144,6 +151,33 @@ def test_unreleased_launch_is_retryable_and_unknown_effect_blocks(tmp_path, monk
     assert not effect.exists()
 
 
+def test_waiting_preexec_helper_cannot_be_adopted_as_console(tmp_path, monkeypatch):
+    plan, effect = _fake_installed(tmp_path, monkeypatch, pause=0)
+    session = tmp_path / 'session'
+    delivery.create_session(session, plan)
+    read_fd, write_fd = os.pipe()
+    child = subprocess.Popen([sys.executable, '-I', '-c', delivery._HELPER,
+                              str(read_fd), plan['console_script'], plan['environment']],
+                             pass_fds=(read_fd,), stdin=subprocess.DEVNULL,
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    os.close(read_fd)
+    try:
+        target, rows, state, _ = delivery._open(session)
+        state['attempts']['launch'] = 1
+        state['process'] = {'pid': child.pid, 'boot_id': delivery._boot_id(),
+                            'start_ticks': delivery._process_info(child.pid)[0]}
+        state['stage'], state['pending'] = 'launched', 'launch'
+        head = delivery._append(target, rows, 'launched', state)
+        assert delivery._execed_console(state['process'], plan['console_script']) is False
+        blocked = delivery.resume_session(session, trusted_session_head=head)
+        assert blocked['stage'] == 'blocked_recovery'
+        assert blocked['recorded_observations']['launched'] is False
+        assert not effect.exists()
+    finally:
+        os.close(write_fd)
+        child.wait(timeout=5)
+
+
 def test_interrupted_stop_reconciles_exact_owned_process(tmp_path, monkeypatch):
     plan, _ = _fake_installed(tmp_path, monkeypatch, pause=10)
     session = tmp_path / 'session'
@@ -164,6 +198,38 @@ def test_interrupted_stop_reconciles_exact_owned_process(tmp_path, monkeypatch):
                                     grace_seconds=0)
     assert stopped['stage'] == 'stopped'
     assert stopped['current_process_alive'] is False
+
+
+def test_interrupted_disable_keeps_durable_disposition(tmp_path, monkeypatch):
+    plan, _ = _fake_installed(tmp_path, monkeypatch, pause=10)
+    session = tmp_path / 'session'
+    created = delivery.create_session(session, plan)
+    launch_scope = _scope(created, plan, launch=True)
+    launched = delivery.launch_session(session, scope=launch_scope,
+                                       approved_scope_sha256=launch_scope['scope_sha256'])
+    target, rows, state, _ = delivery._open(session)
+    state['stage'], state['pending'] = 'stop_pending', 'stop_disable'
+    state['attempts']['stop'] = 1
+    head = delivery._append(target, rows, 'stop_pending', state)
+    pending = delivery.resume_session(session, trusted_session_head=head)
+    assert pending['pending'] == 'stop_disable'
+    wrong_scope = _scope(pending, plan, stop=True)
+    with pytest.raises(delivery.DeliveryError, match='delivery_stop_pending_disposition_changed'):
+        delivery.stop_session(session, scope=wrong_scope,
+                              approved_scope_sha256=wrong_scope['scope_sha256'])
+    delivery._signal_owned(state['process'], __import__('signal').SIGTERM)
+    import time
+    for _ in range(200):
+        if not delivery._process_alive(state['process']):
+            break
+        time.sleep(0.01)
+    disabled = delivery.resume_session(session, trusted_session_head=head)
+    assert disabled['stage'] == 'disabled'
+    assert disabled['pending'] is None
+    assert delivery._open(session)[2]['disabled'] is True
+    with pytest.raises(delivery.DeliveryError, match='exact_delivery_scope'):
+        delivery.launch_session(session, scope=launch_scope,
+                                approved_scope_sha256=launch_scope['scope_sha256'])
 
 
 def test_drift_and_torn_journal_fail_closed(tmp_path, monkeypatch):
@@ -196,6 +262,69 @@ def test_readiness_and_integration_cannot_share_one_success_marker(tmp_path, mon
         delivery.plan_delivery(plan['install_plan'],
             trusted_install_receipt_sha256=plan['trusted_install_receipt_sha256'],
             observation=observation)
+
+
+def test_required_observation_roles_and_reserved_mode_env(tmp_path, monkeypatch):
+    plan, _ = _fake_installed(tmp_path, monkeypatch)
+    for absent in ('ready', 'entrypoint_reached', 'integration_reachable'):
+        observation = {'schema_version': '1.0', 'kind': 'template-delivery-observation-v1',
+                       'checks': [row for row in plan['observation']['checks']
+                                  if row['role'] != absent]}
+        with pytest.raises(delivery.DeliveryError,
+                           match='readiness_and_integration_require_independent_checks'):
+            delivery.plan_delivery(plan['install_plan'],
+                trusted_install_receipt_sha256=plan['trusted_install_receipt_sha256'],
+                observation=observation)
+    for name in ('JEV_RUNTIME_MODE', 'JEV_TEST_SHADOW'):
+        with pytest.raises(delivery.DeliveryError,
+                           match='delivery_launch_environment_invalid_or_sensitive'):
+            delivery.plan_delivery(plan['install_plan'],
+                trusted_install_receipt_sha256=plan['trusted_install_receipt_sha256'],
+                observation=plan['observation'], launch_environment={name: 'active'})
+
+
+def test_partial_create_only_recovers_known_prelaunch_bytes(tmp_path, monkeypatch):
+    plan, _ = _fake_installed(tmp_path, monkeypatch)
+    session = tmp_path / 'session'
+    session.mkdir(mode=0o700)
+    pending = session / 'delivery-plan.json.pending'
+    raw = delivery.canonical(plan) + b'\n'
+    pending.write_bytes(raw[:23])
+    pending.chmod(0o600)
+    delivery.inspect_unlaunched_session(session, plan)
+    recovered = delivery.recover_unlaunched_session(session, plan,
+                                                    run_id='c1be85f4-884d-4b29-8336-b0d18d64c678')
+    assert recovered['stage'] == 'installed'
+    assert delivery.session_status(session)['run_id'] == recovered['run_id']
+    other = tmp_path / 'other'
+    other.mkdir(mode=0o700)
+    (other / 'unknown').write_bytes(b'x')
+    with pytest.raises(delivery.DeliveryError, match='delivery_partial_create_unknown_entries'):
+        delivery.inspect_unlaunched_session(other, plan)
+
+
+def test_immutable_upgrade_archive_recovers_only_own_write_prefix(tmp_path, monkeypatch):
+    plan, _ = _fake_installed(tmp_path, monkeypatch)
+    directory = tmp_path / 'archive-session'
+    directory.mkdir(mode=0o700)
+    plans = directory / 'plans'
+    plans.mkdir(mode=0o700)
+    final = plans / (plan['plan_sha256'] + '.json')
+    pending = final.with_name(final.name + '.pending')
+    raw = delivery.canonical(plan) + b'\n'
+    pending.write_bytes(raw[:31])
+    pending.chmod(0o600)
+    delivery._write_plan_immutable(directory, plan)
+    assert final.read_bytes() == raw
+    assert not pending.exists()
+    second = tmp_path / 'bad-archive'
+    second.mkdir(mode=0o700)
+    (second / 'plans').mkdir(mode=0o700)
+    bad = second / 'plans' / (plan['plan_sha256'] + '.json.pending')
+    bad.write_bytes(b'unknown')
+    bad.chmod(0o600)
+    with pytest.raises(delivery.DeliveryError, match='delivery_pending_plan_unknown_bytes'):
+        delivery._write_plan_immutable(second, plan)
 
 
 def test_session_lock_refuses_competing_controller(tmp_path, monkeypatch):

@@ -170,7 +170,9 @@ def _execed_console(identity: dict, executable: str) -> bool:
         args = Path(f"/proc/{identity['pid']}/cmdline").read_bytes().split(b'\x00')
     except OSError:
         return False
-    return os.fsencode(executable) in args
+    # The waiting helper contains the console path later in its argv.  A
+    # shebang console exec presents it as argv[1] of its interpreter.
+    return len(args) > 1 and args[1] == os.fsencode(executable)
 
 
 def _probe_hash(path: Path) -> str | None:
@@ -184,12 +186,13 @@ def _probe_hash(path: Path) -> str | None:
     return file_hash(path)
 
 
-def _current_observation(plan: dict, role: str, alive: bool) -> bool:
+def _current_observation(plan: dict, role: str, alive: bool,
+                         identity: dict | None) -> bool:
     if not alive:
         return False
     try:
         return any(row['role'] == role and _probe_hash(Path(row['path'])) == row['expected_sha256']
-                   for row in plan['observation']['checks'])
+                   and _process_alive(identity) for row in plan['observation']['checks'])
     except (DeliveryError, OSError):
         return False
 
@@ -234,14 +237,18 @@ def plan_delivery(install_plan: dict, *, trusted_install_receipt_sha256: str,
     receipt = _receipt(install_plan, trusted_install_receipt_sha256)
     validate_contract(observation, 'template-delivery-observation-v1')
     ready_paths = {row['path'] for row in observation['checks'] if row['role'] == 'ready'}
+    entrypoint_paths = {row['path'] for row in observation['checks']
+                        if row['role'] == 'entrypoint_reached'}
     integration_paths = {row['path'] for row in observation['checks']
                          if row['role'] == 'integration_reachable'}
-    if ready_paths & integration_paths:
+    if (not ready_paths or not entrypoint_paths or not integration_paths
+            or ready_paths & integration_paths):
         raise DeliveryError('readiness_and_integration_require_independent_checks')
     launch_environment = copy.deepcopy(launch_environment or {})
     if (type(launch_environment) is not dict or len(launch_environment) > 16
             or any(type(key) is not str or not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', key)
-                   or key.startswith(('PYTHON', 'PIP_', 'VIRTUAL_ENV')) or key in ('PATH', 'HOME')
+                   or key.startswith(('PYTHON', 'PIP_', 'VIRTUAL_ENV', 'JEV_'))
+                   or key in ('PATH', 'HOME')
                    or re.search(r'(?i)(secret|password|token|api[_-]?key|credential)', key)
                    or type(value) is not str or len(value) > 4096 or '\x00' in value
                    for key, value in launch_environment.items())):
@@ -432,9 +439,9 @@ def launch_session(directory: str | Path, *, scope: dict,
         read_fd, write_fd = os.pipe()
         child = None
         try:
-            env = {'PATH': str(Path(plan['environment']) / 'venv/bin'),
-                   'PYTHONNOUSERSITE': '1', 'JEV_RUNTIME_MODE': 'off'}
-            env.update(plan['launch_environment'])
+            env = dict(plan['launch_environment'])
+            env.update({'PATH': str(Path(plan['environment']) / 'venv/bin'),
+                        'PYTHONNOUSERSITE': '1', 'JEV_RUNTIME_MODE': 'off'})
             child = subprocess.Popen([sys.executable, '-I', '-c', _HELPER,
                                       str(read_fd), plan['console_script'], plan['environment']],
                                      pass_fds=(read_fd,), stdin=subprocess.DEVNULL,
@@ -499,12 +506,14 @@ def resume_session(directory: str | Path, *, trusted_session_head: str) -> dict:
             head = _append(target, rows, 'blocked_recovery', state)
             return _result(state, head, 'review_unknown_launch_effects',
                            current_process_alive=_process_alive(state['process']))
-        if state['pending'] == 'stop':
+        if state['pending'] in ('stop', 'stop_disable'):
             if _process_alive(state['process']):
                 return _result(state, rows[-1]['record_sha256'],
                                'review_live_process_and_reconcile', current_process_alive=True)
-            state['stage'], state['pending'] = 'stopped', None
-            head = _append(target, rows, 'stopped', state)
+            disabling = state['pending'] == 'stop_disable'
+            state['stage'], state['pending'] = ('disabled' if disabling else 'stopped'), None
+            state['disabled'] = disabling
+            head = _append(target, rows, state['stage'], state)
             return _result(state, head, 'review_outcomes_and_owned_rollback',
                            current_process_alive=False)
         if state['pending'] == 'rollback':
@@ -557,7 +566,7 @@ def observe_session(directory: str | Path, *, trusted_session_head: str) -> dict
         for row in plan['observation']['checks']:
             if _probe_hash(Path(row['path'])) != row['expected_sha256']:
                 continue
-            if row['role'] == 'ready' and not alive:
+            if row['role'] == 'ready' and (not alive or not _process_alive(state['process'])):
                 continue
             findings[row['role']] = True
         # Later loss of health does not erase a recorded observation, but the
@@ -583,15 +592,17 @@ def stop_session(directory: str | Path, *, scope: dict,
         _, rows, state, plan = _open(target)
         _authority(scope, approved_scope_sha256, rows[-1]['record_sha256'], state,
                    'disable' if disable else 'stop')
-        if state['process'] is None or state['pending'] not in (None, 'stop'):
+        if state['process'] is None or state['pending'] not in (None, 'stop', 'stop_disable'):
             raise DeliveryError('delivery_stop_requires_known_process')
+        if state['pending'] is not None and (state['pending'] == 'stop_disable') != disable:
+            raise DeliveryError('delivery_stop_pending_disposition_changed')
         if state['stage'] in ('stopped', 'disabled') and not _process_alive(state['process']):
             return _result(state, rows[-1]['record_sha256'], 'review_stopped_session',
                            current_process_alive=False)
         first_request = state['pending'] is None
         if first_request:
             state['attempts']['stop'] += 1
-            state['stage'], state['pending'] = 'stop_pending', 'stop'
+            state['stage'], state['pending'] = 'stop_pending', ('stop_disable' if disable else 'stop')
             _append(target, rows, 'stop_pending', state)
         if _process_alive(state['process']):
             deadline = time.monotonic() + grace_seconds
@@ -694,25 +705,45 @@ def _append(directory: Path, rows: list[dict], event: str, state: dict) -> str:
     return row['record_sha256']
 
 
+def _publish_exact(path: Path, raw: bytes) -> None:
+    """Publish only complete bytes; a matching write prefix can be retried."""
+    pending = path.with_name(path.name + '.pending')
+    _pending_prefix(pending, raw, remove=True)
+    fd = os.open(pending, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+    with os.fdopen(fd, 'wb') as stream:
+        stream.write(raw)
+        stream.flush()
+        os.fsync(stream.fileno())
+    os.link(pending, path, follow_symlinks=False)
+    pending.unlink()
+    parent_fd = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        os.fsync(parent_fd)
+    finally:
+        os.close(parent_fd)
+
+
+def _pending_prefix(path: Path, raw: bytes, *, remove: bool = False) -> None:
+    if path.exists() or path.is_symlink():
+        _owned_file(path, maximum=len(raw))
+        if not raw.startswith(path.read_bytes()):
+            raise DeliveryError('delivery_pending_plan_unknown_bytes')
+        if remove:
+            path.unlink()
+
+
 def _write_plan_immutable(directory: Path, plan: dict) -> None:
     parent = directory / 'plans'
     _private(parent)
     path = parent / (plan['plan_sha256'] + '.json')
+    _pending_prefix(path.with_name(path.name + '.pending'), canonical(plan) + b'\n',
+                    remove=path.exists())
     if path.exists():
         _owned_file(path, maximum=4_000_000)
         if read_json(path) != plan:
             raise DeliveryError('delivery_plan_archive_collision')
         return
-    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
-    with os.fdopen(fd, 'wb') as stream:
-        stream.write(canonical(plan) + b'\n')
-        stream.flush()
-        os.fsync(stream.fileno())
-    parent_fd = os.open(parent, os.O_RDONLY | os.O_DIRECTORY)
-    try:
-        os.fsync(parent_fd)
-    finally:
-        os.close(parent_fd)
+    _publish_exact(path, canonical(plan) + b'\n')
 
 
 def create_session(directory: str | Path, plan: dict, *, run_id: str | None = None) -> dict:
@@ -736,16 +767,81 @@ def create_session(directory: str | Path, plan: dict, *, run_id: str | None = No
     os.close(fd)
     (target / 'plans').mkdir(mode=0o700)
     _write_plan_immutable(target, plan)
-    write_json(target / 'delivery-plan.json', plan)
-    state = {'schema_version': '1.0', 'kind': 'template-delivery-session-v1',
-             'run_id': run_id or str(uuid.uuid4()), 'plan_sha256': plan['plan_sha256'],
+    _publish_exact(target / 'delivery-plan.json', canonical(plan) + b'\n')
+    state = _initial_state(plan, run_id or str(uuid.uuid4()))
+    with _locked(target):
+        head = _append(target, [], 'created', state)
+    return _result(state, head, 'supply_exact_launch_scope')
+
+
+def _initial_state(plan: dict, run_id: str) -> dict:
+    return {'schema_version': '1.0', 'kind': 'template-delivery-session-v1',
+             'run_id': run_id, 'plan_sha256': plan['plan_sha256'],
              'generation_id': plan['generation_id'], 'stage': 'installed',
              'pending': None, 'process': None, 'disabled': False,
-             'observations': {name: False for name in _FIELDS},
+             'observations': {name: name in ('generated', 'applied', 'installed') for name in _FIELDS},
              'attempts': {'launch': 0, 'stop': 0}, 'failures': [],
              'generation_history': []}
-    state['observations'].update(generated=True, applied=True, installed=True)
+
+
+def inspect_unlaunched_session(directory: str | Path, plan: dict) -> None:
+    """Read-only proof that an incomplete create contains only known bytes."""
+    target = _safe_directory(directory, exists=True)
+    _private(target)
+    allowed = {'session.lock', 'events.jsonl', 'plans', 'delivery-plan.json',
+               'delivery-plan.json.pending'}
+    if {item.name for item in target.iterdir()} - allowed:
+        raise DeliveryError('delivery_partial_create_unknown_entries')
+    lock = target / 'session.lock'
+    if lock.exists():
+        _owned_file(lock, maximum=1024)
+    events = target / 'events.jsonl'
+    if events.exists():
+        _owned_file(events, maximum=4_000_000)
+        if events.stat().st_size:
+            raise DeliveryError('delivery_partial_create_nonempty_journal')
+    plans = target / 'plans'
+    if plans.exists():
+        _private(plans)
+        if {item.name for item in plans.iterdir()} - {
+                plan['plan_sha256'] + '.json', plan['plan_sha256'] + '.json.pending'}:
+            raise DeliveryError('delivery_partial_create_unknown_plan')
+        archived = plans / (plan['plan_sha256'] + '.json')
+        _pending_prefix(archived.with_name(archived.name + '.pending'),
+                        canonical(plan) + b'\n')
+        if archived.exists():
+            _owned_file(archived, maximum=4_000_000)
+            if read_json(archived) != plan:
+                raise DeliveryError('delivery_partial_create_plan_changed')
+    visible = target / 'delivery-plan.json'
+    _pending_prefix(visible.with_name(visible.name + '.pending'), canonical(plan) + b'\n')
+    if visible.exists():
+        _owned_file(visible, maximum=4_000_000)
+        if read_json(visible) != plan:
+            raise DeliveryError('delivery_partial_create_plan_changed')
+
+
+def recover_unlaunched_session(directory: str | Path, plan: dict, *, run_id: str) -> dict:
+    """Complete only the exact owner-private pre-journal create prefix."""
+    _check_plan(plan)
+    target = _safe_directory(directory, exists=True)
     with _locked(target):
+        inspect_unlaunched_session(target, plan)
+        events = target / 'events.jsonl'
+        plans = target / 'plans'
+        if not plans.exists():
+            plans.mkdir(mode=0o700)
+        visible = target / 'delivery-plan.json'
+        if not events.exists():
+            fd = os.open(events, os.O_CREAT | os.O_EXCL | os.O_WRONLY | os.O_NOFOLLOW, 0o600)
+            os.close(fd)
+        _write_plan_immutable(target, plan)
+        if not visible.exists():
+            _publish_exact(visible, canonical(plan) + b'\n')
+        else:
+            _pending_prefix(visible.with_name(visible.name + '.pending'),
+                            canonical(plan) + b'\n', remove=True)
+        state = _initial_state(plan, run_id)
         head = _append(target, [], 'created', state)
     return _result(state, head, 'supply_exact_launch_scope')
 
@@ -767,10 +863,12 @@ def _result(state: dict, head: str, next_action: str, *, current_process_alive: 
                 'run_id': state['run_id']}) if previous else None),
             'recorded_observations': copy.deepcopy(state['observations']),
             'current_process_alive': current_process_alive,
-            'current_ready': (_current_observation(plan, 'ready', current_process_alive)
+            'current_ready': (_current_observation(plan, 'ready', current_process_alive,
+                                                   state['process'])
                               if plan is not None and current_process_alive is not None else None),
             'current_integration_reachable': (
-                _current_observation(plan, 'integration_reachable', current_process_alive)
+                _current_observation(plan, 'integration_reachable', current_process_alive,
+                                     state['process'])
                 if plan is not None and current_process_alive is not None else None),
             'next_action': next_action, 'provider_qualification': 'not_run',
             'observed_benefit': False}

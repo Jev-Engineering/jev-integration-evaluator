@@ -9,7 +9,7 @@
     "plan_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "generation_id": {"type": "string", "minLength": 1},
     "stage": {"enum": ["installed", "launch_pending", "launched", "running", "stop_pending", "stopped", "disabled", "upgrade_staged", "rollback_pending", "rolled_back", "blocked_recovery"]},
-    "pending": {"anyOf": [{"type": "null"}, {"enum": ["launch", "stop", "rollback"]}]},
+    "pending": {"anyOf": [{"type": "null"}, {"enum": ["launch", "stop", "stop_disable", "rollback"]}]},
     "process": {"anyOf": [{"type": "null"}, {"type": "object", "additionalProperties": false, "required": ["pid", "boot_id", "start_ticks"], "properties": {"pid": {"type": "integer", "minimum": 1}, "boot_id": {"type": "string", "minLength": 1}, "start_ticks": {"type": "string", "minLength": 1}}}]},
     "disabled": {"type": "boolean"},
     "observations": {"type": "object", "additionalProperties": false, "required": ["generated", "applied", "installed", "launched", "ready", "entrypoint_reached", "integration_reachable", "provider_reachable", "mode_authorized", "outcome_verified"], "properties": {

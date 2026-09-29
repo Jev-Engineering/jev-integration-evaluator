@@ -7,7 +7,7 @@
     "schema_version": {"const": "1.0"},
     "kind": {"const": "template-delivery-journey-v1"},
     "run_id": {"type": "string", "format": "uuid"},
-    "stage": {"enum": ["source_planned", "baseline_anchored", "source_verified", "package_planned", "package_built", "install_planned", "installed", "promotion_pending", "runtime_session"]},
+    "stage": {"enum": ["source_planned", "baseline_anchored", "source_verified", "package_planned", "package_built", "install_planned", "installed", "promotion_pending", "runtime_creation_recovered", "runtime_session"]},
     "source_kind": {"enum": ["single", "composite"]},
     "source_root": {"type": "string", "minLength": 1},
     "bundle": {"type": "string", "minLength": 1},
