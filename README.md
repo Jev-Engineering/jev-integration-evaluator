@@ -91,8 +91,9 @@ exercise two reviewed fixture versions, distinct raw host effects, exact
 upgrade and retained rollback. The ESM journey resumes an interrupted first
 launch under the same session run ID and refuses source drift before upgrade.
 The CommonJS journey also resumes an interrupted upgrade selection under the
-same session run ID. The ESM fixture materializes through an exact branch-built
-installed evaluator CLI. Connected provider qualification remains pending;
+same session run ID. The ESM fixture materializes, applies, verifies, packages,
+installs and launches through an exact branch-built installed evaluator CLI.
+Connected provider qualification remains pending;
 live benefit is unknown.
 
 The [six-use-case source matrix](references/use-case-template-matrix-v1.md)

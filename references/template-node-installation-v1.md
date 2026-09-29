@@ -141,7 +141,21 @@ descriptor's observation paths were consumed by its earlier run, so rollback
 does not by itself authorize another launch. Fresh source rollback stays with
 the existing JS lifecycle and its own receipt/scope.
 
-The CLI mirrors these APIs as `template node-delivery-plan`,
+The installed evaluator CLI exposes the same separate package and install stages:
+`template node-package-plan --request REQUEST --out PLAN`,
+`node-package-build --plan PLAN --approve-plan-sha256 APPROVED_DIGEST`,
+`node-package-status --plan PLAN --trusted-receipt-sha256 RETAINED_DIGEST`,
+`node-install-plan --package-plan PACKAGE_PLAN --package-receipt PACKAGE_RECEIPT
+--trusted-package-receipt-sha256 RETAINED_DIGEST --out INSTALL_PLAN`,
+`node-install --plan INSTALL_PLAN --approve-plan-sha256 APPROVED_DIGEST`, and
+`node-install-status --plan INSTALL_PLAN --trusted-receipt-sha256 RETAINED_DIGEST`.
+The plan commands write new private files exclusively; `node-package-build`
+and `node-install` are the only package/install effect commands. Keep each
+approval and receipt digest in a separately owned channel, and pass the
+current digest back explicitly. The installed CLI test exercises these exact
+commands before creating a delivery descriptor and launching an ESM host.
+
+The CLI mirrors the session APIs as `template node-delivery-plan`,
 `node-session-create`, `node-launch`, `node-observe`, `node-status`,
 `node-resume`, `node-stop`, `node-disable`, `node-upgrade`, and
 `node-rollback`. Keep session, descriptor, journal head, scope and scope digest

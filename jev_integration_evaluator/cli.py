@@ -228,6 +228,19 @@ def parser():
     s.add_argument('--install-plan',required=True); s.add_argument('--trusted-install-receipt-sha256',required=True)
     s.add_argument('--observation',required=True); s.add_argument('--launch-environment',required=True)
     s.add_argument('--out',required=True)
+    s=template_sub.add_parser('node-package-plan',help='Plan offline Node packaging of an applied and verified JS/TS host')
+    s.add_argument('--request',required=True); s.add_argument('--out',required=True)
+    s=template_sub.add_parser('node-package-build',help='Build one exactly approved offline Node package')
+    s.add_argument('--plan',required=True); s.add_argument('--approve-plan-sha256',required=True)
+    s=template_sub.add_parser('node-package-status',help='Inspect a Node package without building or replaying')
+    s.add_argument('--plan',required=True); s.add_argument('--trusted-receipt-sha256')
+    s=template_sub.add_parser('node-install-plan',help='Plan a Node generation from an externally anchored package receipt')
+    s.add_argument('--package-plan',required=True); s.add_argument('--package-receipt',required=True)
+    s.add_argument('--trusted-package-receipt-sha256',required=True); s.add_argument('--out',required=True)
+    s=template_sub.add_parser('node-install',help='Install one exactly approved offline Node generation')
+    s.add_argument('--plan',required=True); s.add_argument('--approve-plan-sha256',required=True)
+    s=template_sub.add_parser('node-install-status',help='Inspect a Node generation without installing or launching')
+    s.add_argument('--plan',required=True); s.add_argument('--trusted-receipt-sha256')
     s=template_sub.add_parser('node-session-create',help='Create an owned unlaunched Node session')
     s.add_argument('--session',required=True); s.add_argument('--descriptor',required=True)
     for action in ('node-launch','node-stop','node-disable','node-upgrade','node-rollback'):
@@ -314,11 +327,33 @@ def execute(args):
         if args.template_action=='bind':
             return bind_template(args.repo,read_json(args.request),read_json(args.binding),args.out)
         if args.template_action.startswith('node-'):
+            from .template_node_installation import (
+                plan_node_package, build_node_package, package_status as node_package_status,
+                plan_node_install, install_node_package, installation_status as node_install_status)
+            from .template_installation import write_plan_exclusive
+            action=args.template_action
+            if action=='node-package-plan':
+                result=plan_node_package(read_json(args.request))
+                write_plan_exclusive(args.out,result,host_root=result['request']['host_root'])
+                return result
+            if action=='node-package-build':
+                return build_node_package(read_json(args.plan),approved_plan_sha256=args.approve_plan_sha256)
+            if action=='node-package-status':
+                return node_package_status(read_json(args.plan),trusted_receipt_sha256=args.trusted_receipt_sha256)
+            if action=='node-install-plan':
+                result=plan_node_install(read_json(args.package_plan),read_json(args.package_receipt),
+                    trusted_package_receipt_sha256=args.trusted_package_receipt_sha256)
+                write_plan_exclusive(args.out,result,
+                    host_root=result['package_plan']['request']['host_root'])
+                return result
+            if action=='node-install':
+                return install_node_package(read_json(args.plan),approved_plan_sha256=args.approve_plan_sha256)
+            if action=='node-install-status':
+                return node_install_status(read_json(args.plan),trusted_receipt_sha256=args.trusted_receipt_sha256)
             from .template_node_delivery import plan_node_delivery
             from .template_node_session import (create_node_session, launch_node_session,
                 resume_node_session, observe_node_session, node_session_status,
                 stop_node_session, upgrade_node_session, rollback_node_session)
-            action=args.template_action
             if action=='node-delivery-plan':
                 result=plan_node_delivery(read_json(args.install_plan),
                     trusted_install_receipt_sha256=args.trusted_install_receipt_sha256,
@@ -756,11 +791,15 @@ def main(argv=None):
         result=execute(args)
         # Artifacts contain details; concise stdout remains useful in scripts.
         if args.command=='template' and args.template_action in (
-                'package','package-build','package-status','package-recover','install-plan',
-                'install','install-status','install-recover'):
+                 'package','package-build','package-status','package-recover','install-plan',
+                 'install','install-status','install-recover', 'node-package-plan',
+                 'node-package-build','node-package-status','node-install-plan',
+                 'node-install','node-install-status'):
             display={'schema_version':'1.0','status': result.get('status') or {
                 'package':'planned','package-build':'built','install-plan':'planned',
-                'install':'installed'}.get(args.template_action,'recorded')}
+                'install':'installed', 'node-package-plan':'planned',
+                'node-package-build':'packaged','node-install-plan':'planned',
+                'node-install':'installed'}.get(args.template_action,'recorded')}
             for field in ('plan_sha256','receipt_sha256','generation_sha256','journal_head_sha256'):
                 if field in result: display[field]=result[field]
         elif getattr(args,"out",None) and args.command not in ("scan","architecture","report","scaffold","implement-plan","implement-verify","implement-composite-plan","template"):
@@ -786,7 +825,9 @@ def main(argv=None):
             from .template_catalog import template_error
             if args.template_action in ('package','package-build','package-status',
                     'package-recover','install-plan','install','install-status',
-                    'install-recover') and isinstance(exc,OSError):
+                    'install-recover','node-package-plan','node-package-build',
+                    'node-package-status','node-install-plan','node-install',
+                    'node-install-status') and isinstance(exc,OSError):
                 exc=InputError('template_installation_io_unavailable')
             print(json.dumps(template_error(exc)),file=sys.stderr)
             return 2
