@@ -98,8 +98,8 @@ For an already applied and independently verified Python console host, a
 separate [native Windows offline API checkpoint](references/windows-template-native-delivery-v1.md)
 can build/install hash-locked wheels, supervise off-mode installed consoles,
 and select retained old/new installed generations under one run ID on local
-NTFS. Its local fixture run does not qualify the required Windows interpreter
-and Server matrix, untrusted execution or provider traffic.
+NTFS. Retained local Windows 11 CPython 3.10/3.13/3.14 fixture runs do not
+qualify Windows Server, untrusted execution or provider traffic.
 
 Run `scripts/run_implementation_demo.py --out NEW_PRIVATE_DIRECTORY`, the existing v1.1/v1.2 demos, full regressions, installed-wheel host checks and package validation for implementation changes. Publish only minimal synthetic validation metadata, never private target source, preimages, raw test output or activation fixtures. Prior validation reports remain historical.
 
