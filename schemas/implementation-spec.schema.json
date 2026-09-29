@@ -1293,6 +1293,12 @@
           }
         }
       }
+    },
+    {
+      "if": {"properties": {"recipe": {"properties": {"id": {
+        "const": "python.L"}}}}},
+      "then": {"properties": {"entrypoint_binding": {"properties": {
+        "kind": {"const": "task-loop-v1"}}}}}
     }
   ]
 }

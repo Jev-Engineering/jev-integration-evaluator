@@ -20,6 +20,7 @@ from jev_integration_evaluator.template_catalog import (
     bind_template, materialize_template, prepare_template_binding, validate_template_request,
 )
 from jev_integration_evaluator.integrations.errors import UnsupportedShape
+from jev_integration_evaluator.integrations.contracts import validate_spec
 from jev_integration_evaluator.integrations.lifecycle import (
     apply_implementation, plan_implementation, rollback_implementation,
 )
@@ -120,6 +121,10 @@ def test_l_bound_console_source_and_owned_edit(tmp_path):
     assert entry['kind'] == 'task-loop-v1'
     assert entry['file'] == 'graph_host/console.py'
     assert entry['pyproject_sha256'] == file_hash(target / 'pyproject.toml')
+    invalid = dict(prepared['request']['implementation_spec'])
+    invalid['entrypoint_binding'] = dict(entry, kind='single-request-v1', item_symbol=None)
+    with pytest.raises(InputError, match='Invalid implementation specification'):
+        validate_spec(invalid)
     bound = prepared['request']
     assert validate_template_request(target, bound)['status'] == 'validated'
     report = bind_template(target, request, BINDING, tmp_path / 'bound')
