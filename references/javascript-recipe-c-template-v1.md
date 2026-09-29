@@ -78,6 +78,9 @@ test exercises actual ESM, CommonJS and TypeScript source verification and
 installed normal commands when trusted TypeScript 5.8.3 is supplied. A distinct
 Node session supervisor uses the read-only descriptor for bounded off-mode
 launch, observation, stop, disable, upgrade selection and rollback selection.
+An independent installed CommonJS fixture now exercises its normal package
+command, source-generated raw effect, interrupted upgrade selection and
+retained rollback; see the Node installation reference for exact limits.
 The Python #56 supervisor remains Python-only. Complete issue #60 release
 gates and connected modes require their own exact
 authority, receipt and observed holdout gates. Synthetic JS verification is

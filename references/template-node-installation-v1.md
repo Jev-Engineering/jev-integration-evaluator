@@ -187,6 +187,20 @@ retry, and no effect or readiness file appears. These are controlled offline
 faults before child release. CommonJS and TypeScript have installed normal
 command checks, but these two start faults have not run on those formats.
 
+The independent [installed CommonJS journey](../tests/test_node_template_installed_commonjs.py)
+uses a separate named package and two reviewed `host.cjs` versions. Each
+`package.json` declares `node start.cjs`; the installed generation's exact
+entrypoint and host file hashes match the applied source and are outside the
+evaluator checkout. The `original` function emits the raw `read:alpha` or
+`read:beta:v2` file through the normal installed command. A separate ready
+and integration file follows the host effect. The test binds the exact native
+Node/npm and trusted TypeScript bytes, source verification, package/install
+receipts, descriptor and scope digests. An injected interruption after the
+upgrade intent resumes under the same run ID without a second old effect or
+an early new effect. Disable and exact selection rollback retain both
+generations and both historical effects; owned JS source rollback restores
+the reviewed pre-edit files. The ESM child-release fault cases remain separate.
+
 The [installed TypeScript upgrade journey](../tests/test_node_template_installed_upgrade.py)
 uses two separately reviewed fixture packages, versions 1.0.0 and 1.0.1.
 The 1.0.1 `host.ts` changes the finite `original` function called by the

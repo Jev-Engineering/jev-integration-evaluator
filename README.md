@@ -86,8 +86,10 @@ command with external effect files. A read-only Node delivery descriptor binds
 exact installation and observation inputs. A separate offline Node supervisor
 now records an owned process, checks independent ready/effect paths, and
 supports bounded stop, disable and retained generation selection under exact
-scopes. A synthetic installed TypeScript journey now exercises two reviewed
-fixture versions, distinct raw effects, exact upgrade and retained rollback.
+scopes. Independent synthetic installed TypeScript and CommonJS journeys each
+exercise two reviewed fixture versions, distinct raw host effects, exact
+upgrade and retained rollback. The CommonJS journey also resumes an
+interrupted upgrade selection under the same session run ID.
 Complete three-format installed evaluator CLI and provider qualification
 remain pending; live benefit is unknown.
 
