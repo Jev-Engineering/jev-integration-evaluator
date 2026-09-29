@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "scope": "offline_source_contracts_only",
+  "scope": "offline_source_contracts_and_partial_h_installed",
   "host": {
     "console": "examples/use-case-host/console.py",
     "console_sha256": "4ea467e3c1e8c4465f0503e6ebb1ddeb4f0fd99656b7d1557495968dcb6e45ef",
@@ -30,7 +30,14 @@
       "provider": "pending",
       "mode": "off",
       "benefit": "unknown",
-      "contract_id": "use-case.C@1.0.0"
+      "contract_id": "use-case.C@1.0.0",
+      "materialize": "pending",
+      "bind": "pending",
+      "verify": "pending",
+      "status": "pending",
+      "disable": "pending",
+      "upgrade": "pending",
+      "rollback": "pending"
     },
     {
       "id": "L",
@@ -54,7 +61,14 @@
       "provider": "pending",
       "mode": "off",
       "benefit": "unknown",
-      "contract_id": "use-case.L@1.0.0"
+      "contract_id": "use-case.L@1.0.0",
+      "materialize": "pending",
+      "bind": "pending",
+      "verify": "pending",
+      "status": "pending",
+      "disable": "pending",
+      "upgrade": "pending",
+      "rollback": "pending"
     },
     {
       "id": "D",
@@ -78,7 +92,14 @@
       "provider": "pending",
       "mode": "off",
       "benefit": "unknown",
-      "contract_id": "use-case.D@1.0.0"
+      "contract_id": "use-case.D@1.0.0",
+      "materialize": "pending",
+      "bind": "pending",
+      "verify": "pending",
+      "status": "pending",
+      "disable": "pending",
+      "upgrade": "pending",
+      "rollback": "pending"
     },
     {
       "id": "E",
@@ -102,7 +123,14 @@
       "provider": "pending",
       "mode": "off",
       "benefit": "unknown",
-      "contract_id": "use-case.E@1.0.0"
+      "contract_id": "use-case.E@1.0.0",
+      "materialize": "pending",
+      "bind": "pending",
+      "verify": "pending",
+      "status": "pending",
+      "disable": "pending",
+      "upgrade": "pending",
+      "rollback": "pending"
     },
     {
       "id": "M",
@@ -126,7 +154,14 @@
       "provider": "pending",
       "mode": "off",
       "benefit": "unknown",
-      "contract_id": "use-case.M@1.0.0"
+      "contract_id": "use-case.M@1.0.0",
+      "materialize": "pending",
+      "bind": "pending",
+      "verify": "pending",
+      "status": "pending",
+      "disable": "pending",
+      "upgrade": "pending",
+      "rollback": "pending"
     },
     {
       "id": "H",
@@ -136,21 +171,30 @@
       "template_version": "1.0.0",
       "recipe": "python.H@1.0",
       "backend": "python",
-      "shape": "fixture outside module-tail-call-v1",
-      "platform": "offline synthetic Python fixture",
+      "shape": "module-tail-call-v1 on a separate reviewed H host; original oracle remains outside the grammar",
+      "platform": "Linux x86-64 CPython 3.13 offline installed synthetic H host",
       "source": "examples/coding-agent/retention_oracle.py",
       "source_sha256": "80c1e169a33eb39db2a9ec572e6111f4a1838d093a23da8655120a36ec8df7a3",
+      "consumer_adapter": "examples/use-case-host/retention_consumer.py",
+      "consumer_adapter_sha256": "687f86969341bd77d56f9ae5c7d13a2050b03faf829d28b424e3d1183173f127",
       "host_consumer": "raw_postconditions / score_recall",
-      "host_oracle": "pinned bytes and provenance, token budget, explicit prune mode and later recall",
+      "host_oracle": "raw installed pin/byte/budget/mode readback and separately scored later recall; off-mode fallback retains all",
       "offline_contract": "tested_fixture",
-      "installed_execution": "pending_issue_57_and_fresh_binding",
-      "apply": "pending",
-      "install": "pending",
-      "launch": "pending",
+      "installed_execution": "qualified_offline_h_synthetic_host",
+      "apply": "qualified_offline_h_synthetic_host",
+      "install": "qualified_offline_h_synthetic_host",
+      "launch": "qualified_offline_h_synthetic_host",
       "provider": "pending",
       "mode": "off",
       "benefit": "unknown",
-      "contract_id": "use-case.H@1.0.0"
+      "contract_id": "use-case.H@1.0.0",
+      "materialize": "qualified_offline_h_synthetic_host",
+      "bind": "pending_h_console_binding",
+      "verify": "qualified_offline_h_synthetic_host",
+      "status": "qualified_offline_h_synthetic_host",
+      "disable": "qualified_offline_h_synthetic_host",
+      "upgrade": "qualified_offline_h_synthetic_host",
+      "rollback": "qualified_offline_h_synthetic_host"
     }
   ]
 }
