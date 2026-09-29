@@ -191,9 +191,10 @@ The independent [installed CommonJS journey](../tests/test_node_template_install
 uses a separate named package and two reviewed `host.cjs` versions. Each
 `package.json` declares `node start.cjs`; the installed generation's exact
 entrypoint and host file hashes match the applied source and are outside the
-evaluator checkout. The `original` function emits the raw `read:alpha` or
-`read:beta:v2` file through the normal installed command. A separate ready
-and integration file follows the host effect. The test binds the exact native
+evaluator checkout. The `original` function calls the fixture callback installed
+by `start.cjs`; that callback writes the raw `read:alpha` or `read:beta:v2`
+file during the normal installed command. Separate ready and integration files
+follow the host effect. The test binds the exact native
 Node/npm and trusted TypeScript bytes, source verification, package/install
 receipts, descriptor and scope digests. An injected interruption after the
 upgrade intent resumes under the same run ID without a second old effect or
