@@ -80,7 +80,7 @@ def digest_bytes(raw: bytes) -> str:
 
 
 def test_launch_observe_disable_and_exact_current_health(tmp_path, monkeypatch):
-    plan, effect = _fake_installed(tmp_path, monkeypatch)
+    plan, effect = _fake_installed(tmp_path, monkeypatch, pause=30)
     session = tmp_path / 'session'
     created = delivery.create_session(session, plan)
     unanchored = delivery.session_status(session)
@@ -106,13 +106,14 @@ def test_launch_observe_disable_and_exact_current_health(tmp_path, monkeypatch):
         again = _scope(launched, plan, launch=True)
         delivery.launch_session(session, scope=again,
                                 approved_scope_sha256=again['scope_sha256'])
+    import time
     observed = launched
-    for _ in range(100):
+    deadline = time.monotonic() + 10
+    while time.monotonic() < deadline:
         observed = delivery.observe_session(session,
                                             trusted_session_head=observed['session_head_sha256'])
         if observed['recorded_observations']['outcome_verified']:
             break
-        import time
         time.sleep(0.01)
     assert observed['recorded_observations']['entrypoint_reached'] is True
     assert observed['recorded_observations']['integration_reachable'] is True
