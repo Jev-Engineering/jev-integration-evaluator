@@ -36,6 +36,11 @@ SHAPES = {
         'undecorated top-level async function with one request argument',
         'one return awaiting an async named function called with the unchanged request',
     )),
+    'module-fixed-positional-tail-call-v1': Shape('module-fixed-positional-tail-call-v1', '1.0', (
+        'undecorated top-level synchronous function with two to eight required positional arguments',
+        'one return of a named synchronous function called with every unchanged argument once in order',
+        'no defaults, variadics, keyword-only arguments, nested scope, branch, or loop',
+    )),
 }
 
 
@@ -178,7 +183,7 @@ def prepare_shape(raw: bytes, *, shape: str, symbol: str, source_sha256: str,
                if isinstance(n, ast.FunctionDef)):
             raise UnsupportedShape('Dynamic receiver attribute lookup is unsupported')
         replacement = f'{adapter_name}.invoke({receiver}.{baseline.name}, {request})'
-    else:
+    elif shape == 'async-module-tail-call-v1':
         if '.' in symbol or not symbol.isidentifier():
             raise UnsupportedShape('Async strategy requires a top-level function')
         found = _module_bindings(tree)
@@ -198,6 +203,30 @@ def prepare_shape(raw: bytes, *, shape: str, symbol: str, source_sha256: str,
             raise UnsupportedShape('Ambiguous async baseline binding')
         _simple_args(baseline, 1)
         replacement = f'await {adapter_name}.invoke_async({baseline.name}, {request})'
+    else:
+        if '.' in symbol or not symbol.isidentifier():
+            raise UnsupportedShape('Fixed-positional strategy requires a top-level function')
+        found = _module_bindings(tree)
+        if len(found.get(symbol, [])) != 1:
+            raise UnsupportedShape('Ambiguous fixed-positional seam binding')
+        function = _unique(tree.body, symbol, ast.FunctionDef)
+        parameters = _simple_args(function, len(function.args.posonlyargs + function.args.args))
+        if not 2 <= len(parameters) <= 8 or len(set(parameters)) != len(parameters):
+            raise UnsupportedShape('Fixed-positional seam requires two to eight distinct required parameters')
+        statement = _body(function)
+        call = statement.value
+        if (not isinstance(call, ast.Call) or not isinstance(call.func, ast.Name)
+                or call.func.id == function.name or call.keywords or len(call.args) != len(parameters)
+                or any(not isinstance(arg, ast.Name) or arg.id != parameter
+                       for arg, parameter in zip(call.args, parameters))):
+            raise UnsupportedShape('Fixed-positional seam must forward every unchanged argument once in order')
+        baseline = _unique(tree.body, call.func.id, ast.FunctionDef)
+        if len(found.get(baseline.name, [])) != 1:
+            raise UnsupportedShape('Ambiguous fixed-positional baseline binding')
+        baseline_parameters = _simple_args(baseline, len(parameters))
+        if len(baseline_parameters) != len(parameters):
+            raise UnsupportedShape('Fixed-positional baseline arity differs')
+        replacement = f'{adapter_name}.invoke({baseline.name}, ({", ".join(parameters)}))'
     if adapter_name in {n.id for n in ast.walk(function) if isinstance(n, ast.Name)}:
         raise UnsupportedShape('Adapter binding collides with selected function scope')
     # The AST anchor identifies the exact selected statement; source_sha256 binds
@@ -207,10 +236,15 @@ def prepare_shape(raw: bytes, *, shape: str, symbol: str, source_sha256: str,
     start, end = _statement(raw, statement.value)
     changed = raw[:start] + replacement.encode('utf-8') + raw[end:]
     ast.parse(changed.decode('utf-8'))
-    return {'strategy': {'shape': shape, 'version': SHAPES[shape].version},
+    result = {'strategy': {'shape': shape, 'version': SHAPES[shape].version},
             'symbol': symbol, 'baseline_symbol': baseline.name,
             'source_sha256': source_sha256, 'anchor_sha256': anchor_sha256,
             'new_sha256': hashlib.sha256(changed).hexdigest(), 'new_content': changed.decode('utf-8')}
+    if shape == 'module-fixed-positional-tail-call-v1':
+        result['binding_map'] = [{'position': index, 'seam_parameter': name,
+                                  'baseline_parameter': baseline_parameters[index]}
+                                 for index, name in enumerate(parameters)]
+    return result
 
 
 def prepare_reviewed_shape(root: Path, inventory: dict, request: dict) -> dict:
@@ -249,8 +283,9 @@ def prepare_reviewed_shape(root: Path, inventory: dict, request: dict) -> dict:
                        and row.get('sha256') == binding['adapter_sha256']]
     if len(adapter_records) != 1 or binding['adapter_file'] == source['file']:
         raise InputError('Reviewed adapter must be a distinct scanned source file')
-    if binding['adapter_file'] != request['adapter_name'] + '.py' or '/' in source['file']:
-        raise UnsupportedShape('Preparation currently requires a flat statically imported adapter module')
+    expected_adapter = (Path(source['file']).parent / (request['adapter_name'] + '.py')).as_posix()
+    if binding['adapter_file'] != expected_adapter:
+        raise UnsupportedShape('Adapter must sit beside the selected source in its regular package')
     for row in inventory.get('files', []) + inventory.get('configuration_evidence', []):
         path = safe_child(root, row['file'])
         if not path.is_file() or file_hash(path) != row['sha256']:
@@ -276,9 +311,13 @@ def validate_static_adapter_import(raw: bytes, adapter_name: str) -> None:
         tree = ast.parse(raw.decode('utf-8'))
     except (UnicodeError, SyntaxError):
         raise UnsupportedShape('Selected adaptation source is not valid UTF-8 Python') from None
-    imports = [node for node in tree.body if isinstance(node, ast.Import)
-               and len(node.names) == 1 and node.names[0].name == adapter_name
-               and node.names[0].asname is None]
+    imports = [node for node in tree.body if (
+        isinstance(node, ast.Import) and len(node.names) == 1
+        and node.names[0].name == adapter_name and node.names[0].asname is None
+        ) or (
+        isinstance(node, ast.ImportFrom) and node.level == 1 and node.module is None
+        and len(node.names) == 1 and node.names[0].name == adapter_name
+        and node.names[0].asname is None)]
     if len(imports) != 1 or len(_module_bindings(tree).get(adapter_name, [])) != 1:
         raise UnsupportedShape('Adapter must be one unambiguous existing static module import')
 

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Generated Python adaptation adapter request v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["kind", "stage", "candidate_id", "shape", "source_file", "symbol", "source_before_sha256", "source_after_sha256", "anchor_sha256", "adapter_name", "script", "reviewed_inventory_sha256", "external_caller_review_sha256", "request_position", "positional_count", "adaptation_verification_sha256"],
+  "properties": {
+    "kind": {"const": "generated-adaptation-adapter-v1"},
+    "stage": {"enum": ["bootstrap", "final"]},
+    "candidate_id": {"type": "string", "minLength": 1},
+    "shape": {"enum": ["instance-method-tail-call-v1", "async-module-tail-call-v1", "module-fixed-positional-tail-call-v1"]},
+    "source_file": {"type": "string", "minLength": 1},
+    "symbol": {"type": "string", "minLength": 1},
+    "source_before_sha256": {"$ref": "#/$defs/hash"},
+    "source_after_sha256": {"$ref": "#/$defs/hash"},
+    "anchor_sha256": {"$ref": "#/$defs/hash"},
+    "adapter_name": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"},
+    "script": {"type": "string", "minLength": 1},
+    "reviewed_inventory_sha256": {"$ref": "#/$defs/hash"},
+    "external_caller_review_sha256": {"$ref": "#/$defs/hash"},
+    "request_position": {"type": "integer", "minimum": 0, "maximum": 7},
+    "positional_count": {"type": "integer", "minimum": 1, "maximum": 8},
+    "adaptation_verification_sha256": {"oneOf": [{"$ref": "#/$defs/hash"}, {"type": "null"}]}
+  },
+  "$defs": {"hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}

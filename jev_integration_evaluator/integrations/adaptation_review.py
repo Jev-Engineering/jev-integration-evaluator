@@ -79,12 +79,12 @@ def _caller_scope(root: Path, context: dict, source: dict, shape: str) -> dict:
                       and node.value.id == module):
                 raise InputError('Ambiguous async caller module')
             calls.append({'file':row['file'], 'line':node.lineno, 'column':node.col_offset})
-        if shape == 'async-module-tail-call-v1':
+        if shape in ('async-module-tail-call-v1', 'module-fixed-positional-tail-call-v1'):
             for node in ast.walk(tree):
                 if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Name) or node.func.id != method:
                     continue
                 if row['file'] != source['file']:
-                    raise InputError('Ambiguous bare async caller')
+                    raise InputError('Ambiguous bare selected caller')
                 calls.append({'file':row['file'], 'line':node.lineno, 'column':node.col_offset})
     if not calls:
         raise InputError('No direct caller in bounded Python review scope')
@@ -111,7 +111,8 @@ def _anchor(root: Path, source: dict, shape: str) -> str:
         owner = [n for n in tree.body if isinstance(n, ast.ClassDef) and n.name == parts[0]]
         selected = [n for n in owner[0].body if isinstance(n, ast.FunctionDef) and n.name == parts[1]] if len(owner) == 1 else []
     else:
-        selected = [n for n in tree.body if isinstance(n, ast.AsyncFunctionDef) and n.name == symbol]
+        kind = ast.AsyncFunctionDef if shape == 'async-module-tail-call-v1' else ast.FunctionDef
+        selected = [n for n in tree.body if isinstance(n, kind) and n.name == symbol]
     if len(selected) != 1 or not selected[0].body:
         raise InputError('Missing or ambiguous reviewed adaptation seam')
     return digest(ast.dump(selected[0].body[-1], annotate_fields=True, include_attributes=False))

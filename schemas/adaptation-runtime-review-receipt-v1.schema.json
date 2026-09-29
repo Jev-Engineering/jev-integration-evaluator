@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Externally anchored post-adaptation runtime review receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["adapter_sha256", "adapter_plan_sha256", "adaptation_verification_sha256", "adapted_source_sha256", "adapted_symbol_sha256", "caller_scope_sha256", "pyproject_sha256", "script_target", "reviewer", "approved"],
+  "properties": {
+    "adapter_sha256": {"$ref": "#/$defs/hash"},
+    "adapter_plan_sha256": {"$ref": "#/$defs/hash"},
+    "adaptation_verification_sha256": {"$ref": "#/$defs/hash"},
+    "adapted_source_sha256": {"$ref": "#/$defs/hash"},
+    "adapted_symbol_sha256": {"$ref": "#/$defs/hash"},
+    "caller_scope_sha256": {"$ref": "#/$defs/hash"},
+    "pyproject_sha256": {"$ref": "#/$defs/hash"},
+    "script_target": {"type": "string", "minLength": 1},
+    "reviewer": {"type": "string", "minLength": 1},
+    "approved": {"const": true}
+  },
+  "$defs": {"hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}

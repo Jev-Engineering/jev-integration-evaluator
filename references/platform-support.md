@@ -11,6 +11,13 @@ qualification is source-bound planner materialization; npm installation,
 normal package launch, provider reachability and connected mode are pending.
 Windows Node interop does not qualify native Linux execution.
 
+The separate generated Python adaptation runtime profile has local offline
+Windows qualification for regular and `src/` package wheels through their
+installed console commands on the current interpreter. It exercises off and
+synthetic shadow for method, async, and fixed-positional seams. This does not
+qualify native isolation, Linux/WSL behavior, connected async routing, or live
+benefit; see `references/python-adaptation-runtime-v1.md`.
+
 | Platform and filesystem | Repository discovery | Qualification |
 | --- | --- | --- |
 | Linux, including WSL2 Linux filesystems | Supported through POSIX descriptor-relative reads with `O_NOFOLLOW`. | Existing Linux CI and recorded Linux/WSL runs. This change does not restart or reconfigure WSL. |

@@ -12,6 +12,8 @@ For several repositories, scan each root separately with separate output directo
 
 When a caller asks for a reusable integration template, collect the current reviewed inventory and source-specific implementation specification first. `template validate` checks these inputs against the current host, and `template materialize` writes private planner inputs only. For a Python recipe C package with a reviewed console script, collect an explicit `template-entrypoint-binding-v1` file and use `template bind` before validation/materialization; see `references/template-python-entrypoint-v1.md`. None of these operations grants modification, execution, network, or activation authority. See `references/template-catalog-v1.md`.
 
+For a method, async function, or fixed-positional tail call, use the separate generated adaptation runtime profile in `references/python-adaptation-runtime-v1.md`. Collect an independent closed caller review, a static regular-package console declaration, source-matched semantic review, real host policy functions and exact source hashes. Prepare the generated bootstrap adapter, verify the legacy one-source adaptation, then rescan and review the adapted bytes before final adapter revision and installed execution. Its off/shadow receipt is separate from a verified implementation bundle for `template package`.
+
 For installed Python host delivery, collect the externally trusted modified
 implementation receipt, a reviewed full package-source digest, exact CPython
 3.13/Linux x86-64 interpreter and build-tool pins, an offline hash-checked
