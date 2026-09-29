@@ -71,8 +71,11 @@ tooling and materializes source-bound planner inputs on Linux. Package install,
 normal entrypoint launch and connected-mode qualification remain pending.
 An [offline Node package/install adapter checkpoint](references/template-node-installation-v1.md)
 now stages an owned off-mode generation through separate exact approvals. Its
-native component tests stub the upstream JS source verifier; complete installed
-ESM/CommonJS/TypeScript and normal-launch qualification remain pending.
+component tests stub the upstream JS source verifier, while a separate native
+test exercises the real source-bound ESM/CommonJS/TypeScript install and normal
+command with external effect files. A read-only Node delivery descriptor binds
+exact installation and observation inputs. Supervised Node launch, recovery,
+connected mode and live benefit remain pending.
 
 The [six-use-case source matrix](references/use-case-template-matrix-v1.md)
 pins offline host contracts for registered tools, graph identity, retrieval,

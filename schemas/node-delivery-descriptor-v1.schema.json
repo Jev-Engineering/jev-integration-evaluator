@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Read-only Node delivery descriptor v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "kind", "install_plan", "trusted_install_receipt_sha256", "generation_id", "generation_path", "command", "working_directory", "executable_sha256", "entrypoint_sha256", "artifact_sha256", "source_sha256", "configuration_sha256", "secret_references_sha256", "observation", "launch_environment", "mode", "runtime_activation_authorized", "launch_status", "descriptor_sha256"],
+  "properties": {
+    "schema_version": {"const": "1.0"}, "kind": {"const": "node-delivery-descriptor-v1"},
+    "install_plan": {"type": "object"},
+    "trusted_install_receipt_sha256": {"$ref": "#/$defs/sha"},
+    "generation_id": {"$ref": "#/$defs/sha"},
+    "generation_path": {"type": "string", "pattern": "^/"},
+    "command": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "string", "pattern": "^/"}},
+    "working_directory": {"type": "string", "pattern": "^/"},
+    "executable_sha256": {"$ref": "#/$defs/sha"},
+    "entrypoint_sha256": {"$ref": "#/$defs/sha"},
+    "artifact_sha256": {"$ref": "#/$defs/sha"},
+    "source_sha256": {"$ref": "#/$defs/sha"},
+    "configuration_sha256": {"$ref": "#/$defs/sha"},
+    "secret_references_sha256": {"$ref": "#/$defs/sha"},
+    "observation": {"type": "object"},
+    "launch_environment": {"type": "object", "maxProperties": 16, "propertyNames": {"pattern": "^[A-Za-z_][A-Za-z0-9_]*$"}, "additionalProperties": {"type": "string", "maxLength": 4096}},
+    "mode": {"const": "off"}, "runtime_activation_authorized": {"const": false},
+    "launch_status": {"const": "not_started"},
+    "descriptor_sha256": {"$ref": "#/$defs/sha"}
+  },
+  "$defs": {"sha": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+}

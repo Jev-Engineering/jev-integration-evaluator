@@ -65,7 +65,11 @@ Node/npm/TypeScript pins. It runs `npm ci --ignore-scripts --offline` in a
 private stage, then records an off-mode owned generation. It does not launch
 the host or qualify a connected mode; absent trusted TypeScript 5.8.3 fails
 closed. Do not treat component tests with a stubbed upstream verifier as an
-end-to-end installed journey.
+end-to-end installed journey. A separate native test with a disposable trusted
+TypeScript 5.8.3 copy exercises real source verification, installation and the
+normal off-mode Node command with external effect files. The read-only Node
+delivery descriptor binds exact install and observation inputs; #56 supervised
+Node lifecycle and connected authority remain pending.
 
 The [issue #59 use-case matrix](references/use-case-template-matrix-v1.md)
 pins six illustrative source contracts and five distinct offline host oracles.

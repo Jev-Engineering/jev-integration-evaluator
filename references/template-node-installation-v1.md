@@ -26,7 +26,14 @@ applied source map against the original map plus the reviewed JS generated
 files, externally anchored modified JS status, off configuration and secret
 reference digests, native Node `v24.18.0`, npm `11.16.0`, exact executable
 bytes and all modules loaded by npm, and trusted TypeScript `5.8.3`. The
-complete npm package is copied into the private build stage and rehashed before
+TypeScript package must reside in an owner-private trusted tooling directory.
+The planner hashes its complete package tree, including package metadata and
+compiler siblings, into the package plan; status rechecks that tree. A local
+test copies an existing TypeScript `5.8.3` package from an operator-specified
+`JEV_TRUSTED_TYPESCRIPT_PACKAGE` path into disposable owner-private tooling,
+verifies the source and copied tree digests match, and then uses only the copy.
+This test source path is provenance for local evidence, not a runtime dependency.
+The complete npm package is copied into the private build stage and rehashed before
 and after `npm ci`; the launcher file alone is not a sufficient pin. Target `.npmrc`, target compiler config
 and plugins are unsupported. A missing trusted compiler fails before output.
 The source catalog's lockfileVersion 3 flat-dependency constraints still
@@ -41,6 +48,9 @@ from jev_integration_evaluator.template_node_installation import (
     plan_node_package, build_node_package, package_status,
     plan_node_install, install_node_package, installation_status,
 )
+from jev_integration_evaluator.template_node_delivery import (
+    plan_node_delivery, validate_node_delivery,
+)
 
 package_plan = plan_node_package(reviewed_request)  # read-only
 # Review package_plan and retain its exact digest independently.
@@ -54,12 +64,28 @@ install_plan = plan_node_install(
 install_receipt = install_node_package(
     install_plan, approved_plan_sha256=approved_install_plan_sha256)
 installation_status(install_plan, trusted_receipt_sha256=trusted_install_receipt_sha256)
+descriptor = plan_node_delivery(
+    install_plan, trusted_install_receipt_sha256=trusted_install_receipt_sha256,
+    observation=independently_reviewed_observation,
+    launch_environment=reviewed_offline_environment)
+validate_node_delivery(descriptor)  # read-only; requires unchanged baselines
 ```
 
 The two approved digest values must come from the operator's independent
 review; the caller supplies the externally retained package and install
 receipt digests. Passing a digest read only from the generated output does not
 authenticate an approval or receipt.
+
+The separate [`node-delivery-descriptor-v1`](../schemas/node-delivery-descriptor-v1.schema.json)
+binds the exact installed Node command and working directory, executable and
+entrypoint hashes, generation/source/artifact/configuration/secret-reference
+digests, externally retained install receipt digest, and independent expected
+ready/entrypoint/integration file transitions. Planning and validation do not
+launch. The descriptor is an input contract for a future #56 Node supervisor;
+the current #56 session API remains Python-console-only. A test runs the normal
+installed command under an explicit off-mode environment and checks the three
+external files after it exits. That direct test has no durable process session,
+PID ownership, interruption recovery or upgrade/rollback authority.
 
 The build writes a durable owner intent in the private parent **before**
 creating its output directory. The install stage does the same for its
@@ -107,6 +133,6 @@ and TypeScript. It checks a distinct external entrypoint effect file after the
 command. The trusted tooling reader verifies the package's declared version;
 substitution with 5.9.3 fails closed. These are finite synthetic off-mode
 host executions. The #56 supervisor remains Python-console-only; a versioned
-Node launch descriptor, process lifecycle and independent observation adapter,
+Node process lifecycle and independent observation adapter,
 interrupted-operation recovery, required full regressions and any connected
 authority remain pending before a complete issue #60 claim.

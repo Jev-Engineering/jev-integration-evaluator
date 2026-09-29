@@ -11,6 +11,7 @@ import pytest
 from jev_integration_evaluator.io import InputError, digest, file_hash
 from jev_integration_evaluator import template_node_installation as node_install
 from jev_integration_evaluator import template_js_catalog
+from jev_integration_evaluator import template_node_delivery as node_delivery
 from jev_integration_evaluator.template_catalog import materialize_template
 from jev_integration_evaluator.integrations.js_lifecycle import (
     plan_js, verify_js, apply_js, status_js)
@@ -28,7 +29,11 @@ def test_real_source_verified_node_install_and_normal_command(tmp_path, format_n
         pytest.skip('native pinned Node/npm and local trusted TypeScript 5.8.3 required')
     node, npm = tools
     tooling = tmp_path / 'tooling'; (tooling / 'node_modules').mkdir(parents=True)
+    os.chmod(tooling, 0o700)
+    source_tree_sha256 = digest(node_install._tree(compiler_source))
     shutil.copytree(compiler_source, tooling / 'node_modules/typescript')
+    assert digest(node_install._tree(tooling / 'node_modules/typescript')) == source_tree_sha256
+    assert json.loads((tooling / 'node_modules/typescript/package.json').read_text())['version'] == '5.8.3'
     package_metadata = tooling / 'node_modules/typescript/package.json'
     original_metadata = package_metadata.read_bytes()
     wrong_metadata = json.loads(original_metadata)
@@ -53,6 +58,10 @@ def test_real_source_verified_node_install_and_normal_command(tmp_path, format_n
                    entry.read_text(encoding='utf-8') + '\nimport fs from "node:fs";\n')
     effect_code += ('if (process.env.NODE_EFFECT_PATH) '
                     'fs.writeFileSync(process.env.NODE_EFFECT_PATH, "entrypoint\\n", {flag:"wx"});\n')
+    effect_code += ('if (process.env.NODE_READY_PATH) '
+                    'fs.writeFileSync(process.env.NODE_READY_PATH, "ready\\n", {flag:"wx"});\n')
+    effect_code += ('if (process.env.NODE_INTEGRATION_PATH) '
+                    'fs.writeFileSync(process.env.NODE_INTEGRATION_PATH, "integration\\n", {flag:"wx"});\n')
     entry.write_text(effect_code, encoding='utf-8')
     source_request['entrypoint_sha256'] = file_hash(entry)
     source_request['reviewed_package_source_sha256'] = digest(template_js_catalog._source_tree(host))
@@ -86,6 +95,17 @@ def test_real_source_verified_node_install_and_normal_command(tmp_path, format_n
                'package_directory': str(tmp_path / 'packages/package'),
                'environment_parent': str(tmp_path / 'generations')}
     package_plan = node_install.plan_node_package(request)
+    assert package_plan['toolchain']['typescript_tree_sha256'] == source_tree_sha256
+    os.chmod(tooling, 0o755)
+    with pytest.raises(InputError, match='owner-private'):
+        node_install.plan_node_package(request)
+    os.chmod(tooling, 0o700)
+    compiler_sibling = tooling / 'node_modules/typescript/lib/tsc.js'
+    original_sibling = compiler_sibling.read_bytes()
+    compiler_sibling.write_bytes(original_sibling + b'\n// drift\n')
+    with pytest.raises(InputError, match='drift'):
+        node_install._check_plan(package_plan)
+    compiler_sibling.write_bytes(original_sibling)
     package = node_install.build_node_package(
         package_plan, approved_plan_sha256=package_plan['plan_sha256'])
     install_plan = node_install.plan_node_install(
@@ -95,12 +115,50 @@ def test_real_source_verified_node_install_and_normal_command(tmp_path, format_n
     assert node_install.installation_status(
         install_plan, trusted_receipt_sha256=installed['receipt_sha256'])['status'] == 'installed_recorded'
     effect = tmp_path / 'independent-entrypoint-effect.bin'
-    run = subprocess.run(installed['command'], cwd=installed['working_directory'],
-                         env={'PATH': '/usr/bin:/bin', 'JEV_RUNTIME_MODE': 'off',
-                              'NODE_EFFECT_PATH': str(effect)},
+    ready = tmp_path / 'independent-ready.bin'
+    integration = tmp_path / 'independent-integration.bin'
+    observation = {'schema_version': '1.0', 'kind': 'template-delivery-observation-v1',
+                   'checks': [
+                       {'role': role, 'path': str(path), 'before_sha256': None,
+                        'expected_sha256': __import__('hashlib').sha256(raw).hexdigest()}
+                       for role, path, raw in (
+                           ('ready', ready, b'ready\n'),
+                           ('entrypoint_reached', effect, b'entrypoint\n'),
+                           ('integration_reachable', integration, b'integration\n'))]}
+    environment = {'NODE_EFFECT_PATH': str(effect), 'NODE_READY_PATH': str(ready),
+                   'NODE_INTEGRATION_PATH': str(integration)}
+    descriptor = node_delivery.plan_node_delivery(
+        install_plan, trusted_install_receipt_sha256=installed['receipt_sha256'],
+        observation=observation, launch_environment=environment)
+    assert node_delivery.validate_node_delivery(descriptor)['status'] == 'verified_unlaunched'
+    assert Path(descriptor['command'][1]).is_relative_to(Path(installed['generation_path']) / 'app')
+    assert file_hash(Path(descriptor['command'][0])) == descriptor['executable_sha256']
+    assert file_hash(Path(descriptor['command'][1])) == descriptor['entrypoint_sha256']
+    with pytest.raises(InputError, match='Externally anchored'):
+        node_delivery.plan_node_delivery(
+            install_plan, trusted_install_receipt_sha256='0' * 64,
+            observation=observation, launch_environment=environment)
+    with pytest.raises(InputError, match='launch environment'):
+        node_delivery.plan_node_delivery(
+            install_plan, trusted_install_receipt_sha256=installed['receipt_sha256'],
+            observation=observation, launch_environment={'NODE_OPTIONS': '--require unsafe'})
+    with pytest.raises(InputError, match='observation'):
+        node_delivery.plan_node_delivery(
+            install_plan, trusted_install_receipt_sha256=installed['receipt_sha256'],
+            observation={**observation, 'checks': [
+                {**observation['checks'][0], 'path': str(Path(installed['generation_path']) / 'app')},
+                *observation['checks'][1:]]}, launch_environment=environment)
+    run = subprocess.run(descriptor['command'], cwd=descriptor['working_directory'],
+                         env={'PATH': '/usr/bin:/bin', 'JEV_RUNTIME_MODE': 'off', **environment},
                          capture_output=True, text=True, timeout=10)
     assert run.returncode == 0, run.stderr
     assert effect.read_bytes() == b'entrypoint\n'
+    assert ready.read_bytes() == b'ready\n'
+    assert integration.read_bytes() == b'integration\n'
+    for row in observation['checks']:
+        assert file_hash(Path(row['path'])) == row['expected_sha256']
+    with pytest.raises(InputError, match='observation baseline'):
+        node_delivery.validate_node_delivery(descriptor)
 
 
 def native_tools():
@@ -272,7 +330,7 @@ def test_npm_loaded_sibling_module_drift_rejected(tmp_path):
     sibling = root / 'lib/cli.js'  # Loaded directly by npm-cli.js.
     sibling.write_bytes(sibling.read_bytes() + b'\n// drift\n')
     host = tmp_path / 'host'; host.mkdir()
-    tooling = tmp_path / 'tooling'; tooling.mkdir()
+    tooling = tmp_path / 'tooling'; tooling.mkdir(mode=0o700); os.chmod(tooling, 0o700)
     request = {'node': str(node), 'node_sha256': file_hash(node),
                'npm_cli': str(npm_copy), 'npm_cli_sha256': file_hash(npm_copy),
                'npm_tree_sha256': tree_sha256, 'tooling_directory': str(tooling)}

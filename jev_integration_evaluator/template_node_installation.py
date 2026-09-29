@@ -91,6 +91,10 @@ def _toolchain(request: dict, host: Path) -> dict:
     if npm != npm_root / 'bin' / 'npm-cli.js':
         raise InputError('Unsupported npm package launcher layout')
     tooling = _path(request['tooling_directory'], directory=True)
+    tooling_info = tooling.stat()
+    if (tooling_info.st_uid != os.getuid()
+            or stat.S_IMODE(tooling_info.st_mode) != 0o700):
+        raise InputError('Trusted TypeScript tooling directory must be owner-private')
     for path in (node, npm_root, tooling):
         _separate(path, host)
     if not os.access(node, os.X_OK):
@@ -120,11 +124,13 @@ def _toolchain(request: dict, host: Path) -> dict:
     if (identity['node_path'] != str(node) or identity['node_sha256'] != file_hash(node)
             or identity['compiler_version'] != '5.8.3'):
         raise InputError('Trusted Node/TypeScript toolchain differs from pin')
+    compiler_root = tooling / 'node_modules/typescript'
+    compiler_tree_sha256 = digest(_tree(compiler_root))
     return {'node': str(node), 'node_sha256': file_hash(node),
             'npm_cli': str(npm), 'npm_cli_sha256': file_hash(npm),
             'npm_root': str(npm_root), 'npm_tree_sha256': npm_tree_sha256,
             'node_version': NODE_VERSION, 'npm_version': NPM_VERSION,
-            'tooling': identity}
+            'tooling': identity, 'typescript_tree_sha256': compiler_tree_sha256}
 
 
 def _render(request: dict, host: Path, toolchain: dict) -> tuple[dict, dict, dict]:
