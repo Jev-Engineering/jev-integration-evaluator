@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import platform
 import sqlite3
 import subprocess
 import sys
@@ -26,6 +27,9 @@ from jev_integration_evaluator.integrations.verification import verify_implement
 from tests.test_use_case_graph_host import _graph_host
 
 
+PROFILE = (sys.platform == 'linux' and platform.machine().lower() == 'x86_64'
+           and sys.implementation.name == 'cpython' and sys.version_info[:2] == (3, 13))
+pytestmark = pytest.mark.skipif(not PROFILE, reason='L bound fixture requires Linux x86-64 CPython 3.13')
 BINDING = {'version': '1.0', 'script': 'graph-host',
            'startup_inputs': {'budget_limits': 'limits', 'audit_log': 'audit',
                               'dependency_plan': 'dependencies', 'startup_options': 'options'}}
