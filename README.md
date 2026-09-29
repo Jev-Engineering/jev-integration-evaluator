@@ -67,8 +67,17 @@ link handling, UNC outcomes and path limits.
 
 The separate [JavaScript recipe C template catalog](references/javascript-recipe-c-template-v1.md)
 validates reviewed ESM, CommonJS and TypeScript source through trusted external
-tooling and materializes source-bound planner inputs on Linux. Package install,
-normal entrypoint launch and connected-mode qualification remain pending.
+tooling and materializes source-bound planner inputs on Linux.
+An [offline Node package/install adapter checkpoint](references/template-node-installation-v1.md)
+now stages an owned off-mode generation through separate exact approvals. Its
+component tests stub the upstream JS source verifier, while a separate native
+test exercises the real source-bound ESM/CommonJS/TypeScript install and normal
+command with external effect files. A read-only Node delivery descriptor binds
+exact installation and observation inputs. A separate offline Node supervisor
+now records an owned process, checks independent ready/effect paths, and
+supports bounded stop, disable and retained generation selection under exact
+scopes. Complete three-format installed evaluator CLI and provider qualification
+remain pending; live benefit is unknown.
 
 The [six-use-case source matrix](references/use-case-template-matrix-v1.md)
 pins offline host contracts for registered tools, graph identity, retrieval,

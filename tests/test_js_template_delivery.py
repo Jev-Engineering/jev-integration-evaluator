@@ -172,6 +172,11 @@ def test_native_source_bound_materialization_and_existing_planner(tmp_path, form
 @pytest.mark.skipif(not NATIVE, reason='Native Linux Node and trusted TypeScript 5.8.3 required')
 @pytest.mark.parametrize('format_name', ['esm', 'commonjs', 'typescript'])
 def test_installed_evaluator_cli_materializes_without_checkout_import(tmp_path, format_name):
+    wheelhouse_name = os.environ.get('JEV_TEMPLATE_WHEELHOUSE')
+    if not wheelhouse_name:
+        pytest.skip('Explicit exact offline evaluator dependency wheelhouse required')
+    wheelhouse = Path(wheelhouse_name).resolve(strict=True)
+    assert list(wheelhouse.glob('*.whl'))
     root, request = request_for(tmp_path, format_name)
     wheels = tmp_path / 'wheels'; wheels.mkdir()
     build = subprocess.run([sys.executable, '-m', 'pip', 'wheel', '--no-build-isolation',
@@ -180,10 +185,11 @@ def test_installed_evaluator_cli_materializes_without_checkout_import(tmp_path, 
     assert build.returncode == 0, build.stderr
     wheel = next(wheels.glob('jev_integration_evaluator-*.whl'))
     environment = tmp_path / 'evaluator-venv'
-    venv.EnvBuilder(with_pip=False, system_site_packages=True).create(environment)
+    venv.EnvBuilder(with_pip=False, system_site_packages=False).create(environment)
     python = environment / 'bin/python'
     installed = subprocess.run([sys.executable, '-m', 'pip', '--python', str(python),
-                                'install', '--no-index', '--no-deps', str(wheel)],
+                                'install', '--no-index', '--find-links', str(wheelhouse),
+                                str(wheel)],
                                capture_output=True, text=True, timeout=90)
     assert installed.returncode == 0, installed.stderr
     request_path = tmp_path / 'request.json'

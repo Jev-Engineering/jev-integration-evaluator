@@ -71,11 +71,15 @@ render is retained as incomplete; an occupied output is never adopted.
 Use the existing `js-plan`, `js-verify`, `js-apply`, `js-status`, `js-recover`,
 and `js-rollback` commands for reviewed source edits and verified entrypoint
 cases. The catalog lock grants none of their execution or mutation authority.
-The later Node package/install adapter must bind the exact applied source,
-package/lock, artifact, config/secret refs and owned generation. The #56
-delivery supervisor will separately govern launch, status, stop, upgrade and
-rollback. Until those gates are implemented and tested, these lifecycle rows
-remain pending in the manifest. Connected modes require their own exact
+The [separate offline Node package/install adapter](template-node-installation-v1.md)
+binds the exact applied source, package/lock, artifact, config/secret refs and
+an owned off-mode generation through independent approvals. A separate native
+test exercises actual ESM, CommonJS and TypeScript source verification and
+installed normal commands when trusted TypeScript 5.8.3 is supplied. A distinct
+Node session supervisor uses the read-only descriptor for bounded off-mode
+launch, observation, stop, disable, upgrade selection and rollback selection.
+The Python #56 supervisor remains Python-only. Complete issue #60 release
+gates and connected modes require their own exact
 authority, receipt and observed holdout gates. Synthetic JS verification is
 neither provider connectivity nor observed benefit.
 

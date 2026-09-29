@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Offline Node recipe C installed generation receipt v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "kind", "plan_sha256", "generation_id", "generation_path", "working_directory", "command", "executable_sha256", "entrypoint_sha256", "artifact_sha256", "source_sha256", "configuration_sha256", "secret_references_sha256", "installed_files", "journal_head", "mode", "runtime_activation_authorized", "launch_status", "receipt_sha256"],
+  "properties": {
+    "schema_version": {"const": "1.0"}, "kind": {"const": "node-install-receipt-v1"},
+    "plan_sha256": {"$ref": "#/$defs/sha"}, "generation_id": {"$ref": "#/$defs/sha"},
+    "generation_path": {"type": "string", "pattern": "^/"},
+    "working_directory": {"type": "string", "pattern": "^/"},
+    "command": {"type": "array", "minItems": 2, "maxItems": 2,
+                "items": {"type": "string", "pattern": "^/"}},
+    "executable_sha256": {"$ref": "#/$defs/sha"}, "entrypoint_sha256": {"$ref": "#/$defs/sha"},
+    "artifact_sha256": {"$ref": "#/$defs/sha"}, "source_sha256": {"$ref": "#/$defs/sha"},
+    "configuration_sha256": {"$ref": "#/$defs/sha"}, "secret_references_sha256": {"$ref": "#/$defs/sha"},
+    "installed_files": {"type": "object", "minProperties": 3, "maxProperties": 8192, "additionalProperties": {"$ref": "#/$defs/sha"}},
+    "journal_head": {"$ref": "#/$defs/sha"}, "mode": {"const": "off"},
+    "runtime_activation_authorized": {"const": false}, "launch_status": {"const": "not_started"},
+    "receipt_sha256": {"$ref": "#/$defs/sha"}
+  },
+  "$defs": {"sha": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Offline Node recipe C package receipt v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "kind", "plan_sha256", "package_directory", "artifact_files", "artifact_sha256", "source_sha256", "configuration_sha256", "secret_references_sha256", "entrypoint_sha256", "journal_head", "mode", "runtime_activation_authorized", "receipt_sha256"],
+  "properties": {
+    "schema_version": {"const": "1.0"}, "kind": {"const": "node-package-receipt-v1"},
+    "plan_sha256": {"$ref": "#/$defs/sha"}, "package_directory": {"type": "string", "pattern": "^/"},
+    "artifact_files": {"type": "object", "minProperties": 3, "maxProperties": 8192, "additionalProperties": {"$ref": "#/$defs/sha"}},
+    "artifact_sha256": {"$ref": "#/$defs/sha"}, "source_sha256": {"$ref": "#/$defs/sha"},
+    "configuration_sha256": {"$ref": "#/$defs/sha"}, "secret_references_sha256": {"$ref": "#/$defs/sha"},
+    "entrypoint_sha256": {"$ref": "#/$defs/sha"}, "journal_head": {"$ref": "#/$defs/sha"},
+    "mode": {"const": "off"}, "runtime_activation_authorized": {"const": false},
+    "receipt_sha256": {"$ref": "#/$defs/sha"}
+  },
+  "$defs": {"sha": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+}

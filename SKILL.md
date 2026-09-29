@@ -59,6 +59,19 @@ The `javascript.recipe-c@1.0.0` catalog entry is documented in
 `references/javascript-recipe-c-template-v1.md`. It materializes source-bound
 planner inputs only. Use absolute trusted Node/TypeScript tooling outside the
 target; never load target compiler configuration or plugins.
+The separate [offline Node install adapter](references/template-node-installation-v1.md)
+requires an already applied, externally verified JS host and exact native
+Node/npm/TypeScript pins. It runs `npm ci --ignore-scripts --offline` in a
+private stage, then records an off-mode owned generation. It does not launch
+the host or qualify a connected mode; absent trusted TypeScript 5.8.3 fails
+closed. Do not treat component tests with a stubbed upstream verifier as an
+end-to-end installed journey. A separate native test with a disposable trusted
+TypeScript 5.8.3 copy exercises real source verification, installation and the
+normal off-mode Node command with external effect files. The read-only Node
+delivery descriptor binds exact install and observation inputs. The separate
+Node session supervisor runs only the installed off-mode command under exact
+scope, observes independent files and preserves same-run recovery state.
+It does not extend the Python #56 supervisor or grant connected authority.
 
 The [issue #59 use-case matrix](references/use-case-template-matrix-v1.md)
 pins six illustrative source contracts and five distinct offline host oracles.

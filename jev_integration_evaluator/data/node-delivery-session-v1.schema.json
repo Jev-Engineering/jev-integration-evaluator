@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Owned offline Node delivery session v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "kind", "run_id", "descriptor_sha256", "generation_id", "stage", "pending", "disabled", "process", "observations", "attempts", "history", "pending_upgrade_sha256", "failures"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "node-delivery-session-v1"},
+    "run_id": {"type": "string", "format": "uuid"},
+    "descriptor_sha256": {"$ref": "#/$defs/sha"},
+    "generation_id": {"$ref": "#/$defs/sha"},
+    "stage": {"enum": ["created", "launch_pending", "running", "stop_pending", "stopped", "disabled", "upgrade_pending", "upgrade_staged", "rollback_pending", "rolled_back", "blocked_recovery"]},
+    "pending": {"enum": [null, "launch", "stop", "disable", "upgrade", "rollback"]},
+    "disabled": {"type": "boolean"},
+    "process": {"oneOf": [{"type": "null"}, {"type": "object", "additionalProperties": false,
+      "required": ["pid", "boot_id", "start_ticks"], "properties": {
+        "pid": {"type": "integer", "minimum": 1},
+        "boot_id": {"type": "string", "format": "uuid"},
+        "start_ticks": {"type": "string", "pattern": "^[0-9]+$"}
+      }}]},
+    "observations": {"type": "object", "additionalProperties": false,
+      "required": ["launched", "ready", "entrypoint_reached", "integration_reachable", "outcome_verified"],
+      "properties": {"launched": {"type": "boolean"}, "ready": {"type": "boolean"},
+        "entrypoint_reached": {"type": "boolean"}, "integration_reachable": {"type": "boolean"},
+        "outcome_verified": {"type": "boolean"}}},
+    "attempts": {"type": "object", "additionalProperties": false,
+      "required": ["launch", "stop"], "properties": {
+        "launch": {"type": "integer", "minimum": 0, "maximum": 3},
+        "stop": {"type": "integer", "minimum": 0, "maximum": 32}}},
+    "history": {"description": "Exact prior descriptor digests; rollback must verify each loaded plan against its filename before selection.", "type": "array", "maxItems": 16, "items": {"$ref": "#/$defs/sha"}},
+    "pending_upgrade_sha256": {"description": "Exact pending descriptor digest; recovery must verify the loaded plan and recheck the generation being left.", "oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha"}]},
+    "failures": {"type": "array", "maxItems": 64, "items": {"type": "string", "minLength": 1, "maxLength": 128}}
+  },
+  "$defs": {"sha": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+}

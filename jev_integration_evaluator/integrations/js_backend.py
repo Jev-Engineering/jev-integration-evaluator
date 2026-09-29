@@ -30,6 +30,16 @@ def trusted_js_tool_identity(tooling_dir: Path) -> dict:
     """Pin executable and package tooling bytes outside any target."""
     tool_root = Path(tooling_dir).resolve(strict=True)
     compiler = (tool_root / 'node_modules/typescript/lib/typescript.js').resolve(strict=True)
+    package_path = tool_root / 'node_modules/typescript/package.json'
+    if package_path.is_symlink() or not package_path.is_file():
+        raise InputError('Pinned trusted TypeScript package metadata unavailable')
+    try:
+        package = json.loads(package_path.read_text(encoding='utf-8'))
+    except (OSError, UnicodeError, ValueError):
+        raise InputError('Pinned trusted TypeScript package metadata invalid') from None
+    if (type(package) is not dict or package.get('name') != 'typescript'
+            or package.get('version') != '5.8.3'):
+        raise InputError('Pinned trusted TypeScript 5.8.3 package required')
     node_name = shutil.which('node')
     if (not compiler.is_file() or not compiler.is_relative_to(tool_root)
             or node_name is None):
