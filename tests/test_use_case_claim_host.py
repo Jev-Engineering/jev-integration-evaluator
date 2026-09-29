@@ -57,12 +57,13 @@ def _source_host(target: Path, version: str = "1.0.0") -> tuple[dict, dict, dict
         "from . import claim_consumer\n"
         "from pathlib import Path\nimport os\nimport time\n"
         "def main():\n"
-        "    request = {'task_id':'claim-task','claim':'Permit is active',\n"
-        "               'quote':'Permit is active','start':0,'end':16}\n"
+        f"    variant = {'revise' if version == '1.0.1' else 'accept'!r}\n"
+        "    request = claim_consumer.fixture_request(variant)\n"
+        "    draft = claim_consumer.fixture_draft(request, variant)\n"
         f"    action = {entry}(request)\n"
         "    if action != 'inspect':\n"
         "        raise ValueError('off-mode claim disposition changed')\n"
-        "    claim_consumer.commit(request, host_approved=True)\n"
+        "    claim_consumer.commit(request, host_approved=True, generated=draft)\n"
         "    ready = os.environ.get('M_READY_PATH')\n"
         "    if ready:\n"
         "        with Path(ready).open('x', encoding='utf-8') as stream:\n"
@@ -144,21 +145,27 @@ def _raw(value: dict) -> bytes:
     return (json.dumps(value, sort_keys=True, separators=(",", ":")) + "\n").encode()
 
 
-def _expected(task_id: str) -> tuple[bytes, bytes, bytes]:
+def _expected(task_id: str, *, revised: bool = False) -> tuple[bytes, bytes, bytes]:
     support = {"claim_id": "permit-status", "passage_id": "permit-record-1",
                "source_id": "fixture-permit-register-v1", "span": "0:16",
+               "citation_start": 0, "citation_end": 16,
                "quote": "Permit is active", "decision": "supported"}
     audit = {"task_id": task_id, "claim_id": "permit-status",
              "support_sha256": hashlib.sha256(_raw(support)).hexdigest(),
              "policy": "exact-fixture-support-v1"}
+    if revised:
+        audit.update({"disposition": "revised", "removed_claim_ids": ["unsupported-detail"]})
     effect = {"task_id": task_id, "claim_id": "permit-status", "claim": "Permit is active",
-              "status": "released", "audit_sha256": hashlib.sha256(_raw(audit)).hexdigest(),
+              "status": "revised" if revised else "released",
+              "audit_sha256": hashlib.sha256(_raw(audit)).hexdigest(),
               "support_sha256": hashlib.sha256(_raw(support)).hexdigest()}
+    if revised:
+        effect["removed_claim_ids"] = ["unsupported-detail"]
     return _raw(support), _raw(audit), _raw(effect)
 
 
-def _observation(directory: Path) -> tuple[dict, dict, bytes, bytes, bytes]:
-    raw_support, raw_audit, raw_claim = _expected("claim-task")
+def _observation(directory: Path, *, revised: bool = False) -> tuple[dict, dict, bytes, bytes, bytes]:
+    raw_support, raw_audit, raw_claim = _expected("claim-task", revised=revised)
     support, audit, claim, ready = (directory / name for name in
                                     ("support.json", "audit.json", "claim.json", "ready.txt"))
     checks = [{"role": "ready", "path": str(ready), "before_sha256": None,
@@ -250,6 +257,67 @@ def test_claim_consumer_refuses_symlink_output_before_any_effect(tmp_path, monke
     assert not (evidence / "outside.json").exists()
     assert not (evidence / "audit.json").exists()
     assert not (evidence / "claim.json").exists()
+
+
+def test_generated_claim_dispositions_and_raw_release_gate(tmp_path, monkeypatch):
+    import importlib
+    package = tmp_path / "claim_disposition_package"
+    package.mkdir()
+    (package / "__init__.py").write_text("", encoding="utf-8")
+    row = next(row for row in use_case_matrix()["rows"] if row["id"] == "M")
+    shutil.copyfile(ROOT / row["source"], package / "claim_oracle.py")
+    shutil.copyfile(ROOT / row["consumer_adapter"], package / "claim_consumer.py")
+    monkeypatch.syspath_prepend(str(tmp_path))
+    module = importlib.import_module("claim_disposition_package.claim_consumer")
+
+    for variant in ("accept", "revise", "request_evidence", "fabricated", "partial"):
+        effects = tmp_path / variant
+        effects.mkdir(mode=0o700)
+        for key, name in (("M_SUPPORT_PATH", "support.json"),
+                          ("M_AUDIT_PATH", "audit.json"),
+                          ("M_CLAIM_PATH", "claim.json")):
+            monkeypatch.setenv(key, str(effects / name))
+        request = module.fixture_request(variant)
+        generated = module.fixture_draft(request, variant)
+        if variant in {"fabricated", "partial"}:
+            with pytest.raises(ValueError, match="unsupported|invalid"):
+                module.commit(request, host_approved=True, generated=generated)
+            assert list(effects.iterdir()) == []
+        elif variant == "request_evidence":
+            assert module.commit(request, host_approved=True, generated=generated) == {
+                "disposition": "request_more_evidence", "reason": "uncertain_claim"}
+            assert list(effects.iterdir()) == []
+        else:
+            with pytest.raises(ValueError, match="permission"):
+                module.commit(request, host_approved=False, generated=generated)
+            assert list(effects.iterdir()) == []
+            result = module.commit(request, host_approved=True, generated=generated)
+            assert result == ({"reported": "ok"} if variant == "accept" else
+                              {"reported": "ok", "disposition": "revised"})
+            support, audit, release = _expected("claim-task", revised=variant == "revise")
+            assert (effects / "support.json").read_bytes() == support
+            assert (effects / "audit.json").read_bytes() == audit
+            assert (effects / "claim.json").read_bytes() == release
+            assert json.loads(release)["support_sha256"] == hashlib.sha256(support).hexdigest()
+            assert json.loads(release)["audit_sha256"] == hashlib.sha256(audit).hexdigest()
+
+    effects = tmp_path / "readback-failure"
+    effects.mkdir(mode=0o700)
+    for key, name in (("M_SUPPORT_PATH", "support.json"),
+                      ("M_AUDIT_PATH", "audit.json"),
+                      ("M_CLAIM_PATH", "claim.json")):
+        monkeypatch.setenv(key, str(effects / name))
+    original = module._readback
+    def corrupt_before_readback(path, expected):
+        if path.name == "support.json":
+            path.write_bytes(b"changed after audit\n")
+        return original(path, expected)
+    monkeypatch.setattr(module, "_readback", corrupt_before_readback)
+    request = module.fixture_request("accept")
+    with pytest.raises(ValueError, match="readback failed"):
+        module.commit(request, host_approved=True,
+                      generated=module.fixture_draft(request, "accept"))
+    assert not (effects / "claim.json").exists()
 
 
 def test_claim_installed_offline_upgrade_and_rollback(tmp_path):
@@ -353,7 +421,8 @@ def test_claim_installed_offline_upgrade_and_rollback(tmp_path):
     assert new_install["generation_id"] != original_install["generation_id"]
     new_effects = effects / "v2"
     new_effects.mkdir(mode=0o700)
-    new_observation, new_env, _, _, _ = _observation(new_effects)
+    new_observation, new_env, new_support, new_audit, new_claim = _observation(
+        new_effects, revised=True)
     new_delivery = delivery.plan_delivery(new_plan,
         trusted_install_receipt_sha256=new_install["receipt_sha256"],
         observation=new_observation, launch_environment=new_env)
@@ -365,9 +434,9 @@ def test_claim_installed_offline_upgrade_and_rollback(tmp_path):
     start_new = _scope(upgraded, new_delivery, "launch")
     observed_new = _observe(session, delivery.launch_session(session, scope=start_new,
         approved_scope_sha256=start_new["scope_sha256"]))
-    assert (new_effects / "support.json").read_bytes() == raw_support
-    assert (new_effects / "audit.json").read_bytes() == raw_audit
-    assert (new_effects / "claim.json").read_bytes() == raw_claim
+    assert (new_effects / "support.json").read_bytes() == new_support
+    assert (new_effects / "audit.json").read_bytes() == new_audit
+    assert (new_effects / "claim.json").read_bytes() == new_claim
     disable_new = _scope(observed_new, new_delivery, "disable")
     disabled_new = delivery.stop_session(session, scope=disable_new,
         approved_scope_sha256=disable_new["scope_sha256"], disable=True)
