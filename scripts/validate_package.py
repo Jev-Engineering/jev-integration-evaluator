@@ -178,6 +178,7 @@ def validate(check_manifest=False):
                  'references/graph-template-offline-v1.md',
                  'tests/test_use_case_claim_host.py',
                  'tests/test_use_case_claim_bind.py',
+                 'tests/test_use_case_retrieval_bind.py',
                  'tests/test_use_case_retention_bind.py',
                  'examples/use-case-host/claim_consumer.py',
                  'references/claim-template-offline-v1.md',

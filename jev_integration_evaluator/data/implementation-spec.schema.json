@@ -761,6 +761,13 @@
   "allOf": [
     {
       "if": {
+        "required": ["entrypoint_binding"],
+        "properties": {"recipe": {"properties": {"id": {"const": "python.D"}}}}
+      },
+      "then": {"properties": {"entrypoint_binding": {"properties": {"kind": {"const": "task-loop-v1"}}}}}
+    },
+    {
+      "if": {
         "properties": {
           "recipe": {
             "properties": {
