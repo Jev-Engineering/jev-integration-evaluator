@@ -11,8 +11,96 @@ import pytest
 from jev_integration_evaluator.io import InputError, digest, file_hash
 from jev_integration_evaluator import template_node_installation as node_install
 from jev_integration_evaluator import template_js_catalog
+from jev_integration_evaluator.template_catalog import materialize_template
+from jev_integration_evaluator.integrations.js_lifecycle import (
+    plan_js, verify_js, apply_js, status_js)
+from jev_integration_evaluator.integrations.js_backend import trusted_js_tool_identity
 from jev_integration_evaluator.io import write_json
 from test_js_template_delivery import request_for
+
+
+@pytest.mark.parametrize('format_name', ['esm', 'commonjs', 'typescript'])
+def test_real_source_verified_node_install_and_normal_command(tmp_path, format_name):
+    tools = native_tools()
+    compiler_name = os.environ.get('JEV_TRUSTED_TYPESCRIPT_PACKAGE')
+    compiler_source = Path(compiler_name) if compiler_name else Path('/nonexistent-typescript-package')
+    if tools is None or not (compiler_source / 'lib/typescript.js').is_file():
+        pytest.skip('native pinned Node/npm and local trusted TypeScript 5.8.3 required')
+    node, npm = tools
+    tooling = tmp_path / 'tooling'; (tooling / 'node_modules').mkdir(parents=True)
+    shutil.copytree(compiler_source, tooling / 'node_modules/typescript')
+    package_metadata = tooling / 'node_modules/typescript/package.json'
+    original_metadata = package_metadata.read_bytes()
+    wrong_metadata = json.loads(original_metadata)
+    wrong_metadata['version'] = '5.9.3'
+    package_metadata.write_text(json.dumps(wrong_metadata), encoding='utf-8')
+    with pytest.raises(InputError, match='TypeScript 5.8.3'):
+        trusted_js_tool_identity(tooling)
+    package_metadata.write_bytes(original_metadata)
+    host, source_request = request_for(tmp_path, format_name)
+    if format_name != 'typescript':
+        source_request['entrypoint'] = ('start.cjs' if format_name == 'commonjs' else 'start.mjs')
+        package_json = host / 'package.json'
+        package = json.loads(package_json.read_text(encoding='utf-8'))
+        package['scripts']['start'] = 'node ' + source_request['entrypoint']
+        package_json.write_text(json.dumps(package), encoding='utf-8')
+        source_request['package_json_sha256'] = file_hash(package_json)
+    entry = host / source_request['entrypoint']
+    effect_code = ('const fs = require("node:fs");\nrequire("./host.cjs");\n'
+                   if format_name == 'commonjs' else
+                   'import fs from "node:fs";\nimport "./host.mjs";\n'
+                   if format_name == 'esm' else
+                   entry.read_text(encoding='utf-8') + '\nimport fs from "node:fs";\n')
+    effect_code += ('if (process.env.NODE_EFFECT_PATH) '
+                    'fs.writeFileSync(process.env.NODE_EFFECT_PATH, "entrypoint\\n", {flag:"wx"});\n')
+    entry.write_text(effect_code, encoding='utf-8')
+    source_request['entrypoint_sha256'] = file_hash(entry)
+    source_request['reviewed_package_source_sha256'] = digest(template_js_catalog._source_tree(host))
+    rendered = tmp_path / 'render'
+    materialize_template(host, source_request, rendered, tooling_dir=tooling)
+    bundle = tmp_path / 'bundle'
+    planned = plan_js(host, source_request['implementation_spec'], bundle, tooling_dir=tooling)
+    cases = [dict(id='read', request=dict(task_id='task', invocation_id='one',
+                                        item='x', permit=True), result='read:x',
+                  events=[['read', 'x']], effects=[['read', 'x']])]
+    baseline = verify_js(host, bundle, 'baseline', cases, tooling_dir=tooling,
+                         approve_execution=True)
+    assert baseline['status'] == 'passed'
+    apply_js(host, bundle, planned['bundle_sha256'],
+             baseline_sha256=baseline['receipt_sha256'], tooling_dir=tooling)
+    modified = verify_js(host, bundle, 'modified', cases, tooling_dir=tooling,
+                         baseline_sha256=baseline['receipt_sha256'], approve_execution=True)
+    assert modified['status'] == 'passed'
+    assert status_js(host, bundle, tooling_dir=tooling,
+                     trusted_modified_sha256=modified['receipt_sha256'])['status'] == 'verified'
+    for name in ('cache', 'packages', 'generations'):
+        path = tmp_path / name; path.mkdir(mode=0o700); os.chmod(path, 0o700)
+    request = {'schema_version': '1.0', 'kind': 'node-package-request-v1',
+               'host_root': str(host), 'render_directory': str(rendered),
+               'implementation_bundle': str(bundle),
+               'trusted_modified_sha256': modified['receipt_sha256'],
+               'node': str(node), 'node_sha256': file_hash(node),
+               'npm_cli': str(npm), 'npm_cli_sha256': file_hash(npm),
+               'npm_tree_sha256': digest(node_install._tree(npm.parent.parent)),
+               'tooling_directory': str(tooling), 'offline_cache': str(tmp_path / 'cache'),
+               'package_directory': str(tmp_path / 'packages/package'),
+               'environment_parent': str(tmp_path / 'generations')}
+    package_plan = node_install.plan_node_package(request)
+    package = node_install.build_node_package(
+        package_plan, approved_plan_sha256=package_plan['plan_sha256'])
+    install_plan = node_install.plan_node_install(
+        package_plan, package, trusted_package_receipt_sha256=package['receipt_sha256'])
+    installed = node_install.install_node_package(
+        install_plan, approved_plan_sha256=install_plan['plan_sha256'])
+    assert node_install.installation_status(
+        install_plan, trusted_receipt_sha256=installed['receipt_sha256'])['status'] == 'installed_recorded'
+    effect = tmp_path / 'independent-entrypoint-effect.bin'
+    run = subprocess.run(installed['command'], cwd=installed['working_directory'],
+                         env={'PATH': '/usr/bin:/bin', 'JEV_RUNTIME_MODE': 'off',
+                              'NODE_EFFECT_PATH': str(effect)},
+                         capture_output=True, text=True, timeout=10)
+    assert run.returncode == 0, run.stderr
+    assert effect.read_bytes() == b'entrypoint\n'
 
 
 def native_tools():

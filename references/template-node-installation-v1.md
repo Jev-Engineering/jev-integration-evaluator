@@ -97,11 +97,16 @@ plan. Removing a completed or partial generation, or adopting it as a launch
 target, needs the future bounded owner-aware recovery contract. This checkpoint
 does not claim rollback or upgrade qualification.
 
-ESM and CommonJS native offline component tests exercise actual pinned npm
-build and owned install with a stubbed *upstream source verifier* because
-TypeScript 5.8.3 is unavailable in this local runner. The test proves the
-effect boundary and drift checks, not a complete source-verified journey. The
-real planner rejects missing TypeScript 5.8.3. A fresh full source-bound
-ESM/CommonJS/TypeScript installed and normal-entrypoint journey, #56 Node
-descriptor, interrupted-operation recovery, required regressions and any
-connected authority remain pending before a release claim or PR publication.
+The original ESM and CommonJS component tests stub the upstream source verifier
+and prove only the offline npm and owned-generation boundary. A separate native
+test, when `JEV_TRUSTED_TYPESCRIPT_PACKAGE` names an existing local TypeScript
+5.8.3 package, copies it into disposable tooling and exercises real catalog
+materialization, baseline and modified source verification, exact offline
+package/install receipts, and the installed normal command for ESM, CommonJS
+and TypeScript. It checks a distinct external entrypoint effect file after the
+command. The trusted tooling reader verifies the package's declared version;
+substitution with 5.9.3 fails closed. These are finite synthetic off-mode
+host executions. The #56 supervisor remains Python-console-only; a versioned
+Node launch descriptor, process lifecycle and independent observation adapter,
+interrupted-operation recovery, required full regressions and any connected
+authority remain pending before a complete issue #60 claim.
