@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Offline Node recipe C package request v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "kind", "host_root", "render_directory", "implementation_bundle", "trusted_modified_sha256", "node", "node_sha256", "npm_cli", "npm_cli_sha256", "tooling_directory", "offline_cache", "package_directory", "environment_parent"],
+  "properties": {
+    "schema_version": {"const": "1.0"}, "kind": {"const": "node-package-request-v1"},
+    "host_root": {"$ref": "#/$defs/path"}, "render_directory": {"$ref": "#/$defs/path"},
+    "implementation_bundle": {"$ref": "#/$defs/path"}, "trusted_modified_sha256": {"$ref": "#/$defs/sha"},
+    "node": {"$ref": "#/$defs/path"}, "node_sha256": {"$ref": "#/$defs/sha"},
+    "npm_cli": {"$ref": "#/$defs/path"}, "npm_cli_sha256": {"$ref": "#/$defs/sha"},
+    "tooling_directory": {"$ref": "#/$defs/path"}, "offline_cache": {"$ref": "#/$defs/path"},
+    "package_directory": {"$ref": "#/$defs/path"}, "environment_parent": {"$ref": "#/$defs/path"}
+  },
+  "$defs": {"path": {"type": "string", "pattern": "^/[^\\x00]*$", "maxLength": 4096},
+            "sha": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+}

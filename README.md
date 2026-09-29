@@ -69,6 +69,10 @@ The separate [JavaScript recipe C template catalog](references/javascript-recipe
 validates reviewed ESM, CommonJS and TypeScript source through trusted external
 tooling and materializes source-bound planner inputs on Linux. Package install,
 normal entrypoint launch and connected-mode qualification remain pending.
+An [offline Node package/install adapter checkpoint](references/template-node-installation-v1.md)
+now stages an owned off-mode generation through separate exact approvals. Its
+native component tests stub the upstream JS source verifier; complete installed
+ESM/CommonJS/TypeScript and normal-launch qualification remain pending.
 
 The [six-use-case source matrix](references/use-case-template-matrix-v1.md)
 pins offline host contracts for registered tools, graph identity, retrieval,

@@ -14,6 +14,8 @@ When a caller asks for a reusable integration template, collect the current revi
 
 For the six issue #59 use cases, read the [source-contract matrix](references/use-case-template-matrix-v1.md) first. A matched fixture digest and offline oracle do not establish a target binding or installed journey; each host needs fresh review and separate effect authority.
 
+For offline Node recipe C packaging, collect the independently retained JS modified verification receipt, exact applied source and render lock, native pinned Node/npm, trusted TypeScript 5.8.3, private offline npm cache, off configuration and secret references. The separate `node-package-request-v1` stages an owned generation only after two exact approvals; see `references/template-node-installation-v1.md`. Missing tooling or a changed source fails closed. The generation is not launched or connected by this adapter.
+
 For a method, async function, or fixed-positional tail call, use the separate generated adaptation runtime profile in `references/python-adaptation-runtime-v1.md`. Collect an independent closed caller review, a static regular-package console declaration, source-matched semantic review, real host policy functions and exact source hashes. Prepare the generated bootstrap adapter, verify the legacy one-source adaptation, then rescan and review the adapted bytes before final adapter revision and installed execution. Its off/shadow receipt is separate from a verified implementation bundle for `template package`.
 
 For installed Python host delivery, collect the externally trusted modified

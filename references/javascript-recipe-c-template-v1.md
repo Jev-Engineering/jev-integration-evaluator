@@ -71,8 +71,11 @@ render is retained as incomplete; an occupied output is never adopted.
 Use the existing `js-plan`, `js-verify`, `js-apply`, `js-status`, `js-recover`,
 and `js-rollback` commands for reviewed source edits and verified entrypoint
 cases. The catalog lock grants none of their execution or mutation authority.
-The later Node package/install adapter must bind the exact applied source,
-package/lock, artifact, config/secret refs and owned generation. The #56
+The [separate offline Node package/install adapter](template-node-installation-v1.md)
+binds the exact applied source, package/lock, artifact, config/secret refs and
+an owned off-mode generation through independent approvals. Its initial native
+component tests stub the upstream source verifier because trusted TypeScript
+5.8.3 is absent locally; installed end-to-end qualification remains pending. The #56
 delivery supervisor will separately govern launch, status, stop, upgrade and
 rollback. Until those gates are implemented and tested, these lifecycle rows
 remain pending in the manifest. Connected modes require their own exact

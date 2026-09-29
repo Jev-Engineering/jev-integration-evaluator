@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Offline Node recipe C package plan v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "kind", "request", "render_lock_sha256", "implementation_plan_sha256", "applied_source_files", "applied_source_sha256", "offline_cache_sha256", "toolchain", "configuration_sha256", "secret_references_sha256", "package_profile_sha256", "format", "entrypoint", "mode", "runtime_activation_authorized", "plan_sha256"],
+  "properties": {
+    "schema_version": {"const": "1.0"}, "kind": {"const": "node-package-plan-v1"},
+    "request": {"type": "object"}, "render_lock_sha256": {"$ref": "#/$defs/sha"},
+    "implementation_plan_sha256": {"$ref": "#/$defs/sha"},
+    "applied_source_files": {"type": "object", "minProperties": 3, "maxProperties": 4096, "additionalProperties": {"$ref": "#/$defs/sha"}},
+    "applied_source_sha256": {"$ref": "#/$defs/sha"}, "offline_cache_sha256": {"$ref": "#/$defs/sha"},
+    "toolchain": {"type": "object"}, "configuration_sha256": {"$ref": "#/$defs/sha"},
+    "secret_references_sha256": {"$ref": "#/$defs/sha"}, "package_profile_sha256": {"$ref": "#/$defs/sha"},
+    "format": {"enum": ["esm", "commonjs", "typescript"]},
+    "entrypoint": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_-]*\\.(mjs|cjs)$"},
+    "mode": {"const": "off"}, "runtime_activation_authorized": {"const": false},
+    "plan_sha256": {"$ref": "#/$defs/sha"}
+  },
+  "$defs": {"sha": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+}
