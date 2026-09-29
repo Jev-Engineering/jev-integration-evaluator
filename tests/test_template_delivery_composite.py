@@ -81,6 +81,19 @@ def test_journey_archive_partial_write_retries_only_exact_prefix(tmp_path):
     journey._archive(directory, value, 'a' * 64)
     assert (plans / ('a' * 64 + '.json')).read_bytes() == raw
     assert not pending.exists()
+    linked_directory = tmp_path / 'linked-journey'
+    linked_directory.mkdir(mode=0o700)
+    linked_plans = linked_directory / 'plans'
+    linked_plans.mkdir(mode=0o700)
+    linked_pending = linked_plans / ('a' * 64 + '.json.pending')
+    linked_final = linked_plans / ('a' * 64 + '.json')
+    linked_pending.write_bytes(raw)
+    linked_pending.chmod(0o600)
+    os.link(linked_pending, linked_final)
+    journey._archive(linked_directory, value, 'a' * 64)
+    assert linked_final.read_bytes() == raw
+    assert linked_final.stat().st_nlink == 1
+    assert not linked_pending.exists()
 
 
 def test_interrupted_composite_apply_blocks_replay_under_same_journey(tmp_path, monkeypatch):
@@ -249,8 +262,22 @@ def test_composite_journey_to_supervised_installed_two_effects(tmp_path, monkeyp
         journey.recover_journey_promotion(session,
             trusted_journey_head=recorded['journey_head_sha256'])
     monkeypatch.setattr(delivery, '_append', original_append)
-    promoted = journey.recover_journey_promotion(session,
-        trusted_journey_head=pending['journey_head_sha256'])
+    original_journey_append = journey._append
+    def interrupted_outer_completion(path, rows, event, state):
+        if event == 'runtime_session':
+            raise RuntimeError('injected_after_child_created_row')
+        return original_journey_append(path, rows, event, state)
+    monkeypatch.setattr(journey, '_append', interrupted_outer_completion)
+    with pytest.raises(RuntimeError, match='injected_after_child_created_row'):
+        journey.recover_journey_promotion(session,
+            trusted_journey_head=pending['journey_head_sha256'])
+    pending_completion = journey.journey_status(session)
+    assert pending_completion['run_id'] == created['run_id']
+    assert pending_completion['next_action'] == 'complete_exact_promotion'
+    monkeypatch.setattr(journey, '_append', original_journey_append)
+    promoted = journey.promote_journey(session,
+        trusted_journey_head=pending_completion['journey_head_sha256'],
+        observation=observation, launch_environment=environment)
     assert promoted['run_id'] == created['run_id']
     assert promoted['runtime'] == 'installed'
     runtime = session / 'runtime'

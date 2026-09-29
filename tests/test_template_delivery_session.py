@@ -325,6 +325,18 @@ def test_immutable_upgrade_archive_recovers_only_own_write_prefix(tmp_path, monk
     bad.chmod(0o600)
     with pytest.raises(delivery.DeliveryError, match='delivery_pending_plan_unknown_bytes'):
         delivery._write_plan_immutable(second, plan)
+    linked = tmp_path / 'linked-archive'
+    linked.mkdir(mode=0o700)
+    (linked / 'plans').mkdir(mode=0o700)
+    linked_final = linked / 'plans' / (plan['plan_sha256'] + '.json')
+    linked_pending = linked_final.with_name(linked_final.name + '.pending')
+    linked_pending.write_bytes(raw)
+    linked_pending.chmod(0o600)
+    os.link(linked_pending, linked_final)
+    delivery._write_plan_immutable(linked, plan)
+    assert linked_final.read_bytes() == raw
+    assert linked_final.stat().st_nlink == 1
+    assert not linked_pending.exists()
 
 
 def test_session_lock_refuses_competing_controller(tmp_path, monkeypatch):

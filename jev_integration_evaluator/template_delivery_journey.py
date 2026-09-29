@@ -269,6 +269,9 @@ def _next(state: dict, current: dict) -> str:
         return 'anchor_install_receipt'
     if current['runtime_status'] == 'creation_recovery_required':
         return 'recover_exact_unlaunched_runtime'
+    if state['stage'] in ('promotion_pending', 'runtime_creation_recovered'):
+        return ('complete_exact_promotion' if current['runtime_status'] == 'installed'
+                else 'review_runtime_before_promotion')
     if current['runtime_status'] == 'absent':
         return 'promote_verified_installation'
     return 'use_owned_runtime_session'
@@ -409,6 +412,9 @@ def promote_journey(directory: str | Path, *, trusted_journey_head: str,
             if current['runtime_status'] == 'creation_recovery_required':
                 raise DeliveryError('journey_runtime_creation_recovery_required')
             existing = session_status(runtime)
+            if (state['stage'] in ('promotion_pending', 'runtime_creation_recovered')
+                    and existing['stage'] != 'installed'):
+                raise DeliveryError('journey_runtime_started_before_promotion_recorded')
             if existing['run_id'] != state['run_id']:
                 raise DeliveryError('journey_runtime_run_identity_changed')
             if read_json(runtime / 'delivery-plan.json') != delivery_plan:
@@ -437,6 +443,7 @@ def recover_journey_promotion(directory: str | Path, *, trusted_journey_head: st
                                                run_id=state['run_id'])
         if recovered['run_id'] != state['run_id']:
             raise DeliveryError('journey_runtime_run_identity_changed')
+        state['stage'] = 'runtime_creation_recovered'
         _append(target, rows, 'runtime_creation_recovered', state)
         state['stage'] = 'runtime_session'
         head = _append(target, rows, 'runtime_session', state)

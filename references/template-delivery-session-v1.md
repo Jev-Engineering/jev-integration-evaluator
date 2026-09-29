@@ -34,6 +34,11 @@ match the expected pre-launch create prefix. Use
 with the externally retained current journey head. Unknown files, changed
 plans, a nonempty torn child journal, or a different run identity block
 recovery. The recovery event is recorded under the original run ID.
+If the child `created` row is durable but the outer completion row is absent,
+`journey-status` returns `complete_exact_promotion`. Repeat `journey-promote`
+with the current externally retained journey head and the identical observation
+and launch environment; it validates the existing child and records completion
+without launching it.
 
 ```bash
 jev-integration-evaluator template journey-create \

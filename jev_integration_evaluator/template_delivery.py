@@ -723,13 +723,39 @@ def _publish_exact(path: Path, raw: bytes) -> None:
         os.close(parent_fd)
 
 
-def _pending_prefix(path: Path, raw: bytes, *, remove: bool = False) -> None:
+def _pending_prefix(path: Path, raw: bytes, *, remove: bool = False) -> bool:
+    """Return true for a verified post-link pair awaiting pending unlink."""
     if path.exists() or path.is_symlink():
+        if path.is_symlink():
+            raise DeliveryError('delivery_pending_plan_unknown_bytes')
+        pending_info = path.stat()
+        final = path.with_name(path.name.removesuffix('.pending'))
+        if pending_info.st_nlink == 2:
+            if final.is_symlink() or not final.exists():
+                raise DeliveryError('delivery_pending_plan_unknown_links')
+            final_info = final.stat()
+            if (not stat.S_ISREG(pending_info.st_mode)
+                    or pending_info.st_uid != os.geteuid()
+                    or stat.S_IMODE(pending_info.st_mode) & 0o077
+                    or pending_info.st_size != len(raw)
+                    or final_info.st_dev != pending_info.st_dev
+                    or final_info.st_ino != pending_info.st_ino
+                    or final_info.st_nlink != 2 or final.read_bytes() != raw):
+                raise DeliveryError('delivery_pending_plan_unknown_links')
+            if remove:
+                path.unlink()
+                fd = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY)
+                try:
+                    os.fsync(fd)
+                finally:
+                    os.close(fd)
+            return True
         _owned_file(path, maximum=len(raw))
         if not raw.startswith(path.read_bytes()):
             raise DeliveryError('delivery_pending_plan_unknown_bytes')
         if remove:
             path.unlink()
+    return False
 
 
 def _write_plan_immutable(directory: Path, plan: dict) -> None:
@@ -807,16 +833,19 @@ def inspect_unlaunched_session(directory: str | Path, plan: dict) -> None:
                 plan['plan_sha256'] + '.json', plan['plan_sha256'] + '.json.pending'}:
             raise DeliveryError('delivery_partial_create_unknown_plan')
         archived = plans / (plan['plan_sha256'] + '.json')
-        _pending_prefix(archived.with_name(archived.name + '.pending'),
-                        canonical(plan) + b'\n')
+        linked = _pending_prefix(archived.with_name(archived.name + '.pending'),
+                                 canonical(plan) + b'\n')
         if archived.exists():
-            _owned_file(archived, maximum=4_000_000)
+            if not linked:
+                _owned_file(archived, maximum=4_000_000)
             if read_json(archived) != plan:
                 raise DeliveryError('delivery_partial_create_plan_changed')
     visible = target / 'delivery-plan.json'
-    _pending_prefix(visible.with_name(visible.name + '.pending'), canonical(plan) + b'\n')
+    linked = _pending_prefix(visible.with_name(visible.name + '.pending'),
+                             canonical(plan) + b'\n')
     if visible.exists():
-        _owned_file(visible, maximum=4_000_000)
+        if not linked:
+            _owned_file(visible, maximum=4_000_000)
         if read_json(visible) != plan:
             raise DeliveryError('delivery_partial_create_plan_changed')
 
