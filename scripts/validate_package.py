@@ -231,6 +231,18 @@ def validate(check_manifest=False):
                  for directory in ('schemas', 'jev_integration_evaluator/data')]
     required += [f'{directory}/work-queue-offline-report-v1.schema.json'
                  for directory in ('schemas', 'jev_integration_evaluator/data')]
+    required += ['tests/independent_hosts/registered_dual/README.md',
+                 'tests/independent_hosts/registered_dual/pyproject.toml',
+                 'tests/independent_hosts/registered_dual/src/registered_dual/alpha.py',
+                 'tests/independent_hosts/registered_dual/src/registered_dual/work_queue.py',
+                 'tests/independent_hosts/registered_dual/src/registered_dual/console.py',
+                 'tests/independent_hosts/registered_dual/qualification.py',
+                 'tests/independent_hosts/registered_dual/installed_journey.py',
+                 'tests/independent_hosts/registered_dual/review-v1.json',
+                 'tests/independent_hosts/registered_dual/oracle-v1.json',
+                 'tests/test_registered_dual_composite.py']
+    required += [f'{directory}/registered-dual-offline-report-v1.schema.json'
+                 for directory in ('schemas', 'jev_integration_evaluator/data')]
     required += [f'{directory}/{name}.schema.json'
                  for directory in ('schemas', 'jev_integration_evaluator/data')
                  for name in ('template-delivery-observation-v1',
