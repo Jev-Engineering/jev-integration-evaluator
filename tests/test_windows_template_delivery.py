@@ -188,6 +188,36 @@ def test_native_locked_install_config_blocks_status_replay_and_session(tmp_path)
     assert unrelated.read_bytes() == b'preserve unrelated bytes\n'
 
 
+def test_native_installed_hardlink_blocks_status_and_session(tmp_path):
+    request, _, _, _, _ = _request(tmp_path)
+    package_plan = plan_windows_template_package(request)
+    package = build_windows_template_package(
+        package_plan, approved_plan_sha256=package_plan['plan_sha256'])
+    install_plan = plan_windows_template_install(
+        package_plan, package, trusted_package_receipt_sha256=package['receipt_sha256'])
+    installed = install_windows_template_package(
+        install_plan, approved_plan_sha256=install_plan['plan_sha256'])
+    source = _install_generation(install_plan) / 'venv' / 'Lib' / 'site-packages' / 'atlas_pkg' / 'console.py'
+    assert source.is_file() and source.stat().st_nlink == 1
+    outside = tmp_path / 'outside-hardlink.py'
+    os.link(source, outside)
+    assert source.stat().st_nlink == 2
+    try:
+        with pytest.raises(InputError, match='windows_install_status_unavailable'):
+            windows_install_status(
+                install_plan, trusted_receipt_sha256=installed['receipt_sha256'])
+        with pytest.raises(InputError, match='windows_install_status_unavailable'):
+            create_windows_template_session(
+                tmp_path / 'blocked-hardlink-session', install_plan, installed,
+                trusted_install_receipt_sha256=installed['receipt_sha256'])
+        assert not (tmp_path / 'blocked-hardlink-session').exists()
+    finally:
+        outside.unlink()
+    assert source.stat().st_nlink == 1
+    assert windows_install_status(
+        install_plan, trusted_receipt_sha256=installed['receipt_sha256'])['status'] == 'installed_recorded'
+
+
 def test_native_dangling_generation_junction_blocks_status_and_replay(tmp_path):
     request, _, _, _, _ = _request(tmp_path)
     plan = plan_windows_template_package(request)
