@@ -70,6 +70,11 @@ validates reviewed ESM, CommonJS and TypeScript source through trusted external
 tooling and materializes source-bound planner inputs on Linux. Package install,
 normal entrypoint launch and connected-mode qualification remain pending.
 
+The [six-use-case source matrix](references/use-case-template-matrix-v1.md)
+pins offline host contracts for registered tools, graph identity, retrieval,
+completion, claim support and safe retention. The five new fixture oracles are
+tested offline; installed execution, provider modes and benefit remain pending.
+
 Want to see everything working first? Run the bundled offline demo:
 
 ```bash

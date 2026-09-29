@@ -60,6 +60,12 @@ The `javascript.recipe-c@1.0.0` catalog entry is documented in
 planner inputs only. Use absolute trusted Node/TypeScript tooling outside the
 target; never load target compiler configuration or plugins.
 
+The [issue #59 use-case matrix](references/use-case-template-matrix-v1.md)
+pins six illustrative source contracts and five distinct offline host oracles.
+Its source match is read-only; apply, install, launch, provider modes and benefit
+remain pending for these use cases. Keep `/prune` and `/compact` as separate
+explicit user choices.
+
 Run `scripts/run_implementation_demo.py --out NEW_PRIVATE_DIRECTORY`, the existing v1.1/v1.2 demos, full regressions, installed-wheel host checks and package validation for implementation changes. Publish only minimal synthetic validation metadata, never private target source, preimages, raw test output or activation fixtures. Prior validation reports remain historical.
 
 For dev3 verification, validate each observation against `implementation-observation` before assertions. Never promote missing observations or required commands that did not run. Validate receipt schedules, command identities and command exit-code consistency against the reviewed spec; oversized receipt observations remain failed scheduled cases. A durable baseline or modified verification start event without completion means `blocked_recovery`: an earlier passing receipt is history, not the result of the interrupted run. Require fresh execution authority to reverify; retain exact owned-byte rollback. Source encoding cookies must denote UTF-8; unrelated decorators do not authorize rewriting decorated selected seams.

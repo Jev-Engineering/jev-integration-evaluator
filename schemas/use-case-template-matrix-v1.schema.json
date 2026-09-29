@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Read-only use-case template coverage matrix v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "scope", "rows"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "scope": {"const": "offline_source_contracts_only"},
+    "rows": {"type": "array", "minItems": 6, "maxItems": 6, "items": {"$ref": "#/$defs/row"}}
+  },
+  "$defs": {
+    "row": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "contract_id", "use_case", "issue", "template_id", "template_version", "recipe", "backend", "shape", "platform", "source", "source_sha256", "host_consumer", "host_oracle", "offline_contract", "installed_execution", "apply", "install", "launch", "provider", "mode", "benefit"],
+      "properties": {
+        "id": {"enum": ["C", "L", "D", "E", "M", "H"]},
+        "contract_id": {"type": "string", "pattern": "^use-case\\.[CDEHLM]@1\\.0\\.0$"},
+        "use_case": {"type": "string", "minLength": 1}, "issue": {"type": "integer", "minimum": 1},
+        "template_id": {"const": "python.bounded-tail-call"}, "template_version": {"const": "1.0.0"},
+        "recipe": {"type": "string", "pattern": "^python\\.[CDEHLM]@1\\.0$"},
+        "backend": {"const": "python"}, "shape": {"type": "string", "minLength": 1},
+        "platform": {"type": "string", "minLength": 1},
+        "source": {"type": "string", "pattern": "^examples/[a-z-]+/[a-z_]+\\.py$"},
+        "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "host_consumer": {"type": "string", "minLength": 1}, "host_oracle": {"type": "string", "minLength": 1},
+        "offline_contract": {"enum": ["source_review_required", "tested_fixture"]},
+        "installed_execution": {"type": "string", "pattern": "^pending_"},
+        "apply": {"const": "pending"}, "install": {"const": "pending"}, "launch": {"const": "pending"},
+        "provider": {"const": "pending"}, "mode": {"const": "off"}, "benefit": {"const": "unknown"}
+      }
+    }
+  }
+}
