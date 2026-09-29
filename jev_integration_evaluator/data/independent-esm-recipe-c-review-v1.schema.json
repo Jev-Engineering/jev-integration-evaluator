@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "kind", "profile", "reviewer", "versions", "expected_effects", "provider_qualification", "activation_authorized", "measured_benefit"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "independent-esm-recipe-c-review-v1"},
+    "profile": {"const": "linux-x86_64-node24.18-off"},
+    "reviewer": {"type": "string", "minLength": 1},
+    "versions": {"type": "object", "additionalProperties": false,
+      "required": ["1.0.0", "1.0.1"],
+      "properties": {"1.0.0": {"$ref": "#/$defs/files"},
+                     "1.0.1": {"$ref": "#/$defs/files"}}},
+    "expected_effects": {"const": ["read:alpha\n", "read:beta:v2\n"]},
+    "provider_qualification": {"const": "not_run"},
+    "activation_authorized": {"const": false},
+    "measured_benefit": {"const": false}
+  },
+  "$defs": {"files": {"type": "object", "additionalProperties": false,
+    "required": ["host.mjs", "start.mjs", "package.json", "package-lock.json"],
+    "properties": {"host.mjs": {"$ref": "#/$defs/sha"},
+                   "start.mjs": {"$ref": "#/$defs/sha"},
+                   "package.json": {"$ref": "#/$defs/sha"},
+                   "package-lock.json": {"$ref": "#/$defs/sha"}}},
+    "sha": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}

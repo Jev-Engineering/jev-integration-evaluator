@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "kind": "independent-esm-recipe-c-review-v1",
+  "profile": "linux-x86_64-node24.18-off",
+  "reviewer": "independent-esm-fixture-author",
+  "versions": {
+    "1.0.0": {
+      "host.mjs": "104927e2fdaefc60cc3cb717b1b9190dcd9defc70be424a2f74a76370883cd2f",
+      "start.mjs": "e4b802a374fc234471bbf267b817e6b1f81b973a78fca22fd879abe5f75c41c1",
+      "package.json": "9b790971a4fc83dbe5a6bdc16e1efce7bd345a8ce6e17815912c8387ed5ef393",
+      "package-lock.json": "879cade9ca3b1d88bb0fcd507019c926c479acf3a5fe3c9011cc36e438722113"
+    },
+    "1.0.1": {
+      "host.mjs": "6aef8bf90d2c696a10d123aa68abfe4a5a49cf276eeb3c58fb6515b93540fe31",
+      "start.mjs": "37832a974993b02a5a443b9be48075cd571b3ef957459049ad5ea6f17e5d4df0",
+      "package.json": "fc552793b0336c7a6a43795c7627cdb1a7cf5d8deffe0d258f28132e1a1d99b6",
+      "package-lock.json": "fe824ff668ed0ee1fda3a7700ccb5c5be4201eef82b26feb7d5ca9ced61c283f"
+    }
+  },
+  "expected_effects": ["read:alpha\n", "read:beta:v2\n"],
+  "provider_qualification": "not_run",
+  "activation_authorized": false,
+  "measured_benefit": false
+}

@@ -86,12 +86,14 @@ command with external effect files. A read-only Node delivery descriptor binds
 exact installation and observation inputs. A separate offline Node supervisor
 now records an owned process, checks independent ready/effect paths, and
 supports bounded stop, disable and retained generation selection under exact
-scopes. Independent synthetic installed TypeScript and CommonJS journeys each
+scopes. Independent synthetic installed ESM, TypeScript and CommonJS journeys each
 exercise two reviewed fixture versions, distinct raw host effects, exact
-upgrade and retained rollback. The CommonJS journey also resumes an
-interrupted upgrade selection under the same session run ID.
-Complete three-format installed evaluator CLI and provider qualification
-remain pending; live benefit is unknown.
+upgrade and retained rollback. The ESM journey resumes an interrupted first
+launch under the same session run ID and refuses source drift before upgrade.
+The CommonJS journey also resumes an interrupted upgrade selection under the
+same session run ID. The ESM fixture materializes through an exact branch-built
+installed evaluator CLI. Connected provider qualification remains pending;
+live benefit is unknown.
 
 The [six-use-case source matrix](references/use-case-template-matrix-v1.md)
 pins offline host contracts for registered tools, graph identity, retrieval,
