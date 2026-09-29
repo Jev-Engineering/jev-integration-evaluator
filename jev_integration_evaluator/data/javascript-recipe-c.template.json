@@ -11,7 +11,11 @@
   "supported_targets": {"os": "linux", "architecture": "x86_64", "process": "single_process", "package_lock": 3},
   "compatibility": {
     "lockfile_versions": [3],
-    "install_hooks": [],
+    "install_hooks": {
+      "source_plan": "reject root lifecycle scripts and dependency lock rows declaring hasInstallScript",
+      "tarball_contents": "not inspected by catalog; exact archive inspection or npm ci --ignore-scripts required at install",
+      "installer": "must use npm ci --ignore-scripts or independently verify exact tarball hook contents before effects"
+    },
     "package_managers": ["npm"],
     "supported_recipes": ["javascript.C"],
     "unsupported": ["yarn", "pnpm", "Bun", "browser", "worker_threads", "multi_process",

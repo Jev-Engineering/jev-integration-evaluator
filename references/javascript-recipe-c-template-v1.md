@@ -24,10 +24,15 @@ value is read by the catalog.
 
 `package-lock.json` must be lockfileVersion 3 and agree with the package root.
 This first catalog profile permits a flat, fully locked production dependency
-set with exact versions, SHA-512 integrity and HTTPS tarballs. It rejects lifecycle/build
-scripts, workspaces, links, native package hooks, optional/development and
-transitive dependency graphs. Those are machine-checked unsupported cases,
-not an assertion that arbitrary npm projects are safe. The entrypoint file
+set with exact versions, SHA-512 integrity and HTTPS tarballs. It rejects root
+lifecycle/build scripts and dependency lock rows declaring `hasInstallScript`,
+plus workspaces, links, optional/development and transitive dependency graphs.
+The catalog does **not** inspect tarball `package.json` files, so an absent or
+misdeclared lock hook flag does not prove a dependency has no install hook.
+The future installer must run `npm ci --ignore-scripts` or independently inspect
+the exact approved tarballs before effects. Native dependency builds remain
+outside this profile. These are machine-checked source restrictions, not an
+assertion that arbitrary npm projects are safe. The entrypoint file
 is source-bound, but reachability is pending a separately authorized launch
 test. A package script declaration alone is not runtime evidence.
 

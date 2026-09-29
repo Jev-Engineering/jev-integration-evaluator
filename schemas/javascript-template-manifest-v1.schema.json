@@ -4,7 +4,11 @@
     "backend": "javascript",
     "backend_version": "1.0",
     "compatibility": {
-      "install_hooks": [],
+      "install_hooks": {
+        "installer": "must use npm ci --ignore-scripts or independently verify exact tarball hook contents before effects",
+        "source_plan": "reject root lifecycle scripts and dependency lock rows declaring hasInstallScript",
+        "tarball_contents": "not inspected by catalog; exact archive inspection or npm ci --ignore-scripts required at install"
+      },
       "lockfile_versions": [
         3
       ],

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+import base64
 import json
 import os
 from pathlib import Path
@@ -64,6 +65,7 @@ def test_distinct_catalog_contract_and_legacy_python_schema():
                       'javascript-template-manifest-v1')
     assert manifest['lifecycle']['install'] == 'pending_node_adapter'
     assert manifest['lifecycle']['authorized_mode'] == 'off'
+    assert 'not inspected by catalog' in manifest['compatibility']['install_hooks']['tarball_contents']
     with pytest.raises(InputError, match='Unsupported JavaScript template'):
         inspect_template('javascript.recipe-c', '0.9.0')
     assert read_json(ROOT / 'schemas/template-request-v1.schema.json')['properties']['template_id'] == {
@@ -111,6 +113,35 @@ def test_wrong_secret_reference_and_schema_reject_before_tooling(tmp_path):
     wrong['unknown'] = 'data'
     with pytest.raises(InputError, match='Invalid javascript-template-request-v1'):
         validate_template_request(root, wrong, tooling_dir=ROOT)
+
+
+def test_flat_locked_dependency_and_declared_hook_rejection(tmp_path):
+    root, request = request_for(tmp_path, 'esm')
+    package_path, lock_path = root / 'package.json', root / 'package-lock.json'
+    package = read_json(package_path)
+    package['dependencies'] = {'fixture-dep': '1.2.3'}
+    package_path.write_text(json.dumps(package), encoding='utf-8')
+    lock = read_json(lock_path)
+    lock['packages']['']['dependencies'] = package['dependencies']
+    lock['packages']['node_modules/fixture-dep'] = {
+        'version': '1.2.3',
+        'resolved': 'https://registry.npmjs.org/fixture-dep/-/fixture-dep-1.2.3.tgz',
+        'integrity': 'sha512-' + base64.b64encode(b'x' * 64).decode('ascii'),
+    }
+    lock_path.write_text(json.dumps(lock), encoding='utf-8')
+    request['package_json_sha256'] = file_hash(package_path)
+    request['package_lock_sha256'] = file_hash(lock_path)
+    request['reviewed_package_source_sha256'] = digest(_source_tree(root))
+    assert _package(root, request, 'esm')['dependency_count'] == 1
+    # The catalog accepts the declared lock shape; it has not read the tarball.
+    lock['packages']['node_modules/fixture-dep']['hasInstallScript'] = True
+    lock_path.write_text(json.dumps(lock), encoding='utf-8')
+    with pytest.raises(InputError, match='Unsupported Node dependency lock row'):
+        _package(root, request, 'esm')
+    lock['packages']['node_modules/fixture-dep']['hasInstallScript'] = False
+    lock_path.write_text(json.dumps(lock), encoding='utf-8')
+    with pytest.raises(InputError, match='Unsupported Node dependency package behavior'):
+        _package(root, request, 'esm')
 
 
 @pytest.mark.skipif(not NATIVE, reason='Native Linux Node and trusted TypeScript 5.8.3 required')
