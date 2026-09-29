@@ -150,6 +150,29 @@ def test_real_source_verified_node_install_and_normal_command(tmp_path, format_n
         node_delivery.plan_node_delivery(
             install_plan, trusted_install_receipt_sha256=installed['receipt_sha256'],
             observation=observation, launch_environment={'NODE_OPTIONS': '--require unsafe'})
+    for altered in ({**environment, 'NODE_READY_PATH': str(effect)},
+                    {**environment, 'NODE_EFFECT_PATH': str(ready)},
+                    {**environment, 'NODE_INTEGRATION_PATH': str(effect)},
+                    {**environment, 'NODE_EFFECT_PATH': str(Path(installed['generation_path']) / 'app' / 'effect.bin')},
+                    {key: value for key, value in environment.items() if key != 'NODE_READY_PATH'}):
+        with pytest.raises(InputError, match='does not match observed roles'):
+            node_delivery.plan_node_delivery(
+                install_plan, trusted_install_receipt_sha256=installed['receipt_sha256'],
+                observation=observation, launch_environment=altered)
+    linked_parent = tmp_path / 'linked-output-parent'
+    linked_parent.symlink_to(tmp_path, target_is_directory=True)
+    linked_effect = str(linked_parent / 'linked-effect.bin')
+    with pytest.raises(InputError, match='does not match observed roles'):
+        node_delivery.plan_node_delivery(
+            install_plan, trusted_install_receipt_sha256=installed['receipt_sha256'],
+            observation=observation,
+            launch_environment={**environment, 'NODE_EFFECT_PATH': linked_effect})
+    with pytest.raises(InputError, match='linked'):
+        node_delivery.plan_node_delivery(
+            install_plan, trusted_install_receipt_sha256=installed['receipt_sha256'],
+            observation={**observation, 'checks': [observation['checks'][0],
+                {**observation['checks'][1], 'path': linked_effect}, observation['checks'][2]]},
+            launch_environment={**environment, 'NODE_EFFECT_PATH': linked_effect})
     for loader in ('LD_PRELOAD', 'LD_LIBRARY_PATH'):
         with pytest.raises(InputError, match='launch environment'):
             node_delivery.plan_node_delivery(

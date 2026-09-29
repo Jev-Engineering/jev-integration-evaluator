@@ -3,7 +3,9 @@
 This distinct Linux x86-64 adapter packages an **already applied and externally
 verified** `javascript.recipe-c@1.0.0` host into an owned off-mode generation.
 Its Python APIs build, install and prepare a read-only Node delivery descriptor.
-They do not launch a process, connect a provider, or qualify shadow/canary/active.
+Planning and status revalidation execute bounded Node/npm version and tooling
+probes. These APIs do not launch the installed host, connect a provider, or
+qualify shadow/canary/active.
 A scoped native test invokes the normal installed command offline and checks
 its raw host effect; that test is not a durable #56 supervisor session. The
 separate #56 supervisor still accepts Python console install receipts only.
@@ -81,8 +83,11 @@ The separate [`node-delivery-descriptor-v1`](../schemas/node-delivery-descriptor
 binds the exact installed Node command and working directory, executable and
 entrypoint hashes, generation/source/artifact/configuration/secret-reference
 digests, externally retained install receipt digest, and independent expected
-ready/entrypoint/integration file transitions. Planning and validation do not
-launch. The descriptor is an input contract for a future #56 Node supervisor;
+ready/entrypoint/integration file transitions. The three allowed output-path
+environment values must match their respective observation roles exactly;
+linked, protected, traversing or changed outputs fail closed. Planning and
+validation may run bounded toolchain probes but do not launch the installed
+host. The descriptor is an input contract for a future #56 Node supervisor;
 the current #56 session API remains Python-console-only. A test runs the normal
 installed command under an explicit off-mode environment. Its start script
 calls the transformed `seam` and checks `read:x`; the raw host callback writes

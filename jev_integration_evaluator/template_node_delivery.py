@@ -1,7 +1,8 @@
 """Read-only Node launch descriptor for an externally anchored installed generation.
 
 This adapter carries an exact command and independent observation schedule to
-a future Node supervisor. It does not create a session or launch a process.
+a future Node supervisor. It runs bounded Node/npm toolchain probes during
+installation revalidation; it does not create a session or launch the host.
 """
 from __future__ import annotations
 
@@ -12,7 +13,7 @@ import stat
 
 from .contracts import validate_contract
 from .io import InputError, digest, file_hash, read_json
-from .template_node_installation import installation_status
+from .template_node_installation import _file, installation_status
 
 
 def _observed(path: Path) -> str | None:
@@ -47,7 +48,7 @@ def _environment(values: dict | None) -> dict[str, str]:
 
 def plan_node_delivery(install_plan: dict, *, trusted_install_receipt_sha256: str,
                        observation: dict, launch_environment: dict | None = None) -> dict:
-    """Bind verified installed Node bytes and external observations without effects."""
+    """Bind installed bytes and external observations without host effects."""
     validate_contract(install_plan, 'node-install-plan-v1')
     validate_contract(observation, 'template-delivery-observation-v1')
     current = installation_status(install_plan,
@@ -55,16 +56,18 @@ def plan_node_delivery(install_plan: dict, *, trusted_install_receipt_sha256: st
     if current['status'] != 'installed_recorded':
         raise InputError('Externally anchored Node installation required')
     root = Path(install_plan['environment_parent']) / ('jev-node-env-' + install_plan['plan_sha256'][:24])
-    receipt = read_json(root / 'install-receipt.json')
+    receipt = read_json(_file(root, 'install-receipt.json'))
     validate_contract(receipt, 'node-install-receipt-v1')
     if receipt['receipt_sha256'] != trusted_install_receipt_sha256:
         raise InputError('Node installed receipt changed')
     if any('..' in Path(row['path']).parts for row in observation['checks']):
         raise InputError('Node delivery observation path contains parent traversal')
+    if any(str(Path(row['path'])) != row['path'] for row in observation['checks']):
+        raise InputError('Node delivery observation path is not canonical')
     roles = {role: [Path(row['path']) for row in observation['checks'] if row['role'] == role]
              for role in ('ready', 'entrypoint_reached', 'integration_reachable')}
-    if not all(roles.values()):
-        raise InputError('Node delivery requires ready, entrypoint and integration checks')
+    if any(len(group) != 1 for group in roles.values()):
+        raise InputError('Node delivery requires one ready, entrypoint and integration check')
     request = install_plan['package_plan']['request']
     protected = [root] + [Path(request[key]) for key in (
         'host_root', 'render_directory', 'implementation_bundle',
@@ -78,6 +81,11 @@ def plan_node_delivery(install_plan: dict, *, trusted_install_receipt_sha256: st
                 or row['before_sha256'] == row['expected_sha256']):
             raise InputError('Node delivery observation baseline or ownership changed')
     values = _environment(launch_environment)
+    expected_paths = {'NODE_READY_PATH': str(roles['ready'][0]),
+                      'NODE_EFFECT_PATH': str(roles['entrypoint_reached'][0]),
+                      'NODE_INTEGRATION_PATH': str(roles['integration_reachable'][0])}
+    if values != expected_paths:
+        raise InputError('Node delivery launch environment does not match observed roles')
     descriptor = {'schema_version': '1.0', 'kind': 'node-delivery-descriptor-v1',
                   'install_plan': copy.deepcopy(install_plan),
                   'trusted_install_receipt_sha256': trusted_install_receipt_sha256,
