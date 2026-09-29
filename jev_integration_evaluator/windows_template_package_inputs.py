@@ -178,7 +178,7 @@ def inspect_windows_template_package_inputs(host_root: str | Path,
                                             output_parent: str | Path,
                                             environment_parent: str | Path,
                                             console_script: str) -> dict:
-    """Bind complete reviewed source and wheel inputs on local NTFS, without effects."""
+    """Inspect reviewed files in the declared traversal and selected wheels on NTFS."""
     profile = _profile()
     source_files = _manifest(reviewed_source_files, wheels=False)
     wheels = _manifest(reviewed_wheels, wheels=True)
@@ -263,6 +263,7 @@ def inspect_windows_template_package_inputs(host_root: str | Path,
                 raise InputError('windows_package_input_root_changed') from None
         report = {'schema_version': '1.0', 'status': 'package_inputs_reviewed_only',
                   'profile': profile, 'source_files': observed,
+                  'source_traversal_exclusions': sorted(_SKIP),
                   'source_sha256': digest(observed), 'wheel_files': wheel_rows,
                   'wheels_sha256': digest(wheels), 'console_script': console_script,
                   'project_name': metadata[0], 'project_version': metadata[1],

@@ -70,17 +70,21 @@ This is a point-in-time check; a later mutation or installer must
 recheck the exact files under its own ownership lock. Unselected files are not
 reviewed by this receipt.
 
-## Complete package-input inventory (read-only API)
+## Selected package-input inventory (read-only API)
 
 `inspect_windows_template_package_inputs(host_root, reviewed_source_files,
 wheelhouse, reviewed_wheels, output_parent, environment_parent, console_script)`
-extends the point-in-time preparation check to an externally reviewed **complete**
-host file map (up to 4,096 files/64 MB), selected wheelhouse files (up to 64
+extends the point-in-time preparation check to an externally reviewed file map
+of the traversed host source tree (up to 4,096 files/64 MB), selected wheelhouse files (up to 64
 wheels/256 MB total), static `pyproject.toml` project, pinned setuptools/wheel
 build requirements and console declaration, and the
 current native interpreter executable hash. Each file and root is checked
 twice; the source walk rejects unlisted files, reparse points, hard links,
-ambiguous names, and directory identity drift. Wheel bytes are hash checked
+ambiguous names, and directory identity drift. It skips directories named
+`.git`, `.pytest_cache`, `__pycache__`, `build`, or `dist` at any depth and
+records those exclusions in the report; bytes beneath them are not reviewed.
+This inventory does not prove the set of inputs a future build hook may read.
+Wheel bytes are hash checked
 before reading bounded ZIP metadata and compatible wheel tags. Both output
 and environment parents must already exist on disjoint local NTFS paths.
 
@@ -96,7 +100,9 @@ bind the externally retained applied-source and installation receipts.
 ## Native delivery adapter after the #56 contract merges
 
 The next mutating stage needs a separate `plan/build` then `install-plan/install`
-authority sequence. A Windows package plan must recheck the complete source map,
+authority sequence. A Windows package plan must bind every actual build input,
+including any files under the inventory's skipped directories that its build
+can read, or prevent build access to them; it must then recheck that source map,
 the #54 entrypoint binding and externally retained modified implementation
 receipt, selected wheel hashes/tags, off-mode configuration, and exact native
 interpreter. A source inventory receipt alone cannot authorize a build hook.
@@ -139,7 +145,7 @@ bundle and configuration artifacts; NTFS volume/file IDs and no reparse or
 hard links; file ACL and read-only-attribute preservation; case and long-path
 behavior; cross-process locks; flush/replace/recovery after interruption; and
 file-open conflicts. Installation must bind an independently retained modified
-implementation receipt, complete source snapshot, exact wheel hashes, native
+implementation receipt, source snapshot with explicit traversal exclusions, exact wheel hashes, native
 `Scripts\\python.exe` and console launcher, and an owned environment generation.
 The supervisor must bind a Windows process handle, creation time and executable
 origin to one session, reject duplicate starts, observe exit/cancellation,

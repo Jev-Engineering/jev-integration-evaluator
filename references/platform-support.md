@@ -32,7 +32,7 @@ host. It is not native template delivery. Current stage support is:
 | --- | --- |
 | Repository discovery | Qualified only as recorded below. |
 | Selected source/path preparation | Read-only local Windows 11 Pro build 26200, CPython 3.14.3 observation; Server 2022 candidates need independent runs. |
-| Complete package-input inventory | Read-only local Windows 11 Pro build 26200, CPython 3.14.3 observation. It binds reviewed source and wheel bytes and reports no build/install authority; Server 2022 candidates need independent runs. |
+| Selected package-input inventory | Read-only local Windows 11 Pro build 26200, CPython 3.14.3 observation. It checks reviewed files in its declared traversal and selected wheel bytes, reports skipped directories, and grants no build/install authority; Server 2022 candidates need independent runs. |
 | Implementation planning and mutation | No complete native Windows template-delivery qualification. |
 | Repository session | POSIX journal contract; native Windows unsupported. |
 | Package build and install | Existing template installer is Linux x86-64 CPython 3.13 only. |

@@ -57,6 +57,8 @@ def test_native_exact_package_inputs_are_read_only(tmp_path):
     values = _fixture(tmp_path)
     report = _inspect(values)
     assert report['status'] == 'package_inputs_reviewed_only'
+    assert report['source_traversal_exclusions'] == [
+        '.git', '.pytest_cache', '__pycache__', 'build', 'dist']
     assert report['source_sha256'] == digest(values[1])
     assert report['wheels_sha256'] == digest(values[3])
     assert report['entry_point'] == 'host_cli:main'
@@ -70,7 +72,7 @@ def test_native_exact_package_inputs_are_read_only(tmp_path):
 
 
 @pytest.mark.skipif(os.name != 'nt', reason='native Windows NTFS only')
-def test_native_source_completeness_and_drift(tmp_path):
+def test_native_traversed_source_completeness_and_drift(tmp_path):
     values = _fixture(tmp_path)
     host = values[0]
     (host / 'unreviewed.py').write_text('x = 1\n', encoding='utf-8')
@@ -80,6 +82,18 @@ def test_native_source_completeness_and_drift(tmp_path):
     (host / 'host_cli.py').write_text('x = 2\n', encoding='utf-8')
     with pytest.raises(InputError, match='reviewed_windows_package_source_changed'):
         _inspect(values)
+
+
+@pytest.mark.skipif(os.name != 'nt', reason='native Windows NTFS only')
+def test_native_skipped_directory_is_explicitly_outside_inventory(tmp_path):
+    values = _fixture(tmp_path)
+    skipped = values[0] / 'build'
+    skipped.mkdir()
+    (skipped / 'unreviewed.py').write_text('value = 1\n', encoding='utf-8')
+    report = _inspect(values)
+    assert report['source_files'] == values[1]
+    assert 'build' in report['source_traversal_exclusions']
+    assert report['build_authorized'] is False
 
 
 @pytest.mark.skipif(os.name != 'nt', reason='native Windows NTFS only')
@@ -134,7 +148,7 @@ def test_native_wheel_internal_tag_must_match_current_interpreter(tmp_path):
 
 
 @pytest.mark.skipif(os.name != 'nt', reason='native Windows NTFS only')
-def test_native_regular_build_file_is_in_complete_source_map(tmp_path):
+def test_native_regular_file_named_build_is_in_traversed_source_map(tmp_path):
     values = _fixture(tmp_path)
     regular = values[0] / 'build'
     regular.write_text('reviewed file\n', encoding='utf-8')
