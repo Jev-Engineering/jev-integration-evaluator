@@ -19,7 +19,7 @@ from .io import InputError, digest, file_hash
 from .template_installation import _template_binding
 from .windows_template_package_inputs import inspect_windows_template_package_inputs
 from .windows_template_owned import (
-    create_private_directory, check_private_directory,
+    create_private_directory, check_private_directory, generation_root_present,
     read_private_json, write_private_bytes_exclusive, write_private_json_exclusive,
 )
 
@@ -297,7 +297,7 @@ def build_windows_template_package(plan: dict, *, approved_plan_sha256: str) -> 
     if current != plan:
         raise InputError('windows_package_plan_drift')
     root = _generation(plan)
-    if root.exists():
+    if generation_root_present(root):
         raise InputError('windows_package_existing_generation_requires_status_review')
     owned = create_private_directory(root)
     write_private_json_exclusive(owned, 'owner.json', {'plan_sha256': plan['plan_sha256'],
@@ -361,7 +361,7 @@ def windows_package_status(plan: dict, *, trusted_receipt_sha256: str | None = N
     if plan['plan_sha256'] != digest({k: v for k, v in plan.items() if k != 'plan_sha256'}):
         raise InputError('windows_package_plan_digest_changed')
     root = _generation(plan)
-    if not root.exists():
+    if not generation_root_present(root):
         return {'status': 'absent', 'receipt_trust': 'absent'}
     try:
         from .io import loads
