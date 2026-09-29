@@ -68,8 +68,11 @@ closed. Do not treat component tests with a stubbed upstream verifier as an
 end-to-end installed journey. A separate native test with a disposable trusted
 TypeScript 5.8.3 copy exercises real source verification, installation and the
 normal off-mode Node command with external effect files. The read-only Node
-delivery descriptor binds exact install and observation inputs. The separate
-Node session supervisor runs only the installed off-mode command under exact
+delivery descriptor binds exact install and observation inputs. The installed
+evaluator CLI exposes separate `template node-package-plan`,
+`node-package-build`, `node-install-plan` and `node-install` steps with exact
+plan approvals and externally retained receipt digests. The Node session
+supervisor runs only the installed off-mode command under exact
 scope, observes independent files and preserves same-run recovery state.
 Independent installed ESM, TypeScript and CommonJS fixtures test two exact versions
 and distinct raw effects through supervised upgrade and retained rollback.

@@ -7,6 +7,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import time
 import venv
 
 import pytest
@@ -154,6 +155,117 @@ def test_installed_evaluator_cli_materializes_pinned_esm(tmp_path):
     assert lock['format'] == 'esm'
     assert lock['source_sha256'] == request['implementation_spec']['source']['sha256']
     assert read_json(rendered / 'render-status.json')['status'] == 'complete'
+
+    def invoke(*argv):
+        run = subprocess.run([str(evaluator / 'bin/jev-integration-evaluator'), *map(str, argv)],
+            cwd=tmp_path, env=environment, capture_output=True, text=True, timeout=120)
+        assert run.returncode == 0, run.stderr[-1000:]
+        return json.loads(run.stdout)
+
+    def private_json(name, value):
+        path = tmp_path / name
+        with os.fdopen(os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), 'w') as stream:
+            json.dump(value, stream)
+        return path
+
+    cases = _request(source, '1.0.0')[1]
+    spec_path = private_json('esm-spec.json', request['implementation_spec'])
+    cases_path = private_json('esm-cases.json', cases)
+    bundle = tmp_path / 'cli-bundle'
+    common = ('--repo', source, '--bundle', bundle, '--tooling', tooling)
+    planned = invoke('js-plan', *common, '--spec', spec_path)
+    baseline = invoke('js-verify', *common, '--phase', 'baseline', '--cases', cases_path,
+                      '--approve-execution')
+    assert baseline['status'] == 'passed'
+    assert invoke('js-apply', *common, '--approve', planned['bundle_sha256'],
+                  '--baseline-sha256', baseline['receipt_sha256'])['status'] == 'applied_unverified'
+    modified = invoke('js-verify', *common, '--phase', 'modified', '--cases', cases_path,
+                      '--approve-execution', '--baseline-sha256', baseline['receipt_sha256'])
+    assert modified['status'] == 'passed'
+    assert invoke('js-status', *common,
+                  '--trusted-modified-sha256', modified['receipt_sha256'])['status'] == 'verified'
+
+    (tmp_path / 'cache').mkdir(mode=0o700)
+    (tmp_path / 'generations').mkdir(mode=0o700)
+    package_parent = tmp_path / 'packages'
+    package_parent.mkdir(mode=0o700)
+    node, npm = tools
+    package_request = {'schema_version': '1.0', 'kind': 'node-package-request-v1',
+        'host_root': str(source), 'render_directory': str(rendered),
+        'implementation_bundle': str(bundle),
+        'trusted_modified_sha256': modified['receipt_sha256'],
+        'node': str(node), 'node_sha256': file_hash(node),
+        'npm_cli': str(npm), 'npm_cli_sha256': file_hash(npm),
+        'npm_tree_sha256': digest(installer._tree(npm.parent.parent)),
+        'tooling_directory': str(tooling), 'offline_cache': str(tmp_path / 'cache'),
+        'package_directory': str(package_parent / 'package'),
+        'environment_parent': str(tmp_path / 'generations')}
+    request_file = private_json('node-package-request.json', package_request)
+    package_plan_file = tmp_path / 'node-package-plan.json'
+    package_plan_result = invoke('template', 'node-package-plan', '--request', request_file,
+                                 '--out', package_plan_file)
+    package_plan = read_json(package_plan_file)
+    assert package_plan_result['plan_sha256'] == package_plan['plan_sha256']
+    packaged = invoke('template', 'node-package-build', '--plan', package_plan_file,
+                      '--approve-plan-sha256', package_plan['plan_sha256'])
+    package_receipt_file = Path(package_request['package_directory']) / 'package-receipt.json'
+    package_receipt = read_json(package_receipt_file)
+    assert packaged['receipt_sha256'] == package_receipt['receipt_sha256']
+    assert invoke('template', 'node-package-status', '--plan', package_plan_file,
+                  '--trusted-receipt-sha256', packaged['receipt_sha256'])['status'] == 'packaged_recorded'
+    install_plan_file = tmp_path / 'node-install-plan.json'
+    install_result = invoke('template', 'node-install-plan', '--package-plan', package_plan_file,
+        '--package-receipt', package_receipt_file,
+        '--trusted-package-receipt-sha256', packaged['receipt_sha256'], '--out', install_plan_file)
+    install_plan = read_json(install_plan_file)
+    assert install_result['plan_sha256'] == install_plan['plan_sha256']
+    installed_result = invoke('template', 'node-install', '--plan', install_plan_file,
+                              '--approve-plan-sha256', install_plan['plan_sha256'])
+    generation = (tmp_path / 'generations' /
+                  ('jev-node-env-' + install_plan['plan_sha256'][:24]))
+    install_receipt = read_json(generation / 'install-receipt.json')
+    assert installed_result['receipt_sha256'] == install_receipt['receipt_sha256']
+    assert invoke('template', 'node-install-status', '--plan', install_plan_file,
+                  '--trusted-receipt-sha256', installed_result['receipt_sha256'])['status'] == 'installed_recorded'
+    entry = generation / 'app/start.mjs'
+    assert install_receipt['command'] == [str(node), str(entry)]
+    assert file_hash(entry) == install_receipt['entrypoint_sha256']
+    assert not generation.is_relative_to(PROJECT)
+
+    observation, launch_env, expected_effect = _observations(
+        tmp_path / 'cli-effect', '1.0.0', 'alpha')
+    observation_file = private_json('esm-observation.json', observation)
+    launch_env_file = private_json('esm-launch-environment.json', launch_env)
+    descriptor_file = tmp_path / 'esm-descriptor.json'
+    descriptor_result = invoke('template', 'node-delivery-plan', '--install-plan', install_plan_file,
+        '--trusted-install-receipt-sha256', installed_result['receipt_sha256'],
+        '--observation', observation_file, '--launch-environment', launch_env_file,
+        '--out', descriptor_file)
+    descriptor = read_json(descriptor_file)
+    assert descriptor_result['descriptor_sha256'] == descriptor['descriptor_sha256']
+    session_dir = tmp_path / 'esm-cli-session'
+    created = invoke('template', 'node-session-create', '--session', session_dir,
+                     '--descriptor', descriptor_file)
+    launch_scope = _scope(created, 'launch', descriptor)
+    launch_scope_file = private_json('esm-launch-scope.json', launch_scope)
+    launched = invoke('template', 'node-launch', '--session', session_dir,
+        '--scope', launch_scope_file, '--approve-scope-sha256', launch_scope['scope_sha256'])
+    for _ in range(150):
+        observed = invoke('template', 'node-observe', '--session', session_dir,
+            '--trusted-session-head', launched['session_head_sha256'])
+        launched = observed
+        if observed['observations']['integration_reachable']:
+            break
+        time.sleep(.02)
+    else:
+        raise AssertionError('installed CLI did not observe ESM integration')
+    assert Path(launch_env['NODE_EFFECT_PATH']).read_bytes() == expected_effect == b'read:alpha\n'
+    assert observed['observations']['entrypoint_reached']
+    stop_scope = _scope(observed, 'stop', descriptor)
+    stop_scope_file = private_json('esm-stop-scope.json', stop_scope)
+    stopped = invoke('template', 'node-stop', '--session', session_dir,
+        '--scope', stop_scope_file, '--approve-scope-sha256', stop_scope['scope_sha256'])
+    assert stopped['stage'] == 'stopped'
 
 
 def _installed(tmp_path: Path, name: str, version: str,
