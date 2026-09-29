@@ -19,7 +19,7 @@ the trusted-host synthetic verifier does not qualify installed startup.
 
 For the bounded JS/TS backend, use native POSIX with trusted Node and pinned
 TypeScript 5.8.3 outside the target. Run `python -m pytest -q
-tests/test_js_lifecycle.py tests/test_js_backend_trusted.py tests/test_js_entrypoint.py`
+tests/test_js_lifecycle.py tests/test_js_backend_trusted.py tests/test_js_entrypoint.py tests/test_js_template_delivery.py`
 and `node --test tests/js_transform.test.cjs tests/native_js_runtime.test.cjs`.
 Also run the installed-wheel lifecycle test, full suite, package validation
 and offline demos. Record exact Node/compiler identities and unsupported A–M

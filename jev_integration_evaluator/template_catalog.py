@@ -37,21 +37,35 @@ def _manifest() -> dict:
 
 def list_templates() -> dict:
     manifest = _manifest()
+    from .template_js_catalog import inspect_js_template
+    javascript = inspect_js_template()
     return {'schema_version': '1.0', 'templates': [{
         'template_id': manifest['template_id'], 'template_version': manifest['template_version'],
         'backend': manifest['backend'], 'profile': manifest['source_grammar'],
-        'manifest_sha256': digest(manifest)}]}
+        'manifest_sha256': digest(manifest)}, {
+        'template_id': javascript['template_id'], 'template_version': javascript['template_version'],
+        'backend': javascript['backend'], 'profile': javascript['source_grammar'],
+        'manifest_sha256': javascript['manifest_sha256']}]}
 
 
 def inspect_template(template_id: str, version: str = TEMPLATE_VERSION) -> dict:
+    if template_id == 'javascript.recipe-c':
+        from .template_js_catalog import inspect_js_template
+        return inspect_js_template(template_id, version)
     manifest = _manifest()
     if template_id != TEMPLATE_ID or version != TEMPLATE_VERSION:
         raise InputError('Unsupported template ID or version; v1 refuses unknown and legacy manifests')
     return copy.deepcopy(manifest) | {'manifest_sha256': digest(manifest)}
 
 
-def validate_template_request(root: str | Path, request: dict) -> dict:
+def validate_template_request(root: str | Path, request: dict,
+                              *, tooling_dir: str | Path | None = None) -> dict:
     """Validate current source and all nested planner contracts before any output write."""
+    if isinstance(request, dict) and request.get('template_id') == 'javascript.recipe-c':
+        from .template_js_catalog import validate_js_template_request
+        if tooling_dir is None:
+            raise InputError('Trusted JavaScript tooling directory required')
+        return validate_js_template_request(root, request, tooling_dir=tooling_dir)
     validate_contract(request, 'template-request-v1')
     manifest = inspect_template(request['template_id'], request['template_version'])
     if request['backend'] != manifest['backend'] or request['profile'] != manifest['source_grammar']:
@@ -156,11 +170,17 @@ def render_status(output: str | Path) -> dict:
     return {'schema_version': '1.0', 'status': state}
 
 
-def materialize_template(root: str | Path, request: dict, output: str | Path) -> dict:
+def materialize_template(root: str | Path, request: dict, output: str | Path,
+                         *, tooling_dir: str | Path | None = None) -> dict:
     """Create exclusive deterministic planner inputs outside the target.
 
     An interrupted render retains an incomplete marker and cannot be reused.
     """
+    if isinstance(request, dict) and request.get('template_id') == 'javascript.recipe-c':
+        from .template_js_catalog import materialize_js_template
+        if tooling_dir is None:
+            raise InputError('Trusted JavaScript tooling directory required')
+        return materialize_js_template(root, request, output, tooling_dir=tooling_dir)
     result = validate_template_request(root, request)
     target = Path(root).resolve(strict=True)
     out = Path(output).absolute()

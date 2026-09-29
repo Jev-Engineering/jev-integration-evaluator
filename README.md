@@ -65,6 +65,11 @@ python -m jev_integration_evaluator repository-discovery `
 See the [platform matrix](references/platform-support.md) for Windows versions,
 link handling, UNC outcomes and path limits.
 
+The separate [JavaScript recipe C template catalog](references/javascript-recipe-c-template-v1.md)
+validates reviewed ESM, CommonJS and TypeScript source through trusted external
+tooling and materializes source-bound planner inputs on Linux. Package install,
+normal entrypoint launch and connected-mode qualification remain pending.
+
 Want to see everything working first? Run the bundled offline demo:
 
 ```bash

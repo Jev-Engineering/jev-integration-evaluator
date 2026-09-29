@@ -42,6 +42,12 @@ When benchmark evidence is absent, recommend constructing/fixing that evidence b
 
 Ask only when the workflow reaches the relevant gate: which placements share a task budget; whether tasks span processes; the stable combined-treatment canary scope; which source-reviewed gates belong to the deployed treatment; who retains threshold/study digests; and which cohorts/operational limits require complete monitoring. Reuse recorded constraints and source evidence. Missing costs or outcome data are blockers, not zero estimates. Scenario alternatives must be explicitly declared assumptions, not guessed probabilities. Do not demand monitoring setup for analysis-only intake. See `references/operational-evidence-v1.2.md`.
 
+For reviewed JavaScript recipe C source, identify the exact `.mjs`, `.cjs` or
+`.ts` implementation spec, package and lock digests, Node start entrypoint,
+off-mode configuration and external trusted tooling before using the
+[JS template catalog](references/javascript-recipe-c-template-v1.md).
+Catalog materialization does not request install or launch authority.
+
 For connected host runtime qualification, record the pinned endpoint/model,
 environment and reviewed source/configuration digests, budget scope, host-owned
 ledger location, and the independent authority that verifies egress,

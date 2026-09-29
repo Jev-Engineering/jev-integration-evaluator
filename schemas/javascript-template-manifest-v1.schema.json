@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "const": {
+    "backend": "javascript",
+    "backend_version": "1.0",
+    "compatibility": {
+      "install_hooks": {
+        "installer": "must use npm ci --ignore-scripts or independently verify exact tarball hook contents before effects",
+        "source_plan": "reject root lifecycle scripts and dependency lock rows declaring hasInstallScript",
+        "tarball_contents": "not inspected by catalog; exact archive inspection or npm ci --ignore-scripts required at install"
+      },
+      "lockfile_versions": [
+        3
+      ],
+      "package_managers": [
+        "npm"
+      ],
+      "supported_recipes": [
+        "javascript.C"
+      ],
+      "unsupported": [
+        "yarn",
+        "pnpm",
+        "Bun",
+        "browser",
+        "worker_threads",
+        "multi_process",
+        "target_tsconfig",
+        "target_plugins",
+        "bundler",
+        "transitive_dependencies",
+        "native_dependency_build",
+        "recipes_A_B_D_to_M"
+      ]
+    },
+    "configuration_format": "reviewed off-mode JSON and env:NAME reference only",
+    "dependency_format": "package.json plus exact npm package-lock lockfileVersion 3",
+    "entrypoint_profile": "finite node start.mjs or node start.cjs package script",
+    "evaluator_version": "1.3.0.dev12",
+    "evidence_schema": "javascript-entrypoint-receipt-v1",
+    "fallback": "source-reviewed baseline or block from JS implementation specification",
+    "formats": [
+      "esm",
+      "commonjs",
+      "typescript"
+    ],
+    "legal_decisions": "source-reviewed finite registry and registered choice labels",
+    "lifecycle": {
+      "active_mode": "pending_separate_authority",
+      "apply": "pending_separate_approval",
+      "authorized_mode": "off",
+      "baseline": "pending_separate_execution_authority",
+      "binding_adaptation": "requires_existing_js_planner",
+      "build": "pending_node_adapter",
+      "canary_mode": "pending_separate_authority",
+      "configure": "pending_node_adapter",
+      "connectivity": "pending_separate_authority",
+      "disable": "host_control_required",
+      "entrypoint_reachability": "pending_host_test",
+      "generation": "supported",
+      "install": "pending_node_adapter",
+      "launch": "pending_delivery_supervisor",
+      "materialization": "supported",
+      "measured_benefit": "unknown",
+      "parameter_validation": "supported",
+      "planning": "requires_existing_js_planner",
+      "rollback": "target_rollback_requires_existing_lifecycle",
+      "selection": "requires_current_review",
+      "shadow_mode": "pending_separate_authority",
+      "status": "render_status_only",
+      "stop": "host_control_required",
+      "upgrade": "fresh_request_required",
+      "verification": "pending_authorized_host_test"
+    },
+    "parameter_schema": "javascript-template-request-v1",
+    "planner": "js-plan",
+    "recipe_id": "javascript.C",
+    "renderer": "javascript-template-renderer-v1",
+    "runtime_ownership": "one explicitly initialized process-local JS runtime and shared task budget",
+    "schema_version": "1.0",
+    "source_grammar": "flat-async-recipe-c-v1",
+    "supported_targets": {
+      "architecture": "x86_64",
+      "os": "linux",
+      "package_lock": 3,
+      "process": "single_process"
+    },
+    "template_id": "javascript.recipe-c",
+    "template_version": "1.0.0",
+    "trusted_tooling": "Node executable and TypeScript 5.8.3 compiler outside target; no target compiler config or plugins",
+    "verification_schedule": "separately reviewed JS lifecycle cases; materialization executes none"
+  }
+}
