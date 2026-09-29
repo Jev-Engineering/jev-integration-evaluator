@@ -36,6 +36,8 @@ def test_offline_owned_package_install_and_drift(tmp_path, monkeypatch, extensio
     if tools is None:
         pytest.skip('native pinned Node v24.18.0/npm 11.16.0 absent')
     node, npm = tools
+    npm_root = npm.parent.parent
+    npm_tree_sha256 = digest(node_install._tree(npm_root))
     host = tmp_path / 'host'; host.mkdir()
     entry = f'start.{extension}'
     (host / entry).write_text('process.stdout.write("off\\n");\n', encoding='utf-8')
@@ -55,12 +57,14 @@ def test_offline_owned_package_install_and_drift(tmp_path, monkeypatch, extensio
                'implementation_bundle': str(tmp_path / 'bundle'),
                'trusted_modified_sha256': 'a' * 64, 'node': str(node),
                'node_sha256': file_hash(node), 'npm_cli': str(npm),
-               'npm_cli_sha256': file_hash(npm), 'tooling_directory': str(tmp_path / 'tooling'),
+               'npm_cli_sha256': file_hash(npm), 'npm_tree_sha256': npm_tree_sha256,
+               'tooling_directory': str(tmp_path / 'tooling'),
                'offline_cache': str(tmp_path / 'cache'),
                'package_directory': str(tmp_path / 'packages' / 'package'),
                'environment_parent': str(tmp_path / 'generations')}
     toolchain = {'node': str(node), 'node_sha256': file_hash(node),
                  'npm_cli': str(npm), 'npm_cli_sha256': file_hash(npm),
+                 'npm_root': str(npm_root), 'npm_tree_sha256': npm_tree_sha256,
                  'node_version': 'v24.18.0', 'npm_version': '11.16.0', 'tooling': {}}
     plan = {'schema_version': '1.0', 'kind': 'node-package-plan-v1',
             'request': request, 'render_lock_sha256': 'b' * 64,
@@ -86,7 +90,10 @@ def test_offline_owned_package_install_and_drift(tmp_path, monkeypatch, extensio
     with pytest.raises(InputError, match='drift'):
         node_install.package_status(plan, trusted_receipt_sha256=package['receipt_sha256'])
     staged_entry.write_bytes(original)
-    install_plan = node_install.plan_node_install(plan, package)
+    with pytest.raises(InputError, match='Externally anchored'):
+        node_install.plan_node_install(plan, package, trusted_package_receipt_sha256='0' * 64)
+    install_plan = node_install.plan_node_install(
+        plan, package, trusted_package_receipt_sha256=package['receipt_sha256'])
     with pytest.raises(InputError, match='approval'):
         node_install.install_node_package(install_plan, approved_plan_sha256='0' * 64)
     receipt = node_install.install_node_package(install_plan, approved_plan_sha256=install_plan['plan_sha256'])
@@ -97,6 +104,28 @@ def test_offline_owned_package_install_and_drift(tmp_path, monkeypatch, extensio
     installed_entry.write_text('changed\n', encoding='utf-8')
     with pytest.raises(InputError, match='drift'):
         node_install.installation_status(install_plan, trusted_receipt_sha256=receipt['receipt_sha256'])
+    interrupted_request = dict(request, package_directory=str(tmp_path / 'packages' / 'interrupted'))
+    interrupted_plan = dict(plan, request=interrupted_request)
+    interrupted_plan['plan_sha256'] = digest({k: v for k, v in interrupted_plan.items()
+                                              if k != 'plan_sha256'})
+    monkeypatch.setattr(node_install, 'plan_node_package',
+                        lambda actual, _allow_existing_output=False:
+                        plan if actual == request else interrupted_plan if actual == interrupted_request else None)
+    original_safe_new = node_install._safe_new
+    def interrupted_create(path):
+        if extension == 'cjs':
+            original_safe_new(path)
+        raise RuntimeError('injected interruption at directory creation')
+    monkeypatch.setattr(node_install, '_safe_new', interrupted_create)
+    with pytest.raises(RuntimeError, match='injected interruption'):
+        node_install.build_node_package(
+            interrupted_plan, approved_plan_sha256=interrupted_plan['plan_sha256'])
+    interrupted = node_install.package_status(interrupted_plan)
+    assert interrupted == {'status': 'build_interrupted_review_required',
+                           'stage': 'directory_created' if extension == 'cjs' else 'intent_recorded'}
+    with pytest.raises((FileExistsError, InputError)):
+        node_install.build_node_package(
+            interrupted_plan, approved_plan_sha256=interrupted_plan['plan_sha256'])
 
 
 def test_missing_trusted_typescript_fails_before_output(tmp_path):
@@ -104,6 +133,7 @@ def test_missing_trusted_typescript_fails_before_output(tmp_path):
     if tools is None:
         pytest.skip('native pinned Node v24.18.0/npm 11.16.0 absent')
     node, npm = tools
+    npm_tree_sha256 = digest(node_install._tree(npm.parent.parent))
     for name in ('host', 'render', 'bundle', 'tooling', 'cache', 'packages', 'generations'):
         (tmp_path / name).mkdir(mode=0o700)
         os.chmod(tmp_path / name, 0o700)
@@ -113,6 +143,7 @@ def test_missing_trusted_typescript_fails_before_output(tmp_path):
                'trusted_modified_sha256': 'a' * 64,
                'node': str(node), 'node_sha256': file_hash(node),
                'npm_cli': str(npm), 'npm_cli_sha256': file_hash(npm),
+               'npm_tree_sha256': npm_tree_sha256,
                'tooling_directory': str(tmp_path / 'tooling'),
                'offline_cache': str(tmp_path / 'cache'),
                'package_directory': str(tmp_path / 'packages' / 'new'),
@@ -122,12 +153,50 @@ def test_missing_trusted_typescript_fails_before_output(tmp_path):
     assert not (tmp_path / 'packages' / 'new').exists()
 
 
+def test_npm_loaded_sibling_module_drift_rejected(tmp_path):
+    tools = native_tools()
+    if tools is None:
+        pytest.skip('native pinned Node v24.18.0/npm 11.16.0 absent')
+    node, npm = tools
+    root = tmp_path / 'npm'
+    shutil.copytree(npm.parent.parent, root, symlinks=True)
+    npm_copy = root / 'bin/npm-cli.js'
+    tree_sha256 = digest(node_install._tree(root))
+    sibling = root / 'lib/cli.js'  # Loaded directly by npm-cli.js.
+    sibling.write_bytes(sibling.read_bytes() + b'\n// drift\n')
+    host = tmp_path / 'host'; host.mkdir()
+    tooling = tmp_path / 'tooling'; tooling.mkdir()
+    request = {'node': str(node), 'node_sha256': file_hash(node),
+               'npm_cli': str(npm_copy), 'npm_cli_sha256': file_hash(npm_copy),
+               'npm_tree_sha256': tree_sha256, 'tooling_directory': str(tooling)}
+    with pytest.raises(InputError, match='npm package modules changed'):
+        node_install._toolchain(request, host)
+
+
+def test_install_intent_classifies_pre_marker_interruption(tmp_path, monkeypatch):
+    if platform.system() != 'Linux':
+        pytest.skip('native Linux intent journal required')
+    parent = tmp_path / 'generations'; parent.mkdir(mode=0o700)
+    os.chmod(parent, 0o700)
+    root = parent / 'jev-node-env-interrupted'
+    plan = {'plan_sha256': 'a' * 64}
+    monkeypatch.setattr(node_install, '_check_install', lambda _: root)
+    node_install._intent(root, plan['plan_sha256'], 'node-generation-intent-v1', create=True)
+    assert node_install.installation_status(plan) == {
+        'status': 'install_interrupted_review_required', 'stage': 'intent_recorded'}
+    root.mkdir(mode=0o700)
+    assert node_install.installation_status(plan) == {
+        'status': 'install_interrupted_review_required', 'stage': 'directory_created'}
+
+
 @pytest.mark.parametrize('format_name', ['esm', 'commonjs'])
 def test_planner_binds_render_lock_and_full_applied_source(tmp_path, monkeypatch, format_name):
     tools = native_tools()
     if tools is None:
         pytest.skip('native pinned Node v24.18.0/npm 11.16.0 absent')
     node, npm = tools
+    npm_root = npm.parent.parent
+    npm_tree_sha256 = digest(node_install._tree(npm_root))
     host, source_request = request_for(tmp_path, format_name)
     source = host / source_request['implementation_spec']['source']['file']
     profile = template_js_catalog._package(host, source_request, format_name)
@@ -145,6 +214,7 @@ def test_planner_binds_render_lock_and_full_applied_source(tmp_path, monkeypatch
                            'probe_sha256', 'emitter_sha256', 'backend_sha256', 'lifecycle_sha256')})
     toolchain = {'node': str(node), 'node_sha256': file_hash(node),
                  'npm_cli': str(npm), 'npm_cli_sha256': file_hash(npm),
+                 'npm_root': str(npm_root), 'npm_tree_sha256': npm_tree_sha256,
                  'node_version': 'v24.18.0', 'npm_version': '11.16.0', 'tooling': tool_identity}
     manifest = template_js_catalog.inspect_js_template()
     resources = {'template-manifest.json': {k: v for k, v in manifest.items() if k != 'manifest_sha256'},
@@ -188,6 +258,7 @@ def test_planner_binds_render_lock_and_full_applied_source(tmp_path, monkeypatch
                'trusted_modified_sha256': file_hash(bundle / 'modified-receipt.json'),
                'node': str(node), 'node_sha256': file_hash(node),
                'npm_cli': str(npm), 'npm_cli_sha256': file_hash(npm),
+               'npm_tree_sha256': npm_tree_sha256,
                'tooling_directory': str(tmp_path / 'tooling'),
                'offline_cache': str(tmp_path / 'cache'),
                'package_directory': str(tmp_path / 'packages' / 'new'),

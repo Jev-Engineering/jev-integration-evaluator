@@ -2,10 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Offline Node recipe C generation install plan v1",
   "type": "object", "additionalProperties": false,
-  "required": ["schema_version", "kind", "package_plan", "package_receipt", "environment_parent", "mode", "runtime_activation_authorized", "plan_sha256"],
+  "required": ["schema_version", "kind", "package_plan", "package_receipt", "trusted_package_receipt_sha256", "environment_parent", "mode", "runtime_activation_authorized", "plan_sha256"],
   "properties": {
     "schema_version": {"const": "1.0"}, "kind": {"const": "node-install-plan-v1"},
     "package_plan": {"type": "object"}, "package_receipt": {"type": "object"},
+    "trusted_package_receipt_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
     "environment_parent": {"type": "string", "pattern": "^/"},
     "mode": {"const": "off"}, "runtime_activation_authorized": {"const": false},
     "plan_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}

@@ -16,7 +16,8 @@ modified verification receipt's SHA-256 in an independent channel. The
 `node-package-request-v1` object names the **pre-applied host root**, complete
 source-stage render directory, JS implementation bundle, that trusted modified
 receipt digest, explicit native Node executable and npm CLI file paths and
-SHA-256 values, trusted external TypeScript tooling directory, exact offline
+SHA-256 values, a SHA-256 of the entire npm package module tree, trusted external
+TypeScript tooling directory, exact offline
 npm cache directory, new package directory, and private generation parent.
 Its [schema](../schemas/node-package-request-v1.schema.json) is strict.
 
@@ -24,7 +25,9 @@ The planner checks the render lock and every owned resource, full current
 applied source map against the original map plus the reviewed JS generated
 files, externally anchored modified JS status, off configuration and secret
 reference digests, native Node `v24.18.0`, npm `11.16.0`, exact executable
-bytes, and trusted TypeScript `5.8.3`. Target `.npmrc`, target compiler config
+bytes and all modules loaded by npm, and trusted TypeScript `5.8.3`. The
+complete npm package is copied into the private build stage and rehashed before
+and after `npm ci`; the launcher file alone is not a sufficient pin. Target `.npmrc`, target compiler config
 and plugins are unsupported. A missing trusted compiler fails before output.
 The source catalog's lockfileVersion 3 flat-dependency constraints still
 apply. The offline cache is bounded and hashed; each lock dependency must be
@@ -44,7 +47,9 @@ package_plan = plan_node_package(reviewed_request)  # read-only
 package_receipt = build_node_package(
     package_plan, approved_plan_sha256=approved_package_plan_sha256)
 package_status(package_plan, trusted_receipt_sha256=trusted_package_receipt_sha256)
-install_plan = plan_node_install(package_plan, package_receipt)  # read-only
+install_plan = plan_node_install(
+    package_plan, package_receipt,
+    trusted_package_receipt_sha256=trusted_package_receipt_sha256)  # read-only
 # Review install_plan and retain its exact digest independently.
 install_receipt = install_node_package(
     install_plan, approved_plan_sha256=approved_install_plan_sha256)
@@ -56,8 +61,14 @@ review; the caller supplies the externally retained package and install
 receipt digests. Passing a digest read only from the generated output does not
 authenticate an approval or receipt.
 
+The build writes a durable owner intent in the private parent **before**
+creating its output directory. The install stage does the same for its
+generation. Status can identify interruption before the directory, between
+directory creation and its owner marker, and after the journal starts. It
+never adopts or deletes such a partial root automatically.
+
 The build copies the exact applied source into a new private package directory,
-copies the exact offline cache, and runs the pinned native Node/npm pair as
+copies the exact offline cache and npm module tree, and runs the pinned native Node/npm pair as
 `npm ci --ignore-scripts --offline --omit=dev --no-audit --no-fund` with explicit
 cache, empty private user/global npm config, and a fixed minimal environment.
 The command uses no shell and never reads inherited `NODE_OPTIONS`, `NODE_PATH`,

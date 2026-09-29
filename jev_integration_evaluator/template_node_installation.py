@@ -87,13 +87,19 @@ def _file(root: Path, name: str) -> Path:
 def _toolchain(request: dict, host: Path) -> dict:
     node = _path(request['node'], exists=True)
     npm = _path(request['npm_cli'], exists=True)
+    npm_root = npm.parent.parent
+    if npm != npm_root / 'bin' / 'npm-cli.js':
+        raise InputError('Unsupported npm package launcher layout')
     tooling = _path(request['tooling_directory'], directory=True)
-    for path in (node, npm, tooling):
+    for path in (node, npm_root, tooling):
         _separate(path, host)
     if not os.access(node, os.X_OK):
         raise InputError('Pinned Node executable is not executable')
     if file_hash(node) != request['node_sha256'] or file_hash(npm) != request['npm_cli_sha256']:
         raise InputError('Pinned Node/npm bytes changed')
+    npm_tree_sha256 = digest(_tree(npm_root))
+    if npm_tree_sha256 != request['npm_tree_sha256']:
+        raise InputError('Pinned npm package modules changed')
     try:
         node_result = subprocess.run([str(node), '--version'], capture_output=True,
                                      text=True, timeout=5, env={'PATH': '/usr/bin:/bin'})
@@ -116,6 +122,7 @@ def _toolchain(request: dict, host: Path) -> dict:
         raise InputError('Trusted Node/TypeScript toolchain differs from pin')
     return {'node': str(node), 'node_sha256': file_hash(node),
             'npm_cli': str(npm), 'npm_cli_sha256': file_hash(npm),
+            'npm_root': str(npm_root), 'npm_tree_sha256': npm_tree_sha256,
             'node_version': NODE_VERSION, 'npm_version': NPM_VERSION,
             'tooling': identity}
 
@@ -199,7 +206,8 @@ def plan_node_package(request: dict, *, _allow_existing_output: bool = False) ->
     host = _path(request['host_root'], directory=True)
     cache = _path(request['offline_cache'], directory=True)
     output = _path(request['package_directory'], exists=False)
-    if output.exists() and not _allow_existing_output:
+    if (output.exists() or _intent_path(output).exists()
+            or _intent_path(output).with_suffix('.tmp').exists()) and not _allow_existing_output:
         raise InputError('Node package output must be new')
     for item in (host, cache, _path(request['render_directory'], directory=True),
                  _path(request['implementation_bundle'], directory=True),
@@ -207,6 +215,7 @@ def plan_node_package(request: dict, *, _allow_existing_output: bool = False) ->
         _separate(output, item)
     _separate(cache, host)
     toolchain = _toolchain(request, host)
+    _separate(output, Path(toolchain['npm_root']))
     lock, source_request, profile = _render(request, host, toolchain)
     implementation, source_files = _applied(request, host, source_request, profile, toolchain)
     selected = source_request['implementation_spec']['source']['file']
@@ -247,6 +256,52 @@ def _safe_new(path: Path) -> None:
         raise InputError('Node output parent is not privately owned')
     path.mkdir(mode=0o700)
     os.chmod(path, 0o700)
+
+
+def _intent_path(root: Path) -> Path:
+    return root.parent / ('.jev-node-intent-' + digest(str(root))[:24] + '.json')
+
+
+def _intent(root: Path, plan_sha256: str, kind: str, *, create: bool = False) -> bool:
+    """Durable parent-side ownership before the generated directory exists."""
+    parent = _path(str(root.parent), directory=True)
+    info = parent.stat()
+    if info.st_uid != os.getuid() or stat.S_IMODE(info.st_mode) & 0o022:
+        raise InputError('Node output parent is not privately owned')
+    path = _intent_path(root)
+    expected = {'schema_version': '1.0', 'kind': kind,
+                'plan_sha256': plan_sha256, 'root': str(root)}
+    expected['intent_sha256'] = digest(expected)
+    if create:
+        if root.exists() or root.is_symlink() or path.exists() or path.is_symlink():
+            raise InputError('Node owned output already exists')
+        temporary = path.with_suffix('.tmp')
+        fd = os.open(temporary, os.O_CREAT | os.O_EXCL | os.O_WRONLY | os.O_NOFOLLOW, 0o600)
+        try:
+            payload = (json.dumps(expected, sort_keys=True, separators=(',', ':')) + '\n').encode()
+            if os.write(fd, payload) != len(payload):
+                raise InputError('Node ownership intent write incomplete')
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+        if path.exists() or path.is_symlink():
+            raise InputError('Node ownership intent collision')
+        os.replace(temporary, path)
+        parent_fd = os.open(parent, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(parent_fd)
+        finally:
+            os.close(parent_fd)
+        return True
+    if not path.exists() and not path.is_symlink():
+        if path.with_suffix('.tmp').exists() or path.with_suffix('.tmp').is_symlink():
+            raise InputError('Node ownership intent precommit incomplete')
+        return False
+    if path.is_symlink() or not path.is_file() or path.stat().st_nlink != 1:
+        raise InputError('Node ownership intent replaced')
+    if read_json(path) != expected:
+        raise InputError('Node ownership intent changed')
+    return True
 
 
 def _record(root: Path, plan_sha256: str, event: str) -> str:
@@ -353,8 +408,9 @@ def build_node_package(plan: dict, *, approved_plan_sha256: str) -> dict:
     _check_plan(plan)
     request = plan['request']
     output = _path(request['package_directory'], exists=False)
-    with _lock(output.parent, plan['plan_sha256']):
+    with _lock(output.parent, digest(str(output))):
         _check_plan(plan)
+        _intent(output, plan['plan_sha256'], 'node-package-intent-v1', create=True)
         _safe_new(output)
         write_json(output / 'owner.json', {'schema_version': '1.0',
                    'kind': 'node-package-owner-v1', 'plan_sha256': plan['plan_sha256'],
@@ -375,9 +431,15 @@ def build_node_package(plan: dict, *, approved_plan_sha256: str) -> dict:
         shutil.copytree(request['offline_cache'], cache, symlinks=True)
         if digest(_tree(cache)) != plan['offline_cache_sha256']:
             raise InputError('Offline npm cache changed during copy')
+        npm_tool = output / 'npm_tool'
+        shutil.copytree(plan['toolchain']['npm_root'], npm_tool, symlinks=True)
+        if digest(_tree(npm_tool)) != plan['toolchain']['npm_tree_sha256']:
+            raise InputError('Pinned npm package changed during copy')
         (output / 'tmp').mkdir(mode=0o700)
         env = _npm_env(output)
-        node, npm = plan['toolchain']['node'], plan['toolchain']['npm_cli']
+        node, npm = plan['toolchain']['node'], str(npm_tool / 'bin/npm-cli.js')
+        if file_hash(Path(node)) != plan['toolchain']['node_sha256']:
+            raise InputError('Pinned Node executable changed before npm effect')
         command = [node, npm, 'ci', '--ignore-scripts', '--offline', '--omit=dev',
                    '--no-audit', '--no-fund', '--cache', str(cache)]
         try:
@@ -395,6 +457,8 @@ def build_node_package(plan: dict, *, approved_plan_sha256: str) -> dict:
         if returncode:
             # npm diagnostics may contain source or URLs; retain only status.
             raise InputError('Offline npm ci failed; owned build needs review')
+        if digest(_tree(npm_tool)) != plan['toolchain']['npm_tree_sha256']:
+            raise InputError('Pinned npm tool changed during install')
         built = _payload_tree(output)
         if any(name.endswith(('.node', '.so', '.dll', '.dylib', '.exe')) for name in built):
             raise InputError('Native dependency binary is outside Node install profile')
@@ -420,16 +484,26 @@ def package_status(plan: dict, *, trusted_receipt_sha256: str | None = None) -> 
     _linux()
     _check_plan(plan)
     root = Path(plan['request']['package_directory'])
+    has_intent = _intent(root, plan['plan_sha256'], 'node-package-intent-v1')
     if not root.exists():
-        return {'status': 'absent'}
-    _top_level(root, {'owner.json', 'journal.jsonl', 'app', 'cache', 'home', 'tmp',
+        return {'status': 'build_interrupted_review_required' if has_intent else 'absent',
+                'stage': 'intent_recorded' if has_intent else 'none'}
+    if not has_intent:
+        raise InputError('Node package root has no prior ownership intent')
+    _top_level(root, {'owner.json', 'journal.jsonl', 'app', 'cache', 'npm_tool', 'home', 'tmp',
                       'package-receipt.json'})
+    if not (root / 'owner.json').is_file():
+        return {'status': 'build_interrupted_review_required', 'stage': 'directory_created'}
     _owner(root, plan['plan_sha256'], 'node-package-owner-v1')
     rows = _journal(root, plan['plan_sha256'])
-    if not rows or rows[0]['event'] != 'build_started':
+    if not rows:
+        return {'status': 'build_interrupted_review_required', 'stage': 'owner_marked'}
+    if rows[0]['event'] != 'build_started':
         raise InputError('Node package journal missing build start')
     if rows[-1]['event'] != 'build_complete':
         return {'status': 'build_interrupted_review_required', 'journal_head': rows[-1]['record_sha256']}
+    if digest(_tree(root / 'npm_tool')) != plan['toolchain']['npm_tree_sha256']:
+        raise InputError('Pinned npm package changed after build')
     if not (root / 'package-receipt.json').is_file():
         return {'status': 'build_interrupted_review_required', 'journal_head': rows[-1]['record_sha256']}
     receipt = read_json(_file(root, 'package-receipt.json'))
@@ -450,11 +524,14 @@ def package_status(plan: dict, *, trusted_receipt_sha256: str | None = None) -> 
             else 'packaged_unanchored', 'receipt_sha256': receipt['receipt_sha256']}
 
 
-def plan_node_install(package_plan: dict, package_receipt: dict) -> dict:
+def plan_node_install(package_plan: dict, package_receipt: dict, *,
+                      trusted_package_receipt_sha256: str) -> dict:
     """Read-only install plan; an externally retained package receipt is required."""
     _linux()
     validate_contract(package_receipt, 'node-package-receipt-v1')
-    if package_status(package_plan, trusted_receipt_sha256=package_receipt['receipt_sha256'])['status'] != 'packaged_recorded':
+    if (trusted_package_receipt_sha256 != package_receipt['receipt_sha256']
+            or package_status(package_plan,
+                              trusted_receipt_sha256=trusted_package_receipt_sha256)['status'] != 'packaged_recorded'):
         raise InputError('Externally anchored Node package receipt required')
     if read_json(Path(package_receipt['package_directory']) / 'package-receipt.json') != package_receipt:
         raise InputError('Node package receipt differs from owned record')
@@ -464,6 +541,7 @@ def plan_node_install(package_plan: dict, package_receipt: dict) -> dict:
         raise InputError('Node generation parent is not privately owned')
     plan = {'schema_version': '1.0', 'kind': 'node-install-plan-v1',
             'package_plan': package_plan, 'package_receipt': package_receipt,
+            'trusted_package_receipt_sha256': trusted_package_receipt_sha256,
             'environment_parent': str(parent), 'mode': 'off',
             'runtime_activation_authorized': False}
     plan['plan_sha256'] = digest(plan)
@@ -471,7 +549,8 @@ def plan_node_install(package_plan: dict, package_receipt: dict) -> dict:
     for key in ('host_root', 'render_directory', 'implementation_bundle',
                 'tooling_directory', 'offline_cache', 'package_directory'):
         _separate(root, _path(request[key], directory=True))
-    if root.exists() or root.is_symlink():
+    if (root.exists() or root.is_symlink() or _intent_path(root).exists()
+            or _intent_path(root).with_suffix('.tmp').exists()):
         raise InputError('Node generation output already exists')
     validate_contract(plan, 'node-install-plan-v1')
     return plan
@@ -483,7 +562,9 @@ def _check_install(plan: dict) -> Path:
         raise InputError('Node install plan digest changed')
     package_plan = plan['package_plan']
     receipt = plan['package_receipt']
-    if package_status(package_plan, trusted_receipt_sha256=receipt['receipt_sha256'])['status'] != 'packaged_recorded':
+    if (plan['trusted_package_receipt_sha256'] != receipt['receipt_sha256']
+            or package_status(package_plan,
+                              trusted_receipt_sha256=plan['trusted_package_receipt_sha256'])['status'] != 'packaged_recorded'):
         raise InputError('Node package artifact changed before install')
     parent = _path(plan['environment_parent'], directory=True)
     if parent != _path(package_plan['request']['environment_parent'], directory=True):
@@ -501,8 +582,9 @@ def install_node_package(plan: dict, *, approved_plan_sha256: str) -> dict:
     if approved_plan_sha256 != plan.get('plan_sha256'):
         raise InputError('Exact Node install approval required')
     root = _check_install(plan)
-    with _lock(root.parent, plan['plan_sha256']):
+    with _lock(root.parent, digest(str(root))):
         _check_install(plan)
+        _intent(root, plan['plan_sha256'], 'node-generation-intent-v1', create=True)
         _safe_new(root)
         write_json(root / 'owner.json', {'schema_version': '1.0',
                    'kind': 'node-generation-owner-v1', 'plan_sha256': plan['plan_sha256'],
@@ -542,14 +624,22 @@ def installation_status(plan: dict, *, trusted_receipt_sha256: str | None = None
     """Check owned generation bytes; never launch or adopt a running process."""
     _linux()
     root = _check_install(plan)
+    has_intent = _intent(root, plan['plan_sha256'], 'node-generation-intent-v1')
     if not root.exists():
-        return {'status': 'absent'}
+        return {'status': 'install_interrupted_review_required' if has_intent else 'absent',
+                'stage': 'intent_recorded' if has_intent else 'none'}
+    if not has_intent:
+        raise InputError('Node generation root has no prior ownership intent')
     if root.is_symlink():
         raise InputError('Node generation symlink changed')
     _top_level(root, {'owner.json', 'journal.jsonl', 'app', 'install-receipt.json'})
+    if not (root / 'owner.json').is_file():
+        return {'status': 'install_interrupted_review_required', 'stage': 'directory_created'}
     _owner(root, plan['plan_sha256'], 'node-generation-owner-v1')
     rows = _journal(root, plan['plan_sha256'])
-    if not rows or rows[0]['event'] != 'install_started':
+    if not rows:
+        return {'status': 'install_interrupted_review_required', 'stage': 'owner_marked'}
+    if rows[0]['event'] != 'install_started':
         raise InputError('Node generation journal missing install start')
     if rows[-1]['event'] != 'install_complete':
         return {'status': 'install_interrupted_review_required',
