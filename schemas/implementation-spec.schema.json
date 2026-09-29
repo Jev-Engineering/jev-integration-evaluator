@@ -682,6 +682,36 @@
       ],
       "additionalProperties": false
     },
+    "entrypoint_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "kind", "script", "module", "function", "file", "file_sha256", "pyproject_sha256", "request_symbol", "item_symbol", "task_symbol", "startup_inputs", "contributing_sources"],
+      "properties": {
+        "version": {"const": "1.0"},
+        "kind": {"enum": ["single-request-v1", "task-loop-v1"]},
+        "script": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,127}$"},
+        "module": {"type": "string", "minLength": 3, "maxLength": 256},
+        "function": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"},
+        "file": {"type": "string", "minLength": 4, "maxLength": 256},
+        "file_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "pyproject_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "request_symbol": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"},
+        "item_symbol": {"type": ["string", "null"], "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"},
+        "task_symbol": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"},
+        "startup_inputs": {
+          "type": "object", "additionalProperties": false,
+          "required": ["budget_limits", "audit_log", "dependency_plan", "startup_options"],
+          "properties": {
+            "budget_limits": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"},
+            "audit_log": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"},
+            "dependency_plan": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"},
+            "startup_options": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"}
+          }
+        },
+        "contributing_sources": {"type": "object", "minProperties": 2,
+          "additionalProperties": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+      }
+    },
     "package_binding": {
       "type": "object",
       "properties": {

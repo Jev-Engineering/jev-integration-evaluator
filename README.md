@@ -38,7 +38,7 @@ This toolkit **scans a repository, finds those spots, scores them, and walks you
 
 ## 🚀 Quick start
 
-Needs Python 3.10+. Runtime dependencies are PyYAML, jsonschema, and packaging.
+Needs Python 3.10+. Runtime dependencies are PyYAML, jsonschema, and packaging, plus tomli on Python 3.10.
 
 ```bash
 python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\Activate.ps1
@@ -100,6 +100,7 @@ Each stage rechecks source identity and requires its own explicit authorization 
 | Pick a placement to prepare | [`references/experimental-selection.md`](references/experimental-selection.md) · [`references/placement-selection-v1.md`](references/placement-selection-v1.md) |
 | Generate and apply a reviewed code change | [`references/executable-integrations.md`](references/executable-integrations.md) |
 | Render versioned source-bound planner inputs | [`references/template-catalog-v1.md`](references/template-catalog-v1.md) |
+| Bind recipe C to a reviewed Python console command | [`references/template-python-entrypoint-v1.md`](references/template-python-entrypoint-v1.md) |
 | Build and install a verified Python host in an owned offline environment | [`references/template-installation-v1.md`](references/template-installation-v1.md) |
 | Modify JavaScript/TypeScript hosts | [`references/javascript-typescript-backend-v1.md`](references/javascript-typescript-backend-v1.md) |
 | Run rigorous before/after experiments | [`references/experimental-methodology.md`](references/experimental-methodology.md) · [`references/lifecycle-and-evidence.md`](references/lifecycle-and-evidence.md) |

@@ -169,6 +169,9 @@ def parser():
         s=template_sub.add_parser(action,help='Validate current source and strict template parameters' if action=='validate' else 'Create exclusive external planner inputs without changing the host')
         s.add_argument('--repo',required=True); s.add_argument('--request',required=True)
         if action=='materialize': s.add_argument('--out',required=True)
+    s=template_sub.add_parser('bind',help='Derive reviewed Python console bindings without editing the host')
+    s.add_argument('--repo',required=True); s.add_argument('--request',required=True)
+    s.add_argument('--binding',required=True); s.add_argument('--out',required=True)
     s=template_sub.add_parser('package',help='Plan offline packaging of an already applied and verified Python host')
     s.add_argument('--request',required=True); s.add_argument('--out',required=True)
     s=template_sub.add_parser('package-build',help='Run explicitly approved offline PEP 517 build')
@@ -249,7 +252,7 @@ def execute(args):
     cfg=load_config(getattr(args,"config",None)); cmd=args.command
     if cmd=='template':
         from .template_catalog import (list_templates, inspect_template,
-                                       validate_template_request, materialize_template)
+                                       validate_template_request, materialize_template, bind_template)
         from .io import write_json
         if args.template_action=='list': return list_templates()
         if args.template_action=='inspect': return inspect_template(args.template_id,args.version)
@@ -257,6 +260,8 @@ def execute(args):
             request=read_json(args.request)
             if args.template_action=='validate': return validate_template_request(args.repo,request)
             return materialize_template(args.repo,request,args.out)
+        if args.template_action=='bind':
+            return bind_template(args.repo,read_json(args.request),read_json(args.binding),args.out)
         from .template_installation import (plan_package, build_package, package_status, plan_install,
                                             install_package, installation_status, recover_installation,
                                             recover_package, write_plan_exclusive)

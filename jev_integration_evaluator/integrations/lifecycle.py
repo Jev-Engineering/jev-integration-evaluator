@@ -202,6 +202,12 @@ def _load(root, bundle, *, current_engine=False):
         raise InputError('Package binding contract differs from the reviewed specification')
     if spec.get('host_lifecycle') != manifest.get('host_lifecycle'):
         raise InputError('Host lifecycle differs from the reviewed specification')
+    if spec.get('entrypoint_binding') != manifest.get('entrypoint_binding'):
+        raise InputError('Console entrypoint differs from the reviewed specification')
+    if spec.get('entrypoint_binding'):
+        bound = spec['entrypoint_binding']
+        if file_hash(safe_child(root, 'pyproject.toml')) != bound['pyproject_sha256']:
+            raise InputError('Console script configuration changed since planning')
     if spec.get('package_binding') and spec['source']['file'] not in manifest.get('contributing_sources', {}):
         raise InputError('Package manifest omits the selected source dependency')
     if spec.get('package_binding') and set(manifest.get('qualified_bindings', {})) != set(spec['bindings']):

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Reviewed Python console entrypoint choices",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "script", "startup_inputs"],
+  "properties": {
+    "version": {"const": "1.0"},
+    "script": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,127}$"},
+    "startup_inputs": {
+      "type": "object", "additionalProperties": false,
+      "required": ["budget_limits", "audit_log", "dependency_plan", "startup_options"],
+      "properties": {
+        "budget_limits": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"},
+        "audit_log": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"},
+        "dependency_plan": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"},
+        "startup_options": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"}
+      }
+    }
+  }
+}

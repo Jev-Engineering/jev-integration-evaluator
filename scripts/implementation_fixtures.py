@@ -17,7 +17,8 @@ from jev_integration_evaluator.scoring import apply_reviews
 from jev_integration_evaluator.integrations.recipes import RECIPES, anchor_hash
 
 
-def fixture(root: Path, pattern='C', *, tag=None, crlf=False, layout='flat', native_probe=False):
+def fixture(root: Path, pattern='C', *, tag=None, crlf=False, layout='flat', native_probe=False,
+            console_exit=False, package_name='fixture_pkg'):
     root.mkdir(parents=True, exist_ok=True)
     tag = tag or ('scenario_' + pattern.lower())
     recipe = RECIPES['python.'+pattern]
@@ -45,10 +46,10 @@ def fixture(root: Path, pattern='C', *, tag=None, crlf=False, layout='flat', nat
         define(first,'request',"STATE['effects'].append('first')\nif not STATE['ineffective']: STATE['records'] += 1\nreturn {'reported': 'ok'}")
     elif pattern=='J':
         define(first,'request',"STATE['effects'].append('first')\nreturn {'task_id': request['task_id'], 'owner': 'base'}")
-    else:define(first,'request',"STATE['effects'].append('first')\nreturn 'first'")
+    else:define(first,'request',"STATE['effects'].append('first')\nreturn " + ('0' if console_exit and pattern=='C' else "'first'"))
     if pattern=='J':define(second,'request',"STATE['effects'].append('second')\nreturn {'task_id': request['task_id'], 'owner': 'alt'}")
     elif pattern=='L':define(second,'request',"STATE['effects'].append('second')\nSTATE['revision'] += 1\nreturn 'merged'")
-    else:define(second,'request',"STATE['effects'].append('second')\nreturn 'second'")
+    else:define(second,'request',"STATE['effects'].append('second')\nreturn " + ('0' if console_exit and pattern=='C' else "'second'"))
     options = "{'base': "+first+", 'alt': "+second+"}"
     baseline='base';labels={'primary':'base','alternative':'alt','uncertain':None};policy={'fallback':'baseline'}
     if pattern=='A':policy={'fallback':'block'}
@@ -137,8 +138,10 @@ def fixture(root: Path, pattern='C', *, tag=None, crlf=False, layout='flat', nat
     filename='host_'+tag+'.py'
     if layout not in ('flat', 'package', 'src', 'namespace'):
         raise ValueError('Unsupported synthetic fixture layout')
+    if not package_name.isidentifier():
+        raise ValueError('Invalid synthetic package name')
     if layout != 'flat':
-        parent = 'src/fixture_pkg' if layout in ('src', 'namespace') else 'fixture_pkg'
+        parent = 'src/' + package_name if layout in ('src', 'namespace') else package_name
         (root/parent).mkdir(parents=True, exist_ok=True)
         if layout != 'namespace': (root/parent/'__init__.py').write_text('"""Synthetic host package."""\n',encoding='utf-8')
         filename=parent+'/'+filename
@@ -172,6 +175,8 @@ def fixture(root: Path, pattern='C', *, tag=None, crlf=False, layout='flat', nat
         if retries is not None:vals['STATE.retries']=retries
         return {'result':result,'exception':None,'calls':counts,'globals':vals}
     base=expected('first',[first]);active=expected('second',[second]);label='alternative';negative=None
+    if console_exit and pattern == 'C':
+        base=expected(0,[first]);active=expected(0,[second])
     if pattern=='A':active=expected('blocked',[],blocked=1);negative=('primary',{},expected('first',[first]))
     if pattern=='B':negative=('alternative',{'remaining':0},expected('blocked',[],blocked=1))
     if pattern=='D':
@@ -231,5 +236,5 @@ def fixture(root: Path, pattern='C', *, tag=None, crlf=False, layout='flat', nat
           'verification':{'classification':'synthetic','entry_point':entry,'effect_symbols':effects,'cases':cases,'timeout_s':20,'baseline_command':[],'modified_command':[]},
           'authorization_context':{'reference':'explicit offline demonstration request','scopes':['synthetic_workspace_only'],'not_authority':True}}
     if layout!='flat': spec['package_binding']={'version':'1.0','namespace':layout=='namespace',
-                                                'module':'fixture_pkg.'+Path(filename).stem}
+                                                'module':package_name+'.'+Path(filename).stem}
     return inventory,spec

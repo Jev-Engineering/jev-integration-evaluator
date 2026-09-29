@@ -155,7 +155,12 @@ charges the shared coordinator even on transport failure or deadline, and
 returns only a redacted status. This does not grant active treatment or prove
 benefit. Do not put key values or raw target requests in config or diagnostics.
 
-The tests import the edited synthetic host and call its generated startup,
+The bounded Python recipe C console profile can wire these calls through an
+actual reviewed `[project.scripts]` entrypoint; see
+[template Python entrypoint v1](template-python-entrypoint-v1.md). Its
+two-task loop snapshots unique task IDs before one startup, completes each
+after its final effect, and shuts down on success, exception or cancellation.
+The original lifecycle tests import the edited synthetic host and call its generated startup,
 entrypoint, task-completion and shutdown functions in both off and offline
 shadow mode, with no verifier callback replacement.
 It also tests lifecycle ownership, task tombstones, cross-thread shared budgets,

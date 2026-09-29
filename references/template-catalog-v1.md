@@ -96,6 +96,14 @@ The source host can be Linux or local Windows NTFS for the current catalog
 materialization checks; this does not qualify installed host deployment on
 either platform.
 
+For a reviewed regular-package Python recipe C console command, use
+[`template bind`](template-python-entrypoint-v1.md) to derive a current
+`entrypoint_binding` and the exact entrypoint edit before materialization.
+This profile supports one request or a bounded task loop and retains the
+existing implementation bundle/receipt lifecycle. Its component installed
+host test does not replace the separate environment installer or full
+connected launch gate.
+
 Validation fails before output writes on stale source, source/inventory review
 mismatch, unsupported parsed source shape or bindings, occupied adapter path,
 invalid policy, malformed parameters,
