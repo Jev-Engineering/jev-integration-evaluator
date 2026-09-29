@@ -2,7 +2,7 @@
 
 This checkpoint records six distinct `use-case.<letter>@1.0.0` source contracts.
 It is an offline source and host-oracle inventory with separately qualified
-offline L, E and H synthetic hosts. It does not connect any provider. The
+offline L, D, E and H synthetic hosts. It does not connect any provider. The
 [machine-readable matrix](../jev_integration_evaluator/data/use-case-template-matrix-v1.json)
 is versioned and pins the exact fixture bytes. `use_case_matrix()` reads it;
 `inspect_use_case_source(root, id)` checks the current bytes without importing or
@@ -33,7 +33,7 @@ uninstalls the package. This proves normal installed invocation of the shared
 fixture host only. It does not provide a #54 implementation receipt, #55
 source-bound package/install receipt, #56 supervised session, independent raw
 effect observation, or any individual L/D/E/M/H template transform. The
-separate L, E and H journeys below have their own #55/#56 receipts and raw effects;
+separate L, D, E and H journeys below have their own #55/#56 receipts and raw effects;
 neither is inferred from this shared fixture.
 Every new host requires a fresh source review and binding. The Python recipe
 catalog's `implemented_bounded_shape` is a transform capability for a narrow
@@ -43,7 +43,7 @@ shape, not an installed use-case qualification.
 | --- | --- | --- | --- | --- |
 | C registered tool | `python.C@1.0`; [coding-agent dispatch](../examples/coding-agent/agent.py), [#48](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/48) | Existing registered-action and at-most-once dispatch tests; complete installed journey is [#57](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/57) | Pending | Unknown |
 | L graph identity | `python.L@1.0`; [graph fixture](../examples/graph-system/entities.py) and [pinned consumer](../examples/use-case-host/graph_runtime.py), [#44](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/44) | Approval, exact entity snapshot, revision and audit before merge | Offline synthetic L host: source-bound plan/apply/verify, #55 install, #56 normal-console observation/disable/versioned upgrade/generation rollback; #54 L bind and provider pending | Unknown |
-| D retrieval evidence | `python.D@1.0`; [RAG fixture](../examples/rag-system/pipeline.py), [#45](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/45) | Passage provenance, missing evidence and material contradiction retention | Pending | Unknown |
+| D retrieval evidence | `python.D@1.0`; [RAG fixture](../examples/rag-system/pipeline.py), [pinned corpus](../examples/use-case-host/retrieval_corpus_v1.json) and [consumer](../examples/use-case-host/retrieval_consumer.py), [#45](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/45) | Passage provenance, missing evidence and material contradiction retention | Offline synthetic D host: source-bound plan/apply/verify, #55 install, #56 normal-console observation/disable/versioned upgrade/generation rollback; #54 D bind and provider pending | Unknown |
 | E completion | `python.E@1.0`; [raw-state oracle](../examples/coding-agent/completion_oracle.py), [#46](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/46) | Raw objective and effect receipts independent of executor success | Offline synthetic E host: source-bound plan/apply/verify, #55 install, #56 normal-console observation/disable/versioned upgrade/generation rollback; #54 E console bind and provider pending | Unknown |
 | M claim support | `python.M@1.0`; [claim consumer](../examples/rag-system/pipeline.py), [#47](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/47) | Exact citation spans, critical-claim block, revision, audit before release | Pending | Unknown |
 | H retention | `python.H@1.0`; [memory oracle](../examples/coding-agent/retention_oracle.py) and [consumer adapter](../examples/use-case-host/retention_consumer.py), [#49](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/49) | Raw retained-item bytes, pinned provenance, budget and explicit `/prune` | Offline synthetic H host: source-bound plan/apply/verify, #55 install, #56 normal-console observation/disable/versioned upgrade/generation rollback; #54 H console bind and provider pending | Unknown |
@@ -117,6 +117,20 @@ bundle even when its initial relevance label is negative. Stance is metadata,
 not a truth label; the separate generator and independent answer evaluation
 remain necessary. Unsupported: missing provenance, ambiguous IDs, or a target
 without the reviewed handoff seam.
+
+The [individual D installed journey](../tests/test_use_case_retrieval_host.py)
+copies the unchanged matrix-pinned RAG source into a separate reviewed host,
+then binds a byte-pinned consumer and external finite corpus to a D tail-call.
+The host checks exact corpus bytes/revision, approval and retained material
+conflicts before a deterministic evidence formatter consumes the selected
+bundle. The #55/#56 path installs and normally launches the off-mode console,
+checks a raw cited effect against independently derived corpus expectations,
+disables, upgrades a second reviewed fixture version, and rolls back its owned
+generation and source edits. The formatter supplies an honest conflicting
+evidence report, not a generative answer or truth determination. #54 D console
+binding, provider operation and answer benefit remain pending. See the
+[D operator reference](retrieval-template-offline-v1.md) for exact inputs and
+limits.
 
 ### E: completion
 
@@ -192,8 +206,8 @@ Python recipes A, B, C, D, E, F, G, H, I, J, K, L and M remain catalogued at
 version 1.0 for the narrow `module-tail-call-v1` transform. For each of A, B,
 F, G, I, J and K, use-case-specific source contract, installed execution,
 connected mode and benefit are **not qualified by this checkpoint**. C points
-to its separate #57 qualification; D and M remain source/oracle only.
-L, E and H have the limited offline installed
+to its separate #57 qualification; M remains source/oracle only.
+L, D, E and H have the limited offline installed
 journeys above. All connected cells remain pending. The separate JavaScript/TypeScript
 `javascript.C@1.0` flat async backend has its own source catalog; it has no
 L/D/E/M/H coverage and no installed Node journey from this checkpoint. All
