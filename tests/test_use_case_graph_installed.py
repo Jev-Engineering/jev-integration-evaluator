@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import sqlite3
 import sys
 import time
 
@@ -46,6 +47,7 @@ def _applied(tmp_path: Path, name: str, version: str) -> dict:
     probes.mkdir(mode=0o700)
     with pytest.MonkeyPatch.context() as env:
         env.setenv("GRAPH_EFFECT_PATH", str(probes / "graph-{pid}.json"))
+        env.setenv("GRAPH_DB_PATH", str(probes / "graph-{pid}.sqlite"))
         baseline = verify_implementation(target, bundle, "baseline", approve_execution=True)
         assert baseline["status"] == "baseline_passed"
         applied = apply_implementation(target, bundle, plan["bundle_digest"],
@@ -97,7 +99,23 @@ def _observation(directory: Path) -> tuple[dict, dict, bytes]:
                             "outcome_verified")]
     return ({"schema_version": "1.0", "kind": "template-delivery-observation-v1",
              "checks": checks},
-            {"GRAPH_EFFECT_PATH": str(effect), "GRAPH_READY_PATH": str(ready)}, raw)
+            {"GRAPH_EFFECT_PATH": str(effect), "GRAPH_READY_PATH": str(ready),
+             "GRAPH_DB_PATH": str(directory / "graph.sqlite")}, raw)
+
+
+def _database_readback(path: Path, effect: bytes) -> None:
+    receipt = json.loads(effect)["receipt"]
+    with sqlite3.connect(path.as_uri() + "?mode=ro", uri=True) as database:
+        assert database.execute("SELECT value FROM revision").fetchall() == [(1,)]
+        assert database.execute(
+            "SELECT key, name, jurisdiction, registry_id, provenance FROM entities ORDER BY key"
+        ).fetchall() == [
+            ("left", "Acme", "US", "one", "registry-left"),
+            ("right", "Acme", "US", "one", "registry-right")]
+        assert [json.loads(row[0]) for row in database.execute(
+            "SELECT receipt FROM audit ORDER BY id")] == [receipt]
+        assert [json.loads(row[0]) for row in database.execute(
+            "SELECT receipt FROM merges ORDER BY id")] == [receipt]
 
 
 def _observe(session: Path, status: dict) -> dict:
@@ -188,6 +206,7 @@ def test_graph_installed_offline_upgrade_and_rollback(tmp_path):
     observed = _observe(session, delivery.launch_session(session, scope=start,
         approved_scope_sha256=start["scope_sha256"]))
     assert (v1 / "graph.json").read_bytes() == raw
+    _database_readback(v1 / "graph.sqlite", raw)
     assert (v1 / "ready.txt").read_bytes() == b"ready\n"
     actual = json.loads((v1 / "graph.json").read_text())
     assert actual["revision"] == 1
@@ -216,6 +235,7 @@ def test_graph_installed_offline_upgrade_and_rollback(tmp_path):
     observed_new = _observe(session, delivery.launch_session(session, scope=start_new,
         approved_scope_sha256=start_new["scope_sha256"]))
     assert (v2 / "graph.json").read_bytes() == new_raw
+    _database_readback(v2 / "graph.sqlite", new_raw)
     disable_new = _scope(observed_new, new_delivery, "disable")
     disabled_new = delivery.stop_session(session, scope=disable_new,
         approved_scope_sha256=disable_new["scope_sha256"], disable=True)

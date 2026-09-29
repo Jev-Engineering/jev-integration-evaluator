@@ -10,6 +10,7 @@ from pathlib import Path
 import importlib
 import importlib.metadata
 import json
+import sqlite3
 import shutil
 
 import pytest
@@ -26,7 +27,7 @@ from scripts.implementation_fixtures import fixture
 
 
 ROOT = Path(__file__).resolve().parents[1]
-GRAPH_RUNTIME_SHA256 = "325dd8350ddfe7b0c91a93840ed8f4cf851014b878d18eed5a637125d9faf2ba"
+GRAPH_RUNTIME_SHA256 = "e4ab3d68724042d7559cf06f54d9e59f9438a9329ab64a18eefc1ecd60cbe9e0"
 
 
 def _graph_host(target: Path, version: str | None = None):
@@ -119,6 +120,7 @@ def test_graph_host_source_bound_apply_verify_and_rollback(tmp_path):
     effects.mkdir(mode=0o700)
     with pytest.MonkeyPatch.context() as env:
         env.setenv("GRAPH_EFFECT_PATH", str(effects / "graph-{pid}.json"))
+        env.setenv("GRAPH_DB_PATH", str(effects / "graph-{pid}.sqlite"))
         baseline = verify_implementation(target, bundle, "baseline", approve_execution=True)
         assert baseline["status"] == "baseline_passed"
         applied = apply_implementation(target, bundle, planned["bundle_digest"],
@@ -161,3 +163,106 @@ def test_graph_host_current_revision_and_approval_are_independent(tmp_path, monk
     assert observed["revision"] == 5
     assert observed["receipt"] == observed["merges"][0] == observed["audits"][0]
     assert observed["entities"]["left"]["provenance"] == "registry-left"
+
+
+def test_graph_sqlite_transaction_and_independent_readback(tmp_path, monkeypatch):
+    target = tmp_path / "graph-target"
+    _graph_host(target)
+    monkeypatch.syspath_prepend(str(target))
+    runtime = importlib.import_module("graph_host.graph_runtime")
+    effects = tmp_path / "effects"
+    effects.mkdir(mode=0o700)
+    database = effects / "graph.sqlite"
+    monkeypatch.setenv("GRAPH_DB_PATH", str(database))
+    monkeypatch.setenv("GRAPH_EFFECT_PATH", str(effects / "first.json"))
+    request = {"task_id": "graph-task", "graph_action": "reconcile_same"}
+    state = {"revision": 0, "expected_revision": 0, "approval": True}
+    assert runtime.merge(request, state) == 1
+    with sqlite3.connect(database.as_uri() + "?mode=ro", uri=True) as observed:
+        assert observed.execute("SELECT value FROM revision").fetchall() == [(1,)]
+        assert observed.execute("SELECT key, provenance FROM entities ORDER BY key").fetchall() == [
+            ("left", "registry-left"), ("right", "registry-right")]
+        audit = [json.loads(row[0]) for row in observed.execute("SELECT receipt FROM audit")]
+        merges = [json.loads(row[0]) for row in observed.execute("SELECT receipt FROM merges")]
+    assert audit == merges == [json.loads((effects / "first.json").read_text())["receipt"]]
+    original = database.read_bytes()
+    monkeypatch.setenv("GRAPH_EFFECT_PATH", str(effects / "stale.json"))
+    with pytest.raises(RuntimeError, match="revision conflict"):
+        runtime.merge(request, state)
+    assert database.read_bytes() == original and not (effects / "stale.json").exists()
+    original_audit = json.dumps(audit[0], sort_keys=True, separators=(",", ":"))
+    altered_audit = dict(audit[0], revision_before=99)
+    with sqlite3.connect(database) as changed:
+        changed.execute("UPDATE audit SET receipt = ? WHERE id = 1", (
+            json.dumps(altered_audit, sort_keys=True, separators=(",", ":")),))
+    tampered = database.read_bytes()
+    monkeypatch.setenv("GRAPH_EFFECT_PATH", str(effects / "history-tamper.json"))
+    with pytest.raises(RuntimeError, match="history conflict"):
+        runtime.merge(request, {"revision": 1, "expected_revision": 1,
+                                "approval": True})
+    assert database.read_bytes() == tampered
+    assert not (effects / "history-tamper.json").exists()
+    with sqlite3.connect(database) as repaired:
+        repaired.execute("UPDATE audit SET receipt = ? WHERE id = 1", (original_audit,))
+    with sqlite3.connect(database) as changed:
+        changed.execute("UPDATE merges SET receipt = ? WHERE id = 1", (
+            json.dumps(dict(audit[0], sources=["forged", "registry-right"]),
+                       sort_keys=True, separators=(",", ":")),))
+    tampered_merge = database.read_bytes()
+    monkeypatch.setenv("GRAPH_EFFECT_PATH", str(effects / "merge-tamper.json"))
+    with pytest.raises(RuntimeError, match="history conflict"):
+        runtime.merge(request, {"revision": 1, "expected_revision": 1,
+                                "approval": True})
+    assert database.read_bytes() == tampered_merge
+    assert not (effects / "merge-tamper.json").exists()
+    with sqlite3.connect(database) as repaired:
+        repaired.execute("UPDATE merges SET receipt = ? WHERE id = 1", (original_audit,))
+    with sqlite3.connect(database) as changed:
+        changed.execute("UPDATE entities SET name = 'Other' WHERE key = 'left'")
+    conflicting = database.read_bytes()
+    monkeypatch.setenv("GRAPH_EFFECT_PATH", str(effects / "conflict.json"))
+    with pytest.raises(RuntimeError, match="identity or revision conflict"):
+        runtime.merge(request, {"revision": 1, "expected_revision": 1,
+                                "approval": True})
+    assert database.read_bytes() == conflicting and not (effects / "conflict.json").exists()
+    monkeypatch.setenv("GRAPH_EFFECT_PATH", str(effects / "denied.json"))
+    with pytest.raises(RuntimeError, match="host postconditions"):
+        runtime.merge(request, {"revision": 1, "expected_revision": 1,
+                                "approval": False})
+    assert database.read_bytes() == conflicting and not (effects / "denied.json").exists()
+    with sqlite3.connect(database) as setup:
+        setup.execute("UPDATE entities SET name = 'Acme' WHERE key = 'left'")
+        setup.execute("CREATE TRIGGER refuse_audit BEFORE INSERT ON audit "
+                      "BEGIN SELECT RAISE(ABORT, 'audit refused'); END")
+    before_audit = database.read_bytes()
+    monkeypatch.setenv("GRAPH_EFFECT_PATH", str(effects / "audit-failed.json"))
+    with pytest.raises(sqlite3.IntegrityError, match="audit refused"):
+        runtime.merge(request, {"revision": 1, "expected_revision": 1,
+                                "approval": True})
+    assert database.read_bytes() == before_audit
+    assert not (effects / "audit-failed.json").exists()
+    with sqlite3.connect(database) as setup:
+        setup.execute("DROP TRIGGER refuse_audit")
+    monkeypatch.setenv("GRAPH_EFFECT_PATH", str(effects / "recovered.json"))
+    assert runtime.merge(request, {"revision": 1, "expected_revision": 1,
+                                   "approval": True}) == 2
+    with sqlite3.connect(database.as_uri() + "?mode=ro", uri=True) as observed:
+        assert observed.execute("SELECT value FROM revision").fetchall() == [(2,)]
+        assert observed.execute("SELECT COUNT(*) FROM audit").fetchone() == (2,)
+        assert observed.execute("SELECT COUNT(*) FROM merges").fetchone() == (2,)
+    for revision in range(2, 32):
+        monkeypatch.setenv("GRAPH_EFFECT_PATH", str(effects / f"step-{revision}.json"))
+        assert runtime.merge(request, {"revision": revision,
+                                       "expected_revision": revision,
+                                       "approval": True}) == revision + 1
+    at_limit = database.read_bytes()
+    monkeypatch.setenv("GRAPH_EFFECT_PATH", str(effects / "over-limit.json"))
+    with pytest.raises(RuntimeError, match="revision limit reached"):
+        runtime.merge(request, {"revision": 32, "expected_revision": 32,
+                                "approval": True})
+    assert database.read_bytes() == at_limit
+    assert not (effects / "over-limit.json").exists()
+    with sqlite3.connect(database.as_uri() + "?mode=ro", uri=True) as observed:
+        assert observed.execute("SELECT value FROM revision").fetchall() == [(32,)]
+        assert observed.execute("SELECT COUNT(*) FROM audit").fetchone() == (32,)
+        assert observed.execute("SELECT COUNT(*) FROM merges").fetchone() == (32,)
