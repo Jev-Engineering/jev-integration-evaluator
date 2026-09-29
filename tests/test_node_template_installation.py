@@ -51,17 +51,25 @@ def test_real_source_verified_node_install_and_normal_command(tmp_path, format_n
         package_json.write_text(json.dumps(package), encoding='utf-8')
         source_request['package_json_sha256'] = file_hash(package_json)
     entry = host / source_request['entrypoint']
-    effect_code = ('const fs = require("node:fs");\nrequire("./host.cjs");\n'
-                   if format_name == 'commonjs' else
-                   'import fs from "node:fs";\nimport "./host.mjs";\n'
-                   if format_name == 'esm' else
-                   entry.read_text(encoding='utf-8') + '\nimport fs from "node:fs";\n')
-    effect_code += ('if (process.env.NODE_EFFECT_PATH) '
-                    'fs.writeFileSync(process.env.NODE_EFFECT_PATH, "entrypoint\\n", {flag:"wx"});\n')
-    effect_code += ('if (process.env.NODE_READY_PATH) '
-                    'fs.writeFileSync(process.env.NODE_READY_PATH, "ready\\n", {flag:"wx"});\n')
-    effect_code += ('if (process.env.NODE_INTEGRATION_PATH) '
-                    'fs.writeFileSync(process.env.NODE_INTEGRATION_PATH, "integration\\n", {flag:"wx"});\n')
+    if format_name == 'commonjs':
+        effect_code = ('const fs = require("node:fs");\n'
+                       'const seam = require("./host.cjs");\n')
+    else:
+        effect_code = ('import fs from "node:fs";\n'
+                       'import {seam} from "./host.mjs";\n')
+    effect_code += (
+        'if (process.env.JEV_RUNTIME_MODE !== "off") throw Error("mode");\n'
+        'for (const key of ["NODE_EFFECT_PATH","NODE_READY_PATH","NODE_INTEGRATION_PATH"]) '
+        'if (!process.env[key]) throw Error("missing path");\n'
+        'globalThis.__jev_probe_effect = (action,item) => '
+        'fs.writeFileSync(process.env.NODE_EFFECT_PATH, action+":"+item+"\\n", {flag:"wx"});\n'
+        'async function main() {\n'
+        '  const result = await seam({task_id:"task",invocation_id:"normal",item:"x",permit:true});\n'
+        '  if (result !== "read:x") throw Error("seam result");\n'
+        '  fs.writeFileSync(process.env.NODE_READY_PATH,"ready\\n",{flag:"wx"});\n'
+        '  fs.writeFileSync(process.env.NODE_INTEGRATION_PATH,"integration\\n",{flag:"wx"});\n'
+        '}\n')
+    effect_code += ('main().catch(() => {process.exitCode = 1;});\n')
     entry.write_text(effect_code, encoding='utf-8')
     source_request['entrypoint_sha256'] = file_hash(entry)
     source_request['reviewed_package_source_sha256'] = digest(template_js_catalog._source_tree(host))
@@ -123,7 +131,7 @@ def test_real_source_verified_node_install_and_normal_command(tmp_path, format_n
                         'expected_sha256': __import__('hashlib').sha256(raw).hexdigest()}
                        for role, path, raw in (
                            ('ready', ready, b'ready\n'),
-                           ('entrypoint_reached', effect, b'entrypoint\n'),
+                           ('entrypoint_reached', effect, b'read:x\n'),
                            ('integration_reachable', integration, b'integration\n'))]}
     environment = {'NODE_EFFECT_PATH': str(effect), 'NODE_READY_PATH': str(ready),
                    'NODE_INTEGRATION_PATH': str(integration)}
@@ -142,6 +150,23 @@ def test_real_source_verified_node_install_and_normal_command(tmp_path, format_n
         node_delivery.plan_node_delivery(
             install_plan, trusted_install_receipt_sha256=installed['receipt_sha256'],
             observation=observation, launch_environment={'NODE_OPTIONS': '--require unsafe'})
+    for loader in ('LD_PRELOAD', 'LD_LIBRARY_PATH'):
+        with pytest.raises(InputError, match='launch environment'):
+            node_delivery.plan_node_delivery(
+                install_plan, trusted_install_receipt_sha256=installed['receipt_sha256'],
+                observation=observation, launch_environment={loader: '/tmp/unsafe.so'})
+    with pytest.raises(InputError, match='parent traversal'):
+        node_delivery.plan_node_delivery(
+            install_plan, trusted_install_receipt_sha256=installed['receipt_sha256'],
+            observation={**observation, 'checks': [
+                {**observation['checks'][0], 'path': str(tmp_path / 'alias' / '..' / ready.name)},
+                *observation['checks'][1:]]}, launch_environment=environment)
+    with pytest.raises(InputError, match='parent traversal'):
+        node_delivery.plan_node_delivery(
+            install_plan, trusted_install_receipt_sha256=installed['receipt_sha256'],
+            observation={**observation, 'checks': [
+                {**observation['checks'][0], 'path': str(Path(installed['generation_path']) / 'app' / '..' / 'ready.bin')},
+                *observation['checks'][1:]]}, launch_environment=environment)
     with pytest.raises(InputError, match='observation'):
         node_delivery.plan_node_delivery(
             install_plan, trusted_install_receipt_sha256=installed['receipt_sha256'],
@@ -152,7 +177,7 @@ def test_real_source_verified_node_install_and_normal_command(tmp_path, format_n
                          env={'PATH': '/usr/bin:/bin', 'JEV_RUNTIME_MODE': 'off', **environment},
                          capture_output=True, text=True, timeout=10)
     assert run.returncode == 0, run.stderr
-    assert effect.read_bytes() == b'entrypoint\n'
+    assert effect.read_bytes() == b'read:x\n'
     assert ready.read_bytes() == b'ready\n'
     assert integration.read_bytes() == b'integration\n'
     for row in observation['checks']:

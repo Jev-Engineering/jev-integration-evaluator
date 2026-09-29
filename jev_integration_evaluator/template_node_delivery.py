@@ -8,7 +8,6 @@ from __future__ import annotations
 import copy
 import os
 from pathlib import Path
-import re
 import stat
 
 from .contracts import validate_contract
@@ -17,7 +16,8 @@ from .template_node_installation import installation_status
 
 
 def _observed(path: Path) -> str | None:
-    if not path.is_absolute() or any(part.is_symlink() for part in (path, *path.parents)):
+    if (not path.is_absolute() or '..' in path.parts
+            or any(part.is_symlink() for part in (path, *path.parents))):
         raise InputError('Node delivery observation path is linked or relative')
     try:
         parent = path.parent.stat()
@@ -35,12 +35,10 @@ def _observed(path: Path) -> str | None:
 
 
 def _environment(values: dict | None) -> dict[str, str]:
-    result = copy.deepcopy(values or {})
-    if (type(result) is not dict or len(result) > 16
-            or any(type(key) is not str or not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', key)
-                   or key.startswith(('JEV_', 'NPM_', 'npm_', 'PYTHON', 'PIP_'))
-                   or key in ('PATH', 'HOME', 'NODE_OPTIONS', 'NODE_PATH', 'NODE_EXTRA_CA_CERTS')
-                   or re.search(r'(?i)(secret|password|token|api[_-]?key|credential)', key)
+    result = copy.deepcopy({} if values is None else values)
+    allowed = {'NODE_EFFECT_PATH', 'NODE_READY_PATH', 'NODE_INTEGRATION_PATH'}
+    if (type(result) is not dict or len(result) > 3
+            or any(type(key) is not str or key not in allowed
                    or type(value) is not str or len(value) > 4096 or '\x00' in value
                    for key, value in result.items())):
         raise InputError('Node delivery launch environment invalid or sensitive')
@@ -61,6 +59,8 @@ def plan_node_delivery(install_plan: dict, *, trusted_install_receipt_sha256: st
     validate_contract(receipt, 'node-install-receipt-v1')
     if receipt['receipt_sha256'] != trusted_install_receipt_sha256:
         raise InputError('Node installed receipt changed')
+    if any('..' in Path(row['path']).parts for row in observation['checks']):
+        raise InputError('Node delivery observation path contains parent traversal')
     roles = {role: [Path(row['path']) for row in observation['checks'] if row['role'] == role]
              for role in ('ready', 'entrypoint_reached', 'integration_reachable')}
     if not all(roles.values()):

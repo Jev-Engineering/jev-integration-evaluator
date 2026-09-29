@@ -18,7 +18,7 @@
     "configuration_sha256": {"$ref": "#/$defs/sha"},
     "secret_references_sha256": {"$ref": "#/$defs/sha"},
     "observation": {"type": "object"},
-    "launch_environment": {"type": "object", "maxProperties": 16, "propertyNames": {"pattern": "^[A-Za-z_][A-Za-z0-9_]*$"}, "additionalProperties": {"type": "string", "maxLength": 4096}},
+    "launch_environment": {"type": "object", "maxProperties": 3, "propertyNames": {"enum": ["NODE_EFFECT_PATH", "NODE_READY_PATH", "NODE_INTEGRATION_PATH"]}, "additionalProperties": {"type": "string", "maxLength": 4096}},
     "mode": {"const": "off"}, "runtime_activation_authorized": {"const": false},
     "launch_status": {"const": "not_started"},
     "descriptor_sha256": {"$ref": "#/$defs/sha"}

@@ -2,11 +2,12 @@
 
 This distinct Linux x86-64 adapter packages an **already applied and externally
 verified** `javascript.recipe-c@1.0.0` host into an owned off-mode generation.
-It has Python API only at this checkpoint. It does not execute the installed
-entrypoint, start a normal package command, connect a provider, or qualify
-shadow/canary/active. The separate #56 supervisor still accepts Python console
-install receipts only; its Node launch descriptor and independent observations
-remain pending. An installed receipt's `launch_status: not_started` is literal.
+Its Python APIs build, install and prepare a read-only Node delivery descriptor.
+They do not launch a process, connect a provider, or qualify shadow/canary/active.
+A scoped native test invokes the normal installed command offline and checks
+its raw host effect; that test is not a durable #56 supervisor session. The
+separate #56 supervisor still accepts Python console install receipts only.
+An installed receipt's `launch_status: not_started` is literal.
 
 ## Exact inputs and stages
 
@@ -83,8 +84,13 @@ digests, externally retained install receipt digest, and independent expected
 ready/entrypoint/integration file transitions. Planning and validation do not
 launch. The descriptor is an input contract for a future #56 Node supervisor;
 the current #56 session API remains Python-console-only. A test runs the normal
-installed command under an explicit off-mode environment and checks the three
-external files after it exits. That direct test has no durable process session,
+installed command under an explicit off-mode environment. Its start script
+calls the transformed `seam` and checks `read:x`; the raw host callback writes
+the entrypoint effect, followed by separate ready and integration files. The
+test checks all three external bytes after exit. Observation paths reject
+parent traversal and protected input/generation trees. The launch environment
+accepts only the three named fixture output paths, so loader variables such as
+`LD_PRELOAD` and `LD_LIBRARY_PATH` are rejected. That direct test has no durable process session,
 PID ownership, interruption recovery or upgrade/rollback authority.
 
 The build writes a durable owner intent in the private parent **before**
