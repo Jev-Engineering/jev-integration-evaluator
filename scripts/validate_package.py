@@ -149,9 +149,12 @@ def validate(check_manifest=False):
                  'tests/test_js_entrypoint.py', 'tests/js_transform.test.cjs',
                  'tests/native_js_runtime.test.cjs']
     required += ['jev_integration_evaluator/template_catalog.py',
+                 'jev_integration_evaluator/integrations/python_entrypoint.py',
                  'jev_integration_evaluator/data/python-bounded-tail-call.template.json',
                  'references/template-catalog-v1.md',
+                 'references/template-python-entrypoint-v1.md',
                  'tests/test_template_catalog.py',
+                 'tests/test_template_python_entrypoint.py',
                  'tests/test_template_materialization_wheel.py']
     required += ['jev_integration_evaluator/template_installation.py',
                  'references/template-installation-v1.md',
@@ -160,7 +163,8 @@ def validate(check_manifest=False):
                  'tests/test_template_installation.py']
     required += [f'{directory}/{name}.schema.json'
                  for directory in ('schemas', 'jev_integration_evaluator/data')
-                 for name in ('template-request-v1', 'template-manifest-v1', 'template-lock-v1')]
+                 for name in ('template-request-v1', 'template-manifest-v1', 'template-lock-v1',
+                              'template-entrypoint-binding-v1')]
     required += [f'{directory}/{name}.schema.json'
                  for directory in ('schemas', 'jev_integration_evaluator/data')
                  for name in ('template-package-request-v1', 'template-package-plan-v1',

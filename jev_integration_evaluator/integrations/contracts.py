@@ -44,16 +44,21 @@ def validate_spec(spec: dict) -> dict:
     adapter_path = ((Path(spec['source']['file']).parent / (spec['output']['module'] + '.py')).as_posix()
                     if 'package_binding' in spec else spec['output']['module'] + '.py')
     runtime_files = spec.get('runtime_files', [])
+    entrypoint = spec.get('entrypoint_binding')
     if ('host_lifecycle' in spec and
-            ('package_binding' in spec or
-             {row['kind'] for row in runtime_files} != {'dependency_lock', 'configuration'})):
-        raise InputError('Supported host lifecycle requires a flat host, reviewed lock and configuration')
+            ({row['kind'] for row in runtime_files} != {'dependency_lock', 'configuration'}
+             or ('package_binding' in spec and entrypoint is None))):
+        raise InputError('Supported host lifecycle requires reviewed lock and configuration; packages also require a bound entrypoint')
+    if entrypoint is not None and ('host_lifecycle' not in spec or 'package_binding' not in spec
+                                   or spec['recipe']['id'] != 'python.C'):
+        raise InputError('Console entrypoint requires package-bound recipe C lifecycle')
     runtime_paths = [row['file'] for row in runtime_files]
     if (len(runtime_paths) != len(set(runtime_paths)) or
             set(spec['output']['permitted_edits']) !=
-            {spec['source']['file'], adapter_path, *runtime_paths} or
-            len(spec['output']['permitted_edits']) != 2 + len(runtime_paths)):
-        raise InputError('Permitted edits must name exactly the host, adapter and reviewed runtime files')
+            {spec['source']['file'], adapter_path, *runtime_paths,
+             *([entrypoint['file']] if entrypoint else [])} or
+            len(spec['output']['permitted_edits']) != 2 + len(runtime_paths) + (1 if entrypoint else 0)):
+        raise InputError('Permitted edits must name exactly the host, adapter, entrypoint and reviewed runtime files')
     for row in runtime_files:
         path = row['file']
         if (path in (spec['source']['file'], adapter_path) or FORBIDDEN.search(path)

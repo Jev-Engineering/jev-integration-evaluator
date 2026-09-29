@@ -32,7 +32,7 @@
         "parameter_validation": {"const": "supported"},
         "generation": {"const": "supported"},
         "materialization": {"const": "supported"},
-        "binding_adaptation": {"const": "requires_existing_planner"},
+        "binding_adaptation": {"enum": ["requires_existing_planner", "supported_bounded_python_C_console"]},
         "planning": {"const": "requires_existing_planner"},
         "baseline": {"const": "pending_separate_execution_authority"},
         "apply": {"const": "pending_separate_approval"},

@@ -86,6 +86,56 @@ def validate_template_request(root: str | Path, request: dict) -> dict:
     }
 
 
+def prepare_template_binding(root: str | Path, request: dict, binding: dict) -> dict:
+    """Derive a fresh console caller contract without editing or importing the host."""
+    validate_contract(request, 'template-request-v1')
+    validate_contract(binding, 'template-entrypoint-binding-v1')
+    inspect_template(request['template_id'], request['template_version'])
+    from .integrations.python_entrypoint import inspect_entrypoint
+    target = Path(root).resolve(strict=True)
+    bound = copy.deepcopy(request)
+    spec = bound['implementation_spec']
+    entrypoint = inspect_entrypoint(target, spec, binding)
+    spec['entrypoint_binding'] = entrypoint
+    if entrypoint['file'] in spec['output']['permitted_edits']:
+        raise InputError('Console entrypoint is already an owned edit')
+    spec['output']['permitted_edits'].append(entrypoint['file'])
+    validation = validate_template_request(target, bound)
+    return {'schema_version': '1.0', 'status': 'bound',
+            'request': bound,
+            'binding_report': {'schema_version': '1.0', 'status': 'planned_not_applied',
+                               'entrypoint': entrypoint,
+                               'request_sha256': digest(bound),
+                               'inventory_sha256': validation['inventory_sha256'],
+                               'spec_sha256': validation['spec_sha256'],
+                               'source_sha256': validation['source_sha256'],
+                               'target_modified': False, 'target_executed': False}}
+
+
+def bind_template(root: str | Path, request: dict, binding: dict, output: str | Path) -> dict:
+    """Write a reviewed binding report and derived request to a new private directory."""
+    prepared = prepare_template_binding(root, request, binding)
+    target = Path(root).resolve(strict=True)
+    out = Path(output).absolute()
+    if any(part.is_symlink() for part in (out, *out.parents)):
+        raise InputError('Binding output path may not traverse symlinks')
+    out = out.resolve()
+    if out == target or out.is_relative_to(target):
+        raise InputError('Binding output must be outside the target')
+    try:
+        out.mkdir(mode=0o700, parents=True, exist_ok=False)
+    except FileExistsError:
+        raise InputError('Binding output already exists') from None
+    os.chmod(out, 0o700)
+    write_json(out / 'bind-status.json', {'schema_version': '1.0', 'status': 'incomplete'})
+    write_json(out / 'template-request.json', prepared['request'])
+    write_json(out / 'binding-report.json', prepared['binding_report'])
+    write_json(out / 'bind-status.json', {'schema_version': '1.0', 'status': 'complete',
+                                          'request_sha256': file_hash(out / 'template-request.json'),
+                                          'report_sha256': file_hash(out / 'binding-report.json')})
+    return prepared['binding_report'] | {'output': str(out)}
+
+
 def render_status(output: str | Path) -> dict:
     """Classify incomplete output, including a crash before the first marker."""
     out = Path(output).absolute()

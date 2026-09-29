@@ -9,6 +9,7 @@ import tokenize
 from dataclasses import dataclass
 from pathlib import Path
 import keyword
+import os
 import re
 import sys
 
@@ -270,6 +271,15 @@ def transform(root: Path, spec: dict) -> dict:
         raise InputError('Source must be valid UTF-8 Python') from None
     found = _module_bindings(tree)
     lifecycle = spec.get('host_lifecycle')
+    entrypoint = spec.get('entrypoint_binding')
+    entry_sources = {}
+    if entrypoint is not None:
+        from .python_entrypoint import inspect_entrypoint
+        binding = {key: entrypoint[key] for key in ('version', 'script', 'startup_inputs')}
+        fresh_entrypoint = inspect_entrypoint(root, spec, binding)
+        if fresh_entrypoint != entrypoint:
+            raise InputError('Console entrypoint source, caller or pyproject drift')
+        entry_sources = fresh_entrypoint['contributing_sources']
     if lifecycle is not None:
         names = [lifecycle[k] for k in ('startup', 'shutdown', 'complete_task')]
         marker = host_lifecycle_marker(lifecycle, spec['bindings']['runtime'], spec['candidate_id'])
@@ -277,7 +287,7 @@ def transform(root: Path, spec: dict) -> dict:
                 or any(keyword.iskeyword(name) or len(name) > 128 for name in names)
                 or any(name in found or name in spec['bindings'].values() for name in names)
                 or marker in found or marker + '_started' in found
-                or package_contract is not None
+                or (package_contract is not None and entrypoint is None)
                 or {row['kind'] for row in spec.get('runtime_files', [])} != {'dependency_lock', 'configuration'}
                 or any(isinstance(node, ast.If) and isinstance(node.test, ast.Compare)
                        and isinstance(node.test.left, ast.Name) and node.test.left.id == '__name__'
@@ -403,10 +413,26 @@ def transform(root: Path, spec: dict) -> dict:
                           else f'import {spec["output"]["module"]} as {adapter_alias}')
         import_line += adapter_import.encode() + newline
     changed = changed[:insertion] + import_line + changed[insertion:]
+    entry_changes = []
+    connected_sources = {}
+    if entrypoint is not None:
+        from .python_entrypoint import _source, render_entrypoint
+        entry_raw, entry_tree = _source(root, entrypoint['file'])
+        entry_text = render_entrypoint(entry_raw, entry_tree, entrypoint, spec)
+        entry_changes = [{'file': entrypoint['file'], 'new_content': entry_text}]
+        host_dir = (root / rel).parent
+        entry_path = root / entrypoint['file']
+        for source_path, sha in ((entry_path, hashlib.sha256(entry_text.encode('utf-8')).hexdigest()),
+                                 (root / 'pyproject.toml', entrypoint['pyproject_sha256'])):
+            relative = os.path.relpath(source_path, host_dir).replace('\\', '/')
+            connected_sources[relative] = sha
     host = changed.decode('utf-8')
     if lifecycle is not None:
+        runtime_paths = spec['runtime_files']
+        if entrypoint is not None:
+            runtime_paths = [dict(row, file=Path(row['file']).name) for row in runtime_paths]
         host += _host_lifecycle(lifecycle, spec['bindings']['runtime'], adapter_alias,
-                                spec['candidate_id'], spec['runtime_files'])
+                                spec['candidate_id'], runtime_paths, connected_sources)
     ast.parse(host, filename=rel)
     runtime_spec = {k: spec[k] for k in ('candidate_id', 'experiment_id', 'source', 'recipe', 'questions',
                                         'primary_question', 'evidence_question', 'label_actions', 'runtime', 'policy')}
@@ -414,6 +440,7 @@ def transform(root: Path, spec: dict) -> dict:
     adapter = _adapter(runtime_spec)
     ast.parse(adapter, filename=output)
     result = {'changes': [{'file': rel, 'new_content': host}, {'file': output, 'new_content': adapter}]
+            + entry_changes
             + [{'file': row['file'], 'new_content': row['new_content']}
                for row in spec.get('runtime_files', [])],
             'entry_point': f'{module_name}:{f.name}', 'baseline_symbol': original,
@@ -422,14 +449,16 @@ def transform(root: Path, spec: dict) -> dict:
             'required_bindings': sorted(r.bindings), 'imports_resolved_by': 'installed evaluator wheel when enabled'}
     if resolver is not None:
         result['package_binding'] = package_contract
-        result['contributing_sources'] = resolver.dependencies
+        result['contributing_sources'] = dict(resolver.dependencies) | entry_sources
         result['qualified_bindings'] = qualified_bindings
     if lifecycle is not None:
         result['host_lifecycle'] = lifecycle
+    if entrypoint is not None:
+        result['entrypoint_binding'] = entrypoint
     return result
 
 
-def _host_lifecycle(names, binding, adapter_alias, candidate_id, runtime_files):
+def _host_lifecycle(names, binding, adapter_alias, candidate_id, runtime_files, connected_sources):
     marker = host_lifecycle_marker(names, binding, candidate_id)
     expected = {row['file']: hashlib.sha256(row['new_content'].encode('utf-8')).hexdigest()
                 for row in runtime_files}
@@ -461,6 +490,19 @@ def {names['startup']}(*, budget_limits, audit_log, dependency_plan, client=None
                    or reviewed.get(row['path']) != row['sha256']
                    for row in dependency_plan['files'])):
         raise LifecycleError('reviewed_dependency_plan_mismatch')
+    if connected_config is not None:
+        required_sources = {{str((Path(__file__).resolve().parent / rel).resolve()): sha
+                            for rel, sha in {connected_sources!r}.items()}}
+        if (type(connected_config) is not dict
+                or type(connected_config.get('source_plan')) is not dict
+                or type(connected_config['source_plan'].get('files')) is not list):
+            raise LifecycleError('connected_entrypoint_source_plan_missing')
+        covered_sources = {{row['path']: row['sha256']
+                           for row in connected_config['source_plan']['files']
+                           if type(row) is dict and type(row.get('path')) is str
+                           and type(row.get('sha256')) is str}}
+        if any(covered_sources.get(path) != sha for path, sha in required_sources.items()):
+            raise LifecycleError('connected_entrypoint_source_plan_missing')
     runtime = HostRuntimeLifecycle({{{candidate_id!r}: {adapter_alias}}},
         budget_limits=budget_limits, audit_log=audit_log, dependency_plan=dependency_plan,
         client=client, egress_grant=egress_grant, startup_mode=startup_mode,

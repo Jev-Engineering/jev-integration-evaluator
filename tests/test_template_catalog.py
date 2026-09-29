@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from jev_integration_evaluator.contracts import validate_contract
 from jev_integration_evaluator.io import InputError, digest, file_hash, read_json
 from jev_integration_evaluator.template_catalog import (
     inspect_template, list_templates, materialize_template, render_status,
@@ -12,6 +13,18 @@ from jev_integration_evaluator.template_catalog import (
 from jev_integration_evaluator.integrations.lifecycle import plan_implementation
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_version_1_manifest_accepts_archived_and_bounded_console_status():
+    current = read_json(ROOT / 'jev_integration_evaluator/data/python-bounded-tail-call.template.json')
+    validate_contract(current, 'template-manifest-v1')
+    archived = copy.deepcopy(current)
+    archived['entrypoint_profile'] = 'reviewed existing host entry point'
+    archived['lifecycle']['binding_adaptation'] = 'requires_existing_planner'
+    validate_contract(archived, 'template-manifest-v1')
+    archived['lifecycle']['binding_adaptation'] = 'unreviewed_dynamic_binding'
+    with pytest.raises(InputError, match='Invalid template-manifest-v1 contract'):
+        validate_contract(archived, 'template-manifest-v1')
 
 
 def example(letter):

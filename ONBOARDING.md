@@ -10,7 +10,7 @@ QUICK identifies leading seams and rejections. STANDARD requires actual source r
 
 For several repositories, scan each root separately with separate output directories; do not let equal relative paths imply the same source. Build a reviewed cross-repository plan using explicit repository identifiers and pinned revisions. Public API contracts, product prices and model pins must be freshly verified before a live rollout, not assumed from these offline examples.
 
-When a caller asks for a reusable integration template, collect the current reviewed inventory and source-specific implementation specification first. `template validate` checks these inputs against the current host, and `template materialize` writes private planner inputs only. Neither operation grants modification, execution, network, or activation authority. See `references/template-catalog-v1.md`.
+When a caller asks for a reusable integration template, collect the current reviewed inventory and source-specific implementation specification first. `template validate` checks these inputs against the current host, and `template materialize` writes private planner inputs only. For a Python recipe C package with a reviewed console script, collect an explicit `template-entrypoint-binding-v1` file and use `template bind` before validation/materialization; see `references/template-python-entrypoint-v1.md`. None of these operations grants modification, execution, network, or activation authority. See `references/template-catalog-v1.md`.
 
 For installed Python host delivery, collect the externally trusted modified
 implementation receipt, a reviewed full package-source digest, exact CPython
