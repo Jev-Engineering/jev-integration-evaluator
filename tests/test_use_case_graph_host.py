@@ -74,7 +74,7 @@ def _graph_host(target: Path, version: str | None = None):
             "    if ready:\n"
             "        with Path(ready).open('x', encoding='utf-8') as stream:\n"
             "            stream.write('ready\\n')\n"
-            "    time.sleep(0.5)\n"
+            "    time.sleep(15)\n"
             "    return 0\n"
             "if __name__ == '__main__':\n    raise SystemExit(main())\n",
             encoding="utf-8")
