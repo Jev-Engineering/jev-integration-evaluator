@@ -41,7 +41,9 @@ exact grant and scope. A local synthetic issuer in tests is only a protocol
 fixture.
 
 The native fixture uses a separate registered host and proves offline package
-and install, a hard permit refusal, hardlink drift refusal, blocked pending
+and install plus the installed evaluator CLI `bind`, `plan`, `configure`,
+`launch`, `status`, `observe` and `stop` stages, a hard permit refusal,
+hardlink drift refusal, blocked pending
 launch replay, a durable shadow ledger, one-shot replay, exact Job stop, and a
 permitted loopback TLS typed response with independent ready and effect
 readback. A second installed task receives a wrong-model local response and

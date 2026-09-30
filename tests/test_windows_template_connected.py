@@ -56,6 +56,31 @@ def _sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _installed_connected_cli(installed: dict, cwd: Path, *args: str,
+                             synthetic_credential: str | None = None) -> dict:
+    """Run the installed evaluator console outside source with a clean off env."""
+    python = Path(installed['installed']['python'])
+    executable = python.parent / 'jev-integration-evaluator.exe'
+    assert executable.is_file(), 'Installed evaluator console is required'
+    env = native_session._environment(cwd, python, {})
+    for name in ('PROCESSOR_ARCHITECTURE', 'PROCESSOR_ARCHITEW6432'):
+        if name in os.environ:
+            env[name] = os.environ[name]
+    if synthetic_credential is not None:
+        env['TYPESAFE_API_KEY'] = synthetic_credential
+    result = subprocess.run([str(executable), 'windows-connected', *args],
+                            cwd=cwd, env=env, stdin=subprocess.DEVNULL,
+                            capture_output=True, text=True, timeout=600,
+                            check=False)
+    assert result.returncode == 0, 'Installed connected CLI stage failed'
+    return json.loads(result.stdout)
+
+
+def _cli_input(owner: dict, name: str, value: dict) -> str:
+    write_private_json_exclusive(owner, name, value)
+    return str(Path(owner['path']) / name)
+
+
 def _issued_key(tmp_path: Path) -> tuple[Path, bytes]:
     assert _ISSUER.is_file(), 'Declared synthetic issuer unavailable'
     private, public = tmp_path / 'issuer-private.pem', tmp_path / 'issuer-public.pem'
@@ -426,6 +451,26 @@ def test_native_connected_installed_hard_block_and_replay(tmp_path, monkeypatch)
     install_plan, installed, report, spec = _installed(tmp_path, wheelhouse)
     assert report['kind'] == 'windows-connected-installed-binding-v1'
     assert set(report['origins']) == {'host', 'adapter', 'console', 'loader'}
+    cli_owner = create_private_directory(tmp_path / 'cli-inputs')
+    cli_package_plan = _cli_input(cli_owner, 'package-plan.json',
+                                  install_plan['package_plan'])
+    cli_package_receipt = _cli_input(cli_owner, 'package-receipt.json',
+                                     install_plan['package_receipt'])
+    cli_install_plan = _cli_input(cli_owner, 'install-plan.json', install_plan)
+    cli_install_receipt = _cli_input(cli_owner, 'install-receipt.json', installed)
+    cli_bind_dir = tmp_path / 'cli-binding'
+    cli_binding = _installed_connected_cli(installed, tmp_path, 'bind',
+        '--package-plan', cli_package_plan,
+        '--package-receipt', cli_package_receipt,
+        '--install-plan', cli_install_plan,
+        '--install-receipt', cli_install_receipt,
+        '--trusted-package-receipt-sha256',
+        install_plan['package_receipt']['receipt_sha256'],
+        '--trusted-install-receipt-sha256', installed['receipt_sha256'],
+        '--output-dir', str(cli_bind_dir))
+    assert cli_binding['status'] == 'written'
+    assert cli_binding['binding_sha256'] == report['binding_sha256']
+    assert json.loads((cli_bind_dir / 'binding.json').read_text()) == report
     loader_origin = report['origins']['loader']
     assert current_origin(loader_origin)
     installed_alias = tmp_path / 'installed-loader-hardlink.py'
@@ -535,6 +580,36 @@ def test_native_connected_installed_hard_block_and_replay(tmp_path, monkeypatch)
         installed_binding=report, trusted_binding_sha256=report['binding_sha256'],
         reference_owner=references, observation_owner=observation_owner,
         launch_environment=environment, observation=observation)
+    cli_reference_owner = _cli_input(cli_owner, 'reference-owner.json', references)
+    cli_observation_owner = _cli_input(cli_owner, 'observation-owner.json',
+                                       observation_owner)
+    cli_launch_environment = _cli_input(cli_owner, 'launch-environment.json',
+                                        environment)
+    cli_observation = _cli_input(cli_owner, 'observation.json', observation)
+    cli_plan_dir = tmp_path / 'cli-plan'
+    cli_plan = _installed_connected_cli(installed, tmp_path, 'plan',
+        '--install-plan', cli_install_plan,
+        '--binding', str(cli_bind_dir / 'binding.json'),
+        '--trusted-package-receipt-sha256',
+        install_plan['package_receipt']['receipt_sha256'],
+        '--trusted-install-receipt-sha256', installed['receipt_sha256'],
+        '--trusted-binding-sha256', report['binding_sha256'],
+        '--reference-owner', cli_reference_owner,
+        '--observation-owner', cli_observation_owner,
+        '--launch-environment', cli_launch_environment,
+        '--observation', cli_observation,
+        '--output-dir', str(cli_plan_dir))
+    assert cli_plan['status'] == 'written'
+    assert cli_plan['plan_sha256'] == plan['plan_sha256']
+    assert json.loads((cli_plan_dir / 'plan.json').read_text()) == plan
+    cli_session_dir = tmp_path / 'cli-session'
+    configured = _installed_connected_cli(installed, tmp_path, 'configure',
+        '--install-plan', cli_install_plan,
+        '--binding', str(cli_bind_dir / 'binding.json'),
+        '--plan', str(cli_plan_dir / 'plan.json'),
+        '--session-dir', str(cli_session_dir))
+    assert configured['status'] == 'created'
+    assert (cli_session_dir / 'session.json').is_file()
     pending = create_windows_connected_session(tmp_path / 'pending-session',
                                                 plan, install_plan, report)
     write_private_json_exclusive(pending['owned_directory'], 'launch-intent.json',
@@ -548,8 +623,7 @@ def test_native_connected_installed_hard_block_and_replay(tmp_path, monkeypatch)
         launch_windows_connected_session(pending, plan, install_plan, report,
             scope=pending_scope,
             approved_scope_sha256=pending_scope['scope_sha256'])
-    session = create_windows_connected_session(tmp_path / 'connected-session',
-                                               plan, install_plan, report)
+    session = json.loads((cli_session_dir / 'session.json').read_text())
     launch_scope = _scope(session, plan, private, 'launch')
     wrong = dict(launch_scope, issuer_signature=base64.b64encode(b'wrong').decode())
     with pytest.raises(WindowsConnectedDeliveryError, match='scope_signature_invalid'):
@@ -558,26 +632,55 @@ def test_native_connected_installed_hard_block_and_replay(tmp_path, monkeypatch)
     assert windows_connected_session_status(session, plan, install_plan, report)['status'] == 'created'
     monkeypatch.setenv('TYPESAFE_API_KEY', 'synthetic-startup-only')
     launch_scope = _scope(session, plan, private, 'launch', duration_minutes=30)
-    launched = launch_windows_connected_session(session, plan, install_plan, report,
-        scope=launch_scope, approved_scope_sha256=launch_scope['scope_sha256'])
+    cli_launch_scope = _cli_input(cli_owner, 'hard-launch-scope.json', launch_scope)
+    cli_launch = _installed_connected_cli(installed, tmp_path, 'launch',
+        '--install-plan', cli_install_plan,
+        '--binding', str(cli_bind_dir / 'binding.json'),
+        '--plan', str(cli_plan_dir / 'plan.json'),
+        '--session', str(cli_session_dir / 'session.json'),
+        '--scope', cli_launch_scope,
+        '--approve-scope-sha256', launch_scope['scope_sha256'],
+        synthetic_credential='synthetic-startup-only')
+    launched = json.loads((cli_session_dir / 'launch-identity.json').read_text())
+    assert cli_launch['status'] == 'launched'
+    assert cli_launch['identity_sha256'] == launched['identity_sha256']
     deadline = time.monotonic() + 15
     while native_session._owned_process(launched)[0] and time.monotonic() < deadline:
         time.sleep(.05)
     status = windows_connected_session_status(session, plan, install_plan, report,
         trusted_identity_sha256=launched['identity_sha256'])
     assert status['status'] == 'exited_unverified'
+    cli_status = _installed_connected_cli(installed, tmp_path, 'status',
+        '--install-plan', cli_install_plan,
+        '--binding', str(cli_bind_dir / 'binding.json'),
+        '--plan', str(cli_plan_dir / 'plan.json'),
+        '--session', str(cli_session_dir / 'session.json'),
+        '--approved-identity-sha256', launched['identity_sha256'])
+    assert cli_status['status'] == status['status']
+    assert cli_status['receipt_trust'] == 'externally_anchored'
     assert Path(str(ledger) + '.sqlite').is_file(), 'Installed console must own durable ledger'
     assert not effect.exists(), 'Hard permit blocks all host effects'
-    entry = observe_windows_connected_session(session, plan, install_plan, report,
-        approved_identity_sha256=launched['identity_sha256'], role='entrypoint_reached')
+    entry = _installed_connected_cli(installed, tmp_path, 'observe',
+        '--install-plan', cli_install_plan,
+        '--binding', str(cli_bind_dir / 'binding.json'),
+        '--plan', str(cli_plan_dir / 'plan.json'),
+        '--session', str(cli_session_dir / 'session.json'),
+        '--approved-identity-sha256', launched['identity_sha256'],
+        '--role', 'entrypoint_reached')
     assert entry['status'] == 'matched'
     with pytest.raises(WindowsConnectedDeliveryError, match='launch_already_attempted'):
         launch_windows_connected_session(session, plan, install_plan, report,
             scope=launch_scope, approved_scope_sha256=launch_scope['scope_sha256'])
     stop_scope = _scope(session, plan, private, 'stop', duration_minutes=30)
-    stopped = stop_windows_connected_session(session, plan, install_plan, report,
-        scope=stop_scope, approved_scope_sha256=stop_scope['scope_sha256'],
-        approved_identity_sha256=launched['identity_sha256'])
+    cli_stop_scope = _cli_input(cli_owner, 'hard-stop-scope.json', stop_scope)
+    stopped = _installed_connected_cli(installed, tmp_path, 'stop',
+        '--install-plan', cli_install_plan,
+        '--binding', str(cli_bind_dir / 'binding.json'),
+        '--plan', str(cli_plan_dir / 'plan.json'),
+        '--session', str(cli_session_dir / 'session.json'),
+        '--scope', cli_stop_scope,
+        '--approve-scope-sha256', stop_scope['scope_sha256'],
+        '--approved-identity-sha256', launched['identity_sha256'])
     assert stopped['status'] == 'stopped' and not stopped['process_alive']
     assert private not in [Path(value) for value in environment.values()]
     _synthetic_shadow(tmp_path, monkeypatch, install_plan, installed, report,
