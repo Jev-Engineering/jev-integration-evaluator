@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parent
 PINNED = {
     'pyproject.toml': 'f7f4ca92cd76f67862d1fd2e476114f28dc8da6d7db8ce68a904ff96fed706d9',
     'src/registered_alpha/__init__.py': 'ee3d08a82f10edefbf1cc563dbffecf18772db62fbd82d4bee5ad8a9425c371a',
-    'src/registered_alpha/connected_authority.py': 'a7129ae497c25d1ffcecd7b0b6ef00f7c3880db28e12c52dcf7cbd98a8d0a5eb',
+    'src/registered_alpha/connected_authority.py': '9f04ad2053a232af8c9bb5e3aa314fdb4904d7a9e84c9d36080ff35e1d0f6b87',
     'src/registered_alpha/console.py': '19f152bfa720de7ab3baa9c6db24c000f9058904bec741a3a5f19fc8dd08f7c7',
     'src/registered_alpha/host.py': '097d23c5ce68b53c59038fb8ac195744d8ab9adafa2bdf1ce1939ed91a67d4e5',
     'src/registered_alpha/requirements.lock': '21ac598980a951f6b4e0f098bc1756ccfffbbe7e8c12d36a228c8381ca0c013b',

@@ -5,6 +5,7 @@ import hashlib
 import hmac
 import secrets
 import sqlite3
+import os
 
 import pytest
 
@@ -32,6 +33,8 @@ def grant_for(ledger, *, new_identity=NEW, old_placements=None, mapping=None):
     now = datetime.now(timezone.utc)
     return dict(schema_version='1.0', kind='connected-generation-transfer-v1',
                 action='upgrade', old_identity=ledger.identity, new_identity=new_identity,
+                old_plan_sha256=digest('old approved plan'),
+                new_plan_sha256=digest('new approved plan'),
                 old_binding_sha256=digest('old binding'), new_binding_sha256=digest('new binding'),
                 session_head_sha256=digest('stopped session head'),
                 history_sha256=digest(ledger.generation_snapshot()), limits=ledger.limits,
@@ -210,3 +213,33 @@ def test_final_boundary_rechecks_authority_and_exact_effect_history(tmp_path, fa
     restored = RuntimeLedger(path, identity=OLD, **LIMITS)
     assert restored.generation_snapshot()['state'] == before['state']
     restored.release()
+
+
+@pytest.mark.parametrize('drift', ['marker_hardlink', 'database_hardlink',
+                                   'marker_permissions', 'database_permissions'])
+def test_historical_status_refuses_ledger_file_identity_or_permission_drift(tmp_path, drift):
+    path = tmp_path / 'ledger'
+    ledger = RuntimeLedger(path, identity=OLD, **LIMITS)
+    ledger.close_task('task')
+    grant = grant_for(ledger)
+    ledger.release()
+    RuntimeLedger.transfer_generation(path, grant=grant, verify_authority=authenticated(grant))
+    target = path if drift.startswith('marker') else path.with_name(path.name + '.sqlite')
+    original_mode = target.stat().st_mode & 0o777
+    peer = tmp_path / 'other-link'
+    try:
+        if drift.endswith('hardlink'):
+            os.link(target, peer)
+        else:
+            target.chmod(0o666)
+        with pytest.raises(InputError, match='ledger_permissions_changed'):
+            RuntimeLedger.generation_transfer_status(path, grant=grant,
+                                                       verify_authority=authenticated(grant))
+    finally:
+        peer.unlink(missing_ok=True)
+        target.chmod(original_mode)
+    recovered = RuntimeLedger.generation_transfer_status(path, grant=grant,
+        verify_authority=authenticated(grant))
+    assert recovered['status'] == 'committed'
+    assert recovered['current_generation_grant_sha256'] == digest(grant)
+    assert recovered['current_history_sha256'] == recovered['receipt']['after_sha256']

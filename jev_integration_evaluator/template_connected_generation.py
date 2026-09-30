@@ -52,8 +52,8 @@ def _verify(public: Path, kind: str, exact: str, signature: str) -> bool:
         if (len(pem) > 4096 or not pem.startswith(b'-----BEGIN PUBLIC KEY-----\n')
                 or b'PRIVATE KEY' in pem):
             return False
-        key_info = subprocess.run([str(_OPENSSL), 'pkey', '-pubin', '-in', str(public),
-                                   '-text', '-noout'], capture_output=True,
+        key_info = subprocess.run([str(_OPENSSL), 'pkey', '-pubin', '-text', '-noout'],
+                                  input=pem, capture_output=True,
                                   timeout=2, env=_OPENSSL_ENV, check=False)
         if (key_info.returncode or len(key_info.stdout) > 4096
                 or b'Public-Key: (256 bit)' not in key_info.stdout
@@ -250,6 +250,8 @@ def plan_connected_generation_transfer(old_session: str | Path, new_plan: dict,
     grant = {'schema_version': '1.0', 'kind': 'connected-generation-transfer-v1',
              'action': action, 'old_identity': old['identity'],
              'new_identity': new['identity'],
+             'old_plan_sha256': old_plan['plan_sha256'],
+             'new_plan_sha256': new_plan['plan_sha256'],
              'old_binding_sha256': old['binding_sha256'],
              'new_binding_sha256': new['binding_sha256'],
              'session_head_sha256': trusted_old_head,
@@ -338,6 +340,8 @@ def connected_generation_status(old_session: str | Path, new_session: str | Path
     parent = state.get('generation_parent')
     if (parent is None or parent['run_id'] != old_state['run_id']
             or parent['old_plan_sha256'] != old_plan['plan_sha256']
+            or grant['old_plan_sha256'] != old_plan['plan_sha256']
+            or grant['new_plan_sha256'] != new_plan['plan_sha256']
             or parent['old_session_head_sha256'] != trusted_old_head
             or parent['grant_sha256'] != digest(grant)
             or parent['action'] != grant['action']
@@ -361,13 +365,27 @@ def reconcile_connected_generation(old_session: str | Path, new_session: str | P
         signature_file=signature_file, trusted_old_head=trusted_old_head)
     if status['ledger']['status'] != 'committed':
         return status
-    child = delivery.offline._safe_directory(new_session, exists=True)
-    with delivery._locked(child):
-        _, rows, state, _ = delivery._open(child)
-        if state['stage'] == 'generation_pending':
-            state['stage'] = 'installed'
-            delivery._event(child, rows, 'generation_committed', state)
-        elif state['stage'] != 'installed':
-            raise ConnectedGenerationError('connected_generation_child_changed')
+    _, old_plan = _stopped(old_session, trusted_old_head)
+    verify = _authority(old_plan, grant, signature_file)
+    old_reference = read_json(Path(old_plan['off_provenance']['launch_environment'][
+        'REGISTERED_ALPHA_CONNECTED_REF']))
+    def activate(ledger_status: dict) -> None:
+        if (ledger_status['current_identity'] != grant['new_identity']
+                or ledger_status['current_generation_grant_sha256'] != digest(grant)
+                or ledger_status['current_history_sha256'] != ledger_status['receipt']['after_sha256']):
+            raise ConnectedGenerationError('connected_generation_stale_transfer')
+        child = delivery.offline._safe_directory(new_session, exists=True)
+        with delivery._locked(child):
+            _, rows, state, plan = delivery._open(child)
+            if (plan['plan_sha256'] != grant['new_plan_sha256']
+                    or state.get('generation_parent', {}).get('grant_sha256') != digest(grant)):
+                raise ConnectedGenerationError('connected_generation_child_changed')
+            if state['stage'] == 'generation_pending':
+                state['stage'] = 'installed'
+                delivery._event(child, rows, 'generation_committed', state)
+            elif state['stage'] != 'installed':
+                raise ConnectedGenerationError('connected_generation_child_changed')
+    RuntimeLedger.generation_transfer_status(old_reference['ledger_path'],
+        grant=grant, verify_authority=verify, on_current=activate)
     return connected_generation_status(old_session, new_session, grant=grant,
         signature_file=signature_file, trusted_old_head=trusted_old_head)

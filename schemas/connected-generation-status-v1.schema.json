@@ -14,7 +14,7 @@
   "$defs": {
     "sha": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
     "ledger": {"type": "object", "additionalProperties": false,
-      "required": ["kind", "status", "receipt", "grant_sha256", "current_identity"],
+      "required": ["kind", "status", "receipt", "grant_sha256", "current_identity", "current_history_sha256", "current_generation_grant_sha256"],
       "properties": {
         "kind": {"const": "connected-generation-transfer-status-v1"},
         "status": {"enum": ["not_transferred", "history_changed", "committed"]},
@@ -27,7 +27,9 @@
             "after_sha256": {"$ref": "#/$defs/sha"},
             "sequence": {"type": "integer", "minimum": 1}}}]},
         "grant_sha256": {"$ref": "#/$defs/sha"},
-        "current_identity": {"$ref": "#/$defs/sha"}
+        "current_identity": {"$ref": "#/$defs/sha"},
+        "current_history_sha256": {"$ref": "#/$defs/sha"},
+        "current_generation_grant_sha256": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/sha"}]}
       }}
   }
 }

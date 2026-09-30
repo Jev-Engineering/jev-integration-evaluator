@@ -13,6 +13,7 @@ from contextlib import contextmanager
 import os
 from pathlib import Path
 import sqlite3
+import stat
 import threading
 
 from ..budget import BudgetCoordinator
@@ -318,7 +319,8 @@ class RuntimeLedger(BudgetCoordinator):
             ledger.release()
 
     @classmethod
-    def generation_transfer_status(cls, path, *, grant, verify_authority):
+    def generation_transfer_status(cls, path, *, grant, verify_authority,
+                                   on_current=None):
         """Read a committed transfer receipt without replay, startup or writes.
 
         Expired grants can authenticate historical receipt readback. An active
@@ -340,13 +342,33 @@ class RuntimeLedger(BudgetCoordinator):
                 or any(part.is_symlink() for part in (path, database, *path.parents))
                 or any(Path(str(database) + suffix).is_symlink() for suffix in ('-wal', '-shm'))):
             raise InputError('runtime_generation_existing_ledger_required')
+        def private_file(target: Path, *, marker: bool = False) -> bool:
+            info = target.stat()
+            return (stat.S_ISREG(info.st_mode) and info.st_uid == os.getuid()
+                    and info.st_nlink == 1 and not (info.st_mode & 0o022)
+                    and (marker or not (info.st_mode & 0o077)))
+        if os.name != 'nt':
+            parent_info = path.parent.stat()
+            if (not stat.S_ISDIR(parent_info.st_mode)
+                    or parent_info.st_uid != os.getuid()
+                    or parent_info.st_mode & 0o077
+                    or not private_file(path, marker=True)
+                    or not private_file(database)
+                    or any(sidecar.exists() and not private_file(sidecar) for sidecar in
+                           (Path(str(database) + '-wal'), Path(str(database) + '-shm')))):
+                raise InputError('runtime_generation_ledger_permissions_changed')
         holder = cls.__new__(cls)
         try:
             holder._file = path.open('r+b')
+            if os.name != 'nt':
+                opened = os.fstat(holder._file.fileno())
+                named = path.stat()
+                if (opened.st_dev, opened.st_ino) != (named.st_dev, named.st_ino) or not private_file(path, marker=True):
+                    raise InputError('runtime_generation_ledger_permissions_changed')
             holder._lock_file()
             holder._db = sqlite3.connect(database.resolve().as_uri() + '?mode=ro',
                                         uri=True, timeout=0, isolation_level=None)
-            holder._db.execute('BEGIN')
+            holder._db.execute('BEGIN IMMEDIATE' if on_current is not None else 'BEGIN')
             table = holder._db.execute("SELECT 1 FROM sqlite_master WHERE type='table' "
                                        "AND name='generation_transfers'").fetchone()
             row = (holder._db.execute('SELECT payload FROM generation_transfers WHERE grant_sha256=?',
@@ -357,12 +379,16 @@ class RuntimeLedger(BudgetCoordinator):
             state = json.loads(state_row[0])
             effects = [list(item) for item in holder._db.execute(
                 'SELECT identity,status FROM effects ORDER BY identity')]
+            current_history_sha = digest(dict(state=state, effects=effects))
+            current_generation_sha = (state.get('generation') or {}).get('grant_sha256')
             if row is None:
                 status = dict(kind='connected-generation-transfer-status-v1',
                             status=('not_transferred' if state['identity'] == grant['old_identity']
                                     and digest(dict(state=state, effects=effects)) == grant['history_sha256']
                                     else 'history_changed'), receipt=None,
-                            grant_sha256=grant_sha, current_identity=state['identity'])
+                            grant_sha256=grant_sha, current_identity=state['identity'],
+                            current_history_sha256=current_history_sha,
+                            current_generation_grant_sha256=current_generation_sha)
                 validate_contract(status, 'connected-generation-transfer-status-v1')
                 return status
             receipt = json.loads(row[0])
@@ -370,8 +396,12 @@ class RuntimeLedger(BudgetCoordinator):
             if receipt['grant_sha256'] != grant_sha or receipt['before_sha256'] != grant['history_sha256']:
                 raise InputError('runtime_generation_receipt_changed')
             status = dict(kind='connected-generation-transfer-status-v1', status='committed',
-                          receipt=receipt, grant_sha256=grant_sha, current_identity=state['identity'])
+                          receipt=receipt, grant_sha256=grant_sha, current_identity=state['identity'],
+                          current_history_sha256=current_history_sha,
+                          current_generation_grant_sha256=current_generation_sha)
             validate_contract(status, 'connected-generation-transfer-status-v1')
+            if on_current is not None:
+                on_current(status)
             return status
         except (OSError, sqlite3.Error, ValueError, KeyError):
             raise InputError('runtime_generation_history_unavailable') from None

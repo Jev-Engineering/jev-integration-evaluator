@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import ast
+import copy
 from datetime import datetime, timedelta, timezone
 import hashlib
 import importlib.util
@@ -309,6 +310,27 @@ def test_two_installed_connected_generations_keep_one_ledger_and_retained_rollba
         assert recovered['run_id'] == created['run_id']
         assert connected_generation_status(first, second, grant=grant,
             signature_file=signature, trusted_old_head=old_head)['ledger']['status'] == 'committed'
+        wrong_env = dict(plans[1][0]['off_provenance']['launch_environment'])
+        wrong_env['REGISTERED_ALPHA_TASK_ID'] = 'unapproved-plan-task'
+        wrong_observation = copy.deepcopy(plans[1][0]['off_provenance']['observation'])
+        for check in wrong_observation['checks']:
+            check['path'] = str(tmp_path / ('unapproved-' + check['role'] + '.bin'))
+            check['before_sha256'] = None
+        wrong_plan = plan_connected_delivery(installed[1]['plan'],
+            trusted_install_receipt_sha256=installed[1]['receipt']['receipt_sha256'],
+            trusted_package_receipt_sha256=installed[1]['plan']['package_receipt']['receipt_sha256'],
+            installed_binding=installed[1]['binding'],
+            trusted_binding_sha256=installed[1]['binding']['binding_sha256'],
+            observation=wrong_observation,
+            launch_environment=wrong_env)
+        wrong_child = tmp_path / 'session-wrong-plan'
+        wrong_parent = copy.deepcopy(connected_delivery._open(second)[2]['generation_parent'])
+        create_connected_session(wrong_child, wrong_plan,
+            approved_plan_sha256=wrong_plan['plan_sha256'], generation_parent=wrong_parent)
+        with pytest.raises(InputError, match='child_changed'):
+            reconcile_connected_generation(first, wrong_child, grant=grant,
+                signature_file=signature, trusted_old_head=old_head)
+        assert connected_session_status(wrong_child)['stage'] == 'generation_pending'
         upgraded = RuntimeLedger(ledger_path, identity=grant['new_identity'], **limits)
         assert upgraded.snapshot()['calls'] == 1
         assert upgraded.snapshot()['closed_tasks'] == 1
@@ -336,7 +358,7 @@ def test_two_installed_connected_generations_keep_one_ledger_and_retained_rollba
         scope = _scope(current, plans[1][0], 'launch', cutoff)
         launch_connected_session(second, scope=scope, approved_scope_sha256=scope['scope_sha256'])
         deadline = time.monotonic() + 30
-        while not plans[1][2].is_file() and time.monotonic() < deadline:
+        while (not plans[1][2].is_file() or plans[1][2].read_bytes() != b'in-flight\n') and time.monotonic() < deadline:
             time.sleep(.02)
         assert plans[1][2].read_bytes() == b'in-flight\n'
         while len(calls) < 2 and time.monotonic() < deadline:
@@ -407,6 +429,17 @@ def test_two_installed_connected_generations_keep_one_ledger_and_retained_rollba
         assert rollback['new_identity'] == grant['old_identity']
         assert rollback['old_identity'] == grant['new_identity']
         assert rollback['history_sha256'] == digest(snapshot)
+        stale = tmp_path / 'session-stale-transfer'
+        create_connected_session(stale, plans[1][0],
+            approved_plan_sha256=plans[1][0]['plan_sha256'], generation_parent=wrong_parent)
+        historical = connected_generation_status(first, stale, grant=grant,
+            signature_file=signature, trusted_old_head=old_head)
+        assert historical['ledger']['status'] == 'committed'
+        assert historical['ledger']['current_generation_grant_sha256'] == digest(rollback)
+        with pytest.raises(InputError, match='stale_transfer'):
+            reconcile_connected_generation(first, stale, grant=grant,
+                signature_file=signature, trusted_old_head=old_head)
+        assert connected_session_status(stale)['stage'] == 'generation_pending'
     finally:
         for path, plan in sessions:
             if path.exists():

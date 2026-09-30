@@ -49,8 +49,23 @@ def _public_key() -> Path:
             or any(character not in '0123456789abcdef' for character in expected)):
         raise RuntimeError('connected_public_key_unanchored')
     key = _private_file(reference, maximum=4096)
-    if hashlib.sha256(key.read_bytes()).hexdigest() != expected:
+    pem = key.read_bytes()
+    if hashlib.sha256(pem).hexdigest() != expected:
         raise RuntimeError('connected_public_key_changed')
+    if (not pem.startswith(b'-----BEGIN PUBLIC KEY-----\n')
+            or b'PRIVATE KEY' in pem):
+        raise RuntimeError('connected_public_key_invalid')
+    _openssl_identity()
+    try:
+        inspected = subprocess.run([str(OPENSSL), 'pkey', '-pubin', '-text', '-noout'],
+            input=pem, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+            timeout=2, env=OPENSSL_ENV, check=False)
+    except (OSError, subprocess.TimeoutExpired):
+        raise RuntimeError('connected_public_key_invalid') from None
+    if (inspected.returncode != 0 or len(inspected.stdout) > 4096
+            or b'Public-Key: (256 bit)' not in inspected.stdout
+            or b'ASN1 OID: prime256v1' not in inspected.stdout):
+        raise RuntimeError('connected_public_key_invalid')
     return key
 
 
