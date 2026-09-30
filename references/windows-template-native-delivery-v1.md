@@ -237,7 +237,7 @@ is explicit and must contain matching platform tags, all runtime dependencies,
 and exact pinned build wheels. The local runs used isolated CPython 3.10.11,
 3.13.13 and 3.14.3 venvs and owner-private, platform-specific wheelhouses;
 no global install or credentials. A fixed private pytest root retained the
-passing 3.10 run receipts, alongside separate 3.13 and 3.14 archives. Windows
-Server mutating/installed runs, broader crash and
-filesystem edge cases, and provider qualification remain pending before
+passing 3.10 run receipts, alongside separate 3.13 and 3.14 archives. The
+31-case Server checkpoint is recorded above. Additive interruption cases,
+broader crash and filesystem edge cases, and provider qualification remain pending before
 marking issue #61 fully qualified.
