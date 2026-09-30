@@ -35,7 +35,7 @@
          "then": {"properties": {
            "consumer_adapter": {"const": "examples/use-case-host/graph_runtime.py"},
            "installed_execution": {"const": "qualified_offline_l_synthetic_host"},
-           "bind": {"const": "pending_l_console_binding"},
+           "bind": {"const": "qualified_offline_l_synthetic_host"},
            "apply": {"const": "qualified_offline_l_synthetic_host"},
            "install": {"const": "qualified_offline_l_synthetic_host"},
            "launch": {"const": "qualified_offline_l_synthetic_host"},
@@ -126,7 +126,7 @@
         "install": {"enum": ["pending", "qualified_offline_l_synthetic_host", "qualified_offline_d_synthetic_host", "qualified_offline_e_synthetic_host", "qualified_offline_m_synthetic_host", "qualified_offline_h_synthetic_host"]},
         "launch": {"enum": ["pending", "qualified_offline_l_synthetic_host", "qualified_offline_d_synthetic_host", "qualified_offline_e_synthetic_host", "qualified_offline_m_synthetic_host", "qualified_offline_h_synthetic_host"]},
         "materialize": {"enum": ["pending", "qualified_offline_l_synthetic_host", "qualified_offline_d_synthetic_host", "qualified_offline_e_synthetic_host", "qualified_offline_m_synthetic_host", "qualified_offline_h_synthetic_host"]},
-        "bind": {"enum": ["pending", "pending_l_console_binding", "pending_d_console_binding", "qualified_offline_d_synthetic_host", "pending_e_console_binding", "qualified_offline_e_synthetic_host", "pending_m_console_binding", "qualified_offline_m_synthetic_host", "pending_h_console_binding", "qualified_offline_h_synthetic_host"]},
+        "bind": {"enum": ["pending", "pending_l_console_binding", "qualified_offline_l_synthetic_host", "pending_d_console_binding", "qualified_offline_d_synthetic_host", "pending_e_console_binding", "qualified_offline_e_synthetic_host", "pending_m_console_binding", "qualified_offline_m_synthetic_host", "pending_h_console_binding", "qualified_offline_h_synthetic_host"]},
         "verify": {"enum": ["pending", "qualified_offline_l_synthetic_host", "qualified_offline_d_synthetic_host", "qualified_offline_e_synthetic_host", "qualified_offline_m_synthetic_host", "qualified_offline_h_synthetic_host"]},
         "status": {"enum": ["pending", "qualified_offline_l_synthetic_host", "qualified_offline_d_synthetic_host", "qualified_offline_e_synthetic_host", "qualified_offline_m_synthetic_host", "qualified_offline_h_synthetic_host"]},
         "disable": {"enum": ["pending", "qualified_offline_l_synthetic_host", "qualified_offline_d_synthetic_host", "qualified_offline_e_synthetic_host", "qualified_offline_m_synthetic_host", "qualified_offline_h_synthetic_host"]},
