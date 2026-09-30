@@ -1,0 +1,37 @@
+{
+  "candidates": {
+    "JEV-DA938C3C7965": {
+      "file": "src/registered_dual/work_queue.py",
+      "file_sha256": "db2a51bd2751a1dcfff052104ccec28c369cba6f59d73f2508ee218c5bc0bf87",
+      "pattern": "C",
+      "source_sha256": "699646626985360579dc29ce72915cc0bcdd9f04758dfb0476e63bd2352963d6",
+      "symbol": "choose_operation"
+    },
+    "JEV-EDF19BDB65F0": {
+      "file": "src/registered_dual/alpha.py",
+      "file_sha256": "ec04a01d497f35f10d51607b636023bc2b1f622e87bc6b7fe99de300adc02d32",
+      "pattern": "C",
+      "source_sha256": "6ffd699882cfb7913a1fb200408d789535ad7899f67b580e40e81376167dd54e",
+      "symbol": "select_registered_tool"
+    }
+  },
+  "files": {
+    "pyproject.toml": "6bae5f8680ae5b2cf054431e177ce22a94c5e13770187497c0df7044db7e574f",
+    "src/registered_dual/__init__.py": "ee3d08a82f10edefbf1cc563dbffecf18772db62fbd82d4bee5ad8a9425c371a",
+    "src/registered_dual/alpha.py": "ec04a01d497f35f10d51607b636023bc2b1f622e87bc6b7fe99de300adc02d32",
+    "src/registered_dual/connected_authority.py": "6d78e48d8991c5e93878451a1491b93737f7fab2b1a9493f37fd3a23e126704c",
+    "src/registered_dual/console.py": "bf3516e197d2ca6cc90514edd663125d0593003c274185d60b0f3e94e47c1dd9",
+    "src/registered_dual/requirements.lock": "21ac598980a951f6b4e0f098bc1756ccfffbbe7e8c12d36a228c8381ca0c013b",
+    "src/registered_dual/runtime.json": "0c1f169e847504851b588cac189b805f24b317288411ca9699b16cbf41ea0252",
+    "src/registered_dual/work_queue.py": "db2a51bd2751a1dcfff052104ccec28c369cba6f59d73f2508ee218c5bc0bf87"
+  },
+  "qualification": {
+    "activation_authorized": false,
+    "measured_benefit": false,
+    "mode": "off_with_code_owned_synthetic_shadow",
+    "platform": "linux-x86_64-cpython3.13",
+    "provider_contacted": false
+  },
+  "schema_version": "1.0",
+  "status": "source_reviewed_for_offline_composite"
+}

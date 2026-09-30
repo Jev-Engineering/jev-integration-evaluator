@@ -8,6 +8,22 @@ and receipt semantics. A connected launch starts only from a separate
 interpret a package receipt, installed binding digest, or mode flag as egress
 authority.
 
+The `registered-dual-connected-v1` profile adds a separately reviewed 1.0.2
+host with two source-bound Python placements under one normal installed
+console, stable task and durable budget. Its exact
+[`connected-composite-installed-bind`](connected-composite-binding-v1.md)
+report includes both host/adapter origins and one shared console and
+public-only loader. `template connected-plan --host-profile
+registered-dual-connected-v1` selects only that finite host shape; omitting
+the selector preserves the original Alpha plan bytes. The dual fixture uses
+`REGISTERED_DUAL_CONNECTED_REF` and `REGISTERED_DUAL_AUTH_PUBKEY_FILE` as
+private references. Its code-owned `DUAL_PERMIT` defaults to zero for a
+connected launch. An offline local TLS test explicitly permits shadow,
+observes both independent baseline effects and a malformed model response,
+and then stops each session through an exact scope. It does not establish a
+real provider, combined observed canary/active gate, connected upgrade or
+rollback, or measured benefit.
+
 The source application, modified verification, offline wheel build, and
 installation follow [the package profile](template-installation-v1.md). The
 read-only `template connected-installed-bind` step then recomputes wheel RECORD,

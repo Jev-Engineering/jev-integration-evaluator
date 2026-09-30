@@ -58,6 +58,21 @@ _PROFILES = {
         'binary': ('D_HOLD',),
         'injected': ('D_CONNECTED_REF_SHA256', 'D_AUTH_PUBKEY_SHA256'),
     },
+    'registered-dual-connected-v1': {
+        'source': {'JEV-DA938C3C7965': 'src/registered_dual/work_queue.py',
+                   'JEV-EDF19BDB65F0': 'src/registered_dual/alpha.py'},
+        'members': {'console': 'registered_dual/console.py',
+                    'loader': 'registered_dual/connected_authority.py'},
+        'references': ('REGISTERED_DUAL_CONNECTED_REF',
+                       'REGISTERED_DUAL_AUTH_PUBKEY_FILE'),
+        'allowed': frozenset({'DUAL_TASK_ID', 'DUAL_PERMIT', 'DUAL_AUDIT_PATH',
+                              'REGISTERED_ALPHA_EFFECTS', 'WORK_QUEUE_EFFECTS',
+                              'DUAL_HOLD', 'DUAL_READY_PATH', 'DUAL_RELEASE_PATH',
+                              'DUAL_REPEAT'}),
+        'binary': ('DUAL_PERMIT', 'DUAL_HOLD', 'DUAL_REPEAT'),
+        'injected': ('REGISTERED_DUAL_CONNECTED_REF_SHA256',
+                     'REGISTERED_DUAL_AUTH_PUBKEY_SHA256'),
+    },
 }
 
 
@@ -68,7 +83,21 @@ def _profile(name: str | None) -> dict:
 
 
 def _check_profile_binding(binding: dict, profile: dict) -> None:
-    if (binding['source_file'] != profile['source']
+    if type(profile['source']) is dict:
+        sources = profile['source']
+        if (binding['kind'] != 'connected-installed-composite-binding-v1'
+                or set(binding['candidate_ids']) != set(sources)
+                or set(binding['placements']) != set(sources)
+                or any(binding['placements'][name]['source_file'] != source
+                       or binding['placements'][name]['origins']['host']['wheel_member'] !=
+                          source.removeprefix('src/')
+                       for name, source in sources.items())
+                or any(binding['shared_origins'].get(role, {}).get('wheel_member') != member
+                       for role, member in profile['members'].items())):
+            raise ConnectedDeliveryError('connected_host_profile_binding_mismatch')
+        return
+    if (binding['kind'] != 'connected-installed-binding-v1'
+            or binding['source_file'] != profile['source']
             or any(binding['origins'].get(role, {}).get('wheel_member') != member
                    for role, member in profile['members'].items())):
         raise ConnectedDeliveryError('connected_host_profile_binding_mismatch')
@@ -118,12 +147,19 @@ def plan_connected_delivery(install_plan: dict, *, trusted_install_receipt_sha25
             'ready', 'entrypoint_reached', 'integration_reachable', 'outcome_verified'}:
         raise ConnectedDeliveryError('connected_independent_outcome_schedule_required')
     receipt = offline._receipt(install_plan, trusted_install_receipt_sha256)
-    actual = derive_installed_binding(install_plan['package_plan'],
+    if host_profile == 'registered-dual-connected-v1':
+        from .template_connected_composite_binding import derive_installed_composite_binding
+        derive = derive_installed_composite_binding
+    else:
+        derive = derive_installed_binding
+    actual = derive(install_plan['package_plan'],
         install_plan['package_receipt'], install_plan, receipt,
         trusted_package_receipt_sha256=trusted_package_receipt_sha256,
         trusted_install_receipt_sha256=trusted_install_receipt_sha256)
+    has_loader = ('loader' in actual['shared_origins'] if host_profile ==
+                  'registered-dual-connected-v1' else 'loader' in actual['origins'])
     if (actual != installed_binding or actual['binding_sha256'] != trusted_binding_sha256
-            or 'loader' not in actual['origins']):
+            or not has_loader):
         raise ConnectedDeliveryError('connected_installed_binding_unverified')
     _check_profile_binding(actual, profile)
     plan = {'schema_version': '1.0', 'kind': 'connected-delivery-plan-v1',
@@ -401,7 +437,14 @@ def _result(state: dict, head: str, plan: dict) -> dict:
             return target.is_file() and not target.is_symlink() and file_hash(target) == expected
         except (OSError, InputError):
             return False
-    origin_paths = {row['path'] for row in plan['installed_binding']['origins'].values()}
+    binding = plan['installed_binding']
+    if binding['kind'] == 'connected-installed-composite-binding-v1':
+        origin_paths = {row['path'] for row in (
+            *binding['shared_origins'].values(),
+            *(origin for placement in binding['placements'].values()
+              for origin in placement['origins'].values()))}
+    else:
+        origin_paths = {row['path'] for row in binding['origins'].values()}
     sources_current = all(current(row['path'], row['sha256'],
                                   origin=row['path'] in origin_paths)
                           for row in plan['installed_binding']['source_plan']['files'])

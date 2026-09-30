@@ -123,15 +123,26 @@ class HostRuntimeLifecycle:
             if installed_binding is not None:
                 from ..contracts import validate_contract
                 try:
-                    validate_contract(installed_binding, 'connected-installed-binding-v1')
+                    binding_kind = installed_binding['kind']
+                    if binding_kind not in ('connected-installed-binding-v1',
+                                            'connected-installed-composite-binding-v1'):
+                        raise LifecycleError('connected_installed_binding_unverified')
+                    validate_contract(installed_binding, binding_kind)
                     if (digest({key: value for key, value in installed_binding.items()
                                 if key != 'binding_sha256'}) != installed_binding['binding_sha256']
                             or connected_config['source_plan'] != installed_binding['source_plan']
                             or connected_config['source_root'] != installed_binding['site']
                             or verify_authority('installed_binding', installed_binding['binding_sha256']) is not True):
                         raise LifecycleError('connected_installed_binding_unverified')
+                    if binding_kind == 'connected-installed-composite-binding-v1':
+                        if (set(installed_binding['candidate_ids']) != set(adapters)
+                                or set(installed_binding['placements']) != set(adapters)
+                                or installed_binding['candidate_ids'] != sorted(adapters)):
+                            raise LifecycleError('connected_installed_binding_unverified')
                 except (InputError, KeyError, TypeError, ValueError):
                     raise LifecycleError('connected_installed_binding_unverified') from None
+                if binding_kind == 'connected-installed-composite-binding-v1' and startup_mode in ('canary', 'active'):
+                    raise LifecycleError('connected_composite_combined_gate_required')
             root = Path(connected_config['source_root'])
             if (not root.is_absolute() or not root.is_dir() or
                     any(part.is_symlink() for part in (root, *root.parents))):
@@ -155,7 +166,28 @@ class HostRuntimeLifecycle:
                     raise LifecycleError('connected_source_binding_missing')
                 adapter_relative = bound['adapter_path']
                 origin = getattr(adapter, '__file__', None)
-                if installed_binding is not None:
+                if (installed_binding is not None and installed_binding['kind'] ==
+                        'connected-installed-composite-binding-v1'):
+                    placement = installed_binding['placements'][name]
+                    origins = placement['origins']
+                    shared = installed_binding['shared_origins']
+                    if (placement['source_file'] != source_relative
+                            or placement['reviewed_file_sha256'] != spec['source'].get('file_sha256')
+                            or placement['applied_file_sha256'] != bound['applied_file_sha256']
+                            or bound['reviewed_file_sha256'] != placement['reviewed_file_sha256']
+                            or adapter_relative != origins['adapter']['wheel_member']
+                            or origin is None or Path(origin).resolve() != Path(origins['adapter']['path'])
+                            or bound['adapter_sha256'] != origins['adapter']['sha256']
+                            or covered.get(Path(origins['host']['path'])) != origins['host']['sha256']
+                            or covered.get(Path(origins['adapter']['path'])) != origins['adapter']['sha256']
+                            or any(covered.get(Path(row['path'])) != row['sha256']
+                                   for row in shared.values())
+                            or covered.get(Path(installed_binding['reviewed_project_path'])) !=
+                               installed_binding['reviewed_project_sha256']
+                            or any(not Path(row['path']).resolve().is_relative_to(root)
+                                   for row in (*origins.values(), *shared.values()))):
+                        raise LifecycleError('connected_source_binding_mismatch')
+                elif installed_binding is not None:
                     origins = installed_binding['origins']
                     if (installed_binding['candidate_id'] != name
                             or installed_binding['source_file'] != source_relative
@@ -346,8 +378,15 @@ class HostRuntimeLifecycle:
         self._source_plan = copy.deepcopy(connected_config['source_plan']) if connected else None
         self._installed_binding_digest = (installed_binding['binding_sha256']
                                           if installed_binding is not None else None)
-        self._installed_origin_paths = (tuple(row['path'] for row in installed_binding['origins'].values())
-                                        if installed_binding is not None else ())
+        if installed_binding is None:
+            self._installed_origin_paths = ()
+        elif installed_binding['kind'] == 'connected-installed-composite-binding-v1':
+            self._installed_origin_paths = tuple(row['path'] for row in (
+                *installed_binding['shared_origins'].values(),
+                *(origin for placement in installed_binding['placements'].values()
+                  for origin in placement['origins'].values())))
+        else:
+            self._installed_origin_paths = tuple(row['path'] for row in installed_binding['origins'].values())
         self._grant_digest = digest(authority['egress_grant']) if connected else None
         self._grant_expires = authority['egress_grant']['expires_at'] if connected else None
         self._deployment_expires = (authority['activation']['evidence']['deployment_grant']['expires_at']
