@@ -1,7 +1,7 @@
 # Python console entrypoint binding v1
 
 `template bind` derives an exact, reviewed console caller contract for
-`python.bounded-tail-call@1.0.0` recipe C, E, H or M. It reads source and `pyproject.toml`
+`python.bounded-tail-call@1.0.0` recipe C, D, E, H or M. It reads source and `pyproject.toml`
 without importing the target. It writes a bound template request and a binding
 report outside the target. It does not modify, execute, install or activate the
 host. Existing `template validate`, `template materialize`, `implement-*` commands
@@ -11,7 +11,7 @@ and legacy receipts retain their original behavior.
 
 The execution profile is one process on Linux x86-64, Python 3.10 or
 newer, with a regular package in the repository root or `src/`, a
-`pyproject.toml` `[project.scripts]` console command, and a reviewed recipe C/E/H/M
+`pyproject.toml` `[project.scripts]` console command, and a reviewed recipe C/D/E/H/M
 `module-tail-call-v1` seam. The console function lives in a separate module in
 the same package. The selected host module owns the seam, a one-argument task
 caller that directly returns that seam call, all recipe C policy/registry/guard
@@ -59,7 +59,11 @@ the code-owned consumer enforces those H semantics. Recipe M also requires the
 bounded task-loop form because a claim disposition is not a console exit code.
 The binder verifies caller identity and lifecycle only; citation checks,
 approval, audit durability and release remain the M consumer's responsibility.
-Recipe C retains both existing forms. Other recipes remain unsupported by this binder.
+Recipe D requires the bounded task-loop form because a retrieval handoff result
+is not a console exit code. The binder owns task lifecycle and caller identity;
+corpus revision, provenance, contradiction retention, and answer release remain
+the D consumer's code-owned checks. Recipe C retains both existing forms.
+Other recipes remain unsupported by this binder.
 
 The explicit binding file names the chosen script and existing host-owned
 startup factories. It cannot synthesize policy, credentials, approvals, audit

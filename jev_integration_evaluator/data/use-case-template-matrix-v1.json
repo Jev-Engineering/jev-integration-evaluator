@@ -100,7 +100,7 @@
       "benefit": "unknown",
       "contract_id": "use-case.D@1.0.0",
       "materialize": "qualified_offline_d_synthetic_host",
-      "bind": "pending_d_console_binding",
+      "bind": "qualified_offline_d_synthetic_host",
       "verify": "qualified_offline_d_synthetic_host",
       "status": "qualified_offline_d_synthetic_host",
       "disable": "qualified_offline_d_synthetic_host",
