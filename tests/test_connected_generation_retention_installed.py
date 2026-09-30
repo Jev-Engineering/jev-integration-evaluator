@@ -418,9 +418,9 @@ def test_bound_h_connected_upgrade_and_retained_rollback(tmp_path, monkeypatch):
         assert rollback['old_identity'] == grant['new_identity']
         retained_status = connected_session_status(retained)
         retained_scope = _scope(retained_status, retained_plan, 'launch', cutoff)
+        sessions.append((retained, retained_plan))
         launch_connected_session(retained, scope=retained_scope,
             approved_scope_sha256=retained_scope['scope_sha256'])
-        sessions.append((retained, retained_plan))
         deadline = time.monotonic() + 25
         retained_status = connected_session_status(retained)
         while retained_status['process_alive'] and time.monotonic() < deadline:
