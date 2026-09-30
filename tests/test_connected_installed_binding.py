@@ -25,7 +25,7 @@ from jev_integration_evaluator.template_connected_binding import derive_installe
 from jev_integration_evaluator.template_connected_delivery import (
     ConnectedDeliveryError, plan_connected_delivery, create_connected_session,
     launch_connected_session, connected_session_status, stop_connected_session)
-from jev_integration_evaluator.io import digest
+from jev_integration_evaluator.io import InputError, digest
 from jev_integration_evaluator.template_catalog import prepare_template_binding
 from jev_integration_evaluator.use_case_templates import use_case_matrix
 
@@ -65,6 +65,10 @@ def test_connected_alpha_102_has_separate_source_review(tmp_path):
     assert prepared['request']['implementation_spec']['entrypoint_binding']['kind'] == 'single-request-v1'
     assert 'connected_authority' in (target / 'src/registered_alpha/console.py').read_text()
     assert '1.0.2' in (target / 'pyproject.toml').read_text()
+    loader = target / 'src/registered_alpha/connected_authority.py'
+    loader.write_bytes(loader.read_bytes() + b'\n# changed after source review\n')
+    with pytest.raises(InputError, match='connected_alpha_source_review_changed'):
+        qualification.source_matched_request(target)
 
 
 def test_connected_alpha_102_authenticates_exact_grant_and_revocation(tmp_path, monkeypatch):

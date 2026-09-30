@@ -6,6 +6,9 @@ CPython 3.13 console generation. The command requires externally retained exact
 package and install receipt hashes. It verifies the existing off-mode package
 and install generations, the wheel `RECORD`, installed module bytes, and the
 retained reviewed `pyproject.toml`. It does not import the target or launch it.
+The Alpha 1.0.2 preparation checks the independently pinned host, console,
+options loader, and project hashes before it generates an adapter; a changed
+loader is rejected at source review.
 
 The report records the distinct source path in the implementation specification
 (`src/.../host.py`), installed wheel members (`package/host.py`, generated
