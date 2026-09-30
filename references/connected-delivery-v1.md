@@ -24,6 +24,13 @@ and then stops each session through an exact scope. It does not establish a
 real provider, combined observed canary/active gate, connected upgrade or
 rollback, or measured benefit.
 
+The reviewed Linux Alpha, retrieval D and dual loaders accept only an anchored
+public-only P-256 key. Before deriving environment evidence or checking a grant,
+they inspect the exact pinned PEM bytes with fixed trusted OpenSSL 3 tooling.
+RSA, other EC curves, private-key PEM and inspection failures are rejected;
+a valid signature from another algorithm does not satisfy this profile. Source
+and loader pin changes require fresh bindings and installed receipts.
+
 The source application, modified verification, offline wheel build, and
 installation follow [the package profile](template-installation-v1.md). The
 read-only `template connected-installed-bind` step then recomputes wheel RECORD,

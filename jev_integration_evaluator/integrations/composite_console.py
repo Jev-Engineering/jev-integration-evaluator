@@ -86,7 +86,7 @@ def render_composite_console(root: Path, selection: dict, specs: dict) -> tuple[
             'bf3516e197d2ca6cc90514edd663125d0593003c274185d60b0f3e94e47c1dd9'
         and loader_anchored
         and hashlib.sha256(loader.read_bytes()).hexdigest() ==
-            '6d78e48d8991c5e93878451a1491b93737f7fab2b1a9493f37fd3a23e126704c')
+            '43331e54755ac9530c3a233045420268d090f50e274520162f12bb672f029854')
     entry = _function(tree, first['function'], 0)
     _function(tree, 'observe_composite_runtime', 3)
     statement = entry.body[-1]
