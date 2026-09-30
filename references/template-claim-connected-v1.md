@@ -42,11 +42,13 @@ uncertain failures for reconciliation; never rerun a partial claim trio.
 
 `tests/test_use_case_claim_connected.py` is the installed qualification driver;
 it uses a local TLS synthetic protocol endpoint and a separate grant issuer.
-The consumer and the expected raw effect oracle are separate. Source matching,
+The consumer and the expected raw effect oracle are separate.
 The qualification schedule includes accepted and revised claims, wrong-model
-and malformed responses, fabricated and partial citations, requests for more
+and malformed/timeout responses, fabricated and partial citations, requests for more
 evidence, denied host approval and duplicate task IDs. Every rejected claim
-must leave support, audit and claim files absent. Public-key signatures use
+must leave support, audit and claim files absent. A between-task revoked
+reference must preserve the first effect and its settled ledger charge,
+refuse all second-task effects and preserve the shared task limit. Public-key signatures use
 the exact hashed PEM snapshot through an owned file descriptor, including a
 foreign-key path-replacement negative. These rows remain pending until the
 fresh installed qualification completes.

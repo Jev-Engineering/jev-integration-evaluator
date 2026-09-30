@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path
 import ssl
+import sqlite3
 import subprocess
 import sys
 from threading import Thread
@@ -60,6 +61,11 @@ def _observation(folder: Path, *, revised: bool = False) -> dict:
                            ('outcome_verified', folder / 'claim-two/claim.json', second_claim))]}
 
 
+def _ledger_state(ledger: Path) -> dict:
+    with sqlite3.connect(f'file:{ledger}.sqlite?mode=ro', uri=True) as db:
+        return json.loads(db.execute('SELECT payload FROM state WHERE id=1').fetchone()[0])
+
+
 @pytest.mark.parametrize('scenario', ('accept', 'revise'))
 def test_m_installed_connected_shadow_preserves_raw_claim_provenance(tmp_path, monkeypatch, scenario):
     name = os.environ.get('JEV_TEMPLATE_WHEELHOUSE')
@@ -104,6 +110,9 @@ def test_m_installed_connected_shadow_preserves_raw_claim_provenance(tmp_path, m
             raw = self.rfile.read(int(self.headers['Content-Length']))
             request = json.loads(raw)
             calls.append({'path': self.path, 'sha256': hashlib.sha256(raw).hexdigest()})
+            mode = response_mode['value']
+            if mode == 'timeout':
+                time.sleep(3)
             answers = {}
             for name, question in request['questions'].items():
                 if question['type'] == 'noul':
@@ -114,16 +123,19 @@ def test_m_installed_connected_shadow_preserves_raw_claim_provenance(tmp_path, m
                     answers[name] = {'type': 'choice', 'choice': choice, 'confidence': 1.0,
                                      'probabilities': {label: float(label == choice)
                                                        for label in labels}}
-            model = request['model'] if response_mode['value'] != 'wrong' else request['model'] + '-wrong'
+            model = request['model'] if mode != 'wrong' else request['model'] + '-wrong'
             payload = json.dumps({'model': model, 'answers': answers,
                                  'usage': {'input_tokens': 1, 'output_tokens': 1}}).encode()
-            if response_mode['value'] == 'malformed':
+            if mode == 'malformed':
                 payload = b'{not-json'
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.send_header('Content-Length', str(len(payload)))
             self.end_headers()
-            self.wfile.write(payload)
+            try:
+                self.wfile.write(payload)
+            except (OSError, ssl.SSLError):
+                pass
 
     cert, cert_key = tmp_path / 'cert.pem', tmp_path / 'cert-key.pem'
     generated = subprocess.run(['/usr/bin/openssl', 'req', '-x509', '-newkey', 'rsa:2048',
@@ -154,13 +166,13 @@ def test_m_installed_connected_shadow_preserves_raw_claim_provenance(tmp_path, m
         grant['environment_digest'] = config['environment_digest']
         monkeypatch.setenv('TYPESAFE_API_KEY', 'synthetic-local-only')
 
-        cases = [('valid', 2), ('wrong-model', 1), ('malformed', 1)]
+        cases = [('valid', 2), ('wrong-model', 1), ('malformed', 1), ('timeout', 1), ('revoke', 1)]
         if scenario == 'accept':
             cases.extend((label, 0) for label in
                          ('fabricated', 'partial', 'request-evidence', 'approval-denied', 'duplicate'))
         for label, minimum_calls in cases:
             response_mode['value'] = 'wrong' if label == 'wrong-model' else (
-                'malformed' if label == 'malformed' else 'valid')
+                label if label in ('malformed', 'timeout') else 'valid')
             prior_calls = len(calls)
             folder = tmp_path / ('effects-' + label)
             folder.mkdir(mode=0o700)
@@ -178,6 +190,7 @@ def test_m_installed_connected_shadow_preserves_raw_claim_provenance(tmp_path, m
                                        'egress_grant': _issue(private, 'egress_grant', digest(grant))}}
             reference.write_text(json.dumps(manifest), encoding='utf-8')
             reference.chmod(0o600)
+            original_reference = reference.read_bytes()
             environment = {'M_CONNECTED_REF': str(reference), 'M_AUTH_PUBKEY_FILE': str(public),
                            'M_EFFECT_DIRECTORY': str(folder), 'M_READY_PATH': str(folder / 'ready.txt'),
                            'M_RELEASE_PATH': str(folder / 'release.txt'), 'M_HOLD': '1',
@@ -237,19 +250,41 @@ def test_m_installed_connected_shadow_preserves_raw_claim_provenance(tmp_path, m
             assert status['independent_checks']['integration_reachable']
             assert not status['independent_checks']['outcome_verified']
             deadline = time.monotonic() + 10
-            while len(calls) < prior_calls + minimum_calls and time.monotonic() < deadline:
+            while (len(calls) < prior_calls + 1 or _ledger_state(ledger)['inflight']) and time.monotonic() < deadline:
                 time.sleep(.02)
-            assert minimum_calls <= len(calls) - prior_calls <= 2
+            assert len(calls) - prior_calls == 1
+            assert _ledger_state(ledger)['calls'] == 1 and _ledger_state(ledger)['inflight'] == {}
+            if label == 'timeout':
+                records = [json.loads(line) for line in
+                           (folder / 'timeout-events.jsonl').read_text().splitlines()]
+                assert records and all(record == {'type': 'assessment_error',
+                    'error_class': 'TimeoutError'} for record in records)
             assert calls[-1]['path'] == '/v1/systemone'
+            if label == 'revoke':
+                reference.write_bytes(original_reference + b'\n')
             (folder / 'release.txt').write_bytes(b'go\n')
-            for member, raw in zip(('support.json', 'audit.json', 'claim.json'), _expected('claim-two', revised=scenario == 'revise')):
-                _wait(folder / 'claim-two' / member, raw)
-            assert connected_session_status(session)['independent_checks']['outcome_verified']
+            if label != 'revoke':
+                for member, raw in zip(('support.json', 'audit.json', 'claim.json'), _expected('claim-two', revised=scenario == 'revise')):
+                    _wait(folder / 'claim-two' / member, raw)
+                assert connected_session_status(session)['independent_checks']['outcome_verified']
             deadline = time.monotonic() + 20
             while connected_session_status(session)['process_alive'] and time.monotonic() < deadline:
                 time.sleep(.05)
             assert not connected_session_status(session)['process_alive']
             assert Path(str(ledger) + '.sqlite').is_file()
+            state = _ledger_state(ledger)
+            assert state['inflight'] == {} and len(state['tasks']) == 2
+            if label == 'revoke':
+                for member in ('support.json', 'audit.json', 'claim.json'):
+                    assert not (folder / 'claim-two' / member).exists()
+                assert not connected_session_status(session)['independent_checks']['outcome_verified']
+                assert state['calls'] == 1 and len(calls) - prior_calls == 1
+                reference.write_bytes(original_reference)
+                for member, raw in zip(('support.json', 'audit.json', 'claim.json'), _expected('claim-one', revised=scenario == 'revise')):
+                    assert (folder / 'claim-one' / member).read_bytes() == raw
+            else:
+                assert minimum_calls <= state['calls'] <= 2
+                assert minimum_calls <= len(calls) - prior_calls <= 2
             stop = _scope(connected_session_status(session), plan, 'stop')
             assert stop_connected_session(session, scope=stop,
                 approved_scope_sha256=stop['scope_sha256'])['stage'] == 'stopped'

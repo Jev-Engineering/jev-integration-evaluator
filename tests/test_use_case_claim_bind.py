@@ -157,7 +157,11 @@ def _connected_baseline() -> str:
                          ('M_AUDIT_PATH', 'audit.json'),
                          ('M_CLAIM_PATH', 'claim.json')):
         os.environ[name] = str(directory / member)
-    if task == 'claim-two':
+    variant = os.environ.get('M_CLAIM_SCENARIO', 'accept')
+    draft = claim_consumer.fixture_draft(request, variant)
+    claim_consumer.commit(request, host_approved=os.environ.get('M_APPROVAL', '1') == '1',
+                          generated=draft)
+    if task == 'claim-one':
         with Path(os.environ['M_READY_PATH']).open('x', encoding='utf-8') as stream:
             stream.write('ready\\n')
         if os.environ.get('M_HOLD') == '1':
@@ -167,10 +171,6 @@ def _connected_baseline() -> str:
                 time.sleep(0.02)
             if not release.exists():
                 raise TimeoutError('claim_release_timeout')
-    variant = os.environ.get('M_CLAIM_SCENARIO', 'accept')
-    draft = claim_consumer.fixture_draft(request, variant)
-    claim_consumer.commit(request, host_approved=os.environ.get('M_APPROVAL', '1') == '1',
-                          generated=draft)
     return 'inspect'
 '''
 
@@ -181,9 +181,25 @@ from . import claim_consumer
 from pathlib import Path
 import os
 import hashlib
+import json
+import threading
 class Audit:
-    def __init__(self): self.records = []
-    def append(self, record): self.records.append(record)
+    def __init__(self):
+        self.records = []
+        self.lock = threading.Lock()
+    def append(self, record):
+        self.records.append(record)
+        if record.get('type') == 'assessment_error' and record.get('error_class') == 'TimeoutError':
+            directory = os.environ.get('M_EFFECT_DIRECTORY')
+            if directory:
+                path = Path(directory) / 'timeout-events.jsonl'
+                raw = (json.dumps(dict(type='assessment_error', error_class='TimeoutError'), sort_keys=True) + '\\n').encode()
+                with self.lock:
+                    descriptor = os.open(path, os.O_WRONLY | os.O_APPEND | os.O_CREAT | os.O_NOFOLLOW, 0o600)
+                    with os.fdopen(descriptor, 'ab') as stream:
+                        stream.write(raw)
+                        stream.flush()
+                        os.fsync(stream.fileno())
 def limits():
     return dict(max_calls_per_task=2, max_cost_per_task=2,
                 max_total_calls=2, max_total_cost=2, max_in_flight=1, max_tasks=2)
