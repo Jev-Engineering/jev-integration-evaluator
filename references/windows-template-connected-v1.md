@@ -30,6 +30,21 @@ restore authority. Stop targets the exact retained Job and verifies process
 death. A launch intent makes replay a refusal, including after an interrupted
 attempt. Recovery of an unknown pending launch requires independent review.
 
+The merged #118 Windows Server 3.13 run failed once while polling a synthetic
+child: its first Win32 wait reported live, then `QueryFullProcessImageNameW`
+could not return the image. The hosted Win32 error value was not recorded.
+A local Windows 3.13 installed run with a zero-time recheck repeated the same
+failure after 3,391 seconds; its failed JUnit receipt is retained separately.
+A local real-process/Job probe reproduced `ERROR_ACCESS_DENIED` (5) while the
+same handle remained unsignaled, then observed exit within 100 ms in 40 of 40
+short-child trials. This supports process teardown as the cause but does not
+identify the hosted error value. After an identity-query failure, observation
+waits at most 100 ms on the same retained handle. Only a signaled handle is
+classified exited; a live or unknown result retains the original identity
+error. The real Win32 regression injects an image-query failure after an
+owned process has exited; separate controlled wait states prove that a
+still-live or uncertain process is never treated as exited.
+
 The child receives a credential reference resolved only at launch, public
 key and reference hashes, and a bounded environment. It never receives the
 issuer private key. Windows CNG verifies signed grants using a pinned
