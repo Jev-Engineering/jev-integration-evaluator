@@ -164,11 +164,12 @@ jobs:
           python -m pytest -q tests/test_windows_template_preflight.py
           tests/test_windows_template_package_inputs.py tests/test_windows_template_owned.py
           tests/test_windows_template_session.py tests/test_windows_template_delivery.py
-          tests/test_windows_template_run.py -k "not non_windows"
+          tests/test_windows_template_run.py tests/test_windows_template_install_faults.py
+          -k "not non_windows"
           --junitxml "$env:RUNNER_TEMP\windows-template-delivery.xml"
       - name: Reject skipped or missing required delivery cases
         run: |
-          python -c "import sys,xml.etree.ElementTree as E; r=E.parse(sys.argv[1]).getroot(); s=[r] if r.tag=='testsuite' else list(r.findall('testsuite')); n=sum(int(x.get('tests',0)) for x in s); k=sum(int(x.get('skipped',0)) for x in s); f=sum(int(x.get('failures',0))+int(x.get('errors',0)) for x in s); print(f'native Windows delivery cases: collected={n} skipped={k} failed={f}'); sys.exit(1 if n < 32 or k or f else 0)" "$env:RUNNER_TEMP\windows-template-delivery.xml"
+          python -c "import sys,xml.etree.ElementTree as E; r=E.parse(sys.argv[1]).getroot(); s=[r] if r.tag=='testsuite' else list(r.findall('testsuite')); n=sum(int(x.get('tests',0)) for x in s); k=sum(int(x.get('skipped',0)) for x in s); f=sum(int(x.get('failures',0))+int(x.get('errors',0)) for x in s); print(f'native Windows delivery cases: collected={n} skipped={k} failed={f}'); sys.exit(1 if n < 35 or k or f else 0)" "$env:RUNNER_TEMP\windows-template-delivery.xml"
       - run: python scripts/validate_package.py --check-manifest
   python-only:
     runs-on: ubuntu-latest

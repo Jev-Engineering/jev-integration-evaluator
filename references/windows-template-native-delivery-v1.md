@@ -9,15 +9,19 @@ not isolate untrusted Python, authorize a provider, or establish benefit.
 
 The observed local path is Windows 11 Pro build 26200, x86-64 native CPython
 3.10.11, 3.13.13 and 3.14.3 on local NTFS. Each interpreter has a retained
-private three-generation receipt archive. The profile parser also accepts
-Windows Server 2022, whose mutating and installed journeys have not run.
+private three-generation receipt archive. Windows Server 2022 build 20348
+completed the 31-case native off-mode delivery checkpoint on CPython 3.10.11
+and 3.13.15 with no skipped required cases in the
+[actual main-commit run for PR #106](https://github.com/Jev-Engineering/jev-integration-evaluator/actions/runs/36647200079),
+at `a7c0b025612f1fbb3a0cb7e1721773316db4821b`.
 The `windows-template-delivery` CI job schedules the native preparation,
 ownership, package/install, Job Object session and retained-generation tests
 on disposable Windows Server 2022 runners with CPython 3.10 and 3.13. It
 prepares the declared dependency closure before the offline tests and rejects
-any skipped required native case. Server qualification remains pending until
-those jobs actually pass on the final committed revision; discovery jobs do
-not establish delivery support. The job excludes only the explicit POSIX
+any skipped required native case. Additive interruption cases require fresh
+qualification on their final committed revision; the historical 31-case run
+does not establish those additions. Discovery jobs do not establish delivery
+support. The job excludes only the explicit POSIX
 rejection tests named `test_non_windows_*`.
 The disposable job disables Git newline conversion before checkout so source
 contract hashes and release checksums refer to committed bytes on both
@@ -75,6 +79,14 @@ and hash checked, but it is not a sandbox for malicious build hooks. No index,
 target compiler configuration, global package installation or user site is
 used. A failed build or install retains an immutable intent and its owner
 directory for review; it cannot be blindly replayed or deleted.
+The native interrupted-install fixture schedules three controlled I/O failures:
+after the durable intent, after real hash-locked host installation, and after
+installed verification but before the receipt commit. Each retains the exact
+owner and intent, reports `blocked_recovery`, refuses same-generation replay
+without running another effect command, and rejects use as an anchored install.
+It checks unchanged reviewed source and unrelated fixture bytes. These are
+software fault injections; abrupt process death and power loss remain distinct
+qualification cases. No retained partial install grants launch authority.
 
 The installer makes a separate protected NTFS venv generation, installs only
 hash-locked offline wheels, checks dependency closure, wheel RECORD, native
