@@ -331,6 +331,10 @@ def test_two_installed_connected_generations_keep_one_ledger_and_retained_rollba
             reconcile_connected_generation(first, wrong_child, grant=grant,
                 signature_file=signature, trusted_old_head=old_head)
         assert connected_session_status(wrong_child)['stage'] == 'generation_pending'
+        stale = tmp_path / 'session-stale-transfer'
+        create_connected_session(stale, plans[1][0],
+            approved_plan_sha256=plans[1][0]['plan_sha256'], generation_parent=wrong_parent)
+        assert connected_session_status(stale)['stage'] == 'generation_pending'
         upgraded = RuntimeLedger(ledger_path, identity=grant['new_identity'], **limits)
         assert upgraded.snapshot()['calls'] == 1
         assert upgraded.snapshot()['closed_tasks'] == 1
@@ -429,9 +433,6 @@ def test_two_installed_connected_generations_keep_one_ledger_and_retained_rollba
         assert rollback['new_identity'] == grant['old_identity']
         assert rollback['old_identity'] == grant['new_identity']
         assert rollback['history_sha256'] == digest(snapshot)
-        stale = tmp_path / 'session-stale-transfer'
-        create_connected_session(stale, plans[1][0],
-            approved_plan_sha256=plans[1][0]['plan_sha256'], generation_parent=wrong_parent)
         historical = connected_generation_status(first, stale, grant=grant,
             signature_file=signature, trusted_old_head=old_head)
         assert historical['ledger']['status'] == 'committed'

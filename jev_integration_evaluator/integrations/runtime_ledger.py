@@ -403,6 +403,8 @@ class RuntimeLedger(BudgetCoordinator):
             if on_current is not None:
                 on_current(status)
             return status
+        except InputError:
+            raise
         except (OSError, sqlite3.Error, ValueError, KeyError):
             raise InputError('runtime_generation_history_unavailable') from None
         finally:

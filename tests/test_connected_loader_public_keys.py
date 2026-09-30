@@ -15,6 +15,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 LOADERS = (
     ('alpha', 'tests/independent_hosts/registered_alpha_connected/src/registered_alpha/connected_authority.py', 'REGISTERED_ALPHA'),
+    ('alpha-103', 'tests/independent_hosts/registered_alpha_connected_103/src/registered_alpha/connected_authority.py', 'REGISTERED_ALPHA'),
     ('retrieval', 'tests/independent_hosts/retrieval_connected/connected_authority.py', 'D'),
     ('dual', 'tests/independent_hosts/registered_dual_connected/src/registered_dual/connected_authority.py', 'REGISTERED_DUAL'),
 )
