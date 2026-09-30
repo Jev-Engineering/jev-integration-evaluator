@@ -21,8 +21,9 @@ def make_patch_plan(root: str | Path, changes: list[dict], candidate_ids: list[s
         rel=change.get("file","")
         if FORBIDDEN.search(rel): raise InputError("Patch touches a protected path")
         p=safe_child(root,rel)
-        if rel in paths: raise InputError("Duplicate patch path")
-        paths.add(rel)
+        path_key=rel.casefold() if os.name == 'nt' else rel
+        if path_key in paths: raise InputError("Duplicate patch path")
+        paths.add(path_key)
         if set(change)-{"file","new_content"}: raise InputError("Changes only allow file and new_content")
         new=change.get("new_content")
         if not isinstance(new,str) or len(new.encode())>2_000_000: raise InputError("New content must be bounded text")
@@ -39,6 +40,12 @@ def make_patch_plan(root: str | Path, changes: list[dict], candidate_ids: list[s
 
 
 def apply_patch_plan(root: str | Path, plan: dict, approval: str, *, progress=None) -> dict:
+    if os.name == 'nt':
+        from . import capabilities as cap
+        try:
+            cap._windows_check_directory_path(root, purpose='source_mutation')
+        except (cap.CapabilityError, OSError):
+            raise InputError('windows_source_root_unavailable') from None
     root=Path(root).resolve()
     body={k:v for k,v in plan.items() if k!="plan_digest"}
     if digest(body)!=plan.get("plan_digest") or approval!=plan.get("plan_digest"):
@@ -46,25 +53,41 @@ def apply_patch_plan(root: str | Path, plan: dict, approval: str, *, progress=No
     if plan.get("repository_identity")!=digest(str(root)): raise InputError("Plan belongs to a different repository path")
     before={}; paths=set()
     for c in plan["changes"]:
-        if c["file"] in paths or FORBIDDEN.search(c["file"]): raise InputError("Duplicate/protected path in patch")
-        paths.add(c["file"])
+        path_key=c["file"].casefold() if os.name == 'nt' else c["file"]
+        if path_key in paths or FORBIDDEN.search(c["file"]): raise InputError("Duplicate/protected path in patch")
+        paths.add(path_key)
         p=safe_child(root,c["file"])
         if hashlib.sha256(c["new_content"].encode()).hexdigest()!=c["new_sha256"]: raise InputError("New content hash mismatch")
         actual=file_hash(p) if p.exists() else None
         if actual!=c["old_sha256"]: raise InputError("Stale patch: target changed after planning")
         before[c["file"]]=p.read_bytes() if p.exists() else None
-    written=[]
+    written=[]; owned_identities={}
     try:
         for c in plan["changes"]:
             p=safe_child(root,c["file"])
             # Recheck just before writing. For concurrent writers use a dedicated worktree.
             if (file_hash(p) if p.exists() else None)!=c["old_sha256"]: raise InputError("Concurrent source change")
             if progress is not None: progress("write_started", c)
-            atomic_text(p,c["new_content"]); written.append(c)
+            if os.name == 'nt':
+                from .windows_source_mutation import write_reviewed_text
+                owned_identities[c['file']] = write_reviewed_text(
+                    p, c['new_content'], c['old_sha256'])
+            else:
+                atomic_text(p,c["new_content"])
+            written.append(c)
             if progress is not None: progress("write_completed", c)
     except Exception:
         for c in reversed(written):
             p=safe_child(root,c["file"])
+            if os.name == 'nt':
+                from .windows_source_mutation import remove_owned_created, write_reviewed_text
+                original=before[c['file']]
+                if original is None:
+                    remove_owned_created(p, owned_identities[c['file']], c['new_sha256'])
+                else:
+                    write_reviewed_text(p, original.decode('utf-8'), c['new_sha256'],
+                                        expected_identity=owned_identities[c['file']])
+                continue
             if p.exists() and file_hash(p)==c["new_sha256"]:
                 original=before[c["file"]]
                 if original is None: p.unlink()
