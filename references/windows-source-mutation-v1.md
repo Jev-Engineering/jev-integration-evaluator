@@ -26,8 +26,12 @@ requires external reconciliation. The intent lives outside the approved source
 tree; an unknown intent, identity or recovery state fails closed. This protocol
 does not claim an atomic multi-file transaction or a general compare-and-swap.
 
-A new file uses `CREATE_NEW` and a protected owner-only ACL. A partial write is
-removed by its retained creation handle. The normal implementation lifecycle
+A new file is first written to a private `CREATE_NEW` sibling with a protected
+owner-only ACL. A partial write is removed by its retained stage handle. The
+stage identity and reviewed hash are durably recorded in an external intent
+before its handle is renamed into the absent target without replacement.
+An interrupted prepared creation removes only that exact identity; an
+interrupted committed creation retains it and refuses replay. The normal implementation lifecycle
 records each applied NTFS identity in its sealed journal. Its rollback removes
 an owned creation by handle only when identity and expected bytes still match;
 an update rollback requires the retained applied identity before making a new
@@ -43,7 +47,7 @@ requires a revision-one self-relative descriptor and excludes unrelated security
 descriptor layout and group fields, which Windows can reserialize while the
 owner/DACL remains unchanged. The native tests cover ordinary inherited and
 protected ACLs separately, a hidden attribute, a named stream, peer atomic
-save, interrupted intents and normal lifecycle rollback.
+save, interrupted update and creation intents, and normal lifecycle rollback.
 Other metadata and access-control forms need their own native qualification.
 There is no provider call, target execution or
 activation in this source mutation step.

@@ -59,7 +59,7 @@ def apply_patch_plan(root: str | Path, plan: dict, approval: str, *, progress=No
         paths.add(path_key)
         p=safe_child(root,c["file"])
         if hashlib.sha256(c["new_content"].encode()).hexdigest()!=c["new_sha256"]: raise InputError("New content hash mismatch")
-        if os.name == 'nt' and c['old_sha256'] is not None:
+        if os.name == 'nt':
             from .windows_source_mutation import reconcile_pending_reviewed_write
             if reconcile_pending_reviewed_write(p, c['old_sha256'], c['new_sha256'], root):
                 raise InputError('Interrupted owned source write reconciled; review a new plan')

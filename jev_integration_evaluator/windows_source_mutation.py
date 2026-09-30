@@ -240,10 +240,10 @@ def _open_stage_writer(io_path: str, identity: tuple[int, int]) -> int:
     return fd
 
 
-def _intent_path(path: Path, old_sha: str, new_sha: str,
+def _intent_path(path: Path, old_sha: str | None, new_sha: str,
                  repository_root: Path | None = None) -> Path:
     display, _ = cap._windows_absolute_path(path)
-    key = hashlib.sha256((display.casefold() + '\0' + old_sha + '\0' + new_sha)
+    key = hashlib.sha256((display.casefold() + '\0' + (old_sha or '') + '\0' + new_sha)
                          .encode('utf-8')).hexdigest()[:32]
     local = os.environ.get('LOCALAPPDATA')
     if not local:
@@ -301,7 +301,7 @@ def _commit_intent(path: Path, identity: tuple[int, int], raw_sha: str) -> str:
         os.close(fd)
 
 
-def reconcile_pending_reviewed_write(path: Path, old_sha: str, new_sha: str,
+def reconcile_pending_reviewed_write(path: Path, old_sha: str | None, new_sha: str,
                                      repository_root: Path) -> bool:
     """Reconcile one exact approved interrupted write; never replay the edit."""
     intent = _intent_path(path, old_sha, new_sha, repository_root)
@@ -323,26 +323,63 @@ def reconcile_pending_reviewed_write(path: Path, old_sha: str, new_sha: str,
             record = json.loads(lines[0])
         except (ValueError, UnicodeDecodeError):
             raise InputError('windows_source_intent_invalid') from None
-        if (type(record) is not dict or set(record) !=
-                {'kind', 'target', 'old_sha256', 'new_sha256', 'old_identity',
-                 'stage_identity', 'stage', 'backup'} or
-                record['kind'] != 'jev-reviewed-source-intent-v1' or
-                record['target'] != path.name or record['old_sha256'] != old_sha or
-                record['new_sha256'] != new_sha or
-                any(type(record[key]) is not list or len(record[key]) != 2
-                    for key in ('old_identity', 'stage_identity')) or
-                any(type(v) is not int or v <= 0
-                    for key in ('old_identity', 'stage_identity') for v in record[key]) or
-                type(record['stage']) is not str or
-                not record['stage'].startswith('.jev-source-') or
-                not cap._windows_safe_component(record['stage']) or
-                type(record['backup']) is not str or
-                record['backup'] != record['stage'] + '.backup'):
-            raise InputError('windows_source_intent_invalid')
-        intent_identity = cap._windows_file_identity(intent_info)
-        intent_sha = hashlib.sha256(raw).hexdigest()
+        if type(record) is dict and record.get('kind') == 'jev-reviewed-source-create-v1':
+            if (set(record) != {'kind', 'target', 'new_sha256', 'stage_identity', 'stage'}
+                    or record['target'] != path.name or old_sha is not None
+                    or record['new_sha256'] != new_sha
+                    or type(record['stage_identity']) is not list
+                    or len(record['stage_identity']) != 2
+                    or any(type(v) is not int or v <= 0 for v in record['stage_identity'])
+                    or type(record['stage']) is not str
+                    or not record['stage'].startswith('.jev-source-')
+                    or not cap._windows_safe_component(record['stage'])):
+                raise InputError('windows_source_intent_invalid')
+            intent_identity = cap._windows_file_identity(intent_info)
+            intent_sha = hashlib.sha256(raw).hexdigest()
+            create_record = record
+        else:
+            create_record = None
+        if create_record is None:
+            if (type(record) is not dict or set(record) !=
+                    {'kind', 'target', 'old_sha256', 'new_sha256', 'old_identity',
+                     'stage_identity', 'stage', 'backup'} or
+                    record['kind'] != 'jev-reviewed-source-intent-v1' or
+                    record['target'] != path.name or record['old_sha256'] != old_sha or
+                    record['new_sha256'] != new_sha or
+                    any(type(record[key]) is not list or len(record[key]) != 2
+                        for key in ('old_identity', 'stage_identity')) or
+                    any(type(v) is not int or v <= 0
+                        for key in ('old_identity', 'stage_identity') for v in record[key]) or
+                    type(record['stage']) is not str or
+                    not record['stage'].startswith('.jev-source-') or
+                    not cap._windows_safe_component(record['stage']) or
+                    type(record['backup']) is not str or
+                    record['backup'] != record['stage'] + '.backup'):
+                raise InputError('windows_source_intent_invalid')
+            intent_identity = cap._windows_file_identity(intent_info)
+            intent_sha = hashlib.sha256(raw).hexdigest()
     finally:
         os.close(intent_fd)
+    if create_record is not None:
+        stage_identity = tuple(create_record['stage_identity'])
+        stage = path.parent / create_record['stage']
+        if path.exists():
+            _, target_io = cap._windows_absolute_path(path)
+            fd, info = _lease(target_io, pin_name=True)
+            try:
+                if (cap._windows_file_identity(info) != stage_identity or
+                        hashlib.sha256(os.read(fd, 2_000_001)).hexdigest() != new_sha):
+                    raise InputError('windows_source_peer_target_preserved')
+            finally:
+                os.close(fd)
+            if not committed:
+                remove_owned_created(path, stage_identity, new_sha)
+        elif committed:
+            raise InputError('windows_source_committed_target_missing')
+        if stage.exists():
+            remove_owned_created(stage, stage_identity, new_sha)
+        remove_owned_created(intent, intent_identity, intent_sha)
+        return True
     parent = path.parent
     stage = parent / record['stage']
     backup = parent / record['backup']
@@ -435,6 +472,84 @@ def remove_owned_created(path: Path, identity: tuple[int, int], expected_sha256:
             os.close(fd)
 
 
+def _create_reviewed_text(path: Path, raw: bytes, repository_root: Path | None) -> tuple[int, int]:
+    """Stage a creation and durably bind its identity before naming the target."""
+    display, _ = cap._windows_absolute_path(path)
+    stage = Path(display).with_name('.jev-source-' + uuid.uuid4().hex)
+    _, stage_io = cap._windows_absolute_path(stage)
+    digest = hashlib.sha256(raw).hexdigest()
+    intent = _intent_path(path, None, digest, repository_root)
+    _, _, _, pinned = cap._windows_pin_directory_path(path.parent,
+                                                       purpose='source_mutation')
+    fd = None
+    stage_identity = intent_identity = intent_sha = None
+    renamed = committed = False
+    recovery_required = False
+    try:
+        _check_parent(path.parent, pinned)
+        fd = cap._windows_create_private_file(stage_io, delete_access=True)
+        stage_identity = cap._windows_file_identity(os.fstat(fd))
+        if os.write(fd, raw) != len(raw):
+            raise InputError('windows_source_partial_write')
+        os.fsync(fd)
+        intent_identity, intent_sha = _write_intent(intent, {
+            'kind': 'jev-reviewed-source-create-v1', 'target': path.name,
+            'new_sha256': digest, 'stage_identity': list(stage_identity),
+            'stage': stage.name,
+        })
+        _check_parent(path.parent, pinned)
+        _rename_owned(fd, path)
+        renamed = True
+        os.close(fd)
+        fd = None
+        _, target_io = cap._windows_absolute_path(path)
+        result_fd, result = _lease(target_io)
+        try:
+            if (cap._windows_file_identity(result) != stage_identity or
+                    hashlib.sha256(os.read(result_fd, 2_000_001)).hexdigest() != digest):
+                raise InputError('windows_source_creation_postcondition_recovery_required')
+        finally:
+            os.close(result_fd)
+        intent_sha = _commit_intent(intent, intent_identity, intent_sha)
+        committed = True
+        remove_owned_created(intent, intent_identity, intent_sha)
+        intent_identity = None
+        return stage_identity
+    except Exception as error:
+        if committed:
+            raise InputError('windows_source_committed_cleanup_required') from error
+        try:
+            if fd is not None:
+                import msvcrt
+                final = cap._windows_final_path(msvcrt.get_osfhandle(fd))
+                _, target_io = cap._windows_absolute_path(path)
+                if not (cap._windows_same_path(final, stage_io) or
+                        cap._windows_same_path(final, target_io)):
+                    raise InputError('windows_source_creation_identity_unknown')
+                _delete_owned_handle(fd)
+                os.close(fd)
+                fd = None
+            elif stage_identity is not None:
+                if renamed:
+                    remove_owned_created(path, stage_identity, digest)
+                elif stage.exists():
+                    remove_owned_created(stage, stage_identity, digest)
+            if intent_identity is not None:
+                remove_owned_created(intent, intent_identity, intent_sha)
+                intent_identity = None
+        except Exception as recovery_error:
+            recovery_required = True
+            raise InputError('windows_source_creation_recovery_required') from recovery_error
+        if isinstance(error, (cap.CapabilityError, OSError)):
+            raise InputError('windows_source_mutation_unavailable') from None
+        raise
+    finally:
+        if fd is not None:
+            os.close(fd)
+        for pinned_fd in reversed(pinned):
+            os.close(pinned_fd)
+
+
 def write_reviewed_text(path: Path, text: str, expected_sha256: str | None,
                         *, expected_identity: tuple[int, int] | None = None,
                         repository_root: Path | None = None) -> tuple[int, int]:
@@ -454,6 +569,8 @@ def write_reviewed_text(path: Path, text: str, expected_sha256: str | None,
             _ensure_parent(Path(repository_root), Path(display).parent)
         except (cap.CapabilityError, OSError):
             raise InputError('windows_source_parent_unavailable') from None
+    if expected_sha256 is None:
+        return _create_reviewed_text(path, raw, repository_root)
     pinned = []
     source_fd = stage_fd = None
     stage_path = Path(display).with_name('.jev-source-' + uuid.uuid4().hex)
@@ -473,33 +590,6 @@ def write_reviewed_text(path: Path, text: str, expected_sha256: str | None,
         _, _, _, pinned = cap._windows_pin_directory_path(
             Path(display).parent, purpose='source_mutation')
         _check_parent(Path(display).parent, pinned)
-        if expected_sha256 is None:
-            # CREATE_NEW refuses any concurrently introduced file or reparse point.
-            stage_fd = cap._windows_create_private_file(io_path, delete_access=True)
-            created_identity = cap._windows_file_identity(os.fstat(stage_fd))
-            created_security = _security(stage_fd)
-            try:
-                if os.write(stage_fd, raw) != len(raw):
-                    raise InputError('windows_source_partial_write')
-                os.fsync(stage_fd)
-            except Exception:
-                # The exclusive CREATE_NEW handle owns the identity even when
-                # a partial write made its bytes unknowable to the caller.
-                _delete_owned_handle(stage_fd)
-                created_identity = None
-                raise
-            os.close(stage_fd)
-            stage_fd = None
-            _check_parent(Path(display).parent, pinned)
-            result_fd, result = _lease(io_path)
-            try:
-                if (cap._windows_file_identity(result) != created_identity
-                        or _security(result_fd) != created_security
-                        or os.read(result_fd, 2_000_001) != raw):
-                    raise InputError('windows_source_creation_postcondition_recovery_required')
-            finally:
-                os.close(result_fd)
-            return created_identity
         source_fd, before = _lease(io_path, pin_name=True)
         old_identity = cap._windows_file_identity(before)
         if expected_identity is not None and old_identity != expected_identity:

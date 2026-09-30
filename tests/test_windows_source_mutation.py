@@ -238,6 +238,59 @@ apply_patch_plan(sys.argv[1],plan,plan['plan_digest'])
     assert not intent.exists() and not list(tmp_path.glob('.jev-source-*'))
 
 
+@pytest.mark.parametrize('phase,peer', [('rename', False), ('rename', True),
+                                        ('commit', False)])
+def test_native_create_death_uses_prepared_identity_without_replay(tmp_path, phase, peer):
+    from jev_integration_evaluator import windows_source_mutation as mutation
+
+    source = tmp_path / 'created.py'
+    plan = make_patch_plan(tmp_path, [{'file': source.name,
+                                       'new_content': 'reviewed\n'}], ['native-source'])
+    planfile = tmp_path / 'reviewed-plan.json'
+    planfile.write_text(json.dumps(plan), encoding='utf-8')
+    child = '''import json,os,sys
+from jev_integration_evaluator import windows_source_mutation as m
+from jev_integration_evaluator.implementation import apply_patch_plan
+phase=sys.argv[3]
+if phase=='rename':
+    real=m._rename_owned
+    def crash(fd,destination):
+        real(fd,destination)
+        os._exit(73)
+    m._rename_owned=crash
+else:
+    real=m._commit_intent
+    def crash(*args):
+        real(*args)
+        os._exit(74)
+    m._commit_intent=crash
+plan=json.loads(open(sys.argv[2],encoding='utf-8').read())
+apply_patch_plan(sys.argv[1],plan,plan['plan_digest'])
+'''
+    result = subprocess.run([sys.executable, '-c', child, str(tmp_path),
+                             str(planfile), phase], capture_output=True,
+                            text=True, timeout=20)
+    assert result.returncode == (73 if phase == 'rename' else 74)
+    assert source.read_bytes() == b'reviewed\n'
+    intent = mutation._intent_path(source, None, plan['changes'][0]['new_sha256'],
+                                   tmp_path)
+    assert intent.is_file()
+    if peer:
+        source.unlink()  # disposable test-owned created file
+        source.write_bytes(b'peer atomic save\n')
+        with pytest.raises(InputError, match='windows_source_peer_target_preserved'):
+            apply_patch_plan(tmp_path, plan, plan['plan_digest'])
+        assert source.read_bytes() == b'peer atomic save\n' and intent.is_file()
+        source.unlink()  # disposable test-owned peer
+    with pytest.raises(InputError, match='reconciled; review a new plan'):
+        apply_patch_plan(tmp_path, plan, plan['plan_digest'])
+    if phase == 'rename':
+        assert not source.exists()
+    else:
+        assert source.read_bytes() == b'reviewed\n'
+    assert not intent.exists() and not list(tmp_path.glob('.jev-source-*'))
+
+
 def test_native_create_verification_failure_removes_owned_file(tmp_path, monkeypatch):
     from jev_integration_evaluator import windows_source_mutation as mutation
 
@@ -262,11 +315,10 @@ def test_native_partial_create_is_deleted_by_exclusive_handle(tmp_path, monkeypa
     from jev_integration_evaluator import windows_source_mutation as mutation
 
     source = tmp_path / 'created.py'
-    _, source_io = cap._windows_absolute_path(source)
     real_write = os.write
     def partial_target_write(fd, data):
         actual = cap._windows_final_path(msvcrt.get_osfhandle(fd))
-        if cap._windows_same_path(actual, source_io):
+        if '.jev-source-' in actual.casefold() and len(data) == len(b'value = 1\n'):
             real_write(fd, data[:3])
             return 3
         return real_write(fd, data)
