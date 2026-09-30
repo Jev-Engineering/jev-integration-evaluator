@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from pathlib import Path
 import sys
 import time
@@ -53,6 +54,8 @@ def main() -> int:
     except Exception as exc:
         # Bounded diagnosis without command output, private paths or source bytes.
         failure = {'phase': phase, 'error_type': type(exc).__name__}
+        if isinstance(exc, install.InputError) and re.fullmatch(r'[a-z][a-z0-9_]{0,100}', str(exc)):
+            failure['error_code'] = str(exc)
         Path(marker_path).with_suffix('.failure.json').write_text(
             json.dumps(failure, sort_keys=True), encoding='utf-8')
         raise

@@ -50,7 +50,9 @@ def test_native_installer_process_death_preserves_intent_and_blocks_replay(
     unrelated = None
     try:
         session._kill_on_last_job_handle(job, kernel)
-        clean = {name: os.environ[name] for name in ('SystemRoot', 'WINDIR', 'TEMP', 'TMP')
+        clean = {name: os.environ[name] for name in (
+                 'SystemRoot', 'WINDIR', 'TEMP', 'TMP',
+                 'PROCESSOR_ARCHITECTURE', 'PROCESSOR_ARCHITEW6432')
                  if name in os.environ}
         clean['PATH'] = str(Path(sys.executable).parent)
         guardian_python, guardian_sha256 = session._current_guardian_python()
