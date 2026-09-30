@@ -269,7 +269,8 @@ def _open(directory: str | Path) -> tuple[Path, list[dict], dict, dict]:
 
 
 def create_connected_session(directory: str | Path, plan: dict,
-                             *, approved_plan_sha256: str) -> dict:
+                             *, approved_plan_sha256: str,
+                             generation_parent: dict | None = None) -> dict:
     offline._linux_profile()
     _check_plan(plan)
     if plan['plan_sha256'] != approved_plan_sha256:
@@ -281,9 +282,14 @@ def create_connected_session(directory: str | Path, plan: dict,
     _write_exclusive(target / 'plan.json', canonical(plan) + b'\n')
     _write_exclusive(target / 'events.jsonl', b'')
     state = {'schema_version': '1.0', 'kind': 'connected-delivery-session-v1',
-             'run_id': str(uuid.uuid4()), 'plan_sha256': plan['plan_sha256'],
-             'stage': 'installed', 'pending': None, 'launch_attempts': 0,
-             'process': None, 'failures': []}
+             'run_id': (generation_parent['run_id'] if generation_parent else str(uuid.uuid4())),
+             'plan_sha256': plan['plan_sha256'],
+             'stage': ('generation_pending' if generation_parent else 'installed'),
+             'pending': None, 'launch_attempts': 0,
+             'process': None, 'failures': (list(generation_parent['failure_history'])
+                                          if generation_parent else [])}
+    if generation_parent is not None:
+        state['generation_parent'] = copy.deepcopy(generation_parent)
     rows = []
     head = _event(target, rows, 'created', state)
     return _result(state, head, plan)
@@ -292,6 +298,11 @@ def create_connected_session(directory: str | Path, plan: dict,
 def _authority(scope: dict, approved_scope_sha256: str, head: str,
                state: dict, plan: dict, action: str) -> None:
     validate_contract(scope, 'connected-delivery-scope-v1')
+    parent = state.get('generation_parent')
+    if (action == 'launch' and parent is not None and
+            (datetime.now(timezone.utc) >= parse_utc(parent['original_expires_at'])
+             or parse_utc(scope['expires_at']) > parse_utc(parent['original_expires_at']))):
+        raise ConnectedDeliveryError('connected_original_cutoff_expired')
     if (scope['scope_sha256'] != approved_scope_sha256
             or scope['scope_sha256'] != digest({k: v for k, v in scope.items()
                                                 if k != 'scope_sha256'})

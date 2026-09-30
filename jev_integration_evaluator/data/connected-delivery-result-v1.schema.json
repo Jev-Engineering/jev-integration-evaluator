@@ -8,7 +8,7 @@
     "run_id": {"type": "string", "format": "uuid"},
     "plan_sha256": {"$ref": "#/$defs/sha"},
     "session_head_sha256": {"$ref": "#/$defs/sha"},
-    "stage": {"enum": ["installed", "launch_pending", "launched", "running", "stop_pending", "blocked_recovery", "stopped"]},
+    "stage": {"enum": ["installed", "generation_pending", "launch_pending", "launched", "running", "stop_pending", "blocked_recovery", "stopped"]},
     "pending": {"enum": [null, "launch", "stop"]},
     "launch_attempts": {"type": "integer", "minimum": 0, "maximum": 1},
     "process_alive": {"type": "boolean"},

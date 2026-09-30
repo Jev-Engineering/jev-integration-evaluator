@@ -7,6 +7,8 @@ assuming it failed. The host owns the file and its backup/retention policy.
 from __future__ import annotations
 
 import json
+import copy
+from datetime import datetime, timezone
 from contextlib import contextmanager
 import os
 from pathlib import Path
@@ -15,6 +17,7 @@ import threading
 
 from ..budget import BudgetCoordinator
 from ..io import InputError, digest
+from ..contracts import parse_utc, validate_contract
 
 
 class RuntimeLedger(BudgetCoordinator):
@@ -47,6 +50,7 @@ class RuntimeLedger(BudgetCoordinator):
             self._db.execute('CREATE TABLE IF NOT EXISTS effects (identity TEXT PRIMARY KEY, status TEXT NOT NULL)')
             super().__init__(**limits)
             self.identity = identity
+            self._generation = None
             self._durably_revoked = False
             row = self._db.execute('SELECT payload FROM state WHERE id=1').fetchone()
             if row is None:
@@ -63,6 +67,7 @@ class RuntimeLedger(BudgetCoordinator):
                 self._suspended = state['revoked']
                 self._durably_revoked = state['revoked']
                 self._overruns = state['overruns']
+                self._generation = state.get('generation')
                 if self._inflight or self._db.execute("SELECT 1 FROM effects WHERE status='pending' LIMIT 1").fetchone():
                     raise InputError('runtime_ledger_unresolved_history')
                 if self._suspended:
@@ -100,11 +105,17 @@ class RuntimeLedger(BudgetCoordinator):
                 self._file.close()
                 raise InputError('runtime_ledger_owned_by_another_process') from None
 
-    def _save(self):
+    def _state(self):
         state = dict(identity=self.identity, ledger_path=self._path_identity,
                      limits=self.limits, tasks=self._tasks,
                      inflight=self._inflight, calls=self._calls, cost=self._cost,
                      revoked=self._durably_revoked, overruns=self._overruns)
+        if self._generation is not None:
+            state['generation'] = self._generation
+        return state
+
+    def _save(self):
+        state = self._state()
         try:
             self._db.execute('BEGIN IMMEDIATE')
             self._db.execute('INSERT OR REPLACE INTO state(id,payload) VALUES(1,?)',
@@ -153,8 +164,13 @@ class RuntimeLedger(BudgetCoordinator):
         self._check_owner()
         if not placement or not operation:
             raise InputError('runtime_effect_identity_required')
-        key = digest([self.identity, digest(task_id), request_hash,
-                      placement, operation])
+        owner_identity = self.identity
+        if self._generation is not None:
+            owner_identity = self._generation['effect_owner_identity']
+            if placement not in self._generation['placements']:
+                raise InputError('runtime_effect_unregistered_generation_placement')
+            placement = self._generation['placements'][placement]
+        key = digest([owner_identity, digest(task_id), request_hash, placement, operation])
         with self._lock:
             try:
                 self._db.execute('INSERT INTO effects(identity,status) VALUES(?,?)', (key, 'pending'))
@@ -186,6 +202,181 @@ class RuntimeLedger(BudgetCoordinator):
     def _check_owner(self) -> None:
         if os.getpid() != self._pid:
             raise InputError('runtime_ledger_forked')
+
+    def generation_snapshot(self) -> dict:
+        """Hash exact accounting and effect history while holding ownership.
+
+        This read-only snapshot is evidence, never transfer or egress authority.
+        It contains hashes and accounting, not raw tasks or provider requests.
+        """
+        self._check_owner()
+        with self._lock:
+            effects = [list(row) for row in self._db.execute(
+                'SELECT identity,status FROM effects ORDER BY identity')]
+            return copy.deepcopy(dict(state=self._state(), effects=effects))
+
+    @classmethod
+    def transfer_generation(cls, path, *, grant, verify_authority):
+        """Transfer a stopped workflow without resetting spend or launching it.
+
+        The host must authenticate the exact grant independently and derive its
+        identities/placement mapping from reviewed old and new installed bindings.
+        An existing owner, unfinished task or uncertain effect blocks transfer.
+        SQLite commits the new identity and lineage together; an interruption
+        leaves either complete old or complete new state, never a fresh ledger.
+        """
+        grant = copy.deepcopy(grant)
+        validate_contract(grant, 'connected-generation-transfer-v1')
+        grant_sha = digest(grant)
+        try:
+            authenticated = verify_authority('generation_transfer', grant_sha) is True
+        except Exception:
+            authenticated = False
+        if not authenticated:
+            raise InputError('runtime_generation_transfer_unverified')
+        now = datetime.now(timezone.utc)
+        if not parse_utc(grant['issued_at']) <= now < parse_utc(grant['expires_at']):
+            raise InputError('runtime_generation_transfer_expired')
+        path = Path(path)
+        if not path.is_absolute() or not path.is_file() or not Path(str(path) + '.sqlite').is_file():
+            raise InputError('runtime_generation_existing_ledger_required')
+        ledger = cls(path, identity=grant['old_identity'], **grant['limits'])
+        try:
+            with ledger._lock:
+                before = ledger.generation_snapshot()
+                if digest(before) != grant['history_sha256']:
+                    raise InputError('runtime_generation_history_changed')
+                if (ledger._inflight or ledger._durably_revoked or ledger._overruns
+                        or any(not task['closed'] for task in ledger._tasks.values())
+                        or any(status != 'completed' for _, status in before['effects'])):
+                    raise InputError('runtime_generation_not_quiescent')
+                old = grant['old_placements']
+                mapping = grant['new_to_old_placements']
+                if (len(set(old)) != len(old) or len(mapping) != len(old)
+                        or set(mapping.values()) != set(old)
+                        or grant['old_identity'] == grant['new_identity']):
+                    raise InputError('runtime_generation_placement_mapping_invalid')
+                previous = ledger._generation
+                if previous is not None and set(previous['placements']) != set(old):
+                    raise InputError('runtime_generation_placement_mapping_invalid')
+                generation = dict(
+                    effect_owner_identity=(previous['effect_owner_identity'] if previous else ledger.identity),
+                    placements={new: (previous['placements'][prior] if previous else prior)
+                                for new, prior in mapping.items()},
+                    sequence=(previous['sequence'] + 1 if previous else 1),
+                    grant_sha256=grant_sha, previous_history_sha256=grant['history_sha256'])
+                after_state = copy.deepcopy(before['state'])
+                after_state['identity'] = grant['new_identity']
+                after_state['generation'] = generation
+                after = dict(state=after_state, effects=before['effects'])
+                receipt = dict(kind='connected-generation-transfer-receipt-v1',
+                               grant_sha256=grant_sha, before_sha256=digest(before),
+                               after_sha256=digest(after), sequence=generation['sequence'])
+                # Authenticate and check expiry again immediately before mutation.
+                try:
+                    authenticated = verify_authority('generation_transfer', grant_sha) is True
+                except Exception:
+                    authenticated = False
+                if not authenticated:
+                    raise InputError('runtime_generation_transfer_unverified')
+                if not parse_utc(grant['issued_at']) <= datetime.now(timezone.utc) < parse_utc(grant['expires_at']):
+                    raise InputError('runtime_generation_transfer_expired')
+                try:
+                    ledger._db.execute('BEGIN IMMEDIATE')
+                    row = ledger._db.execute('SELECT payload FROM state WHERE id=1').fetchone()
+                    current_effects = [list(row) for row in ledger._db.execute(
+                        'SELECT identity,status FROM effects ORDER BY identity')]
+                    if json.loads(row[0]) != before['state'] or current_effects != before['effects']:
+                        raise InputError('runtime_generation_history_changed')
+                    try:
+                        authenticated = verify_authority('generation_transfer', grant_sha) is True
+                    except Exception:
+                        authenticated = False
+                    if not authenticated:
+                        raise InputError('runtime_generation_transfer_unverified')
+                    if not parse_utc(grant['issued_at']) <= datetime.now(timezone.utc) < parse_utc(grant['expires_at']):
+                        raise InputError('runtime_generation_transfer_expired')
+                    ledger._db.execute('CREATE TABLE IF NOT EXISTS generation_transfers '
+                                       '(grant_sha256 TEXT PRIMARY KEY, payload TEXT NOT NULL)')
+                    ledger._db.execute('UPDATE state SET payload=? WHERE id=1',
+                        (json.dumps(after_state, sort_keys=True, allow_nan=False),))
+                    ledger._db.execute('INSERT INTO generation_transfers VALUES(?,?)',
+                        (grant_sha, json.dumps(receipt, sort_keys=True, allow_nan=False)))
+                    ledger._db.execute('COMMIT')
+                except BaseException as exc:
+                    if ledger._db.in_transaction:
+                        ledger._db.execute('ROLLBACK')
+                    if isinstance(exc, sqlite3.Error):
+                        raise InputError('runtime_generation_transfer_unavailable') from None
+                    raise
+                ledger.identity = grant['new_identity']
+                ledger._generation = generation
+                if ledger.generation_snapshot() != after:
+                    raise InputError('runtime_generation_transfer_postcondition_failed')
+                return receipt
+        finally:
+            ledger.release()
+
+    @classmethod
+    def generation_transfer_status(cls, path, *, grant, verify_authority):
+        """Read a committed transfer receipt without replay, startup or writes.
+
+        Expired grants can authenticate historical receipt readback. An active
+        ledger owner blocks this inspection; the caller must retain the exact
+        grant digest independently. Revoked/pending runtime state stays intact.
+        """
+        grant = copy.deepcopy(grant)
+        validate_contract(grant, 'connected-generation-transfer-v1')
+        grant_sha = digest(grant)
+        try:
+            authenticated = verify_authority('generation_transfer', grant_sha) is True
+        except Exception:
+            authenticated = False
+        if not authenticated:
+            raise InputError('runtime_generation_transfer_unverified')
+        path = Path(path)
+        database = Path(str(path) + '.sqlite')
+        if (not path.is_absolute() or not path.is_file() or not database.is_file()
+                or any(part.is_symlink() for part in (path, database, *path.parents))
+                or any(Path(str(database) + suffix).is_symlink() for suffix in ('-wal', '-shm'))):
+            raise InputError('runtime_generation_existing_ledger_required')
+        holder = cls.__new__(cls)
+        try:
+            holder._file = path.open('r+b')
+            holder._lock_file()
+            holder._db = sqlite3.connect(database.resolve().as_uri() + '?mode=ro',
+                                        uri=True, timeout=0, isolation_level=None)
+            holder._db.execute('BEGIN')
+            table = holder._db.execute("SELECT 1 FROM sqlite_master WHERE type='table' "
+                                       "AND name='generation_transfers'").fetchone()
+            row = (holder._db.execute('SELECT payload FROM generation_transfers WHERE grant_sha256=?',
+                                      (grant_sha,)).fetchone() if table else None)
+            state_row = holder._db.execute('SELECT payload FROM state WHERE id=1').fetchone()
+            if state_row is None:
+                raise InputError('runtime_generation_history_unavailable')
+            state = json.loads(state_row[0])
+            effects = [list(item) for item in holder._db.execute(
+                'SELECT identity,status FROM effects ORDER BY identity')]
+            if row is None:
+                status = dict(kind='connected-generation-transfer-status-v1',
+                            status=('not_transferred' if state['identity'] == grant['old_identity']
+                                    and digest(dict(state=state, effects=effects)) == grant['history_sha256']
+                                    else 'history_changed'), receipt=None,
+                            grant_sha256=grant_sha, current_identity=state['identity'])
+                validate_contract(status, 'connected-generation-transfer-status-v1')
+                return status
+            receipt = json.loads(row[0])
+            validate_contract(receipt, 'connected-generation-transfer-receipt-v1')
+            if receipt['grant_sha256'] != grant_sha or receipt['before_sha256'] != grant['history_sha256']:
+                raise InputError('runtime_generation_receipt_changed')
+            status = dict(kind='connected-generation-transfer-status-v1', status='committed',
+                          receipt=receipt, grant_sha256=grant_sha, current_identity=state['identity'])
+            validate_contract(status, 'connected-generation-transfer-status-v1')
+            return status
+        except (OSError, sqlite3.Error, ValueError, KeyError):
+            raise InputError('runtime_generation_history_unavailable') from None
+        finally:
+            holder.release()
 
     def release(self):
         db = getattr(self, '_db', None)
