@@ -29,7 +29,8 @@ does not claim an atomic multi-file transaction or a general compare-and-swap.
 A new file is first written to a private `CREATE_NEW` sibling with a protected
 owner-only ACL. A partial write is removed by its retained stage handle. The
 stage identity and reviewed hash are durably recorded in an external intent
-before its handle is renamed into the absent target without replacement.
+before its handle is renamed into the absent target without replacement. The
+new target's identity, bytes, attributes and protected owner/DACL are checked.
 An interrupted prepared creation removes only that exact identity; an
 interrupted committed creation retains it and refuses replay. The normal implementation lifecycle
 records each applied NTFS identity in its sealed journal. Its rollback removes

@@ -493,7 +493,9 @@ def _create_reviewed_text(path: Path, raw: bytes, repository_root: Path | None) 
     try:
         _check_parent(path.parent, pinned)
         fd = cap._windows_create_private_file(stage_io, delete_access=True)
-        stage_identity = cap._windows_file_identity(os.fstat(fd))
+        staged = os.fstat(fd)
+        stage_identity = cap._windows_file_identity(staged)
+        stage_security = _security(fd)
         if os.write(fd, raw) != len(raw):
             raise InputError('windows_source_partial_write')
         os.fsync(fd)
@@ -511,6 +513,8 @@ def _create_reviewed_text(path: Path, raw: bytes, repository_root: Path | None) 
         result_fd, result = _lease(target_io)
         try:
             if (cap._windows_file_identity(result) != stage_identity or
+                    result.st_file_attributes != staged.st_file_attributes or
+                    _security(result_fd) != stage_security or
                     hashlib.sha256(os.read(result_fd, 2_000_001)).hexdigest() != digest):
                 raise InputError('windows_source_creation_postcondition_recovery_required')
         finally:
