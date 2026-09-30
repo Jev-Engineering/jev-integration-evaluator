@@ -14,7 +14,9 @@ Run the focused offline journey with a previously prepared private wheelhouse:
 ```bash
 JEV_TEMPLATE_WHEELHOUSE=/absolute/private/wheelhouse \
   python3.13 -m pytest -q tests/test_use_case_graph_host.py \
-    tests/test_use_case_graph_installed.py
+    tests/test_use_case_graph_installed.py \
+    tests/test_use_case_graph_bind.py \
+    tests/test_use_case_graph_bound_installed.py
 ```
 
 The test builder creates a separate reviewed regular `graph_host` package
@@ -57,8 +59,18 @@ retained 1.0.0 generation. Both owned source edits are restored. The two
 versions have identical finite graph semantics. Generation rollback does
 not reverse either graph effect.
 
-The #54 console binder remains C/E-only, so an L-specific bind receipt is
-pending. This SQLite transaction records reconciliation of one fixed pair; it
+The separate source-bound journey uses `prepare_template_binding` on a fresh
+inventory of the reviewed L task-loop console, then materializes, plans,
+verifies, applies, and checks the owned source edit before packaging. Its
+installed normal command runs under an exact off-mode session scope. An
+independent SQLite readback checks the committed reconciliation and provenance;
+a second installed command against the same revision refuses the conflict
+without another effect. The journey then disables, installs a reviewed 1.0.1
+version, upgrades, observes, disables, rolls the session back to the retained
+1.0.0 generation, and restores both owned source edits. This is an offline
+synthetic installed fixture, with no provider call or measured benefit.
+
+This SQLite transaction records reconciliation of one fixed pair; it
 does not collapse the two entity rows into a canonical node or reject a repeat
 of the same pair under a later approved revision. It does not synthesize a
 graph from documents, authorize semantic identity, or measure graph quality.

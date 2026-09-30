@@ -30,10 +30,55 @@ BINDING = {'version': '1.0', 'script': 'retrieval-host',
 pytestmark = pytest.mark.skipif(not PROFILE, reason='D source-bound bind fixture requires Linux x86-64 CPython 3.13')
 
 
-def _bound_host(target: Path) -> tuple[dict, dict]:
-    _, spec, request = _host(target, '1.0.0')
+def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False) -> tuple[dict, dict]:
+    _, spec, request = _host(target, version)
     entry = spec['verification']['entry_point']
     console = target / 'retrieval_host/console.py'
+    if installed:
+        source = target / spec['source']['file']
+        old_source = source.read_text(encoding='utf-8')
+        needle = "    STATE['effects'].append('generate')\n"
+        assert old_source.count(needle) == 1
+        addition = (
+            "    import os\n    from pathlib import Path\n"
+            "    directory = os.environ.get('D_EFFECT_DIRECTORY')\n"
+            "    if directory:\n"
+            "        task = request['task_id']\n"
+            "        if task not in ('retrieval-one', 'retrieval-two'):\n"
+            "            raise ValueError('unregistered retrieval task')\n"
+            "        os.environ['D_EFFECT_PATH'] = str(Path(directory) / (task + '.json'))\n"
+        )
+        old_commit = "    STATE['kept'] = retrieval_consumer.commit(request, action, host_approved=STATE['approval'])\n"
+        assert old_source.count(old_commit) == 1
+        old_source = old_source.replace(old_commit, addition + old_commit)
+        old_source = old_source.replace(needle,
+            "    if directory and task == 'retrieval-two':\n"
+            "        with (Path(directory) / 'ready.txt').open('x', encoding='utf-8') as stream:\n"
+            "            stream.write('ready\\n')\n"
+            "        import time\n        time.sleep(15)\n" + needle)
+        source.write_text(old_source, encoding='utf-8')
+    schedule = (
+        "    import os\n"
+        "    mode = os.environ.get('D_TASKS', 'two')\n"
+        "    ids = (['retrieval-one', 'retrieval-one'] if mode == 'duplicate' else "
+        "['retrieval-one', 'retrieval-two'])\n"
+        "    return [{'task_id': task, 'query': 'approved', 'expected_revision': 7} "
+        "for task in ids]\n" if installed else
+        "    return [{'task_id': 'retrieval-task', 'query': 'approved', 'expected_revision': 7}]\n"
+    )
+    limits = (
+        "    import os\n"
+        "    directory = os.environ.get('D_EFFECT_DIRECTORY')\n"
+        "    if directory:\n"
+        "        with (Path(directory) / 'owner.txt').open('x', encoding='utf-8') as stream:\n"
+        "            stream.write('one-runtime-startup\\n')\n"
+        "    maximum = 0 if os.environ.get('D_BUDGET') == 'invalid' else 2\n"
+        "    return dict(max_calls_per_task=2, max_cost_per_task=2, "
+        "max_total_calls=2, max_total_cost=2, max_in_flight=1, max_tasks=maximum)\n"
+        if installed else
+        "    return dict(max_calls_per_task=2, max_cost_per_task=2, "
+        "max_total_calls=2, max_total_cost=2, max_in_flight=1, max_tasks=1)\n"
+    )
     console.write_text(
         f'from .{Path(spec["source"]["file"]).stem} import {entry}\n'
         'from pathlib import Path\nimport hashlib\n'
@@ -41,15 +86,16 @@ def _bound_host(target: Path) -> tuple[dict, dict]:
         '    def __init__(self): self.records = []\n'
         '    def append(self, record): self.records.append(record)\n'
         'def limits():\n'
-        '    return dict(max_calls_per_task=2, max_cost_per_task=2, '
-        'max_total_calls=2, max_total_cost=2, max_in_flight=1, max_tasks=1)\n'
+        + limits
+        +
         'def audit():\n    return Audit()\n'
         'def dependencies():\n'
         '    base = Path(__file__).resolve().parent\n'
         "    return {'files': [{'path': str(base / name), 'sha256': hashlib.sha256((base / name).read_bytes()).hexdigest()} for name in ('requirements.lock', 'runtime.json')]}\n"
         'def options():\n    return {}\n'
         'def make_requests():\n'
-        "    return [{'task_id': 'retrieval-task', 'query': 'approved', 'expected_revision': 7}]\n"
+        + schedule
+        +
         'def main():\n'
         '    requests = make_requests()\n'
         '    for request in requests:\n'

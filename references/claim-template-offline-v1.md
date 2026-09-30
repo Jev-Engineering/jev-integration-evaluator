@@ -16,7 +16,9 @@ dependency closure and pinned build tools. On Linux x86-64 CPython 3.13:
 
 ```bash
 JEV_TEMPLATE_WHEELHOUSE=/absolute/private/wheelhouse \
-  python3.13 -m pytest -q tests/test_use_case_claim_host.py
+  python3.13 -m pytest -q tests/test_use_case_claim_host.py \
+    tests/test_use_case_claim_bind.py \
+    tests/test_use_case_claim_bound_installed.py
 ```
 
 The test checks template validation and materialization, #54 source planning,
@@ -65,12 +67,18 @@ Rollback does not erase prior claim effects.
 
 ## Support boundary
 
-The #54 console binder now accepts a separately reviewed M bounded task loop.
-Run `python3.13 -m pytest -q tests/test_use_case_claim_bind.py` to check a fresh
-M `template bind` report, owned console edit, baseline and modified receipts,
-source drift refusal and exact rollback. That bound caller is a separate
-synthetic fixture from the installed M release journey above; it does not
-prove that the bound console produced the installed claim effect. The fixture
+The #54 console binder accepts a separately reviewed M bounded task loop.
+The [bound installed journey](../tests/test_use_case_claim_bound_installed.py)
+derives a fresh binding, carries its owned edit through materialization,
+baseline, apply, modified verification, #55 offline installation and a normal
+installed #56 console session. Independent raw reads check supported citation,
+audit and release hashes. The binder rejects duplicate IDs before an effect;
+the authored host refuses a task count above its limit; the pinned consumer
+blocks fabricated and partial critical citations. A reviewed 1.0.1 package
+revises away an unsupported noncritical claim, then the session selects its
+retained 1.0.0 generation and both source edits are rolled back. The pinned
+consumer accepts only one fixed successful task ID, so this does not qualify
+multiple successful task IDs or shared provider spending. The fixture
 provides its own fixed passage and finite assertion. Connected assessment,
 real citation retrieval, host production audit, benefit, and interrupted
 install/upgrade recovery are pending. No model label can authorize a release.

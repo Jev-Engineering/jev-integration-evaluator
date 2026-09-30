@@ -36,10 +36,28 @@ BINDING = {'version': '1.0', 'script': 'graph-host',
                               'dependency_plan': 'dependencies', 'startup_options': 'options'}}
 
 
-def _bound_host(target: Path) -> tuple[dict, dict]:
-    _, spec = _graph_host(target, '1.0.0')
+def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False) -> tuple[dict, dict]:
+    _, spec = _graph_host(target, version)
     entry = spec['verification']['entry_point']
     console = target / 'graph_host/console.py'
+    if installed:
+        source = target / spec['source']['file']
+        original = source.read_text(encoding='utf-8')
+        merge = "    STATE['revision'] = graph_runtime.merge(request, STATE)\n"
+        assert original.count(merge) == 2
+        # The reviewed host emits readiness only after its pinned consumer has
+        # committed the SQLite effect; this is authored before the fresh scan.
+        ready = (
+            "    import os\n"
+            "    from pathlib import Path\n"
+            "    ready_path = os.environ.get('GRAPH_READY_PATH')\n"
+            "    if ready_path:\n"
+            "        with Path(ready_path).open('x', encoding='utf-8') as stream:\n"
+            "            stream.write('ready\\n')\n"
+            "        import time\n"
+            "        time.sleep(15)\n"
+        )
+        source.write_text(original.replace(merge, merge + ready), encoding='utf-8')
     console.write_text(
         f'from .{Path(spec["source"]["file"]).stem} import {entry}\n'
         'from pathlib import Path\nimport hashlib\n'

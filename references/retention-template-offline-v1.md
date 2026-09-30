@@ -24,7 +24,9 @@ Run the focused offline journey only with a previously prepared wheelhouse:
 
 ```bash
 JEV_TEMPLATE_WHEELHOUSE=/absolute/owner-private/wheelhouse \
-  python3.13 -m pytest -q tests/test_use_case_retention_host.py tests/test_use_case_retention_bind.py
+  python3.13 -m pytest -q tests/test_use_case_retention_host.py \
+    tests/test_use_case_retention_bind.py \
+    tests/test_use_case_retention_bound_installed.py
 ```
 
 For a separately reviewed H package with the documented caller grammar, use
@@ -51,8 +53,14 @@ console invocation. Missing choice and `/compact` refuse before a retained
 state effect. The generated console starts one process-local runtime, completes
 the task and shuts down in `finally`. The bound installed check verifies the
 normal console's installed origin, raw retained bytes, pinned provenance and
-owned source rollback. The existing supervised H journey below uses a separate
-unbound fixture shape and retains its prior evidence.
+owned source rollback. The [bound installed journey](../tests/test_use_case_retention_bound_installed.py)
+carries that same reviewed binder through #55 package/install and #56
+supervised normal launch, status, disable, reviewed 1.0.1 upgrade and retained
+1.0.0 generation rollback. It checks raw retained items and later recall from
+the installed effect. Duplicate task IDs, a request count beyond the host
+limit, missing choice, `/compact` and an occupied effect path refuse without
+a new retained-state effect. The existing unbound supervised journey remains
+a separate fixture and retains its prior evidence.
 
 The launch environment supplies `H_RETAINED_PATH` and `H_READY_PATH` as fresh
 absolute paths outside the source, package, environment and session trees.
@@ -75,8 +83,8 @@ shows `/prune` can drop the reviewed unpinned item. It never treats a host
 source drift, unapproved package/install plans and non-off mode are unsupported
 or rejected. The existing supervised H journey uses source-tree and entrypoint
 binding from the validated H request and #55 package/install receipts. The
-separate bound H journey now has an actual `template bind` report and owned
-console edit through the #54 API.
+bound H journey has an actual `template bind` report and owned console edit
+through the #54 API, carried into its own supervised installed session.
 The test installs a second reviewed host version (1.0.1), stops the first,
 stages the new generation with an exact upgrade scope, launches and observes
 its raw effect, then disables it and rolls back to the retained first

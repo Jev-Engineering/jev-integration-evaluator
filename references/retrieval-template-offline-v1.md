@@ -12,7 +12,9 @@ Run the focused offline journey with a previously prepared private wheelhouse:
 
 ```bash
 JEV_TEMPLATE_WHEELHOUSE=/absolute/private/wheelhouse \
-  python3.13 -m pytest -q tests/test_use_case_retrieval_host.py
+  python3.13 -m pytest -q tests/test_use_case_retrieval_host.py \
+    tests/test_use_case_retrieval_bind.py \
+    tests/test_use_case_retrieval_bound_installed.py
 ```
 
 The test builds a separate regular `retrieval_host` package with a reviewed
@@ -64,8 +66,20 @@ effect. Wrong package/install approvals, changed consumer bytes, bad launch
 scope, source/corpus drift, stale revision, missing corpus or effect path,
 missing contradiction, and denied host approval fail closed in focused tests.
 
-The #54 console binder currently supports recipe C only; a D-specific bind
-receipt remains pending. This fixture does not qualify untrusted target
+The source-bound D console binder derives the current caller and owns the
+generated task-loop edit. The separate bound installed test carries its exact
+baseline, modified, package, install and delivery receipts through two off-mode
+task IDs in one process, checking separate raw effects and one startup marker.
+It rejects duplicate task IDs before startup and an invalid budget at startup
+without an effect. The latter is configuration refusal, not exhausted provider
+spend. The test disables version 1.0.0, upgrades to an independently reviewed
+1.0.1 package, observes its normal command, and rolls the generation back while
+retaining both installed environments and restoring both owned source edits.
+The pinned consumer remains unchanged; a small fixture host routes each reviewed
+task ID to a fresh external effect path before calling it. These effects are
+synthetic file readbacks, not a service-level retrieval measurement.
+
+This fixture does not qualify untrusted target
 retrievers, arbitrary queries, a generative answer model, connected authority,
 provider operation, answer correctness, task benefit, interrupted upgrade or
 cross-process task deduplication. A real host needs its own retriever and
