@@ -14,6 +14,10 @@ completed the 31-case native off-mode delivery checkpoint on CPython 3.10.11
 and 3.13.15 with no skipped required cases in the
 [actual main-commit run for PR #106](https://github.com/Jev-Engineering/jev-integration-evaluator/actions/runs/36647200079),
 at `a7c0b025612f1fbb3a0cb7e1721773316db4821b`.
+The later 38-case suite also passed controlled launch/install interruption and
+owned installer-process death on both Server interpreters with zero skips in
+the [PR #110 merge run](https://github.com/Jev-Engineering/jev-integration-evaluator/actions/runs/36669705064)
+at `1aff22197d0ff5c64b660544b77ed81e1ab310bc`.
 The `windows-template-delivery` CI job schedules the native preparation,
 ownership, package/install, Job Object session and retained-generation tests
 on disposable Windows Server 2022 runners with CPython 3.10 and 3.13. It
@@ -96,7 +100,10 @@ that Job without Python cleanup, then reaps it and checks an empty Job.
 The partial generation must still reject replay and receipt use while source,
 owner, intent and unrelated process/file state remain intact. Failure cleanup
 closes only that Job and the separately owned sentinel. This source describes
-the scheduled test; its native final-revision execution remains pending.
+the scheduled test. Native Server 2022 execution is included in the separately
+recorded 38-case result above; a local Windows 11 CPython 3.14.3 affected run
+also passed all six controlled/abrupt install-interruption cases with zero skips;
+see the [recorded install-interruption evidence](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/61#issuecomment-5904086681).
 Abrupt process death does not establish machine power-loss durability.
 
 The installer makes a separate protected NTFS venv generation, installs only
@@ -249,6 +256,7 @@ and exact pinned build wheels. The local runs used isolated CPython 3.10.11,
 3.13.13 and 3.14.3 venvs and owner-private, platform-specific wheelhouses;
 no global install or credentials. A fixed private pytest root retained the
 passing 3.10 run receipts, alongside separate 3.13 and 3.14 archives. The
-31-case Server checkpoint is recorded above. Additive interruption cases,
-broader crash and filesystem edge cases, and provider qualification remain pending before
+31-case Server checkpoint and later 38-case interruption suite are recorded
+above. Machine power-loss durability, broader filesystem edge cases and
+provider qualification remain pending before
 marking issue #61 fully qualified.

@@ -96,8 +96,10 @@ Windows Server 2022 build 20348 passed the separate 31-case native off-mode
 preparation, package/install, supervised console and retained-generation suite
 on CPython 3.10.11 and 3.13.15 with zero skips in the
 [PR #106 merge run](https://github.com/Jev-Engineering/jev-integration-evaluator/actions/runs/36647200079).
-Broader source-filesystem, interruption additions and connected qualification
-require their own exact-revision evidence.
+The later 38-case suite passed controlled launch/install interruption and owned
+installer-process death on both Server interpreters, with zero skips in the
+[PR #110 merge run](https://github.com/Jev-Engineering/jev-integration-evaluator/actions/runs/36669705064).
+Broader source-filesystem and connected qualification require separate evidence.
 
 For connected host runtime qualification, record the pinned endpoint/model,
 environment and reviewed source/configuration digests, budget scope, host-owned

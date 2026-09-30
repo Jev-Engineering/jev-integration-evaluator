@@ -51,6 +51,11 @@ Windows Server 2022 build 20348, CPython 3.10.11 and 3.13.15, in the
 at `a7c0b025612f1fbb3a0cb7e1721773316db4821b`. This is distinct from discovery
 qualification and does not establish later interruption additions, arbitrary
 source mutation, untrusted execution, provider operation or measured benefit.
+The later 38-case native suite, including controlled launch/install interruption
+and owned installer-process death, passed on both Server interpreters with zero
+skips in the [PR #110 merge run](https://github.com/Jev-Engineering/jev-integration-evaluator/actions/runs/36669705064)
+at `1aff22197d0ff5c64b660544b77ed81e1ab310bc`. It does not establish machine
+power-loss durability, broader source mutation or provider qualification.
 
 | Platform and filesystem | Repository discovery | Qualification |
 | --- | --- | --- |
