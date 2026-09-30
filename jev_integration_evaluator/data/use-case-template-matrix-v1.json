@@ -47,7 +47,7 @@
       "host_sha256": "7be4d35ea059cfb1956ced38780a80e3f26dfa99078f31aa1b10063cc7a71996",
       "console_sha256": "fdf0ee37ba29d03f4ef9220fc6624d97ce195eb9c327e66a2015826895be4aa8",
       "loader_sha256": "c6a95ea87626f09e45ddd76de45f6d6b4b57cba86ac1fa772984d0ed5bb57139",
-      "project_sha256": "0f1663c62c614bb5053fbcc0175760889391326bd56f808f02ecd8babea0ef17",
+      "project_sha256": "3a363259dac73f0adf1ff1e8c7b0f1e204440f329f13d91e7ebbbcf4f2af85b0",
       "installed_execution": "pending_native_windows_connected_shadow_qualification",
       "provider": "unobserved",
       "canary": "pending_observed_gate",
