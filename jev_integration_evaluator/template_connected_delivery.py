@@ -29,6 +29,51 @@ class ConnectedDeliveryError(InputError):
     """Fixed diagnostic; no reference or credential content is included."""
 
 
+# These are reviewed host shapes, not grants.  The absent selector retains the
+# original Alpha plan representation and its exact canonical digest.
+_PROFILES = {
+    None: {
+        'source': 'src/registered_alpha/host.py',
+        'members': {'host': 'registered_alpha/host.py',
+                    'console': 'registered_alpha/console.py',
+                    'loader': 'registered_alpha/connected_authority.py'},
+        'references': ('REGISTERED_ALPHA_CONNECTED_REF',
+                       'REGISTERED_ALPHA_AUTH_PUBKEY_FILE'),
+        'allowed': frozenset({'REGISTERED_ALPHA_PERMIT', 'REGISTERED_ALPHA_AUDIT',
+                              'REGISTERED_ALPHA_EFFECTS', 'REGISTERED_ALPHA_TASK_ID',
+                              'REGISTERED_ALPHA_HOLD', 'REGISTERED_ALPHA_READY',
+                              'REGISTERED_ALPHA_RELEASE'}),
+        'binary': ('REGISTERED_ALPHA_PERMIT', 'REGISTERED_ALPHA_HOLD'),
+        'injected': ('REGISTERED_ALPHA_CONNECTED_REF_SHA256',
+                     'REGISTERED_ALPHA_AUTH_PUBKEY_SHA256'),
+    },
+    'retrieval-d-v1': {
+        'source': 'retrieval_host/host_retrieval_handoff.py',
+        'members': {'host': 'retrieval_host/host_retrieval_handoff.py',
+                    'console': 'retrieval_host/console.py',
+                    'loader': 'retrieval_host/connected_authority.py'},
+        'references': ('D_CONNECTED_REF', 'D_AUTH_PUBKEY_FILE', 'D_CORPUS_PATH'),
+        'allowed': frozenset({'D_EFFECT_DIRECTORY', 'D_AUDIT_PATH', 'D_TASKS',
+                              'D_READY_PATH', 'D_RELEASE_PATH', 'D_HOLD'}),
+        'binary': ('D_HOLD',),
+        'injected': ('D_CONNECTED_REF_SHA256', 'D_AUTH_PUBKEY_SHA256'),
+    },
+}
+
+
+def _profile(name: str | None) -> dict:
+    if name not in _PROFILES:
+        raise ConnectedDeliveryError('connected_host_profile_unregistered')
+    return _PROFILES[name]
+
+
+def _check_profile_binding(binding: dict, profile: dict) -> None:
+    if (binding['source_file'] != profile['source']
+            or any(binding['origins'].get(role, {}).get('wheel_member') != member
+                   for role, member in profile['members'].items())):
+        raise ConnectedDeliveryError('connected_host_profile_binding_mismatch')
+
+
 def _private_file(path: Path, maximum: int) -> None:
     offline._owned_file(path, maximum=maximum)
 
@@ -46,20 +91,21 @@ def plan_connected_delivery(install_plan: dict, *, trusted_install_receipt_sha25
                             trusted_package_receipt_sha256: str,
                             installed_binding: dict, trusted_binding_sha256: str,
                             observation: dict, launch_environment: dict[str, str],
-                            requested_mode: str = 'shadow') -> dict:
+                            requested_mode: str = 'shadow',
+                            host_profile: str | None = None) -> dict:
     """Bind exact installed bytes and externally authored shadow observations."""
     offline._linux_profile()
     if requested_mode != 'shadow':
         raise ConnectedDeliveryError('connected_mode_requires_observed_gate')
-    references = {'REGISTERED_ALPHA_CONNECTED_REF', 'REGISTERED_ALPHA_AUTH_PUBKEY_FILE'}
-    allowed = references | {'REGISTERED_ALPHA_PERMIT', 'REGISTERED_ALPHA_AUDIT',
-                            'REGISTERED_ALPHA_EFFECTS', 'REGISTERED_ALPHA_TASK_ID',
-                            'REGISTERED_ALPHA_HOLD', 'REGISTERED_ALPHA_READY',
-                            'REGISTERED_ALPHA_RELEASE', 'SSL_CERT_FILE'}
+    profile = _profile(host_profile)
+    references = set(profile['references'])
+    allowed = references | profile['allowed'] | {'SSL_CERT_FILE'}
     if (type(launch_environment) is not dict or not references <= set(launch_environment)
             or not set(launch_environment) <= allowed
-            or launch_environment.get('REGISTERED_ALPHA_PERMIT', '0') not in ('0', '1')
-            or launch_environment.get('REGISTERED_ALPHA_HOLD', '0') not in ('0', '1')):
+            or any(launch_environment.get(name, '0') not in ('0', '1')
+                   for name in profile['binary'])
+            or (host_profile == 'retrieval-d-v1'
+                and launch_environment.get('D_TASKS', 'two') not in ('two', 'duplicate'))):
         raise ConnectedDeliveryError('connected_host_references_required')
     if 'SSL_CERT_FILE' in launch_environment:
         _check_reference(launch_environment['SSL_CERT_FILE'])
@@ -79,6 +125,7 @@ def plan_connected_delivery(install_plan: dict, *, trusted_install_receipt_sha25
     if (actual != installed_binding or actual['binding_sha256'] != trusted_binding_sha256
             or 'loader' not in actual['origins']):
         raise ConnectedDeliveryError('connected_installed_binding_unverified')
+    _check_profile_binding(actual, profile)
     plan = {'schema_version': '1.0', 'kind': 'connected-delivery-plan-v1',
             'off_provenance': base, 'installed_binding': actual,
             'trusted_binding_sha256': trusted_binding_sha256,
@@ -88,6 +135,8 @@ def plan_connected_delivery(install_plan: dict, *, trusted_install_receipt_sha25
                                  if 'SSL_CERT_FILE' in launch_environment else set()))},
             'requested_mode': requested_mode,
             'provider_reachable': None, 'runtime_activation_authorized': False}
+    if host_profile is not None:
+        plan['host_profile'] = host_profile
     plan['plan_sha256'] = digest(plan)
     validate_contract(plan, 'connected-delivery-plan-v1')
     return plan
@@ -104,7 +153,7 @@ def _check_plan(plan: dict) -> None:
         installed_binding=plan['installed_binding'],
         trusted_binding_sha256=plan['trusted_binding_sha256'],
         observation=base['observation'], launch_environment=base['launch_environment'],
-        requested_mode=plan['requested_mode'])
+        requested_mode=plan['requested_mode'], host_profile=plan.get('host_profile'))
     if actual != plan:
         raise ConnectedDeliveryError('connected_plan_or_reference_drift')
     for name in plan['reference_sha256']:
@@ -212,7 +261,8 @@ def _authority(scope: dict, approved_scope_sha256: str, head: str,
                                                 if k != 'scope_sha256'})
             or scope['run_id'] != state['run_id']
             or scope['plan_sha256'] != state['plan_sha256']
-            or scope['public_key_sha256'] != plan['reference_sha256']['REGISTERED_ALPHA_AUTH_PUBKEY_FILE']
+            or scope['public_key_sha256'] != plan['reference_sha256'][
+                _profile(plan.get('host_profile'))['references'][1]]
             or scope['trusted_session_head'] != head
             or scope['action'] != action
             or parse_utc(scope['expires_at']) <= datetime.now(timezone.utc)):
@@ -241,13 +291,14 @@ def launch_connected_session(directory: str | Path, *, scope: dict,
         read_fd, write_fd = os.pipe()
         try:
             env = dict(base['launch_environment'])
+            profile = _profile(plan.get('host_profile'))
             env.update({'PATH': str(Path(base['environment']) / 'venv/bin'),
                         'PYTHONNOUSERSITE': '1',
                         'TYPESAFE_API_KEY': os.environ['TYPESAFE_API_KEY'],
-                        'REGISTERED_ALPHA_CONNECTED_REF_SHA256':
-                            plan['reference_sha256']['REGISTERED_ALPHA_CONNECTED_REF'],
-                        'REGISTERED_ALPHA_AUTH_PUBKEY_SHA256':
-                            plan['reference_sha256']['REGISTERED_ALPHA_AUTH_PUBKEY_FILE']})
+                        profile['injected'][0]:
+                            plan['reference_sha256'][profile['references'][0]],
+                        profile['injected'][1]:
+                            plan['reference_sha256'][profile['references'][1]]})
             child = subprocess.Popen([sys.executable, '-I', '-c', offline._HELPER,
                                       str(read_fd), base['console_script'], base['environment']],
                                      pass_fds=(read_fd,), stdin=subprocess.DEVNULL,

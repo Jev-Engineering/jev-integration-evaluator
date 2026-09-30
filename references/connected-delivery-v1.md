@@ -1,7 +1,8 @@
 # Installed connected shadow delivery v1
 
-This is an opt-in Linux x86-64 CPython 3.13 path for one independently reviewed
-Alpha 1.0.2 console host. Package and install retain the existing **off** mode
+This is an opt-in Linux x86-64 CPython 3.13 path for registered, independently
+reviewed Alpha 1.0.2 and [D retrieval](retrieval-template-connected-v1.md)
+console hosts. Package and install retain the existing **off** mode
 and receipt semantics. A connected launch starts only from a separate
 `connected-delivery-plan-v1` and exact, expiring session scope. It does not
 interpret a package receipt, installed binding digest, or mode flag as egress
@@ -37,7 +38,10 @@ loopback endpoint in tests exercise startup without a real provider request.
 `template connected-plan` binds the installed report, private reference paths,
 independent external observation schedule and **shadow** mode. It rejects
 canary and active requests because this checkpoint has no observed canary or
-active gate receipts. `template connected-configure` creates an owner-private
+active gate receipts. Omission of `--host-profile` retains the original Alpha
+plan bytes and digest; `--host-profile retrieval-d-v1` binds the finite D
+reference names and reviewed host origins in the plan hash. A profile is a
+source/launch shape, never an egress grant. `template connected-configure` creates an owner-private
 session after exact plan-digest approval. `template connected-launch` requires
 an exact current session head, public-key hash, action and expiry in a separate scope plus the
 credential at launch. The supervisor writes a durable launch intent, records

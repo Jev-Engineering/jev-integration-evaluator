@@ -79,9 +79,11 @@ The pinned consumer remains unchanged; a small fixture host routes each reviewed
 task ID to a fresh external effect path before calling it. These effects are
 synthetic file readbacks, not a service-level retrieval measurement.
 
-This fixture does not qualify untrusted target
-retrievers, arbitrary queries, a generative answer model, connected authority,
-provider operation, answer correctness, task benefit, interrupted upgrade or
+The separate [installed synthetic connected D shadow protocol](retrieval-template-connected-v1.md)
+checks source-bound authority and local loopback fallback. This off-mode fixture
+does not qualify untrusted target retrievers, arbitrary queries, a generative
+answer model, external connected authority, provider operation, answer
+correctness, task benefit, interrupted upgrade or
 cross-process task deduplication. A real host needs its own retriever and
 generation authority, source provenance, raw answer evaluation and retry
 ownership before those cells can be promoted. The pure positive handoff test

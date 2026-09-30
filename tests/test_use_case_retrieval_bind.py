@@ -30,8 +30,13 @@ BINDING = {'version': '1.0', 'script': 'retrieval-host',
 pytestmark = pytest.mark.skipif(not PROFILE, reason='D source-bound bind fixture requires Linux x86-64 CPython 3.13')
 
 
-def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False) -> tuple[dict, dict]:
+def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False,
+                connected_authority_source: Path | None = None) -> tuple[dict, dict]:
     _, spec, request = _host(target, version)
+    if connected_authority_source is not None:
+        assert installed
+        (target / 'retrieval_host/connected_authority.py').write_bytes(
+            connected_authority_source.read_bytes())
     entry = spec['verification']['entry_point']
     console = target / 'retrieval_host/console.py'
     if installed:
@@ -50,8 +55,22 @@ def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False
         )
         old_commit = "    STATE['kept'] = retrieval_consumer.commit(request, action, host_approved=STATE['approval'])\n"
         assert old_source.count(old_commit) == 1
-        old_source = old_source.replace(old_commit, addition + old_commit)
-        old_source = old_source.replace(needle,
+        gate = (
+            "    if directory and task == 'retrieval-two':\n"
+            "        with (Path(directory) / 'ready.txt').open('x', encoding='utf-8') as stream:\n"
+            "            stream.write('ready\\n')\n"
+            "        import time\n"
+            "        if os.environ.get('D_HOLD') == '1':\n"
+            "            release = os.environ.get('D_RELEASE_PATH')\n"
+            "            if not release: raise ValueError('retrieval_release_required')\n"
+            "            deadline = time.monotonic() + 15\n"
+            "            while not Path(release).exists() and time.monotonic() < deadline:\n"
+            "                time.sleep(0.02)\n"
+            "            if not Path(release).exists(): raise TimeoutError('retrieval_release_timeout')\n"
+            if connected_authority_source is not None else '')
+        old_source = old_source.replace(old_commit, addition + gate + old_commit)
+        if connected_authority_source is None:
+            old_source = old_source.replace(needle,
             "    if directory and task == 'retrieval-two':\n"
             "        with (Path(directory) / 'ready.txt').open('x', encoding='utf-8') as stream:\n"
             "            stream.write('ready\\n')\n"
@@ -92,7 +111,12 @@ def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False
         'def dependencies():\n'
         '    base = Path(__file__).resolve().parent\n'
         "    return {'files': [{'path': str(base / name), 'sha256': hashlib.sha256((base / name).read_bytes()).hexdigest()} for name in ('requirements.lock', 'runtime.json')]}\n"
-        'def options():\n    return {}\n'
+        +
+        ('def options():\n    from . import connected_authority\n'
+         '    return connected_authority.options()\n'
+         if connected_authority_source is not None else
+         'def options():\n    return {}\n')
+        +
         'def make_requests():\n'
         + schedule
         +
