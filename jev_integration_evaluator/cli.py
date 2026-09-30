@@ -198,11 +198,13 @@ def parser():
     s.add_argument('--install-plan',required=True); s.add_argument('--trusted-install-receipt-sha256',required=True)
     s.add_argument('--observation',required=True); s.add_argument('--launch-environment')
     s.add_argument('--out',required=True)
-    s=template_sub.add_parser('connected-plan',help='Bind an installed Alpha console to exact connected shadow references')
+    s=template_sub.add_parser('connected-plan',help='Bind a registered installed console to exact connected shadow references')
     s.add_argument('--install-plan',required=True); s.add_argument('--trusted-install-receipt-sha256',required=True)
     s.add_argument('--trusted-package-receipt-sha256',required=True)
     s.add_argument('--installed-binding',required=True); s.add_argument('--trusted-binding-sha256',required=True)
     s.add_argument('--observation',required=True); s.add_argument('--launch-environment',required=True)
+    s.add_argument('--host-profile',choices=['retrieval-d-v1'],
+                   help='Omit for the legacy registered Alpha profile')
     s.add_argument('--out',required=True)
     s=template_sub.add_parser('connected-configure',help='Create one private connected shadow session from an exact plan')
     s.add_argument('--session',required=True); s.add_argument('--plan',required=True)
@@ -389,7 +391,8 @@ def execute(args):
                     installed_binding=read_json(args.installed_binding),
                     trusted_binding_sha256=args.trusted_binding_sha256,
                     observation=read_json(args.observation),
-                    launch_environment=read_json(args.launch_environment))
+                    launch_environment=read_json(args.launch_environment),
+                    host_profile=args.host_profile)
                 from .template_installation import write_plan_exclusive
                 write_plan_exclusive(args.out,result,
                     host_root=result['off_provenance']['install_plan']['package_plan']['request']['host_root'])

@@ -25,7 +25,7 @@ from jev_integration_evaluator.template_connected_binding import derive_installe
 from jev_integration_evaluator.template_connected_delivery import (
     ConnectedDeliveryError, plan_connected_delivery, create_connected_session,
     launch_connected_session, connected_session_status, stop_connected_session)
-from jev_integration_evaluator.io import InputError, digest
+from jev_integration_evaluator.io import InputError, canonical, digest, file_hash
 from jev_integration_evaluator.integrations.runtime_ledger import RuntimeLedger
 from jev_integration_evaluator.template_catalog import prepare_template_binding
 from jev_integration_evaluator.use_case_templates import use_case_matrix
@@ -302,6 +302,22 @@ def test_alpha_installed_binding_uses_exact_wheel_and_installed_origins(
                                 'REGISTERED_ALPHA_PERMIT': '0',
                                 'REGISTERED_ALPHA_AUDIT': str(audit),
                                 'REGISTERED_ALPHA_EFFECTS': str(effect)})
+        # The omitted profile is the original serialized Alpha plan, including
+        # its canonical bytes and digest. Existing approval/scope hashes retain
+        # the same representation after the finite D selector was added.
+        legacy = {'schema_version': '1.0', 'kind': 'connected-delivery-plan-v1',
+                  'off_provenance': connected_plan['off_provenance'],
+                  'installed_binding': report,
+                  'trusted_binding_sha256': report['binding_sha256'],
+                  'trusted_package_receipt_sha256': installed_plan['package_receipt']['receipt_sha256'],
+                  'reference_sha256': {
+                      'REGISTERED_ALPHA_CONNECTED_REF': file_hash(reference),
+                      'REGISTERED_ALPHA_AUTH_PUBKEY_FILE': file_hash(public)},
+                  'requested_mode': 'shadow', 'provider_reachable': None,
+                  'runtime_activation_authorized': False}
+        legacy['plan_sha256'] = digest(legacy)
+        assert canonical(connected_plan) == canonical(legacy)
+        assert 'host_profile' not in connected_plan
         created = create_connected_session(tmp_path / 'connected-session', connected_plan,
             approved_plan_sha256=connected_plan['plan_sha256'])
         assert created['stage'] == 'installed' and created['launch_attempts'] == 0
