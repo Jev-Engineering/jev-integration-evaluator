@@ -265,7 +265,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.10", "3.13"]
+        python: ["3.10", "3.13", "3.14"]
     env:
       TYPESAFE_API_KEY: ""
     steps:

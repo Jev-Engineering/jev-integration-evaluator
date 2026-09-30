@@ -19,6 +19,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from threading import Thread
 
 import pytest
+import jsonschema
 
 from jev_integration_evaluator import capabilities as cap
 from jev_integration_evaluator.io import InputError, digest
@@ -525,6 +526,13 @@ def test_native_connected_installed_hard_block_and_replay(tmp_path, monkeypatch)
               'environment_digest': environment_digest, 'source_root': report['site'],
               'source_plan': report['source_plan'], 'source_bindings': source_bindings,
               'installed_binding': report}
+    connected_schema = json.loads((Path(__file__).resolve().parents[1] / 'schemas' /
+                                   'host-runtime-connected-v1.schema.json').read_text(encoding='utf-8'))
+    jsonschema.validate(config, connected_schema)
+    invalid_config = json.loads(json.dumps(config))
+    invalid_config['installed_binding']['origins']['host'].pop('acl_sha256')
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(invalid_config, connected_schema)
     identity = {'root': report['site'], 'plan': report['source_plan'],
                 'bindings': source_bindings,
                 'installed_binding_sha256': report['binding_sha256']}
