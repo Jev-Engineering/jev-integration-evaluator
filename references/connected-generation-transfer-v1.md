@@ -1,12 +1,15 @@
 # Stopped connected generation transfer v1
 
 This Linux x86-64 CPython 3.13 path transfers one **stopped** reviewed Alpha
-connected console between separately installed 1.0.2 and 1.0.3 source
-generations. The package and install steps remain off mode. Transfer never
+connected console between separately installed source generations. The Alpha
+fixture uses 1.0.2 and 1.0.3. The finite `retrieval-d-v1` fixture uses freshly
+reviewed and bound 1.0.0 and 1.0.1 hosts under the same local synthetic TLS
+protocol. Package and install steps
+remain off mode. Transfer never
 launches a console, creates provider authority, resets spend or changes the
 run ID. A retained environment can be selected by a separately signed reverse
-transfer. This controller accepts only the legacy Alpha profile; D retrieval,
-composite placement and Windows generation transfer have no qualified path here.
+transfer. This controller accepts the legacy Alpha and finite D profiles only;
+composite placement and Windows generation transfer have no path here.
 
 The host installs both generations through existing offline receipts, derives
 each `connected-installed-binding-v1`, and creates fresh connected delivery
@@ -58,6 +61,20 @@ are stored in its fsynced host files; the ledger effect table covers explicit
 `claim_effect` users. Core tests separately prove preservation of those
 claims, pending-effect refusal, authority loss, external history drift and
 lost commit acknowledgement.
+
+The D fixture authors one of its two existing pinned retrieval task IDs in each
+host console before the fresh scan and binder review. Its normal installed
+command reads the same independently anchored corpus and writes a raw
+conflict-withheld answer with ordered passage provenance. The next version
+uses the second pinned task under the same two-task ledger. A signed reverse
+transfer restores the retained generation identity without resetting calls or
+closed-task tombstones. A normal retained console attempt writes a fixed
+source-authored attempt marker before startup, then its exclusive owner marker
+refuses reuse of the original effect directory. It produces no new retrieval
+effect or protocol call. The ledger separately refuses a reservation for the
+closed task; shadow fallback alone does not suppress the host baseline. The
+profile selector, private reference names and
+installed console and loader wheel origins are checked at each boundary.
 
 This is synthetic shadow qualification. It does not establish real provider
 connectivity, observed benefit, canary/active eligibility, power-loss
