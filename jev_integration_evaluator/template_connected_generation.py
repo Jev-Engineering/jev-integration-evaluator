@@ -113,6 +113,8 @@ def _installed(plan: dict, dependency_plan: dict, limits: dict) -> dict:
     # Recompute immutable installed provenance and current source/reference
     # bytes here; the prospective child gets the full fresh-plan check below.
     validate_contract(plan, 'connected-delivery-plan-v1')
+    if plan.get('host_profile') is not None:
+        raise ConnectedGenerationError('connected_generation_profile_not_supported')
     if digest({key: value for key, value in plan.items() if key != 'plan_sha256'}) != plan['plan_sha256']:
         raise ConnectedGenerationError('connected_generation_plan_changed')
     binding = plan['installed_binding']

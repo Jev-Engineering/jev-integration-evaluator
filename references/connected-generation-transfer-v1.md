@@ -5,7 +5,8 @@ connected console between separately installed 1.0.2 and 1.0.3 source
 generations. The package and install steps remain off mode. Transfer never
 launches a console, creates provider authority, resets spend or changes the
 run ID. A retained environment can be selected by a separately signed reverse
-transfer.
+transfer. This controller accepts only the legacy Alpha profile; D retrieval,
+composite placement and Windows generation transfer have no qualified path here.
 
 The host installs both generations through existing offline receipts, derives
 each `connected-installed-binding-v1`, and creates fresh connected delivery
@@ -23,6 +24,8 @@ history. It writes an **unsigned** `connected-generation-transfer-v1` grant
 outside the host. The private issuer signs the ASCII bytes
 `generation_transfer:<grant SHA-256>` with P-256/SHA-256. Only the detached
 signature and pinned public key enter the host controller.
+The signed grant also binds both full delivery plan digests, so a different
+valid plan sharing the same installed binding cannot inherit readiness.
 
 `template connected-generation-transfer` requires that signed grant, exact new
 plan approval, both dependency plans and the old stopped session head. It
@@ -39,7 +42,10 @@ If the controller exits after SQLite commit but before child readiness, use
 head. Its read-only result distinguishes unchanged old history, changed
 history and committed receipt. Only `connected-generation-reconcile` marks an
 already committed child ready; it never repeats ledger transfer or console
-effect. A pending child cannot launch. Later `connected-launch` still requires
+effect. Historical committed receipts remain readable after a later transfer,
+but reconciliation requires the current ledger identity, generation grant and
+history to match the selected receipt. Ledger file ownership and permissions
+are checked again at this boundary. A pending child cannot launch. Later `connected-launch` still requires
 its own exact current head, expiring scope and credential. Stopping and
 read-only history inspection remain possible after cutoff. Retained rollback
 uses a fresh signed `action=rollback` grant and another linked inert child.
