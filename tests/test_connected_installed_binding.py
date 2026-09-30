@@ -4,7 +4,7 @@ from __future__ import annotations
 import importlib.util
 import ast
 import hashlib
-import hmac
+import base64
 import json
 import os
 from datetime import datetime, timedelta, timezone
@@ -32,6 +32,39 @@ from jev_integration_evaluator.use_case_templates import use_case_matrix
 
 class _InstalledCheckpoint(Exception):
     pass
+
+
+_OPENSSL_ENV = {'LANG': 'C', 'OPENSSL_CONF': os.devnull,
+                'OPENSSL_MODULES': '/nonexistent', 'OPENSSL_ENGINES': '/nonexistent'}
+
+
+def _issuer(tmp_path: Path) -> tuple[Path, Path]:
+    private, public = tmp_path / 'issuer-private.pem', tmp_path / 'issuer-public.pem'
+    subprocess.run(['/usr/bin/openssl', 'genpkey', '-algorithm', 'EC',
+        '-pkeyopt', 'ec_paramgen_curve:P-256', '-out', str(private)],
+        check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        timeout=10, env=_OPENSSL_ENV)
+    private.chmod(0o600)
+    subprocess.run(['/usr/bin/openssl', 'pkey', '-in', str(private), '-pubout',
+        '-out', str(public)], check=True, stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL, timeout=10, env=_OPENSSL_ENV)
+    public.chmod(0o600)
+    return private, public
+
+
+def _issue(private: Path, kind: str, exact: str) -> str:
+    signed = subprocess.run(['/usr/bin/openssl', 'dgst', '-sha256', '-sign', str(private)],
+        input=(kind + ':' + exact).encode('ascii'), capture_output=True,
+        check=True, timeout=10, env=_OPENSSL_ENV)
+    return base64.b64encode(signed.stdout).decode('ascii')
+
+
+def _verifier_identity() -> dict:
+    tool = Path('/usr/bin/openssl')
+    version = subprocess.run([str(tool), 'version'], capture_output=True,
+        check=True, timeout=2, env=_OPENSSL_ENV).stdout.decode('ascii').strip()
+    return {'path': str(tool), 'sha256': hashlib.sha256(tool.read_bytes()).hexdigest(),
+            'version': version}
 
 
 def test_alpha_checkpoint_is_separate_from_six_use_case_rows():
@@ -79,12 +112,10 @@ def test_connected_alpha_102_authenticates_exact_grant_and_revocation(tmp_path, 
     module_spec = importlib.util.spec_from_file_location('alpha_connected_authority', source)
     authority = importlib.util.module_from_spec(module_spec)
     module_spec.loader.exec_module(authority)
-    key = tmp_path / 'issuer.key'
-    key.write_bytes(os.urandom(32)); key.chmod(0o600)
+    private, public = _issuer(tmp_path)
     ledger = tmp_path / 'ledger.db'
     exact = 'a' * 64
-    signature = hmac.new(key.read_bytes(), ('installed_binding:' + exact).encode(),
-                         hashlib.sha256).hexdigest()
+    signature = _issue(private, 'installed_binding', exact)
     manifest = {'schema_version': '1.0', 'mode': 'shadow',
                 'connected_config': {'exact': 'source'}, 'authority': {'exact': 'grant'},
                 'ledger_path': str(ledger),
@@ -92,10 +123,29 @@ def test_connected_alpha_102_authenticates_exact_grant_and_revocation(tmp_path, 
     reference = tmp_path / 'connected.json'
     reference.write_text(json.dumps(manifest), encoding='utf-8'); reference.chmod(0o600)
     monkeypatch.setenv('REGISTERED_ALPHA_CONNECTED_REF', str(reference))
-    monkeypatch.setenv('REGISTERED_ALPHA_AUTH_KEY_FILE', str(key))
+    monkeypatch.setenv('REGISTERED_ALPHA_AUTH_PUBKEY_FILE', str(public))
+    monkeypatch.setenv('REGISTERED_ALPHA_AUTH_PUBKEY_SHA256', hashlib.sha256(public.read_bytes()).hexdigest())
+    monkeypatch.setenv('REGISTERED_ALPHA_CONNECTED_REF_SHA256', hashlib.sha256(reference.read_bytes()).hexdigest())
     options = authority.options()
     assert options['verify_authority']('installed_binding', exact) is True
     assert options['verify_authority']('installed_binding', 'b' * 64) is False
+    public.chmod(0o644)
+    assert options['verify_authority']('installed_binding', exact) is False
+    public.chmod(0o600)
+    linked = tmp_path / 'linked-public.pem'
+    os.link(public, linked)
+    assert options['verify_authority']('installed_binding', exact) is False
+    linked.unlink()
+    original_public = public.read_bytes()
+    public.write_bytes(b'changed-key')
+    assert options['verify_authority']('installed_binding', exact) is False
+    public.write_bytes(original_public)
+    assert options['verify_authority']('installed_binding', exact) is True
+    original_identity = authority._openssl_identity
+    authority._openssl_identity = lambda: {'path': '/changed', 'sha256': '0' * 64,
+                                            'version': 'OpenSSL 3.changed'}
+    assert options['verify_authority']('installed_binding', exact) is False
+    authority._openssl_identity = original_identity
     manifest['signatures'] = {}
     reference.write_text(json.dumps(manifest), encoding='utf-8')
     assert options['verify_authority']('installed_binding', exact) is False
@@ -140,8 +190,7 @@ def test_alpha_installed_binding_uses_exact_wheel_and_installed_origins(
     assert ('loader' in report['origins']) is (fixture_name == 'registered_alpha_connected')
     assert all(Path(row['path']).is_file() for row in report['source_plan']['files'])
     if fixture_name == 'registered_alpha_connected':
-        key = tmp_path / 'host-auth.key'
-        key.write_bytes(os.urandom(32)); key.chmod(0o600)
+        private, public = _issuer(tmp_path)
         reference = tmp_path / 'connected-ref.json'
         ready, effect = tmp_path / 'ready.bin', tmp_path / 'effect.bin'
         audit = tmp_path / 'audit.jsonl'
@@ -175,6 +224,8 @@ def test_alpha_installed_binding_uses_exact_wheel_and_installed_origins(
             'version': list(sys.version_info[:3]),
             'implementation': platform.python_implementation(),
             'openssl': ssl.OPENSSL_VERSION, 'cert_sha256': None,
+            'signature_verifier': _verifier_identity(),
+            'public_key_sha256': hashlib.sha256(public.read_bytes()).hexdigest(),
             'credential_present': True})
         config = {'endpoint': 'https://127.0.0.1:9/v1/systemone',
                   'credential_ref': 'env:TYPESAFE_API_KEY', 'model': 'jev-1.13.0',
@@ -194,8 +245,7 @@ def test_alpha_installed_binding_uses_exact_wheel_and_installed_origins(
                  'mode': 'shadow',
                  'issued_at': (now - timedelta(minutes=1)).isoformat(),
                  'expires_at': (now + timedelta(minutes=5)).isoformat()}
-        signatures = {name: hmac.new(key.read_bytes(), (name + ':' + exact).encode(),
-                                      hashlib.sha256).hexdigest()
+        signatures = {name: _issue(private, name, exact)
                       for name, exact in {'installed_binding': report['binding_sha256'],
                                           'egress_grant': digest(grant)}.items()}
         ledger = tmp_path / 'runtime.ledger'
@@ -210,7 +260,7 @@ def test_alpha_installed_binding_uses_exact_wheel_and_installed_origins(
             installed_binding=report, trusted_binding_sha256=report['binding_sha256'],
             observation=observation,
             launch_environment={'REGISTERED_ALPHA_CONNECTED_REF': str(reference),
-                                'REGISTERED_ALPHA_AUTH_KEY_FILE': str(key),
+                                'REGISTERED_ALPHA_AUTH_PUBKEY_FILE': str(public),
                                 'REGISTERED_ALPHA_PERMIT': '0',
                                 'REGISTERED_ALPHA_AUDIT': str(audit),
                                 'REGISTERED_ALPHA_EFFECTS': str(effect)})
@@ -219,9 +269,16 @@ def test_alpha_installed_binding_uses_exact_wheel_and_installed_origins(
         assert created['stage'] == 'installed' and created['launch_attempts'] == 0
         scope = {'schema_version': '1.0', 'kind': 'connected-delivery-scope-v1',
                  'run_id': created['run_id'], 'plan_sha256': connected_plan['plan_sha256'],
+                 'public_key_sha256': connected_plan['reference_sha256']['REGISTERED_ALPHA_AUTH_PUBKEY_FILE'],
                  'trusted_session_head': created['session_head_sha256'], 'action': 'launch',
                  'expires_at': (datetime.now(timezone.utc) + timedelta(minutes=2)).isoformat()}
         scope['scope_sha256'] = digest(scope)
+        wrong_key_scope = dict(scope, public_key_sha256='0' * 64)
+        wrong_key_scope['scope_sha256'] = digest({k: v for k, v in wrong_key_scope.items()
+                                                  if k != 'scope_sha256'})
+        with pytest.raises(ConnectedDeliveryError, match='exact_expiring_connected_scope_required'):
+            launch_connected_session(tmp_path / 'connected-session', scope=wrong_key_scope,
+                approved_scope_sha256=wrong_key_scope['scope_sha256'])
         monkeypatch.delenv('TYPESAFE_API_KEY', raising=False)
         with pytest.raises(ConnectedDeliveryError, match='connected_credential_unavailable'):
             launch_connected_session(tmp_path / 'connected-session', scope=scope,
@@ -256,6 +313,18 @@ def test_alpha_installed_binding_uses_exact_wheel_and_installed_origins(
         with pytest.raises(ConnectedDeliveryError, match='connected_session_plan_changed'):
             connected_session_status(tmp_path / 'connected-session')
         plan_file.write_bytes(original_plan)
+        public.chmod(0o644)
+        assert not connected_session_status(tmp_path / 'connected-session')['private_references_current']
+        public.chmod(0o600)
+        linked_public = tmp_path / 'linked-public.pem'
+        os.link(public, linked_public)
+        assert not connected_session_status(tmp_path / 'connected-session')['private_references_current']
+        linked_public.unlink()
+        linked_origin = tmp_path / 'linked-installed-host.py'
+        os.link(report['origins']['host']['path'], linked_origin)
+        assert not connected_session_status(tmp_path / 'connected-session')['installed_sources_current']
+        linked_origin.unlink()
+        assert connected_session_status(tmp_path / 'connected-session')['installed_sources_current']
 
         cert, cert_key = tmp_path / 'loopback.crt', tmp_path / 'loopback.key'
         generated = subprocess.run(['openssl', 'req', '-x509', '-newkey', 'rsa:2048',
@@ -307,14 +376,15 @@ def test_alpha_installed_binding_uses_exact_wheel_and_installed_origins(
                 'version': list(sys.version_info[:3]),
                 'implementation': platform.python_implementation(),
                 'openssl': ssl.OPENSSL_VERSION, 'credential_present': True},
-                'cert_sha256': hashlib.sha256(cert.read_bytes()).hexdigest()})
+                'cert_sha256': hashlib.sha256(cert.read_bytes()).hexdigest(),
+                'signature_verifier': _verifier_identity(),
+                'public_key_sha256': hashlib.sha256(public.read_bytes()).hexdigest()})
             grant['endpoint'] = config['endpoint']
             grant['environment_digest'] = config['environment_digest']
             grant['issued_at'] = (datetime.now(timezone.utc) - timedelta(minutes=1)).isoformat()
             grant['expires_at'] = (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat()
             manifest['ledger_path'] = str(tmp_path / 'loopback-runtime.ledger')
-            manifest['signatures']['egress_grant'] = hmac.new(key.read_bytes(),
-                ('egress_grant:' + digest(grant)).encode(), hashlib.sha256).hexdigest()
+            manifest['signatures']['egress_grant'] = _issue(private, 'egress_grant', digest(grant))
             reference.write_text(json.dumps(manifest), encoding='utf-8')
             loop_ready, loop_release = tmp_path / 'loop-ready.bin', tmp_path / 'loop-release.bin'
             loop_effect, loop_audit = tmp_path / 'loop-effect.jsonl', tmp_path / 'loop-audit.jsonl'
@@ -337,7 +407,7 @@ def test_alpha_installed_binding_uses_exact_wheel_and_installed_origins(
                 installed_binding=report, trusted_binding_sha256=report['binding_sha256'],
                 observation=loop_observation,
                 launch_environment={'REGISTERED_ALPHA_CONNECTED_REF': str(reference),
-                    'REGISTERED_ALPHA_AUTH_KEY_FILE': str(key),
+                    'REGISTERED_ALPHA_AUTH_PUBKEY_FILE': str(public),
                     'REGISTERED_ALPHA_PERMIT': '1',
                     'REGISTERED_ALPHA_TASK_ID': task_id,
                     'REGISTERED_ALPHA_AUDIT': str(loop_audit),
@@ -351,6 +421,7 @@ def test_alpha_installed_binding_uses_exact_wheel_and_installed_origins(
                 approved_plan_sha256=loop_plan['plan_sha256'])
             loop_scope = {'schema_version': '1.0', 'kind': 'connected-delivery-scope-v1',
                 'run_id': created['run_id'], 'plan_sha256': loop_plan['plan_sha256'],
+                'public_key_sha256': loop_plan['reference_sha256']['REGISTERED_ALPHA_AUTH_PUBKEY_FILE'],
                 'trusted_session_head': created['session_head_sha256'], 'action': 'launch',
                 'expires_at': (datetime.now(timezone.utc) + timedelta(minutes=2)).isoformat()}
             loop_scope['scope_sha256'] = digest(loop_scope)
@@ -410,6 +481,7 @@ def test_alpha_installed_binding_uses_exact_wheel_and_installed_origins(
                 approved_plan_sha256=fault_plan['plan_sha256'])
             fault_scope = {'schema_version': '1.0', 'kind': 'connected-delivery-scope-v1',
                 'run_id': fault_created['run_id'], 'plan_sha256': fault_plan['plan_sha256'],
+                'public_key_sha256': fault_plan['reference_sha256']['REGISTERED_ALPHA_AUTH_PUBKEY_FILE'],
                 'trusted_session_head': fault_created['session_head_sha256'], 'action': 'launch',
                 'expires_at': (datetime.now(timezone.utc) + timedelta(minutes=2)).isoformat()}
             fault_scope['scope_sha256'] = digest(fault_scope)
@@ -437,6 +509,8 @@ def test_alpha_installed_binding_uses_exact_wheel_and_installed_origins(
                         final_scope = {'schema_version': '1.0',
                             'kind': 'connected-delivery-scope-v1', 'run_id': current['run_id'],
                             'plan_sha256': current['plan_sha256'],
+                            'public_key_sha256': (loop_plan if name == 'loop_session' else fault_plan)
+                                ['reference_sha256']['REGISTERED_ALPHA_AUTH_PUBKEY_FILE'],
                             'trusted_session_head': current['session_head_sha256'],
                             'action': 'stop',
                             'expires_at': (datetime.now(timezone.utc) + timedelta(minutes=2)).isoformat()}

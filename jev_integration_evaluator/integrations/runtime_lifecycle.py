@@ -346,6 +346,8 @@ class HostRuntimeLifecycle:
         self._source_plan = copy.deepcopy(connected_config['source_plan']) if connected else None
         self._installed_binding_digest = (installed_binding['binding_sha256']
                                           if installed_binding is not None else None)
+        self._installed_origin_paths = (tuple(row['path'] for row in installed_binding['origins'].values())
+                                        if installed_binding is not None else ())
         self._grant_digest = digest(authority['egress_grant']) if connected else None
         self._grant_expires = authority['egress_grant']['expires_at'] if connected else None
         self._deployment_expires = (authority['activation']['evidence']['deployment_grant']['expires_at']
@@ -514,6 +516,14 @@ class HostRuntimeLifecycle:
             check_dependency_plan(self._dependency_plan)
             if self._source_plan is not None:
                 check_dependency_plan(self._source_plan)
+                if self._installed_binding_digest is not None:
+                    for path in self._installed_origin_paths:
+                        source = Path(path)
+                        info = source.stat()
+                        if (source.is_symlink() or not stat.S_ISREG(info.st_mode)
+                                or info.st_uid != os.geteuid() or info.st_nlink != 1
+                                or stat.S_IMODE(info.st_mode) & 0o022):
+                            raise LifecycleError('connected_installed_origin_changed')
                 if any(digest(self._adapters[name].SPEC) != wanted
                        for name, wanted in self._adapter_digests.items()):
                     raise LifecycleError('connected_adapter_contract_changed')

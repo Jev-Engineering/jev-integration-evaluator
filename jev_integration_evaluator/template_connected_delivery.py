@@ -51,7 +51,7 @@ def plan_connected_delivery(install_plan: dict, *, trusted_install_receipt_sha25
     offline._linux_profile()
     if requested_mode != 'shadow':
         raise ConnectedDeliveryError('connected_mode_requires_observed_gate')
-    references = {'REGISTERED_ALPHA_CONNECTED_REF', 'REGISTERED_ALPHA_AUTH_KEY_FILE'}
+    references = {'REGISTERED_ALPHA_CONNECTED_REF', 'REGISTERED_ALPHA_AUTH_PUBKEY_FILE'}
     allowed = references | {'REGISTERED_ALPHA_PERMIT', 'REGISTERED_ALPHA_AUDIT',
                             'REGISTERED_ALPHA_EFFECTS', 'REGISTERED_ALPHA_TASK_ID',
                             'REGISTERED_ALPHA_HOLD', 'REGISTERED_ALPHA_READY',
@@ -205,13 +205,14 @@ def create_connected_session(directory: str | Path, plan: dict,
 
 
 def _authority(scope: dict, approved_scope_sha256: str, head: str,
-               state: dict, action: str) -> None:
+               state: dict, plan: dict, action: str) -> None:
     validate_contract(scope, 'connected-delivery-scope-v1')
     if (scope['scope_sha256'] != approved_scope_sha256
             or scope['scope_sha256'] != digest({k: v for k, v in scope.items()
                                                 if k != 'scope_sha256'})
             or scope['run_id'] != state['run_id']
             or scope['plan_sha256'] != state['plan_sha256']
+            or scope['public_key_sha256'] != plan['reference_sha256']['REGISTERED_ALPHA_AUTH_PUBKEY_FILE']
             or scope['trusted_session_head'] != head
             or scope['action'] != action
             or parse_utc(scope['expires_at']) <= datetime.now(timezone.utc)):
@@ -224,7 +225,7 @@ def launch_connected_session(directory: str | Path, *, scope: dict,
     target = offline._safe_directory(directory, exists=True)
     with _locked(target):
         _, rows, state, plan = _open(target)
-        _authority(scope, approved_scope_sha256, rows[-1]['record_sha256'], state, 'launch')
+        _authority(scope, approved_scope_sha256, rows[-1]['record_sha256'], state, plan, 'launch')
         if state['pending'] or state['launch_attempts'] or state['stage'] != 'installed':
             raise ConnectedDeliveryError('connected_launch_already_attempted')
         _check_plan(plan)
@@ -242,7 +243,11 @@ def launch_connected_session(directory: str | Path, *, scope: dict,
             env = dict(base['launch_environment'])
             env.update({'PATH': str(Path(base['environment']) / 'venv/bin'),
                         'PYTHONNOUSERSITE': '1',
-                        'TYPESAFE_API_KEY': os.environ['TYPESAFE_API_KEY']})
+                        'TYPESAFE_API_KEY': os.environ['TYPESAFE_API_KEY'],
+                        'REGISTERED_ALPHA_CONNECTED_REF_SHA256':
+                            plan['reference_sha256']['REGISTERED_ALPHA_CONNECTED_REF'],
+                        'REGISTERED_ALPHA_AUTH_PUBKEY_SHA256':
+                            plan['reference_sha256']['REGISTERED_ALPHA_AUTH_PUBKEY_FILE']})
             child = subprocess.Popen([sys.executable, '-I', '-c', offline._HELPER,
                                       str(read_fd), base['console_script'], base['environment']],
                                      pass_fds=(read_fd,), stdin=subprocess.DEVNULL,
@@ -302,7 +307,7 @@ def stop_connected_session(directory: str | Path, *, scope: dict,
     target = offline._safe_directory(directory, exists=True)
     with _locked(target):
         _, rows, state, plan = _open(target)
-        _authority(scope, approved_scope_sha256, rows[-1]['record_sha256'], state, 'stop')
+        _authority(scope, approved_scope_sha256, rows[-1]['record_sha256'], state, plan, 'stop')
         if state['process'] is None or state['pending'] not in (None, 'stop'):
             raise ConnectedDeliveryError('connected_stop_requires_known_process')
         if state['pending'] is None:
@@ -331,15 +336,25 @@ def _result(state: dict, head: str, plan: dict) -> dict:
     base = plan['off_provenance']
     checks = {row['role']: offline._probe_hash(Path(row['path'])) == row['expected_sha256']
               for row in base['observation']['checks']}
-    def current(path: str, expected: str) -> bool:
+    def current(path: str, expected: str, *, private: bool = False,
+                origin: bool = False) -> bool:
         try:
             target = Path(path)
+            if private:
+                _check_reference(path)
+            if origin:
+                info = target.stat()
+                if (info.st_uid != os.geteuid() or info.st_nlink != 1
+                        or stat.S_IMODE(info.st_mode) & 0o022):
+                    return False
             return target.is_file() and not target.is_symlink() and file_hash(target) == expected
-        except OSError:
+        except (OSError, InputError):
             return False
-    sources_current = all(current(row['path'], row['sha256'])
+    origin_paths = {row['path'] for row in plan['installed_binding']['origins'].values()}
+    sources_current = all(current(row['path'], row['sha256'],
+                                  origin=row['path'] in origin_paths)
                           for row in plan['installed_binding']['source_plan']['files'])
-    references_current = all(current(base['launch_environment'][name], expected)
+    references_current = all(current(base['launch_environment'][name], expected, private=True)
                              for name, expected in plan['reference_sha256'].items())
     result = {'schema_version': '1.0', 'kind': 'connected-delivery-result-v1',
             'run_id': state['run_id'], 'plan_sha256': state['plan_sha256'],
