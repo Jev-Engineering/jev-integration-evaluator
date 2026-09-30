@@ -13,7 +13,7 @@
       "root": "tests/independent_hosts/registered_alpha_connected",
       "host_sha256": "097d23c5ce68b53c59038fb8ac195744d8ab9adafa2bdf1ce1939ed91a67d4e5",
       "console_sha256": "19f152bfa720de7ab3baa9c6db24c000f9058904bec741a3a5f19fc8dd08f7c7",
-      "loader_sha256": "eb4b288b46d1f6683b601d2e827a75934afa9b7b3a39919ea22ada765ea2f50e",
+      "loader_sha256": "4fb1808ec5690dd70d742a4302c9466a46bc0b39edf892477e6bb20e2a53f18b",
       "project_sha256": "0f1663c62c614bb5053fbcc0175760889391326bd56f808f02ecd8babea0ef17",
       "installed_execution": "qualified_offline_connected_shadow_startup_protocol",
       "provider": "unobserved",
@@ -30,7 +30,7 @@
         "JEV-EDF19BDB65F0": {"file": "src/registered_dual/alpha.py", "sha256": "ec04a01d497f35f10d51607b636023bc2b1f622e87bc6b7fe99de300adc02d32"}
       },
       "console_sha256": "bf3516e197d2ca6cc90514edd663125d0593003c274185d60b0f3e94e47c1dd9",
-      "loader_sha256": "43331e54755ac9530c3a233045420268d090f50e274520162f12bb672f029854",
+      "loader_sha256": "406cec77bbe986efbada92d1f7385042b43714f2f9fcc1dab88015905be67a68",
       "project_sha256": "6bae5f8680ae5b2cf054431e177ce22a94c5e13770187497c0df7044db7e574f",
       "installed_execution": "qualified_offline_connected_dual_shadow_protocol",
       "provider": "unobserved",

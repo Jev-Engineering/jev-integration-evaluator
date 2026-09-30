@@ -50,7 +50,7 @@ and child launch environment. The private issuer key never enters the child,
 wheel, source or committed fixture. The loader checks owner/mode/link count,
 verifies signatures with fixed `/usr/bin/openssl` argv and a clean OpenSSL 3
 environment, and recomputes the verifier's binary hash/version and runtime
-facts before each route. A changed public key or verifier needs a new reviewed
+facts before each route. Signature verification rehashes the exact anchored public PEM snapshot and supplies it through an owned temporary-file descriptor; OpenSSL never reopens the public key pathname after validation. Local replacement-race tests use independently signed foreign keys and retain the original failing outcomes. A changed public key or verifier needs a new reviewed
 plan and issuer signature. Secret values and raw prompts do not belong in
 plans, scopes or reports.
 
