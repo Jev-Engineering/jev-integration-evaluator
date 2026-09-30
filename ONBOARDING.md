@@ -92,7 +92,12 @@ for owner-private package/install generations, supervised off-mode normal
 consoles, and retained installed-version cutover and rollback. Retain all
 receipt digests externally. Local Windows 11 CPython 3.10/3.13/3.14 installed
 fixture runs have retained private receipts.
-Windows Server mutating and installed qualification remains pending.
+Windows Server 2022 build 20348 passed the separate 31-case native off-mode
+preparation, package/install, supervised console and retained-generation suite
+on CPython 3.10.11 and 3.13.15 with zero skips in the
+[PR #106 merge run](https://github.com/Jev-Engineering/jev-integration-evaluator/actions/runs/36647200079).
+Broader source-filesystem, interruption additions and connected qualification
+require their own exact-revision evidence.
 
 For connected host runtime qualification, record the pinned endpoint/model,
 environment and reviewed source/configuration digests, budget scope, host-owned

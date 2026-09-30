@@ -72,8 +72,11 @@ inspect reviewed files on local NTFS. A separate
 has a locally observed Windows 11 package/install, supervised normal-console
 path, and retained installed-version cutover and rollback under one run ID.
 Local Windows 11 CPython 3.10/3.13/3.14 installed fixture runs have retained
-private receipts. Windows Server mutating runs, broader recovery edges and
-provider qualification remain pending.
+private receipts. Windows Server 2022 build 20348 also passed the native
+31-case off-mode preparation, package/install, supervised console and retained
+generation suite on CPython 3.10.11 and 3.13.15 with zero skips; see the
+[PR #106 merge run](https://github.com/Jev-Engineering/jev-integration-evaluator/actions/runs/36647200079).
+Broader source-filesystem and connected qualification remain pending.
 
 The separate [JavaScript recipe C template catalog](references/javascript-recipe-c-template-v1.md)
 validates reviewed ESM, CommonJS and TypeScript source through trusted external
