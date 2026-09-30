@@ -278,18 +278,6 @@ def test_bound_h_connected_upgrade_and_retained_rollback(tmp_path, monkeypatch):
                 issued_at=issued, expires_at=cutoff.isoformat())
         assert len(calls) == 1
         new_reference.write_bytes(original_reference)
-        installed_source = Path(installed[1][3]['origins']['console']['path'])
-        original_source = installed_source.read_bytes()
-        installed_source.write_bytes(original_source + b'\n')
-        try:
-            with pytest.raises(InputError):
-                plan_connected_generation_transfer(first, plans[1],
-                    trusted_old_head=old_head, old_dependency_plan=dependencies[0],
-                    new_dependency_plan=dependencies[1], limits=limits, action='upgrade',
-                    issued_at=issued, expires_at=cutoff.isoformat())
-            assert len(calls) == 1
-        finally:
-            installed_source.write_bytes(original_source)
         grant = plan_connected_generation_transfer(first, plans[1],
             trusted_old_head=old_head, old_dependency_plan=dependencies[0],
             new_dependency_plan=dependencies[1], limits=limits, action='upgrade',
@@ -463,6 +451,21 @@ def test_bound_h_connected_upgrade_and_retained_rollback(tmp_path, monkeypatch):
                 expires_at=cutoff.isoformat())
         assert not refused.exists()
         assert len(calls) == 2
+        # This terminal negative follows every launch and generation action.
+        # Restoring source bytes does not restore an installation receipt
+        # after a later interpreter rewrites timestamp-based bytecode.
+        installed_source = Path(installed[1][3]['origins']['console']['path'])
+        original_source = installed_source.read_bytes()
+        installed_source.write_bytes(original_source + b'\n')
+        try:
+            with pytest.raises(InputError):
+                generation._installed(plans[1], dependencies[1], limits)
+            assert len(calls) == 2
+            assert effects[0][0].read_bytes() == _expected()[0]
+            assert effects[1][0].read_bytes() == _expected()[0]
+        finally:
+            # Cleanup only: no console is launched or generation reauthorized.
+            installed_source.write_bytes(original_source)
     finally:
         for path, plan in sessions:
             if path.exists():
