@@ -18,7 +18,7 @@ import time
 import pytest
 
 from jev_integration_evaluator.contracts import validate_contract
-from jev_integration_evaluator.io import digest, file_hash
+from jev_integration_evaluator.io import InputError, digest, file_hash
 from jev_integration_evaluator.template_connected_binding import derive_installed_binding
 from jev_integration_evaluator.template_connected_delivery import (
     ConnectedDeliveryError, connected_session_status, create_connected_session,
@@ -222,6 +222,21 @@ def test_m_installed_connected_shadow_preserves_raw_claim_provenance(tmp_path, m
                     plan_connected_delivery(install_plan, **common,
                         launch_environment=environment, requested_mode='active')
             plan = plan_connected_delivery(install_plan, **common, launch_environment=environment)
+            if label == 'valid':
+                missing = tmp_path / 'session-missing-credential'
+                missing_status = create_connected_session(missing, plan,
+                    approved_plan_sha256=plan['plan_sha256'])
+                missing_scope = _scope(missing_status, plan, 'launch')
+                with monkeypatch.context() as no_credential:
+                    no_credential.delenv('TYPESAFE_API_KEY')
+                    with pytest.raises(ConnectedDeliveryError, match='connected_credential_unavailable'):
+                        launch_connected_session(missing, scope=missing_scope,
+                            approved_scope_sha256=missing_scope['scope_sha256'])
+                assert not connected_session_status(missing)['process_alive']
+                assert len(calls) == prior_calls
+                for task in ('claim-one', 'claim-two'):
+                    for member in ('support.json', 'audit.json', 'claim.json'):
+                        assert not (folder / task / member).exists()
             session = tmp_path / ('session-' + label)
             created = create_connected_session(session, plan, approved_plan_sha256=plan['plan_sha256'])
             sessions.append((session, plan))
@@ -258,7 +273,7 @@ def test_m_installed_connected_shadow_preserves_raw_claim_provenance(tmp_path, m
                 records = [json.loads(line) for line in
                            (folder / 'timeout-events.jsonl').read_text().splitlines()]
                 assert records and all(record == {'type': 'assessment_error',
-                    'error_class': 'TimeoutError'} for record in records)
+                    'error_class': 'EvaluationTimeoutError'} for record in records)
             assert calls[-1]['path'] == '/v1/systemone'
             if label == 'revoke':
                 reference.write_bytes(original_reference + b'\n')
@@ -288,6 +303,17 @@ def test_m_installed_connected_shadow_preserves_raw_claim_provenance(tmp_path, m
             stop = _scope(connected_session_status(session), plan, 'stop')
             assert stop_connected_session(session, scope=stop,
                 approved_scope_sha256=stop['scope_sha256'])['stage'] == 'stopped'
+        # Source drift is last; restore bytes only for fixture cleanup.
+        source = Path(report['origins']['host']['path'])
+        original_source = source.read_bytes()
+        calls_before_drift = len(calls)
+        try:
+            source.write_bytes(original_source + b'\n# synthetic source drift\n')
+            with pytest.raises(InputError):
+                plan_connected_delivery(install_plan, **common, launch_environment=environment)
+            assert len(calls) == calls_before_drift
+        finally:
+            source.write_bytes(original_source)
     finally:
         for session, plan in sessions:
             if session.exists() and connected_session_status(session)['process_alive']:

@@ -1,5 +1,12 @@
 # Installed claim support connected shadow
 
+Timeout diagnostics use `EvaluationTimeoutError`, a subtype of the existing
+`InputError`. Direct transport timeouts, wrapped timeout causes and responses
+over the elapsed budget receive this type; other transport failures retain
+the generic error. The host audit writes only the fixed type and error-class
+metadata when the actual router reports this timeout. Provider exception text
+is suppressed. Fresh installed verification of this correction remains pending.
+
 The finite `claim-m-v1` profile binds `claim_host/host_claim_support.py`,
 `claim_host/console.py` and `claim_host/connected_authority.py` to exact source,
 wheel RECORD and installed origins. It uses recipe `python.M@1.0` and the
@@ -51,7 +58,10 @@ reference must preserve the first effect and its settled ledger charge,
 refuse all second-task effects and preserve the shared task limit. Public-key signatures use
 the exact hashed PEM snapshot through an owned file descriptor, including a
 foreign-key path-replacement negative. These rows remain pending until the
-fresh installed qualification completes.
+fresh installed qualification completes. A separate missing-credential session
+must refuse launch before HTTP or any claim effect. The final installed-source
+drift check must refuse another plan; restoring bytes is fixture cleanup and
+is followed by no further launch.
 Source matching,
 installed-host execution, external provider connectivity and measured benefit
 are distinct evidence levels. This new component is pending final installed
