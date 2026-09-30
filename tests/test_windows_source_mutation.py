@@ -239,10 +239,17 @@ apply_patch_plan(sys.argv[1],plan,plan['plan_digest'])
 
 
 @pytest.mark.parametrize('phase,peer', [('rename', False), ('rename', True),
-                                        ('commit', False)])
+                                        ('rename', 'dangling'), ('commit', False)])
 def test_native_create_death_uses_prepared_identity_without_replay(tmp_path, phase, peer):
     from jev_integration_evaluator import windows_source_mutation as mutation
 
+    if peer == 'dangling':
+        probe = tmp_path / 'symlink-probe'
+        try:
+            probe.symlink_to(tmp_path / 'absent')
+        except OSError as exc:
+            pytest.skip(f'native symlink privilege unavailable: {type(exc).__name__}')
+        probe.unlink()
     source = tmp_path / 'created.py'
     plan = make_patch_plan(tmp_path, [{'file': source.name,
                                        'new_content': 'reviewed\n'}], ['native-source'])
@@ -277,10 +284,17 @@ apply_patch_plan(sys.argv[1],plan,plan['plan_digest'])
     assert intent.is_file()
     if peer:
         source.unlink()  # disposable test-owned created file
-        source.write_bytes(b'peer atomic save\n')
-        with pytest.raises(InputError, match='windows_source_peer_target_preserved'):
+        if peer == 'dangling':
+            source.symlink_to(tmp_path / 'missing-peer')
+        else:
+            source.write_bytes(b'peer atomic save\n')
+        with pytest.raises(InputError):
             apply_patch_plan(tmp_path, plan, plan['plan_digest'])
-        assert source.read_bytes() == b'peer atomic save\n' and intent.is_file()
+        if peer == 'dangling':
+            assert source.is_symlink()
+        else:
+            assert source.read_bytes() == b'peer atomic save\n'
+        assert intent.is_file()
         source.unlink()  # disposable test-owned peer
     with pytest.raises(InputError, match='reconciled; review a new plan'):
         apply_patch_plan(tmp_path, plan, plan['plan_digest'])

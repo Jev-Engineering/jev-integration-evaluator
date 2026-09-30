@@ -260,6 +260,11 @@ def _intent_bytes(record: dict) -> bytes:
                        ensure_ascii=True) + '\n').encode('ascii')
 
 
+def _entry_exists(path: Path) -> bool:
+    # Path.exists follows links and misclassifies a dangling reparse entry.
+    return os.path.lexists(path)
+
+
 def _write_intent(path: Path, record: dict) -> tuple[tuple[int, int], str]:
     _, io_path = cap._windows_absolute_path(path)
     raw = _intent_bytes(record)
@@ -305,7 +310,7 @@ def reconcile_pending_reviewed_write(path: Path, old_sha: str | None, new_sha: s
                                      repository_root: Path) -> bool:
     """Reconcile one exact approved interrupted write; never replay the edit."""
     intent = _intent_path(path, old_sha, new_sha, repository_root)
-    if not intent.exists():
+    if not _entry_exists(intent):
         return False
     _, intent_io = cap._windows_absolute_path(intent)
     intent_fd, intent_info = _lease(intent_io)
@@ -363,7 +368,7 @@ def reconcile_pending_reviewed_write(path: Path, old_sha: str | None, new_sha: s
     if create_record is not None:
         stage_identity = tuple(create_record['stage_identity'])
         stage = path.parent / create_record['stage']
-        if path.exists():
+        if _entry_exists(path):
             _, target_io = cap._windows_absolute_path(path)
             fd, info = _lease(target_io, pin_name=True)
             try:
@@ -376,7 +381,7 @@ def reconcile_pending_reviewed_write(path: Path, old_sha: str | None, new_sha: s
                 remove_owned_created(path, stage_identity, new_sha)
         elif committed:
             raise InputError('windows_source_committed_target_missing')
-        if stage.exists():
+        if _entry_exists(stage):
             remove_owned_created(stage, stage_identity, new_sha)
         remove_owned_created(intent, intent_identity, intent_sha)
         return True
@@ -389,7 +394,7 @@ def reconcile_pending_reviewed_write(path: Path, old_sha: str | None, new_sha: s
     _, _, _, pinned = cap._windows_pin_directory_path(parent, purpose='source_mutation')
     try:
         if committed:
-            if not path.exists():
+            if not _entry_exists(path):
                 raise InputError('windows_source_committed_target_missing')
             fd, info = _lease(target_io)
             try:
@@ -398,16 +403,16 @@ def reconcile_pending_reviewed_write(path: Path, old_sha: str | None, new_sha: s
                     raise InputError('windows_source_committed_target_changed')
             finally:
                 os.close(fd)
-            if backup.exists():
+            if _entry_exists(backup):
                 remove_owned_created(backup, old_identity, old_sha)
-        elif backup.exists():
+        elif _entry_exists(backup):
             _, backup_io = cap._windows_absolute_path(backup)
             old_fd, old_info = _lease(backup_io, pin_name=True)
             try:
                 if (cap._windows_file_identity(old_info) != old_identity or
                         hashlib.sha256(os.read(old_fd, 2_000_001)).hexdigest() != old_sha):
                     raise InputError('windows_source_backup_changed')
-                if path.exists():
+                if _entry_exists(path):
                     current_fd, current_info = _lease(target_io, pin_name=True)
                     try:
                         if (cap._windows_file_identity(current_info) != stage_identity or
@@ -428,7 +433,7 @@ def reconcile_pending_reviewed_write(path: Path, old_sha: str | None, new_sha: s
                     raise InputError('windows_source_unexpected_target_preserved')
             finally:
                 os.close(fd)
-        if stage.exists():
+        if _entry_exists(stage):
             remove_owned_created(stage, stage_identity, new_sha)
         remove_owned_created(intent, intent_identity, intent_sha)
         return True
@@ -532,7 +537,7 @@ def _create_reviewed_text(path: Path, raw: bytes, repository_root: Path | None) 
             elif stage_identity is not None:
                 if renamed:
                     remove_owned_created(path, stage_identity, digest)
-                elif stage.exists():
+                elif _entry_exists(stage):
                     remove_owned_created(stage, stage_identity, digest)
             if intent_identity is not None:
                 remove_owned_created(intent, intent_identity, intent_sha)
@@ -755,7 +760,7 @@ def write_reviewed_text(path: Path, text: str, expected_sha256: str | None,
                 os.close(fd)
         # Cleanup pins the actual identity; an unknown recovery state stays.
         if (not recovery_required and stage_identity is not None
-                and stage_expected_sha is not None and stage_path.exists()):
+                and stage_expected_sha is not None and _entry_exists(stage_path)):
             remove_owned_created(stage_path, stage_identity, stage_expected_sha)
         if (not recovery_required and intent_identity is not None
                 and intent_sha is not None and intent_path is not None):
