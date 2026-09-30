@@ -19,7 +19,7 @@
     "pyproject.toml": "794493285626bb844050aeade1190463d2a3874a5dbcb465ae50230c24a8705f",
     "src/registered_dual/__init__.py": "ee3d08a82f10edefbf1cc563dbffecf18772db62fbd82d4bee5ad8a9425c371a",
     "src/registered_dual/alpha.py": "ec04a01d497f35f10d51607b636023bc2b1f622e87bc6b7fe99de300adc02d32",
-    "src/registered_dual/console.py": "f03384a3f148daa0d734485825136b9a75240d0f24b0bc7cd0685c7e8ced5790",
+    "src/registered_dual/console.py": "248c76941d8a5b52f310798d71474f8f027a588ffe30620c3773412d1898baaa",
     "src/registered_dual/requirements.lock": "21ac598980a951f6b4e0f098bc1756ccfffbbe7e8c12d36a228c8381ca0c013b",
     "src/registered_dual/runtime.json": "0c1f169e847504851b588cac189b805f24b317288411ca9699b16cbf41ea0252",
     "src/registered_dual/work_queue.py": "db2a51bd2751a1dcfff052104ccec28c369cba6f59d73f2508ee218c5bc0bf87"
