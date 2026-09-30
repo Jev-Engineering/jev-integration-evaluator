@@ -1,4 +1,4 @@
-"""Declared Linux fixture loaders reject independently issued non-P256 keys."""
+"""Declared Linux fixture loaders reject foreign keys and pathname races."""
 from __future__ import annotations
 
 import hashlib
@@ -17,6 +17,7 @@ LOADERS = (
     ('alpha', 'tests/independent_hosts/registered_alpha_connected/src/registered_alpha/connected_authority.py', 'REGISTERED_ALPHA'),
     ('retrieval', 'tests/independent_hosts/retrieval_connected/connected_authority.py', 'D'),
     ('dual', 'tests/independent_hosts/registered_dual_connected/src/registered_dual/connected_authority.py', 'REGISTERED_DUAL'),
+    ('graph', 'tests/independent_hosts/graph_connected/connected_authority.py', 'L'),
 )
 pytestmark = pytest.mark.skipif(sys.platform != 'linux', reason='Fixed Linux OpenSSL fixture loader')
 

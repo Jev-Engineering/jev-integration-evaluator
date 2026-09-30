@@ -151,16 +151,22 @@ def options() -> dict:
         try:
             if (_public_key() != key_file or _openssl_identity() != verifier_identity):
                 return False
+            public_pem = key_file.read_bytes()
+            if hashlib.sha256(public_pem).hexdigest() != os.environ.get('L_AUTH_PUBKEY_SHA256'):
+                return False
             raw = base64.b64decode(signature, validate=True)
-            with tempfile.TemporaryFile(mode='w+b') as signature_file:
+            with (tempfile.TemporaryFile(mode='w+b') as signature_file,
+                  tempfile.TemporaryFile(mode='w+b') as public_file):
                 signature_file.write(raw)
                 signature_file.flush()
+                public_file.write(public_pem)
+                public_file.flush()
                 verification = subprocess.run(
-                    [str(OPENSSL), 'dgst', '-sha256', '-verify', str(key_file),
+                    [str(OPENSSL), 'dgst', '-sha256', '-verify', f'/proc/self/fd/{public_file.fileno()}',
                      '-signature', f'/proc/self/fd/{signature_file.fileno()}'],
                     input=(kind + ':' + exact_digest).encode('ascii'),
                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                    pass_fds=(signature_file.fileno(),), timeout=2,
+                    pass_fds=(signature_file.fileno(), public_file.fileno()), timeout=2,
                     env=OPENSSL_ENV, check=False)
             return verification.returncode == 0
         except (OSError, ValueError, RuntimeError, subprocess.TimeoutExpired):
