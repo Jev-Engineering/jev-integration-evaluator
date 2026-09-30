@@ -323,3 +323,107 @@ def test_native_offline_package_install_and_normal_console(tmp_path):
     with pytest.raises(InputError, match='tree_drift'):
         windows_install_status(install_plan,
                                trusted_receipt_sha256=installed['receipt_sha256'])
+
+
+def test_native_interrupted_launch_retains_identity_and_refuses_replay(tmp_path, monkeypatch):
+    """Exercise actual gated children across three durable launch boundaries."""
+    import time
+    from jev_integration_evaluator import windows_template_session as native
+    from jev_integration_evaluator.windows_template_owned import read_private_json
+    from jev_integration_evaluator.integrations.recipes import host_lifecycle_marker
+
+    request, _, _, _, spec = _request(tmp_path, ready=True)
+    package_plan = plan_windows_template_package(request)
+    package = build_windows_template_package(
+        package_plan, approved_plan_sha256=package_plan['plan_sha256'])
+    install_plan = plan_windows_template_install(
+        package_plan, package, trusted_package_receipt_sha256=package['receipt_sha256'])
+    installed = install_windows_template_package(
+        install_plan, approved_plan_sha256=install_plan['plan_sha256'])
+    marker = host_lifecycle_marker(
+        spec['host_lifecycle'], spec['bindings']['runtime'], spec['candidate_id'])
+    unrelated_file = tmp_path / 'unrelated.txt'
+    unrelated_file.write_bytes(b'preserve unrelated work\n')
+    unrelated = subprocess.Popen(
+        [sys.executable, '-I', '-c', 'import time; time.sleep(600)'],
+        stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        creationflags=subprocess.CREATE_NO_WINDOW)
+    original_write = native.write_private_json_exclusive
+    try:
+        for boundary in ('launch-intent.json', 'launch-identity.json',
+                         'launch-released.json'):
+            label = boundary.removesuffix('.json')
+            ready = tmp_path / (label + '-ready.txt')
+            effect = tmp_path / (label + '-effect.json')
+            release = tmp_path / (label + '-host-release.txt')
+            session = create_windows_template_session(
+                tmp_path / label, install_plan, installed,
+                trusted_install_receipt_sha256=installed['receipt_sha256'],
+                launch_environment={'JEV_FIXTURE_RECORD': str(effect),
+                                    'JEV_FIXTURE_MARKER': marker,
+                                    'JEV_FIXTURE_READY': str(ready),
+                                    'JEV_FIXTURE_RELEASE': str(release)})
+            identity = None
+            try:
+                def interrupt(owned, name, value):
+                    if name == boundary:
+                        # Intent and identity have reached durable storage. The
+                        # release token precedes its receipt, so interrupt before
+                        # that write to retain the real uncertain-launch state.
+                        if name != 'launch-released.json':
+                            original_write(owned, name, value)
+                        raise RuntimeError('injected durable launch interruption')
+                    return original_write(owned, name, value)
+
+                with monkeypatch.context() as patch:
+                    patch.setattr(native, 'write_private_json_exclusive', interrupt)
+                    with pytest.raises(RuntimeError, match='durable launch interruption'):
+                        launch_windows_template_session(
+                            session, install_plan,
+                            approved_session_sha256=session['session_sha256'])
+                owned = session['owned_directory']
+                root = Path(owned['path'])
+                intent_before = (root / 'launch-intent.json').read_bytes()
+                assert not (root / 'launch-released.json').exists()
+                if (root / 'launch-identity.json').exists():
+                    identity = read_private_json(owned, 'launch-identity.json')
+                    deadline = time.monotonic() + 30
+                    if boundary == 'launch-released.json':
+                        while not ready.exists() and time.monotonic() < deadline:
+                            time.sleep(.05)
+                        assert ready.read_bytes() == b'entry-ready\n'
+                        assert windows_session_status(session)['process_alive']
+                    else:
+                        while windows_session_status(session)['process_alive'] and time.monotonic() < deadline:
+                            time.sleep(.05)
+                        assert not windows_session_status(session)['process_alive']
+                        assert not ready.exists()
+                else:
+                    assert boundary == 'launch-intent.json'
+                    assert not ready.exists()
+                assert windows_session_status(session)['status'] == 'blocked_recovery'
+                assert not effect.exists() and not release.exists()
+                with pytest.raises(InputError, match='launch_already_attempted'):
+                    launch_windows_template_session(
+                        session, install_plan,
+                        approved_session_sha256=session['session_sha256'])
+                assert (root / 'launch-intent.json').read_bytes() == intent_before
+                assert not effect.exists() and not release.exists()
+            finally:
+                if identity is None:
+                    owned = session['owned_directory']
+                    if (Path(owned['path']) / 'launch-identity.json').exists():
+                        identity = read_private_json(owned, 'launch-identity.json')
+                if identity is not None:
+                    stopped = stop_windows_template_session(
+                        session, approved_identity_sha256=identity['identity_sha256'])
+                    assert not stopped['process_alive']
+                    assert stopped['status'] == 'blocked_recovery'
+            assert unrelated.poll() is None
+            assert unrelated_file.read_bytes() == b'preserve unrelated work\n'
+        assert windows_install_status(
+            install_plan, trusted_receipt_sha256=installed['receipt_sha256'])['status'] == 'installed_recorded'
+    finally:
+        if unrelated.poll() is None:
+            unrelated.terminate()
+        unrelated.wait(timeout=10)

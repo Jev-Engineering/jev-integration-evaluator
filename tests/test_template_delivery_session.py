@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
+import json
 import os
 from pathlib import Path
 import platform
@@ -34,7 +35,7 @@ def _scope(result, plan, *, launch=False, stop=False, disable=False,
     return value
 
 
-def _fake_installed(tmp_path, monkeypatch, *, pause=5, receipts=None):
+def _fake_installed(tmp_path, monkeypatch, *, pause=5, receipts=None, startup_gate=None):
     root = tmp_path / 'installed'
     script = root / 'venv/bin/fixture-console'
     script.parent.mkdir(parents=True)
@@ -43,6 +44,13 @@ def _fake_installed(tmp_path, monkeypatch, *, pause=5, receipts=None):
     content = f'''#!{sys.executable}
 import os,time
 from pathlib import Path
+gate = os.environ.get("DELIVERY_START_GATE")
+if gate:
+    deadline = time.monotonic() + 180
+    while not Path(gate).is_file() and time.monotonic() < deadline:
+        time.sleep(.02)
+    if not Path(gate).is_file():
+        raise TimeoutError("fixture start gate withheld")
 Path(os.environ["DELIVERY_EFFECT_PATH"]).write_bytes(b"actual-owned-effect")
 Path(os.environ["DELIVERY_READY_PATH"]).write_bytes(b"ready")
 time.sleep({pause})
@@ -70,13 +78,45 @@ time.sleep({pause})
                                   trusted_install_receipt_sha256='a' * 64,
                                   observation=observation,
                                   launch_environment={'DELIVERY_EFFECT_PATH': str(marker),
-                                                      'DELIVERY_READY_PATH': str(ready)})
+                                                      'DELIVERY_READY_PATH': str(ready),
+                                                      **({'DELIVERY_START_GATE': str(startup_gate)}
+                                                         if startup_gate is not None else {})})
     return plan, marker
 
 
 def digest_bytes(raw: bytes) -> str:
     import hashlib
     return hashlib.sha256(raw).hexdigest()
+
+
+def _readiness_diagnostic(session, observed, effect):
+    """Failure-only, bounded metadata; never include paths or child output."""
+    _, _, state, _ = delivery._open(session)
+    identity = state['process']
+    info = delivery._process_info(identity['pid']) if identity else None
+    same_child = bool(info and info[0] == identity['start_ticks'])
+    exit_status = None
+    if same_child and info[1] in ('Z', 'X', 'x'):
+        try:
+            result = os.waitid(os.P_PID, identity['pid'],
+                               os.WEXITED | os.WNOHANG | os.WNOWAIT)
+            if result is not None:
+                exit_status = {'code': result.si_code, 'status': result.si_status}
+        except (ChildProcessError, OSError):
+            pass
+    ready = effect.with_name('ready.bin')
+    def file_state(path):
+        present = path.is_file() and not path.is_symlink()
+        return {'present': present, 'sha256': file_hash(path) if present else None}
+    return {'stage': observed['stage'], 'pending': observed['pending'],
+            'process_alive': observed['current_process_alive'],
+            'child_state': info[1] if same_child else 'missing_or_changed',
+            'child_exit': exit_status, 'effect': file_state(effect),
+            'ready': file_state(ready),
+            'recorded': {name: observed['recorded_observations'][name]
+                         for name in ('ready', 'entrypoint_reached',
+                                      'integration_reachable', 'outcome_verified',
+                                      'provider_reachable')}}
 
 
 def test_launch_observe_disable_and_exact_current_health(tmp_path, monkeypatch):
@@ -92,7 +132,7 @@ def test_launch_observe_disable_and_exact_current_health(tmp_path, monkeypatch):
         delivery.launch_session(session, scope=refused,
                                 approved_scope_sha256=refused['scope_sha256'])
     expired = _scope(created, plan, launch=True,
-                     expires=datetime.now(timezone.utc) - timedelta(seconds=1))
+                     expires=datetime.now(timezone.utc) - timedelta(minutes=1))
     with pytest.raises(delivery.DeliveryError, match='delivery_scope_expired'):
         delivery.launch_session(session, scope=expired,
                                 approved_scope_sha256=expired['scope_sha256'])
@@ -100,32 +140,60 @@ def test_launch_observe_disable_and_exact_current_health(tmp_path, monkeypatch):
     authorized = _scope(created, plan, launch=True)
     launched = delivery.launch_session(session, scope=authorized,
                                        approved_scope_sha256=authorized['scope_sha256'])
-    assert launched['recorded_observations']['launched'] is True
-    assert launched['recorded_observations']['mode_authorized'] is True
-    with pytest.raises(delivery.DeliveryError, match='already_running'):
-        again = _scope(launched, plan, launch=True)
-        delivery.launch_session(session, scope=again,
-                                approved_scope_sha256=again['scope_sha256'])
     import time
-    observed = launched
-    deadline = time.monotonic() + 10
-    while time.monotonic() < deadline:
-        observed = delivery.observe_session(session,
-                                            trusted_session_head=observed['session_head_sha256'])
-        if observed['recorded_observations']['outcome_verified']:
-            break
-        time.sleep(0.01)
-    assert observed['recorded_observations']['entrypoint_reached'] is True
-    assert observed['recorded_observations']['integration_reachable'] is True
-    assert observed['recorded_observations']['outcome_verified'] is True
-    assert observed['recorded_observations']['provider_reachable'] is False
-    assert observed['current_process_alive'] is True
-    stop_scope = _scope(observed, plan, disable=True)
-    stopped = delivery.stop_session(session, scope=stop_scope,
-                                    approved_scope_sha256=stop_scope['scope_sha256'], disable=True)
-    assert stopped['stage'] == 'disabled'
-    assert stopped['current_process_alive'] is False
-    assert delivery.session_status(session, trusted_session_head=stopped['session_head_sha256'])['evidence_trust'] == 'externally_anchored_history'
+    try:
+        assert launched['recorded_observations']['launched'] is True
+        assert launched['recorded_observations']['mode_authorized'] is True
+        with pytest.raises(delivery.DeliveryError, match='already_running'):
+            again = _scope(launched, plan, launch=True)
+            delivery.launch_session(session, scope=again,
+                                    approved_scope_sha256=again['scope_sha256'])
+        observed = launched
+        deadline = time.monotonic() + 10
+        while time.monotonic() < deadline:
+            observed = delivery.observe_session(session,
+                                                trusted_session_head=observed['session_head_sha256'])
+            if observed['recorded_observations']['outcome_verified']:
+                break
+            time.sleep(0.01)
+        observations = observed['recorded_observations']
+        if not (observations['entrypoint_reached']
+                and observations['integration_reachable']
+                and observations['outcome_verified']
+                and not observations['provider_reachable']
+                and observed['current_process_alive']):
+            pytest.fail('delivery readiness deadline: ' + json.dumps(
+                _readiness_diagnostic(session, observed, effect), sort_keys=True))
+        stop_scope = _scope(observed, plan, disable=True)
+        stopped = delivery.stop_session(session, scope=stop_scope,
+                                        approved_scope_sha256=stop_scope['scope_sha256'], disable=True)
+        assert stopped['stage'] == 'disabled'
+        assert stopped['current_process_alive'] is False
+        assert delivery.session_status(session, trusted_session_head=stopped['session_head_sha256'])['evidence_trust'] == 'externally_anchored_history'
+    finally:
+        current = delivery.session_status(session)
+        if current['stage'] not in ('stopped', 'disabled'):
+            stop_scope = _scope(current, plan, stop=True)
+            delivery.stop_session(session, scope=stop_scope,
+                                  approved_scope_sha256=stop_scope['scope_sha256'],
+                                  grace_seconds=0)
+
+
+def test_readiness_timeout_reports_bounded_state_and_stops_owned_child(tmp_path, monkeypatch):
+    original = _fake_installed
+    gate = tmp_path / 'withheld-start-gate'
+    monkeypatch.setattr(sys.modules[__name__], '_fake_installed',
+                        lambda path, patch, *, pause: original(
+                            path, patch, pause=pause, startup_gate=gate))
+    with pytest.raises(pytest.fail.Exception, match='delivery readiness deadline') as failure:
+        test_launch_observe_disable_and_exact_current_health(tmp_path, monkeypatch)
+    message = str(failure.value)
+    metadata = json.loads(message.split('delivery readiness deadline: ', 1)[1])
+    assert metadata['effect'] == {'present': False, 'sha256': None}
+    assert metadata['ready'] == {'present': False, 'sha256': None}
+    assert metadata['child_state'] not in ('missing_or_changed', 'Z')
+    assert str(tmp_path) not in message
+    assert delivery.session_status(tmp_path / 'session')['current_process_alive'] is False
 
 
 def test_unreleased_launch_is_retryable_and_unknown_effect_blocks(tmp_path, monkeypatch):
