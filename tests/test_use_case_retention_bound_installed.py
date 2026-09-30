@@ -45,9 +45,11 @@ def _expected() -> tuple[bytes, list[dict]]:
     return (json.dumps(items, sort_keys=True, separators=(',', ':')) + '\n').encode(), items
 
 
-def _applied(tmp_path: Path, name: str, version: str) -> dict:
+def _applied(tmp_path: Path, name: str, version: str,
+             connected_loader: Path | None = None) -> dict:
     target = tmp_path / name
-    inventory, _, request = _bound_host(target, version=version, installed=True)
+    inventory, _, request = _bound_host(target, version=version, installed=True,
+                                      connected_loader=connected_loader)
     prepared = prepare_template_binding(target, request, BINDING)
     bound = prepared['request']
     spec = bound['implementation_spec']

@@ -1,5 +1,11 @@
 # Progressive onboarding
 
+For the finite [H connected retention profile](references/retention-template-connected-v1.md),
+collect the explicit `/prune` choice, private connected and public-key
+references, exact host scope and independent retained-item postconditions.
+The authored timeout and revocation schedule still requires fresh installed
+qualification; it grants no external provider or canary/active authority.
+
 Start with facts already supplied by the user and the local scan. Do not ask for a repository path twice, ask about languages the scan identifies, or infer modification/network authority from access to files. Default to analysis and STANDARD depth. A null benchmark/trace path explicitly means unavailable, not permission to invent data.
 
 The `onboard` command accepts an optional JSON answer object. It returns at most five missing fields at a time, keeps subsequent missing fields separate and reuses all answers. Fields are `objective`, `latency_budget_ms`, `cost_budget_per_task`, `risk_tolerance`, `environment`, `benchmark_path`, `trace_path`, and, only for implementation, `modification_authority`. Optional metadata includes mode, depth, repository and branding.

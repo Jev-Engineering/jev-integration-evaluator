@@ -249,6 +249,8 @@
       "mode": "off",
       "benefit": "unknown",
       "contract_id": "use-case.H@1.0.0",
+      "connected_shadow": "pending",
+      "connected_upgrade": "pending",
       "materialize": "qualified_offline_h_synthetic_host",
       "bind": "qualified_offline_h_synthetic_host",
       "verify": "qualified_offline_h_synthetic_host",

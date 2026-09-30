@@ -127,6 +127,13 @@ The separate
 checks an offline local TLS fixture through the same reviewed D source binding.
 External provider operation, connected upgrade and measured benefit remain pending.
 
+The finite [H connected retention profile](references/retention-template-connected-v1.md)
+requires an explicit `/prune` choice and private authority references. Its
+candidate verification schedule checks independent retained bytes, pinned
+provenance, timeout events and between-task revocation. Fresh installed
+qualification, external provider operation, connected upgrade and benefit
+remain pending.
+
 Want to see everything working first? Run the bundled offline demo:
 
 ```bash
