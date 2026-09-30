@@ -14,8 +14,8 @@ import venv
 
 import pytest
 
-from jev_integration_evaluator.io import digest, file_hash, read_json
-from jev_integration_evaluator.template_node_connected import inspect_connected_core
+from jev_integration_evaluator.io import InputError, digest, file_hash, read_json
+from jev_integration_evaluator.template_node_connected import _private_reference, inspect_connected_core
 from jev_integration_evaluator.integrations.js_backend import trusted_js_tool_identity
 from jev_integration_evaluator.integrations.js_lifecycle import (
     apply_js, plan_js, status_js, verify_js)
@@ -33,6 +33,19 @@ from test_node_template_installed_upgrade import (
 
 
 PROJECT = Path(__file__).resolve().parents[1]
+
+
+def test_connected_raw_gate_reference_rejects_hardlink(tmp_path):
+    private = tmp_path / 'private'
+    private.mkdir(mode=0o700)
+    raw = private / 'holdout.json'
+    raw.write_text('{"evidence_type":"synthetic"}', encoding='utf-8')
+    raw.chmod(0o600)
+    alias = private / 'other-name.json'
+    os.link(raw, alias)
+    with pytest.raises(InputError, match='reference unavailable or changed'):
+        _private_reference({'path': str(raw), 'sha256': file_hash(raw)}, tmp_path / 'source')
+    assert raw.read_text(encoding='utf-8') == '{"evidence_type":"synthetic"}'
 
 
 def _wait_session_child_exit(session: Path) -> None:
@@ -227,6 +240,10 @@ def test_installed_connected_shadow_cli_and_normal_command(tmp_path, fmt):
         '--descriptor', descriptor_file, '--trusted-descriptor-sha256', '0' * 64, ok=False)
     observation, launch_env, expected = _observations(tmp_path / 'effects', '1.0.0', 'alpha')
     assert observation['kind'] == 'template-delivery-observation-v1'
+    observation_file = tmp_path / 'connected-observation.json'
+    observation_file.write_text(json.dumps(observation), encoding='utf-8')
+    launch_env_file = tmp_path / 'connected-launch-environment.json'
+    launch_env_file.write_text(json.dumps(launch_env), encoding='utf-8')
     command_env = {**environment, **launch_env, 'JEV_RUNTIME_MODE': 'shadow',
         'TYPESAFE_API_KEY': synthetic_key,
         'JEV_CONNECTED_DESCRIPTOR': str(descriptor_file),
@@ -235,6 +252,8 @@ def test_installed_connected_shadow_cli_and_normal_command(tmp_path, fmt):
     created = subprocess.run([str(evaluator / 'bin/jev-integration-evaluator'),
         'template', 'node-connected-session-create', '--session', str(session),
         '--request', str(request_file), '--descriptor', str(descriptor_file),
+        '--observation', str(observation_file),
+        '--launch-environment', str(launch_env_file),
         '--trusted-descriptor-sha256', descriptor['descriptor_sha256']],
         cwd=tmp_path, env=command_env, capture_output=True, text=True, timeout=35)
     assert created.returncode == 0, created.stderr[-1000:]
@@ -261,6 +280,8 @@ def test_installed_connected_shadow_cli_and_normal_command(tmp_path, fmt):
     bad_created = subprocess.run([str(evaluator / 'bin/jev-integration-evaluator'),
         'template', 'node-connected-session-create', '--session', str(bad_session),
         '--request', str(request_file), '--descriptor', str(descriptor_file),
+        '--observation', str(observation_file),
+        '--launch-environment', str(launch_env_file),
         '--trusted-descriptor-sha256', descriptor['descriptor_sha256']],
         cwd=tmp_path, env=command_env, capture_output=True, text=True, timeout=35)
     assert bad_created.returncode == 0, bad_created.stderr[-1000:]
@@ -299,6 +320,10 @@ def test_installed_connected_shadow_cli_and_normal_command(tmp_path, fmt):
     assert observed.returncode == 0, observed.stderr[-1000:]
     observed_status = json.loads(observed.stdout)
     assert observed_status['attempts']['launch'] == 1
+    assert observed_status['exec_verified'] is True
+    assert all(observed_status['observations'][row['role']] for row in observation['checks'])
+    assert all(observed_status['observation_readbacks'][row['role']] == row['expected_sha256']
+               for row in observation['checks'])
     _wait_session_child_exit(session)
     stop_scope = {**scope, 'trusted_session_head': observed_status['session_head_sha256']}
     stop_scope['scope_sha256'] = digest({k: v for k, v in stop_scope.items()
@@ -311,12 +336,28 @@ def test_installed_connected_shadow_cli_and_normal_command(tmp_path, fmt):
         '--approve-scope-sha256', stop_scope['scope_sha256']],
         cwd=tmp_path, env=command_env, capture_output=True, text=True, timeout=35)
     assert stopped.returncode == 0, stopped.stderr[-1000:]
-    assert json.loads(stopped.stdout)['stage'] == 'stopped'
+    stopped_status = json.loads(stopped.stdout)
+    assert stopped_status['stage'] == 'stopped'
+    effect_path = Path(launch_env['NODE_EFFECT_PATH'])
+    effect_path.write_bytes(expected + b'tampered\n')
+    changed = subprocess.run([str(evaluator / 'bin/jev-integration-evaluator'),
+        'template', 'node-connected-session-observe', '--session', str(session),
+        '--trusted-session-head', stopped_status['session_head_sha256']],
+        cwd=tmp_path, env=command_env, capture_output=True, text=True, timeout=35)
+    assert changed.returncode == 0, changed.stderr[-1000:]
+    changed_status = json.loads(changed.stdout)
+    assert changed_status['observations']['entrypoint_reached'] is False
+    assert changed_status['observation_readbacks']['entrypoint_reached'] == file_hash(effect_path)
+    effect_path.write_bytes(expected)
     if fmt == 'commonjs':
         # The first process released its exclusive ledger before the next owner.
         revoked_observation, revoked_paths, _ = _observations(
             tmp_path / 'effects-revoked', '1.0.0', 'alpha')
         assert revoked_observation['kind'] == 'template-delivery-observation-v1'
+        revoked_observation_file = tmp_path / 'revoked-observation.json'
+        revoked_observation_file.write_text(json.dumps(revoked_observation), encoding='utf-8')
+        revoked_paths_file = tmp_path / 'revoked-launch-environment.json'
+        revoked_paths_file.write_text(json.dumps(revoked_paths), encoding='utf-8')
         trusted_file = tmp_path / 'trusted-grant.sha256'
         trusted_file.write_text(digest(grant), encoding='ascii')
         os.chmod(trusted_file, 0o600)
@@ -330,6 +371,8 @@ def test_installed_connected_shadow_cli_and_normal_command(tmp_path, fmt):
         revoke_created = subprocess.run([str(evaluator / 'bin/jev-integration-evaluator'),
             'template', 'node-connected-session-create', '--session', str(revoke_session),
             '--request', str(request_file), '--descriptor', str(descriptor_file),
+            '--observation', str(revoked_observation_file),
+            '--launch-environment', str(revoked_paths_file),
             '--trusted-descriptor-sha256', descriptor['descriptor_sha256']],
             cwd=tmp_path, env=revoke_env, capture_output=True, text=True, timeout=35)
         assert revoke_created.returncode == 0, revoke_created.stderr[-1000:]
@@ -367,12 +410,18 @@ def test_installed_connected_shadow_cli_and_normal_command(tmp_path, fmt):
         replay_observation, replay_paths, _ = _observations(
             tmp_path / 'effects-replay', '1.0.0', 'alpha')
         assert replay_observation['kind'] == 'template-delivery-observation-v1'
+        replay_observation_file = tmp_path / 'replay-observation.json'
+        replay_observation_file.write_text(json.dumps(replay_observation), encoding='utf-8')
+        replay_paths_file = tmp_path / 'replay-launch-environment.json'
+        replay_paths_file.write_text(json.dumps(replay_paths), encoding='utf-8')
         replay_session = tmp_path / 'replay-session'
         replay_env = {**command_env, **replay_paths,
                       'JEV_INVOCATION_ID': 'after-revocation'}
         replay_created = subprocess.run([str(evaluator / 'bin/jev-integration-evaluator'),
             'template', 'node-connected-session-create', '--session', str(replay_session),
             '--request', str(request_file), '--descriptor', str(descriptor_file),
+            '--observation', str(replay_observation_file),
+            '--launch-environment', str(replay_paths_file),
             '--trusted-descriptor-sha256', descriptor['descriptor_sha256']],
             cwd=tmp_path, env=replay_env, capture_output=True, text=True, timeout=35)
         assert replay_created.returncode == 0, replay_created.stderr[-1000:]
@@ -394,7 +443,7 @@ def test_installed_connected_shadow_cli_and_normal_command(tmp_path, fmt):
     runtime_file.write_bytes(runtime_file.read_bytes() + b'\n// drift\n')
     drift = subprocess.run([str(evaluator / 'bin/jev-integration-evaluator'),
         'template', 'node-connected-session-observe', '--session', str(session),
-        '--trusted-session-head', started_status['session_head_sha256']],
+        '--trusted-session-head', changed_status['session_head_sha256']],
         cwd=tmp_path, env=command_env, capture_output=True, text=True, timeout=35)
     assert drift.returncode != 0
     assert Path(launch_env['NODE_EFFECT_PATH']).read_bytes() == expected

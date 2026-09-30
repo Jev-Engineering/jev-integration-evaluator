@@ -36,7 +36,7 @@ function hashRegularFile(filename, maxBytes) {
   const handle = fs.openSync(filename, fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW);
   try {
     const info = fs.fstatSync(handle);
-    if (!info.isFile() || info.size > maxBytes) fail('connected_source_drift');
+    if (!info.isFile() || info.nlink !== 1 || info.size > maxBytes) fail('connected_source_drift');
     const hash = crypto.createHash('sha256');
     const buffer = Buffer.allocUnsafe(65536);
     for (;;) {

@@ -273,6 +273,7 @@ def parser():
     s=template_sub.add_parser('node-connected-session-create',help='Create one private connected Node session')
     s.add_argument('--session',required=True); s.add_argument('--request',required=True)
     s.add_argument('--descriptor',required=True); s.add_argument('--trusted-descriptor-sha256',required=True)
+    s.add_argument('--observation',required=True); s.add_argument('--launch-environment',required=True)
     for action in ('node-connected-session-launch', 'node-connected-session-stop',
                    'node-connected-session-disable'):
         s=template_sub.add_parser(action,help='Perform one exact connected session action')
@@ -453,7 +454,8 @@ def execute(args):
                     stop_connected_session)
                 if action == 'node-connected-session-create':
                     return create_connected_session(args.session,read_json(args.request),
-                        read_json(args.descriptor),
+                        read_json(args.descriptor), read_json(args.observation),
+                        read_json(args.launch_environment),
                         trusted_descriptor_sha256=args.trusted_descriptor_sha256)
                 if action == 'node-connected-session-observe':
                     return observe_connected_session(args.session,

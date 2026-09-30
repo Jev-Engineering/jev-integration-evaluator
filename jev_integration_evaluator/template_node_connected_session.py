@@ -16,6 +16,7 @@ from .contracts import parse_utc, validate_contract
 from .io import InputError, canonical, digest, read_json
 from .template_delivery import _boot_id, _process_alive, _process_info, _signal_owned
 from .template_node_connected import connected_status
+from .template_node_delivery import plan_node_delivery, _observed
 from .template_node_session import (_HELPER, _directory, _file, _lock,
                                     _private, _create_file, _linux)
 
@@ -23,7 +24,7 @@ from .template_node_session import (_HELPER, _directory, _file, _lock,
 _EVENTS = frozenset({'created', 'launch_pending', 'launched', 'running',
                      'observed', 'stop_pending', 'stopped', 'disabled',
                      'blocked_recovery'})
-_OWNED = frozenset({'owner.json', 'request.json', 'descriptor.json',
+_OWNED = frozenset({'owner.json', 'request.json', 'descriptor.json', 'observation.json',
                     'events.jsonl', 'session.lock'})
 
 
@@ -78,13 +79,16 @@ def _open(directory: str | Path):
     state = copy.deepcopy(rows[-1]['state'])
     request = read_json(target / 'request.json')
     descriptor = read_json(target / 'descriptor.json')
+    observation = read_json(target / 'observation.json')
+    validate_contract(observation, 'template-delivery-observation-v1')
     if (owner['run_id'] != state['run_id'] or
             digest(request) != state['request_sha256'] or
+            digest(observation) != state['observation_sha256'] or
             descriptor.get('descriptor_sha256') != state['descriptor_sha256'] or
             digest({k: v for k, v in descriptor.items()
                     if k != 'descriptor_sha256'}) != state['descriptor_sha256']):
         raise InputError('connected_session_plan_changed')
-    return target, rows, state, request, descriptor
+    return target, rows, state, request, descriptor, observation
 
 
 def _scope(scope: dict, approved: str, state: dict, head: str, action: str):
@@ -105,6 +109,9 @@ def _result(state: dict, head: str):
             'pending': state['pending'], 'disabled': state['disabled'],
             'descriptor_sha256': state['descriptor_sha256'],
             'session_head_sha256': head, 'process_alive': _process_alive(state['process']),
+            'exec_verified': state['exec_verified'],
+            'observations': dict(state['observations']),
+            'observation_readbacks': dict(state['observation_readbacks']),
             'attempts': dict(state['attempts']), 'failures': list(state['failures'])}
 
 
@@ -123,10 +130,14 @@ def _execed_node(identity: dict | None, request: dict) -> bool:
 
 
 def create_connected_session(directory: str | Path, request: dict, descriptor: dict,
+                             observation: dict, launch_environment: dict,
                              *, trusted_descriptor_sha256: str):
     _linux()
     connected_status(request, descriptor,
                      trusted_descriptor_sha256=trusted_descriptor_sha256)
+    plan_node_delivery(request['install_plan'],
+        trusted_install_receipt_sha256=request['trusted_install_receipt_sha256'],
+        observation=observation, launch_environment=launch_environment)
     target = _directory(directory, exists=False)
     _private(target.parent)
     run_id = str(uuid.uuid4())
@@ -137,12 +148,17 @@ def create_connected_session(directory: str | Path, request: dict, descriptor: d
     _create_file(target / 'owner.json', canonical(owner) + b'\n')
     _create_file(target / 'request.json', canonical(request) + b'\n')
     _create_file(target / 'descriptor.json', canonical(descriptor) + b'\n')
+    _create_file(target / 'observation.json', canonical(observation) + b'\n')
     _create_file(target / 'events.jsonl', b'')
     _create_file(target / 'session.lock', b'')
     state = {'schema_version': '1.0', 'kind': 'node-connected-session-v1',
              'run_id': run_id, 'request_sha256': digest(request),
+             'observation_sha256': digest(observation),
              'descriptor_sha256': trusted_descriptor_sha256, 'stage': 'created',
              'pending': None, 'disabled': False, 'process': None,
+             'exec_verified': False,
+             'observations': {row['role']: False for row in observation['checks']},
+             'observation_readbacks': {row['role']: None for row in observation['checks']},
              'attempts': {'launch': 0, 'stop': 0}, 'failures': []}
     return _result(state, _append(target, [], 'created', state))
 
@@ -151,15 +167,24 @@ def launch_connected_session(directory: str | Path, scope: dict, *, approved_sco
     _linux()
     target = _directory(directory, exists=True)
     with _lock(target):
-        _, rows, state, request, descriptor = _open(target)
+        _, rows, state, request, descriptor, observation = _open(target)
         _scope(scope, approved_scope_sha256, state, rows[-1]['record_sha256'], 'launch')
         if (state['disabled'] or state['pending'] or state['stage'] not in ('created', 'stopped') or
                 state['attempts']['launch'] >= 3 or _process_alive(state['process'])):
             raise InputError('connected_session_launch_blocked')
         connected_status(request, descriptor,
                          trusted_descriptor_sha256=state['descriptor_sha256'])
+        expected_paths = {name: next(row['path'] for row in observation['checks']
+                                     if row['role'] == role)
+                          for name, role in (('NODE_READY_PATH', 'ready'),
+                                             ('NODE_EFFECT_PATH', 'entrypoint_reached'),
+                                             ('NODE_INTEGRATION_PATH', 'integration_reachable'))}
+        plan_node_delivery(request['install_plan'],
+            trusted_install_receipt_sha256=request['trusted_install_receipt_sha256'],
+            observation=observation, launch_environment=expected_paths)
         if (os.environ.get('JEV_RUNTIME_MODE') != descriptor['mode'] or
-                not os.environ.get('TYPESAFE_API_KEY')):
+                not os.environ.get('TYPESAFE_API_KEY') or
+                any(os.environ.get(name) != value for name, value in expected_paths.items())):
             raise InputError('connected_launch_environment_missing')
         receipt = read_json(Path(request['install_plan']['environment_parent']) /
                             ('jev-node-env-' + request['install_plan']['plan_sha256'][:24]) /
@@ -201,6 +226,17 @@ def launch_connected_session(directory: str | Path, scope: dict, *, approved_sco
             if read_fd != -1:
                 os.close(read_fd)
             os.close(write_fd)
+        for _ in range(5000):
+            if _execed_node(state['process'], request):
+                state['exec_verified'] = True
+                break
+            if not _process_alive(state['process']):
+                break
+            time.sleep(.001)
+        if not state['exec_verified']:
+            state['stage'] = 'blocked_recovery'
+            state['failures'].append('node_exec_not_verified')
+            return _result(state, _append(target, rows, 'blocked_recovery', state))
         state['pending'] = None
         return _result(state, _append(target, rows, 'running', state))
 
@@ -208,18 +244,26 @@ def launch_connected_session(directory: str | Path, scope: dict, *, approved_sco
 def observe_connected_session(directory: str | Path, *, trusted_session_head: str):
     target = _directory(directory, exists=True)
     with _lock(target):
-        _, rows, state, request, descriptor = _open(target)
+        _, rows, state, request, descriptor, observation = _open(target)
         if rows[-1]['record_sha256'] != trusted_session_head:
             raise InputError('externally_retained_connected_session_head_required')
         connected_status(request, descriptor,
                          trusted_descriptor_sha256=state['descriptor_sha256'])
-        return _result(state, rows[-1]['record_sha256'])
+        if state['stage'] not in ('running', 'stopped', 'stop_pending', 'disabled'):
+            raise InputError('connected_session_not_launched')
+        readbacks = {row['role']: _observed(Path(row['path']))
+                     for row in observation['checks']}
+        state['observation_readbacks'] = readbacks
+        state['observations'] = {row['role']:
+            state['exec_verified'] and readbacks[row['role']] == row['expected_sha256']
+            for row in observation['checks']}
+        return _result(state, _append(target, rows, 'observed', state))
 
 
 def reconcile_connected_session(directory: str | Path, *, trusted_session_head: str):
     target = _directory(directory, exists=True)
     with _lock(target):
-        _, rows, state, request, descriptor = _open(target)
+        _, rows, state, request, descriptor, _ = _open(target)
         if rows[-1]['record_sha256'] != trusted_session_head:
             raise InputError('externally_retained_connected_session_head_required')
         if state['pending'] == 'launch':
@@ -228,6 +272,7 @@ def reconcile_connected_session(directory: str | Path, *, trusted_session_head: 
                 state['failures'].append('launch_unreleased')
                 return _result(state, _append(target, rows, 'observed', state))
             if _execed_node(state['process'], request):
+                state['exec_verified'] = True
                 state['stage'], state['pending'] = 'running', None
                 return _result(state, _append(target, rows, 'running', state))
             state['stage'] = 'blocked_recovery'
@@ -245,7 +290,7 @@ def stop_connected_session(directory: str | Path, scope: dict, *,
     _linux()
     target = _directory(directory, exists=True)
     with _lock(target):
-        _, rows, state, _, _ = _open(target)
+        _, rows, state, _, _, _ = _open(target)
         _scope(scope, approved_scope_sha256, state, rows[-1]['record_sha256'],
                'disable' if disable else 'stop')
         if state['stage'] != 'running' or state['pending'] is not None or state['process'] is None:

@@ -310,6 +310,15 @@ test('connected shadow owner checks independent grant and installed bytes before
     const descriptorBody = {...core, core_sha256: digest(core), egress_grant: grant,
       activation: null};
     const descriptor = {...descriptorBody, descriptor_sha256: digest(descriptorBody)};
+    const linkedSource = path.join(parent, 'linked-source');
+    fs.linkSync(files[0].path, linkedSource);
+    assert.throws(() => new ConnectedNativeOwner({spec, descriptor, audit: f.router.audit,
+      verifyAuthority: () => true, currentEnvironmentDigest: () => core.environment_digest,
+      sourceAttest: () => spec.executed_source_sha256,
+      environment: {TYPESAFE_API_KEY: 'offline-fixture-placeholder'}, now,
+      transport: async () => { throw Error('unexpected'); }}), /connected_source_drift/);
+    assert.equal(fs.readFileSync(files[0].path, 'utf8'), 'executed_source');
+    fs.unlinkSync(linkedSource);
     let allowed = true; let evaluations = 0;
     const owner = new ConnectedNativeOwner({spec, descriptor, audit: f.router.audit,
       verifyAuthority: (kind, sha) => allowed && kind === 'egress_grant' && sha === digest(grant),

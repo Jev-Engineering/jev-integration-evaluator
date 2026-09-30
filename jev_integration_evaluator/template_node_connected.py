@@ -6,10 +6,11 @@ connect. The installed host must authenticate every grant independently.
 from __future__ import annotations
 
 import os
+import hashlib
 from pathlib import Path
 import stat
 
-from .io import InputError, digest, file_hash, read_json
+from .io import InputError, digest, file_hash, loads, read_json
 from .contracts import validate_contract
 from .study import evaluate_study
 from .template_node_installation import installation_status
@@ -24,12 +25,22 @@ def _private_reference(row: dict, root: Path) -> object:
         raise InputError('Invalid connected evidence reference')
     path = Path(row['path'])
     if (not path.is_absolute() or path.is_relative_to(root) or
-            any(part.is_symlink() for part in (path, *path.parents)) or
-            not path.is_file() or path.stat().st_uid != os.getuid() or
-            stat.S_IMODE(path.stat().st_mode) & 0o077 or
-            file_hash(path) != row['sha256']):
+            any(part.is_symlink() for part in (path, *path.parents))):
         raise InputError('Connected evidence reference unavailable or changed')
-    return read_json(path, max_bytes=16_000_000)
+    try:
+        fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+        with os.fdopen(fd, 'rb') as stream:
+            info = os.fstat(stream.fileno())
+            if (not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid() or
+                    info.st_nlink != 1 or stat.S_IMODE(info.st_mode) & 0o077 or
+                    info.st_size > 16_000_000):
+                raise InputError('Connected evidence reference unavailable or changed')
+            raw = stream.read(16_000_001)
+    except OSError:
+        raise InputError('Connected evidence reference unavailable or changed') from None
+    if len(raw) > 16_000_000 or hashlib.sha256(raw).hexdigest() != row['sha256']:
+        raise InputError('Connected evidence reference unavailable or changed')
+    return loads(raw.decode('utf-8'))
 
 
 def _activation(request: dict, spec: dict, root: Path) -> dict | None:

@@ -33,7 +33,13 @@ host. No key value belongs in the request, descriptor, receipt, or audit.
 5. Configure the host's independent `verifyAuthority`,
    `currentEnvironmentDigest`, and audit callbacks. Create a private owned
    session with `template node-connected-session-create --session SESSION
-   --request REQUEST --descriptor DESCRIPTOR --trusted-descriptor-sha256 SHA256`.
+   --request REQUEST --descriptor DESCRIPTOR --observation OBSERVATION
+   --launch-environment LAUNCH_ENVIRONMENT --trusted-descriptor-sha256 SHA256`.
+   The private observation file declares exact, separately owned ready,
+   entrypoint, and integration paths with prelaunch and expected hashes. The
+   launch environment JSON binds those paths to `NODE_READY_PATH`,
+   `NODE_EFFECT_PATH`, and `NODE_INTEGRATION_PATH`. Creation rechecks the
+   installed receipt and absent baseline files; launch repeats that check.
    Retain the returned session head outside the session. Set `JEV_RUNTIME_MODE`
    to the exact approved mode and provide the credential through its environment
    reference. Create a finite `template-delivery-scope-v1` with the session run
@@ -47,9 +53,12 @@ host. No key value belongs in the request, descriptor, receipt, or audit.
    reconcile the same process; an uncertain launch is never replayed. Use an
    exact new scope for `node-connected-session-stop` or `-disable`. These
    actions cannot authorize an egress grant or resume a suspended ledger.
-   Observe independent ready, entrypoint and effect files under the host's
-   own contract; the session status reports process identity/liveness and does
-   not turn a raw effect into a provider benefit claim.
+   The supervisor confirms exact Node executable handoff and hashes each
+   predeclared observation path after launch. Each observe call journals the
+   actual hashes or absence plus the roles whose bytes match the schedule;
+   changed files become false on the next observation. The
+   session status also reports process liveness. Raw fixture effects do not
+   establish provider benefit or canary qualification.
 
 `ConnectedNativeOwner` checks installed file bytes and independently authenticated
 grants at startup, invocation, egress, and effect. Source drift, credential
@@ -70,7 +79,11 @@ a later session after a grant is restored. It does not qualify active effects.
 
 The offline fixture uses a fake transport **only in shadow** and is labeled
 `synthetic_protocol`. It verifies typed parsing, grant refusal, source drift,
-ledger replay, and installed supervised execution. It is not a JEV live measurement. Real
+ledger replay, hardlink refusal, and installed supervised execution. The
+dedicated `connected-node24-qualification` CI job pins Linux CPython 3.13.5,
+Node 24.18.0, npm 11.16.0, and trusted TypeScript 5.8.3; it requires all 23
+installed tests and 16 native tests with zero skips. This job is a configured
+gate until its exact revision has actually run. It is not a JEV live measurement. Real
 provider qualification, externally authenticated grants, observed canary and
 active gate receipts, and production host monitoring remain pending. The
 legacy `NativeRouter` and its receipt format remain supported.

@@ -13,7 +13,10 @@ and TypeScript in synthetic off-mode fixtures. The installed evaluator CLI
 journeys ran in [PR #99](https://github.com/Jev-Engineering/jev-integration-evaluator/pull/99)
 and [PR #104](https://github.com/Jev-Engineering/jev-integration-evaluator/pull/104);
 [the #104 merge run](https://github.com/Jev-Engineering/jev-integration-evaluator/actions/runs/36642699747)
-passed. Provider reachability and connected qualification remain pending.
+passed. A separate installed connected owner exercises synthetic shadow
+sessions in local offline fixtures. Its dedicated exact Node 24 CI gate
+requires the final combined revision to pass on a hosted runner. Provider
+reachability and observed canary/active qualification remain pending.
 Windows Node interop does not qualify native Linux execution.
 
 The separate generated Python adaptation runtime profile has local offline
