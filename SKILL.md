@@ -91,8 +91,9 @@ bounded-loop bind with an explicit `/prune` choice and installed normal command.
 M claim support has a separate source-bound bounded-loop bind and owned console
 edit; its installed claim effect remains a distinct journey. D retrieval also has
 a source-bound bounded-loop bind and owned console edit, separate from its
-installed retrieval effect. L graph identity has a separate source-bound bounded-loop
-bind and owned console edit; its installed graph effect remains a distinct journey.
+installed retrieval effect. L graph identity has a source-bound bounded-loop
+bind and owned console edit carried through a separate offline installed normal
+console journey with independent graph effect and conflict readback.
 Individual provider modes and benefit remain pending. Keep `/prune` and `/compact` as separate
 explicit user choices.
 The finite offline use-case console fixture checks six separate fixture-emitted outcome records

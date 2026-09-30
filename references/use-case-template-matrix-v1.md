@@ -108,15 +108,22 @@ fixture version and rolls back its owned generation and source edits. The
 consumer requires a finite action, current revision, approval and fresh output
 path; the test reads the effect against independently constructed expected
 bytes. This is a durable synthetic SQLite effect for fixed entities, not
-graph synthesis or production identity approval. The combined console
-fixture's L record remains separate;
-The separate [L bound console test](../tests/test_use_case_graph_bind.py)
+graph synthesis or production identity approval. The separate
+[L bound console test](../tests/test_use_case_graph_bind.py)
 derives a finite source-bound task-loop contract, applies its owned console
 edit, launches that normal off-mode module command and reads the raw graph
 effect and committed SQLite rows independently. It rejects caller drift and
-the unsupported single-return shape, then rolls back owned bytes. This does
-not substitute for the installed L journey or establish provider authority
-or benefit. See the
+the unsupported single-return shape, then rolls back owned bytes. The
+[bound installed L journey](../tests/test_use_case_graph_bound_installed.py)
+starts from this reviewed binder, carries its owned edit through template
+materialization, baseline, apply, modified verification, offline package and
+install, and launches the real installed console under exact session scope.
+Independent database readback checks the committed provenance and effect; a
+second installed command against the current revision refuses a conflict with
+no new effect. A reviewed 1.0.1 version is installed and launched through a
+session upgrade, then the retained 1.0.0 generation and both owned source
+edits are rolled back. This remains offline synthetic evidence and does not
+establish provider authority or benefit. See the
 [L operator reference](graph-template-offline-v1.md).
 
 ### D: retrieval evidence
