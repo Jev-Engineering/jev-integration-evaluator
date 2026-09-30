@@ -247,6 +247,12 @@ def plan_connected_generation_transfer(old_session: str | Path, new_plan: dict,
             or parse_utc(expires_at) > min(parse_utc(cutoff),
                                            parse_utc(new['egress_expires_at']))):
         raise ConnectedGenerationError('connected_generation_scope_invalid')
+    # Opening a ledger creates one when both files are absent. A transfer
+    # plan must derive from the stopped session's existing durable history;
+    # a fresh empty ledger would silently reset spend, tasks and effects.
+    if (not old['ledger'].is_file()
+            or not Path(str(old['ledger']) + '.sqlite').is_file()):
+        raise ConnectedGenerationError('connected_generation_existing_ledger_required')
     ledger = RuntimeLedger(old['ledger'], identity=old['identity'], **limits)
     try:
         history = digest(ledger.generation_snapshot())

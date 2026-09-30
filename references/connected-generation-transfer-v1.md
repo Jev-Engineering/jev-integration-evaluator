@@ -5,7 +5,10 @@ connected console between separately installed 1.0.2 and 1.0.3 source
 generations. The package and install steps remain off mode. Transfer never
 launches a console, creates provider authority, resets spend or changes the
 run ID. A retained environment can be selected by a separately signed reverse
-transfer. This controller accepts only the legacy Alpha profile; D retrieval,
+transfer. Planning requires the stopped session's existing ledger marker and
+database; a missing ledger fails closed as
+`connected_generation_existing_ledger_required` instead of being recreated
+empty. This controller accepts only the legacy Alpha profile; D retrieval,
 composite placement and Windows generation transfer have no qualified path here.
 
 The host installs both generations through existing offline receipts, derives
