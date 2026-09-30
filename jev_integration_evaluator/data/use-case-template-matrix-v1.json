@@ -113,6 +113,8 @@
       "mode": "off",
       "benefit": "unknown",
       "contract_id": "use-case.L@1.0.0",
+      "connected_shadow": "qualified_offline_l_installed_shadow_protocol",
+      "connected_upgrade": "pending",
       "materialize": "qualified_offline_l_synthetic_host",
       "bind": "qualified_offline_l_synthetic_host",
       "verify": "qualified_offline_l_synthetic_host",

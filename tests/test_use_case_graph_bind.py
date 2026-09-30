@@ -36,11 +36,42 @@ BINDING = {'version': '1.0', 'script': 'graph-host',
                               'dependency_plan': 'dependencies', 'startup_options': 'options'}}
 
 
-def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False) -> tuple[dict, dict]:
+def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False,
+                connected_authority_source: Path | None = None) -> tuple[dict, dict]:
     _, spec = _graph_host(target, version)
+    if connected_authority_source is not None:
+        assert installed
+        (target / 'graph_host/connected_authority.py').write_bytes(
+            connected_authority_source.read_bytes())
     entry = spec['verification']['entry_point']
     console = target / 'graph_host/console.py'
-    if installed:
+    if installed and connected_authority_source is not None:
+        source = target / spec['source']['file']
+        original = source.read_text(encoding='utf-8')
+        merge = "    STATE['revision'] = graph_runtime.merge(request, STATE)\n"
+        assert original.count(merge) == 2
+        pre = (
+            "    import os\n"
+            "    if request['task_id'] == 'graph-two':\n"
+            "        os.environ['GRAPH_EFFECT_PATH'] = os.environ['GRAPH_SECOND_EFFECT_PATH']\n"
+            "        STATE['expected_revision'] = 1\n"
+        )
+        post = (
+            "    if request['task_id'] == 'graph-one':\n"
+            "        from pathlib import Path\n"
+            "        ready = Path(os.environ['GRAPH_READY_PATH'])\n"
+            "        with ready.open('x', encoding='utf-8') as stream:\n"
+            "            stream.write('ready\\n')\n"
+            "        if os.environ.get('L_HOLD') == '1':\n"
+            "            import time\n"
+            "            release = Path(os.environ['L_RELEASE_PATH'])\n"
+            "            deadline = time.monotonic() + 15\n"
+            "            while not release.exists() and time.monotonic() < deadline:\n"
+            "                time.sleep(.02)\n"
+            "            if not release.exists(): raise TimeoutError('graph_release_timeout')\n"
+        )
+        source.write_text(original.replace(merge, pre + merge + post), encoding='utf-8')
+    elif installed:
         source = target / spec['source']['file']
         original = source.read_text(encoding='utf-8')
         merge = "    STATE['revision'] = graph_runtime.merge(request, STATE)\n"
@@ -58,7 +89,38 @@ def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False
             "        time.sleep(15)\n"
         )
         source.write_text(original.replace(merge, merge + ready), encoding='utf-8')
-    console.write_text(
+    if connected_authority_source is not None:
+        console.write_text(
+            f'from .{Path(spec["source"]["file"]).stem} import {entry}\n'
+            f'from . import {Path(spec["source"]["file"]).stem} as observed_host\n'
+            'from . import connected_authority\n'
+            'from pathlib import Path\nimport hashlib\nimport os\nimport time\n'
+            'class Audit:\n'
+            '    def __init__(self): self.records = []\n'
+            '    def append(self, record): self.records.append(record)\n'
+            'def limits():\n'
+            '    return dict(max_calls_per_task=2, max_cost_per_task=2, '
+            'max_total_calls=2, max_total_cost=2, max_in_flight=1, max_tasks=2)\n'
+            'def audit():\n    return Audit()\n'
+            'def dependencies():\n'
+            '    base = Path(__file__).resolve().parent\n'
+            "    return {'files': [{'path': str(base / name), 'sha256': hashlib.sha256((base / name).read_bytes()).hexdigest()} for name in ('requirements.lock', 'runtime.json')]}\n"
+            'def options():\n    return connected_authority.options()\n'
+            'def make_requests():\n'
+            "    if os.environ.get('L_APPROVAL', '1') == '0':\n"
+            "        observed_host.STATE['approval'] = False\n"
+            "    observed_host.STATE['expected_revision'] = int(os.environ.get('L_EXPECTED_REVISION', '0'))\n"
+            "    return [{'task_id': 'graph-one', 'graph_action': 'reconcile_same'},\n"
+            "            {'task_id': 'graph-two' if os.environ.get('L_TASKS', 'two') == 'two' else 'graph-one', 'graph_action': 'reconcile_same'}]\n"
+            'def main():\n'
+            '    requests = make_requests()\n'
+            '    for request in requests:\n'
+            f'        {entry}(request)\n'
+            '    return 0\n'
+            "if __name__ == '__main__':\n    raise SystemExit(main())\n",
+            encoding='utf-8')
+    else:
+        console.write_text(
         f'from .{Path(spec["source"]["file"]).stem} import {entry}\n'
         'from pathlib import Path\nimport hashlib\n'
         'class Audit:\n'
@@ -80,7 +142,7 @@ def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False
         f'        {entry}(request)\n'
         '    return 0\n'
         "if __name__ == '__main__':\n    raise SystemExit(main())\n",
-        encoding='utf-8')
+            encoding='utf-8')
     for name, kind, old, new in (
         ('requirements.lock', 'dependency_lock', 'jev-integration-evaluator==1.3.0.dev1\n',
          'jev-integration-evaluator==1.3.0.dev12\n'),

@@ -58,6 +58,19 @@ _PROFILES = {
         'binary': ('D_HOLD',),
         'injected': ('D_CONNECTED_REF_SHA256', 'D_AUTH_PUBKEY_SHA256'),
     },
+    'graph-l-v1': {
+        'source': 'graph_host/host_graph_consumer.py',
+        'members': {'host': 'graph_host/host_graph_consumer.py',
+                    'console': 'graph_host/console.py',
+                    'loader': 'graph_host/connected_authority.py'},
+        'references': ('L_CONNECTED_REF', 'L_AUTH_PUBKEY_FILE'),
+        'allowed': frozenset({'GRAPH_DB_PATH', 'GRAPH_EFFECT_PATH',
+                              'GRAPH_SECOND_EFFECT_PATH', 'GRAPH_READY_PATH',
+                              'L_TASKS', 'L_HOLD', 'L_RELEASE_PATH',
+                              'L_APPROVAL', 'L_EXPECTED_REVISION'}),
+        'binary': ('L_HOLD', 'L_APPROVAL'),
+        'injected': ('L_CONNECTED_REF_SHA256', 'L_AUTH_PUBKEY_SHA256'),
+    },
     'registered-dual-connected-v1': {
         'source': {'JEV-DA938C3C7965': 'src/registered_dual/work_queue.py',
                    'JEV-EDF19BDB65F0': 'src/registered_dual/alpha.py'},
@@ -134,7 +147,10 @@ def plan_connected_delivery(install_plan: dict, *, trusted_install_receipt_sha25
             or any(launch_environment.get(name, '0') not in ('0', '1')
                    for name in profile['binary'])
             or (host_profile == 'retrieval-d-v1'
-                and launch_environment.get('D_TASKS', 'two') not in ('two', 'duplicate'))):
+                and launch_environment.get('D_TASKS', 'two') not in ('two', 'duplicate'))
+            or (host_profile == 'graph-l-v1' and (
+                launch_environment.get('L_TASKS', 'two') not in ('two', 'duplicate')
+                or launch_environment.get('L_EXPECTED_REVISION', '0') not in ('0', '1')))):
         raise ConnectedDeliveryError('connected_host_references_required')
     if 'SSL_CERT_FILE' in launch_environment:
         _check_reference(launch_environment['SSL_CERT_FILE'])
