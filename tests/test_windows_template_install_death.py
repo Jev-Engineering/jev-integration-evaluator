@@ -53,8 +53,10 @@ def test_native_installer_process_death_preserves_intent_and_blocks_replay(
         clean = {name: os.environ[name] for name in ('SystemRoot', 'WINDIR', 'TEMP', 'TMP')
                  if name in os.environ}
         clean['PATH'] = str(Path(sys.executable).parent)
+        guardian_python, guardian_sha256 = session._current_guardian_python()
+        assert file_hash(Path(guardian_python)) == guardian_sha256
         unrelated = subprocess.Popen(
-            [session._current_guardian_python(), '-c', 'import time; time.sleep(600)'],
+            [guardian_python, '-c', 'import time; time.sleep(600)'],
             cwd=tmp_path, env=clean, stdin=subprocess.DEVNULL,
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         import _winapi
