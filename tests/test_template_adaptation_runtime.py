@@ -574,7 +574,16 @@ def test_generated_runtime_in_independent_installed_console(tmp_path, shape, lay
             str(distribution_dir)], cwd=source, capture_output=True, text=True, timeout=90)
         assert build.returncode == 0, build.stderr
     environment = tmp_path / 'venv'
-    venv.EnvBuilder(with_pip=False, system_site_packages=True).create(environment)
+    wheelhouse_name = ('JEV_WINDOWS_TEMPLATE_WHEELHOUSE' if os.name == 'nt'
+                       else 'JEV_TEMPLATE_WHEELHOUSE')
+    wheelhouse = os.environ.get(wheelhouse_name)
+    if wheelhouse:
+        wheelhouse = Path(wheelhouse).resolve(strict=True)
+        assert wheelhouse.is_dir(), 'Explicit offline wheelhouse must be a directory'
+    # A child venv's system site belongs to the base interpreter, not the
+    # parent test venv. With an explicit closure, install declared dependencies
+    # into the child rather than accidentally relying on base-machine packages.
+    venv.EnvBuilder(with_pip=False, system_site_packages=not bool(wheelhouse)).create(environment)
     binary = 'Scripts' if os.name == 'nt' else 'bin'
     python = environment / binary / ('python.exe' if os.name == 'nt' else 'python')
     wheels = sorted(distribution_dir.glob('*.whl'))
@@ -585,10 +594,20 @@ def test_generated_runtime_in_independent_installed_console(tmp_path, shape, lay
         uv = shutil.which('uv')
         assert uv is not None, 'independent wheel check requires pip or uv'
         installer = [uv, 'pip', 'install', '--python', str(python)]
-    install = subprocess.run([*installer, '--no-index', '--no-deps',
+    dependency_args = (['--find-links', str(wheelhouse)] if wheelhouse else ['--no-deps'])
+    install = subprocess.run([*installer, '--no-index', *dependency_args,
                               *(str(wheel) for wheel in wheels)],
                              capture_output=True, text=True, timeout=90)
     assert install.returncode == 0, install.stderr
+    if wheelhouse:
+        origins = subprocess.run([str(python), '-I', '-c',
+            'import json,jsonschema,yaml,packaging,jev_integration_evaluator; '
+            'print(json.dumps([module.__file__ for module in '
+            '(jsonschema,yaml,packaging,jev_integration_evaluator)]))'],
+            cwd=tmp_path, capture_output=True, text=True, timeout=30)
+        assert origins.returncode == 0, origins.stderr
+        assert all(Path(name).resolve().is_relative_to(environment.resolve())
+                   for name in json.loads(origins.stdout))
     script = environment / binary / ('sample-adaptation' + ('.exe' if os.name == 'nt' else ''))
     for mode in ('off', 'shadow'):
         env = dict(os.environ, ADAPTATION_ADAPTER_PLAN=str(tmp_path / 'adapter-plan.json'),

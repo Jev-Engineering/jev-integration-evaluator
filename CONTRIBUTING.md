@@ -42,6 +42,14 @@ and set `JEV_TEMPLATE_WHEELHOUSE` before running
 source, interpreter, skips and exact failure stage. Rebuild checksums after
 the final edit.
 
+The six installed generated-adapter console tests also accept that explicit
+offline wheelhouse (`JEV_WINDOWS_TEMPLATE_WHEELHOUSE` for native Windows).
+They then install the newly built evaluator/host wheels and declared runtime
+dependencies into a child venv with system site disabled, and check import
+origins there. Without this opt-in input, their existing system-site test
+profile remains available. Installing dependencies in a parent test venv does
+not make them available in a child's base-interpreter system site.
+
 For dev3 changes, retain the observation-contract, full-schedule receipt, unavailable-command, real process-termination and source-fidelity regressions. Re-verification after interruption must not reuse a historical pass as current evidence.
 
 For discovery changes, run all `tests/test_capabilities*.py` suites on a supported
