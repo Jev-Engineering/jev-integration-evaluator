@@ -205,8 +205,15 @@ wrong operation scope. The #55/#56 journey installs, observes, disables,
 upgrades a second reviewed fixture version, and rolls back its retained
 generation and owned source edits. The fixture assessor is not a provider or
 real permit register. A separate #54 M bound caller test derives a fresh binding,
-owns the console edit and verifies exact rollback; it does not carry that bound
-caller through the installed release journey. Production audit and benefit remain pending.
+owns the console edit and verifies exact rollback. The
+[bound installed M journey](../tests/test_use_case_claim_bound_installed.py)
+carries that reviewed task-loop caller through #55 package/install and #56
+normal installed console, independently reads the raw support, audit and
+release records, checks duplicate ID, task-count and invalid citation
+refusals without effects, and exercises reviewed 1.0.1 upgrade with retained
+generation and matching owned-source rollback. Its pinned consumer permits
+one fixed successful task ID; this does not prove multiple successful task
+IDs, provider budget use, production audit or benefit.
 See the [M operator reference](claim-template-offline-v1.md).
 
 ### H: safe retention

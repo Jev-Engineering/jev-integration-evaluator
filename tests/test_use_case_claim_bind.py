@@ -28,11 +28,35 @@ BINDING = {'version': '1.0', 'script': 'claim-host',
 pytestmark = pytest.mark.skipif(not PROFILE, reason='M source-bound bind fixture requires Linux x86-64 CPython 3.13')
 
 
-def _bound_host(target: Path) -> tuple[dict, dict]:
-    _, spec, request = _source_host(target)
+def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False) -> tuple[dict, dict]:
+    _, spec, request = _source_host(target, version)
     entry = spec['verification']['entry_point']
     console = target / 'claim_host/console.py'
+    if installed:
+        source = target / spec['source']['file']
+        original = source.read_text(encoding='utf-8')
+        old = ("def legacy_dispatch_claim_support(request):\n"
+               "    return 'inspect'\n")
+        new = ("def legacy_dispatch_claim_support(request):\n"
+               "    if os.environ.get('M_SUPPORT_PATH'):\n"
+               "        mode = os.environ.get('M_CLAIM_SCENARIO', 'normal')\n"
+               f"        variant = {'revise' if version == '1.0.1' else 'accept'!r} if mode == 'normal' else ('accept' if mode in ('duplicate', 'budget') else mode)\n"
+               '        draft = claim_consumer.fixture_draft(request, variant)\n'
+               '        claim_consumer.commit(request, host_approved=True, generated=draft)\n'
+               "        ready = os.environ.get('M_READY_PATH')\n"
+               '        if ready:\n'
+               "            with Path(ready).open('x', encoding='utf-8') as stream:\n"
+               "                stream.write('ready\\n')\n"
+               '            time.sleep(15)\n'
+               "    return 'inspect'\n")
+        assert original.count(old) == 1
+        source.write_text(original.replace(
+            'from __future__ import annotations\n',
+            'from __future__ import annotations\nimport os\nimport time\n'
+            'from pathlib import Path\nfrom . import claim_consumer\n', 1).replace(old, new),
+                          encoding='utf-8')
     console.write_text(
+        _installed_console(entry, version, Path(spec['source']['file']).stem) if installed else
         f'from .{Path(spec["source"]["file"]).stem} import {entry}\n'
         'from pathlib import Path\nimport hashlib\n'
         'class Audit:\n'
@@ -103,6 +127,46 @@ def _bound_host(target: Path) -> tuple[dict, dict]:
     request['reviewed_inventory'] = inventory
     request['implementation_spec'] = spec
     return inventory, request
+
+
+def _installed_console(entry: str, version: str, source_stem: str) -> str:
+    """Author the reviewed finite host before inventory and source binding."""
+    variant = 'revise' if version == '1.0.1' else 'accept'
+    return (
+        f'from .{source_stem} import {entry}\n'
+        'from . import claim_consumer\n'
+        'from pathlib import Path\nimport os\n'
+        'def limits():\n'
+        '    return dict(max_calls_per_task=2, max_cost_per_task=2, '
+        'max_total_calls=2, max_total_cost=2, max_in_flight=1, max_tasks=1)\n'
+        'class Audit:\n'
+        '    def __init__(self): self.records = []\n'
+        '    def append(self, record): self.records.append(record)\n'
+        'def audit():\n    return Audit()\n'
+        'def dependencies():\n'
+        '    import hashlib\n'
+        '    base = Path(__file__).resolve().parent\n'
+        "    return {'files': [{'path': str(base / name), 'sha256': hashlib.sha256((base / name).read_bytes()).hexdigest()} for name in ('requirements.lock', 'runtime.json')]}\n"
+        'def options():\n    return {}\n'
+        'def make_requests():\n'
+        "    mode = os.environ.get('M_CLAIM_SCENARIO', 'normal')\n"
+        f"    variant = {variant!r} if mode == 'normal' else mode\n"
+        "    if mode == 'budget':\n"
+        "        base = claim_consumer.fixture_request('accept')\n"
+        "        proposed = [base, {**base, 'task_id': 'other-1'}]\n"
+        "        if len(proposed) > limits()['max_tasks']:\n"
+        "            raise ValueError('claim task budget refused')\n"
+        "        return proposed\n"
+        "    if mode == 'duplicate':\n"
+        "        return [claim_consumer.fixture_request('accept')] * 2\n"
+        '    return [claim_consumer.fixture_request(variant)]\n'
+        'def main():\n'
+        '    requests = make_requests()\n'
+        '    for request in requests:\n'
+        f'        {entry}(request)\n'
+        '    return 0\n'
+        "if __name__ == '__main__':\n    raise SystemExit(main())\n"
+    )
 
 
 def test_m_bound_console_source_and_owned_edit(tmp_path):

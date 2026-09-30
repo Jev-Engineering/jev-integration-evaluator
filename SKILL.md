@@ -88,8 +88,8 @@ hosts have offline source-bound apply/install/supervised normal-console/disable/
 versioned upgrade/rollback journeys. E completion also has a source-bound
 bounded task-loop console bind and owned edit. H retention separately has a
 bounded-loop bind with an explicit `/prune` choice and installed normal command.
-M claim support has a separate source-bound bounded-loop bind and owned console
-edit; its installed claim effect remains a distinct journey. D retrieval also has
+M claim support has a source-bound bounded-loop bind and owned console edit
+carried through a separate offline installed claim effect journey. D retrieval also has
 a source-bound bounded-loop bind and owned console edit, separate from its
 installed retrieval effect. L graph identity has a source-bound bounded-loop
 bind and owned console edit carried through a separate offline installed normal
