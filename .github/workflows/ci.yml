@@ -20,10 +20,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "24.18.0"
-      - name: Acquire exact npm, trusted TypeScript and offline wheelhouse
+      - name: Acquire trusted TypeScript and offline wheelhouse
         run: |
           umask 077
-          npm install -g --ignore-scripts --no-audit --no-fund npm@11.16.0
           mkdir -m 700 "$RUNNER_TEMP/jev-trusted-tooling"
           npm install --prefix "$RUNNER_TEMP/jev-trusted-tooling" \
             --ignore-scripts --no-audit --no-fund --package-lock=false typescript@5.8.3
