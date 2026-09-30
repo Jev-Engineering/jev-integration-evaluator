@@ -47,6 +47,7 @@ class RuntimeLedger(BudgetCoordinator):
             self._db.execute('CREATE TABLE IF NOT EXISTS effects (identity TEXT PRIMARY KEY, status TEXT NOT NULL)')
             super().__init__(**limits)
             self.identity = identity
+            self._durably_revoked = False
             row = self._db.execute('SELECT payload FROM state WHERE id=1').fetchone()
             if row is None:
                 self._save()
@@ -60,6 +61,7 @@ class RuntimeLedger(BudgetCoordinator):
                 self._calls = state['calls']
                 self._cost = state['cost']
                 self._suspended = state['revoked']
+                self._durably_revoked = state['revoked']
                 self._overruns = state['overruns']
                 if self._inflight or self._db.execute("SELECT 1 FROM effects WHERE status='pending' LIMIT 1").fetchone():
                     raise InputError('runtime_ledger_unresolved_history')
@@ -102,7 +104,7 @@ class RuntimeLedger(BudgetCoordinator):
         state = dict(identity=self.identity, ledger_path=self._path_identity,
                      limits=self.limits, tasks=self._tasks,
                      inflight=self._inflight, calls=self._calls, cost=self._cost,
-                     revoked=self._suspended, overruns=self._overruns)
+                     revoked=self._durably_revoked, overruns=self._overruns)
         try:
             self._db.execute('BEGIN IMMEDIATE')
             self._db.execute('INSERT OR REPLACE INTO state(id,payload) VALUES(1,?)',
@@ -128,6 +130,8 @@ class RuntimeLedger(BudgetCoordinator):
         self._check_owner()
         with self._lock:
             super().settle(reservation, actual_cost=actual_cost)
+            if self._overruns:
+                self._durably_revoked = True
             self._save()  # A crash before commit retains unresolved reservation.
 
     def close_task(self, task_id):
@@ -141,6 +145,7 @@ class RuntimeLedger(BudgetCoordinator):
         with self._lock:
             super().suspend()
             if durable:
+                self._durably_revoked = True
                 self._save()
 
     def claim_effect(self, task_id: str, request_hash: str,

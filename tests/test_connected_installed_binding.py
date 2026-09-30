@@ -26,12 +26,50 @@ from jev_integration_evaluator.template_connected_delivery import (
     ConnectedDeliveryError, plan_connected_delivery, create_connected_session,
     launch_connected_session, connected_session_status, stop_connected_session)
 from jev_integration_evaluator.io import InputError, digest
+from jev_integration_evaluator.integrations.runtime_ledger import RuntimeLedger
 from jev_integration_evaluator.template_catalog import prepare_template_binding
 from jev_integration_evaluator.use_case_templates import use_case_matrix
 
 
 class _InstalledCheckpoint(Exception):
     pass
+
+
+def test_connected_ledger_restart_retains_charges_without_invented_revocation(tmp_path):
+    limits = {'max_calls_per_task': 2, 'max_cost_per_task': 2,
+              'max_total_calls': 2, 'max_total_cost': 2,
+              'max_in_flight': 1, 'max_tasks': 2}
+    path = tmp_path / 'shared-ledger'
+    first = RuntimeLedger(path, identity='installed-scope', **limits)
+    reservation = first.reserve('first-task', 1)
+    first.suspend(durable=False)  # normal shutdown before shadow future drains
+    first.settle(reservation, actual_cost=0)
+    first.close_task('first-task')
+    first.release()
+
+    restarted = RuntimeLedger(path, identity='installed-scope', **limits)
+    assert restarted.snapshot()['calls'] == 1
+    assert restarted.snapshot()['closed_tasks'] == 1
+    reservation = restarted.reserve('second-task', 1)
+    restarted.settle(reservation, actual_cost=0)
+    restarted.close_task('second-task')
+    restarted.suspend()  # explicit durable revocation remains a restart latch
+    restarted.release()
+    with pytest.raises(InputError, match='runtime_ledger_revoked'):
+        RuntimeLedger(path, identity='installed-scope', **limits)
+
+
+def test_connected_ledger_overrun_remains_durably_revoked(tmp_path):
+    limits = {'max_calls_per_task': 2, 'max_cost_per_task': 2,
+              'max_total_calls': 2, 'max_total_cost': 2,
+              'max_in_flight': 1, 'max_tasks': 2}
+    path = tmp_path / 'overrun-ledger'
+    ledger = RuntimeLedger(path, identity='installed-scope', **limits)
+    reservation = ledger.reserve('first-task', 0.5)
+    ledger.settle(reservation, actual_cost=1)
+    ledger.release()
+    with pytest.raises(InputError, match='runtime_ledger_revoked'):
+        RuntimeLedger(path, identity='installed-scope', **limits)
 
 
 _OPENSSL_ENV = {'LANG': 'C', 'OPENSSL_CONF': os.devnull,
@@ -428,7 +466,7 @@ def test_alpha_installed_binding_uses_exact_wheel_and_installed_origins(
             launch_connected_session(loop_session, scope=loop_scope,
                 approved_scope_sha256=loop_scope['scope_sha256'])
             deadline = time.monotonic() + 10
-            while not loop_ready.is_file() and time.monotonic() < deadline:
+            while (not loop_ready.is_file() or loop_ready.read_bytes() != b'in-flight\n') and time.monotonic() < deadline:
                 time.sleep(0.02)
             assert loop_ready.read_bytes() == b'in-flight\n'
             in_flight = connected_session_status(loop_session)
@@ -445,6 +483,13 @@ def test_alpha_installed_binding_uses_exact_wheel_and_installed_origins(
             assert result['independent_checks']['outcome_verified']
             assert result['provider_reachable'] is None and result['observed_benefit'] is None
             assert len(calls) == 1 and calls[0]['path'] == '/v1/systemone'
+            # The effect is fsynced before console teardown releases the
+            # exclusive shared ledger owner. A restart needs that release.
+            shutdown_deadline = time.monotonic() + 20
+            while result['process_alive'] and time.monotonic() < shutdown_deadline:
+                time.sleep(0.02)
+                result = connected_session_status(loop_session)
+            assert result['process_alive'] is False
 
             # A malformed pinned-model response is a real client protocol
             # rejection. The same installed generation and ledger restart with
@@ -488,7 +533,7 @@ def test_alpha_installed_binding_uses_exact_wheel_and_installed_origins(
             launch_connected_session(fault_session, scope=fault_scope,
                 approved_scope_sha256=fault_scope['scope_sha256'])
             deadline = time.monotonic() + 10
-            while not fault_ready.is_file() and time.monotonic() < deadline:
+            while (not fault_ready.is_file() or fault_ready.read_bytes() != b'in-flight\n') and time.monotonic() < deadline:
                 time.sleep(0.02)
             assert fault_ready.read_bytes() == b'in-flight\n'
             while len(calls) < 2 and time.monotonic() < deadline:
