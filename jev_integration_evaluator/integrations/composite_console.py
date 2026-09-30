@@ -71,6 +71,22 @@ def render_composite_console(root: Path, selection: dict, specs: dict) -> tuple[
                 raise UnsupportedShape('Composite runtime file contents conflict')
             expected[str(path)] = sha
     raw, tree = _source(root, first['file'])
+    # Only this separately reviewed host revision may carry the installed
+    # connected options through generated composition. The legacy dual host
+    # keeps its original rendered bytes and off-only guard.
+    loader = root / 'src/registered_dual/connected_authority.py'
+    loader_anchored = (loader.is_file()
+                       and not any(path.is_symlink() for path in
+                                   (loader, loader.parent, loader.parent.parent))
+                       and loader.resolve(strict=True).is_relative_to(root.resolve(strict=True)))
+    connected_capable = (
+        ids == ['JEV-DA938C3C7965', 'JEV-EDF19BDB65F0']
+        and first['file'] == 'src/registered_dual/console.py'
+        and hashlib.sha256(raw).hexdigest() ==
+            'bf3516e197d2ca6cc90514edd663125d0593003c274185d60b0f3e94e47c1dd9'
+        and loader_anchored
+        and hashlib.sha256(loader.read_bytes()).hexdigest() ==
+            '6d78e48d8991c5e93878451a1491b93737f7fab2b1a9493f37fd3a23e126704c')
     entry = _function(tree, first['function'], 0)
     _function(tree, 'observe_composite_runtime', 3)
     statement = entry.body[-1]
@@ -125,12 +141,25 @@ def render_composite_console(root: Path, selection: dict, specs: dict) -> tuple[
         f'if {names["files"]} != {{str({prefix}_Path(__file__).resolve().parent / name): sha for name, sha in {expected_runtime!r}.items()}}:',
         '    raise RuntimeError("composite_dependency_plan_drift")',
         f'{names["opts"]} = {a["startup_options"]}()',
-        f'if type({names["opts"]}) is not dict or {names["opts"]}.get("connected_config") is not None:',
-        '    raise RuntimeError("composite_connected_profile_unqualified")',
-        f'{names["opts"]} = dict({names["opts"]})',
-        f'{prefix}_enabled = {names["opts"]}.pop("enable_experiment", False)',
-        f'if type({prefix}_enabled) is not bool or ({prefix}_enabled and {names["opts"]}.get("startup_mode") != "shadow"):',
-        '    raise RuntimeError("composite_synthetic_shadow_authority_required")',
+        *([
+            f'if type({names["opts"]}) is not dict:',
+            '    raise RuntimeError("composite_connected_profile_unqualified")',
+            f'{names["opts"]} = dict({names["opts"]})',
+            f'{prefix}_connected = {names["opts"]}.get("connected_config") is not None',
+            f'if {prefix}_connected and {names["opts"]}.get("startup_mode") != "shadow":',
+            '    raise RuntimeError("composite_connected_profile_unqualified")',
+            f'{prefix}_enabled = (True if {prefix}_connected else '
+            f'{names["opts"]}.pop("enable_experiment", False))',
+            f'if type({prefix}_enabled) is not bool or ({prefix}_enabled and {names["opts"]}.get("startup_mode") != "shadow"):',
+            '    raise RuntimeError("composite_synthetic_shadow_authority_required")',
+        ] if connected_capable else [
+            f'if type({names["opts"]}) is not dict or {names["opts"]}.get("connected_config") is not None:',
+            '    raise RuntimeError("composite_connected_profile_unqualified")',
+            f'{names["opts"]} = dict({names["opts"]})',
+            f'{prefix}_enabled = {names["opts"]}.pop("enable_experiment", False)',
+            f'if type({prefix}_enabled) is not bool or ({prefix}_enabled and {names["opts"]}.get("startup_mode") != "shadow"):',
+            '    raise RuntimeError("composite_synthetic_shadow_authority_required")',
+        ]),
         f'{names["runtime"]} = {prefix}_HostRuntimeLifecycle({{{ids[0]!r}: {adapter_a}, {ids[1]!r}: {adapter_b}}},',
         f'    budget_limits={names["limits"]}, audit_log={a["audit_log"]}(),',
         f'    dependency_plan={{"files": [{{"path": path, "sha256": sha}} for path, sha in sorted({names["files"]}.items())]}}, **{names["opts"]})',

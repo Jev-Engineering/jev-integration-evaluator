@@ -50,6 +50,8 @@ For independently reviewed method, async, or fixed-positional Python tail calls 
 
 For the separately reviewed Alpha 1.0.2 fixture, an additive [installed binding](references/connected-installed-binding-v1.md) maps source to wheel RECORD and installed origins. Its [connected shadow delivery](references/connected-delivery-v1.md) uses a host-owned private options loader, authenticated exact egress grants, a durable ledger and a separate one-attempt supervisor. The finite [D retrieval shadow profile](references/retrieval-template-connected-v1.md) carries a fresh source binding through an installed local synthetic protocol. Package/install remain off. Offline normal-console tests do not establish provider reachability or measured benefit. Canary and active await observed raw gates and independently authenticated receipts.
 
+For the independent dual 1.0.2 host, [composite installed binding](references/connected-composite-binding-v1.md) maps two reviewed placements plus a shared console and public-only loader to exact installed origins. Its opt-in connected shadow profile retains one durable task owner and budget across both normal-console decisions. The installed local TLS and effect tests are offline synthetic evidence; real provider reachability, combined observed canary/active gates, connected upgrade/rollback and benefit are pending.
+
 For two to four compatible reviewed placements in one unchanged source snapshot,
 use the separate `implement-composite-*` transaction described in
 `references/composite-transactions-v1.md`. Its exact selected graph, final edits,

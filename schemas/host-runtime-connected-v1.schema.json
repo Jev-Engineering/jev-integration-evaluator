@@ -66,6 +66,177 @@
       "required": ["schema_version", "kind", "candidate_id", "source_file", "reviewed_file_sha256", "applied_file_sha256", "package_plan_sha256", "package_receipt_sha256", "install_plan_sha256", "install_receipt_sha256", "wheel_sha256", "installed_files_sha256", "site", "origins", "reviewed_project_path", "reviewed_project_sha256", "source_plan", "binding_sha256"],
       "additionalProperties": false
     },
+    "installed_composite_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "kind",
+        "candidate_ids",
+        "selected_set_digest",
+        "composite_bundle_digest",
+        "package_plan_sha256",
+        "package_receipt_sha256",
+        "install_plan_sha256",
+        "install_receipt_sha256",
+        "wheel_sha256",
+        "installed_files_sha256",
+        "site",
+        "placements",
+        "shared_origins",
+        "reviewed_project_path",
+        "reviewed_project_sha256",
+        "source_plan",
+        "binding_sha256"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "1.0"
+        },
+        "kind": {
+          "const": "connected-installed-composite-binding-v1"
+        },
+        "candidate_ids": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "selected_set_digest": {
+          "$ref": "#/$defs/sha"
+        },
+        "composite_bundle_digest": {
+          "$ref": "#/$defs/sha"
+        },
+        "package_plan_sha256": {
+          "$ref": "#/$defs/sha"
+        },
+        "package_receipt_sha256": {
+          "$ref": "#/$defs/sha"
+        },
+        "install_plan_sha256": {
+          "$ref": "#/$defs/sha"
+        },
+        "install_receipt_sha256": {
+          "$ref": "#/$defs/sha"
+        },
+        "wheel_sha256": {
+          "$ref": "#/$defs/sha"
+        },
+        "installed_files_sha256": {
+          "$ref": "#/$defs/sha"
+        },
+        "site": {
+          "type": "string",
+          "minLength": 1
+        },
+        "placements": {
+          "type": "object",
+          "minProperties": 2,
+          "maxProperties": 4,
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "source_file",
+              "reviewed_file_sha256",
+              "applied_file_sha256",
+              "origins"
+            ],
+            "properties": {
+              "source_file": {
+                "type": "string",
+                "minLength": 1
+              },
+              "reviewed_file_sha256": {
+                "$ref": "#/$defs/sha"
+              },
+              "applied_file_sha256": {
+                "$ref": "#/$defs/sha"
+              },
+              "origins": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "host",
+                  "adapter"
+                ],
+                "properties": {
+                  "host": {
+                    "$ref": "#/$defs/installed_origin"
+                  },
+                  "adapter": {
+                    "$ref": "#/$defs/installed_origin"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "shared_origins": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "console",
+            "loader"
+          ],
+          "properties": {
+            "console": {
+              "$ref": "#/$defs/installed_origin"
+            },
+            "loader": {
+              "$ref": "#/$defs/installed_origin"
+            }
+          }
+        },
+        "reviewed_project_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reviewed_project_sha256": {
+          "$ref": "#/$defs/sha"
+        },
+        "source_plan": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "files"
+          ],
+          "properties": {
+            "files": {
+              "type": "array",
+              "minItems": 7,
+              "maxItems": 11,
+              "uniqueItems": true,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "path",
+                  "sha256"
+                ],
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "sha256": {
+                    "$ref": "#/$defs/sha"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "binding_sha256": {
+          "$ref": "#/$defs/sha"
+        }
+      }
+    },
     "config": {
       "type": "object", "properties": {
         "endpoint": {"type": "string", "pattern": "^https://[^?#]+$"},
@@ -76,7 +247,7 @@
         "source_plan": {"$ref": "#/$defs/plan"},
         "source_bindings": {"type": "object", "minProperties": 1,
           "additionalProperties": {"$ref": "#/$defs/source_binding"}},
-        "installed_binding": {"$ref": "#/$defs/installed_binding"}
+        "installed_binding": {"oneOf": [{"$ref": "#/$defs/installed_binding"}, {"$ref": "#/$defs/installed_composite_binding"}]}
       },
       "required": ["endpoint", "credential_ref", "model", "environment_digest", "source_root", "source_plan", "source_bindings"],
       "additionalProperties": false

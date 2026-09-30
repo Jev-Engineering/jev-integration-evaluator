@@ -21,6 +21,25 @@
       "active": "pending_observed_gate",
       "benefit": "unknown",
       "separate_from_use_case_c": true
+    },
+    {
+      "kind": "registered-dual-connected-shadow-v1",
+      "root": "tests/independent_hosts/registered_dual_connected",
+      "placements": {
+        "JEV-DA938C3C7965": {"file": "src/registered_dual/work_queue.py", "sha256": "db2a51bd2751a1dcfff052104ccec28c369cba6f59d73f2508ee218c5bc0bf87"},
+        "JEV-EDF19BDB65F0": {"file": "src/registered_dual/alpha.py", "sha256": "ec04a01d497f35f10d51607b636023bc2b1f622e87bc6b7fe99de300adc02d32"}
+      },
+      "console_sha256": "bf3516e197d2ca6cc90514edd663125d0593003c274185d60b0f3e94e47c1dd9",
+      "loader_sha256": "6d78e48d8991c5e93878451a1491b93737f7fab2b1a9493f37fd3a23e126704c",
+      "project_sha256": "6bae5f8680ae5b2cf054431e177ce22a94c5e13770187497c0df7044db7e574f",
+      "installed_execution": "qualified_offline_connected_dual_shadow_protocol",
+      "provider": "unobserved",
+      "canary": "pending_combined_observed_gate",
+      "active": "pending_combined_observed_gate",
+      "upgrade": "pending_connected_upgrade",
+      "rollback": "pending_connected_rollback",
+      "benefit": "unknown",
+      "separate_from_use_case_c": true
     }
   ],
   "rows": [

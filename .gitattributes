@@ -1,0 +1,2 @@
+# The reviewed dual host deliberately retains its source newline bytes.
+tests/independent_hosts/registered_dual_connected/** whitespace=cr-at-eol

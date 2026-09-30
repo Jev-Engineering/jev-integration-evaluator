@@ -16,27 +16,57 @@
         "project_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
       }
     },
-    "independent_host_checkpoints": {"type": "array", "minItems": 1, "maxItems": 1,
-      "items": {"type": "object", "additionalProperties": false,
-        "required": ["kind", "root", "host_sha256", "console_sha256", "loader_sha256", "project_sha256", "installed_execution", "provider", "canary", "active", "benefit", "separate_from_use_case_c"],
-        "properties": {
-          "kind": {"const": "registered-alpha-connected-shadow-v1"},
-          "root": {"const": "tests/independent_hosts/registered_alpha_connected"},
-          "host_sha256": {"$ref": "#/$defs/sha"},
-          "console_sha256": {"$ref": "#/$defs/sha"},
-          "loader_sha256": {"$ref": "#/$defs/sha"},
-          "project_sha256": {"$ref": "#/$defs/sha"},
-          "installed_execution": {"const": "qualified_offline_connected_shadow_startup_protocol"},
-          "provider": {"const": "unobserved"},
-          "canary": {"const": "pending_observed_gate"},
-          "active": {"const": "pending_observed_gate"},
-          "benefit": {"const": "unknown"},
-          "separate_from_use_case_c": {"const": true}
-        }}},
+    "independent_host_checkpoints": {"type": "array", "minItems": 2, "maxItems": 2,
+      "prefixItems": [
+        {"type": "object", "additionalProperties": false,
+          "required": ["kind", "root", "host_sha256", "console_sha256", "loader_sha256", "project_sha256", "installed_execution", "provider", "canary", "active", "benefit", "separate_from_use_case_c"],
+          "properties": {
+            "kind": {"const": "registered-alpha-connected-shadow-v1"},
+            "root": {"const": "tests/independent_hosts/registered_alpha_connected"},
+            "host_sha256": {"$ref": "#/$defs/sha"},
+            "console_sha256": {"$ref": "#/$defs/sha"},
+            "loader_sha256": {"$ref": "#/$defs/sha"},
+            "project_sha256": {"$ref": "#/$defs/sha"},
+            "installed_execution": {"const": "qualified_offline_connected_shadow_startup_protocol"},
+            "provider": {"const": "unobserved"},
+            "canary": {"const": "pending_observed_gate"},
+            "active": {"const": "pending_observed_gate"},
+            "benefit": {"const": "unknown"},
+            "separate_from_use_case_c": {"const": true}}},
+        {"type": "object", "additionalProperties": false,
+          "required": ["kind", "root", "placements", "console_sha256", "loader_sha256", "project_sha256", "installed_execution", "provider", "canary", "active", "upgrade", "rollback", "benefit", "separate_from_use_case_c"],
+          "properties": {
+            "kind": {"const": "registered-dual-connected-shadow-v1"},
+            "root": {"const": "tests/independent_hosts/registered_dual_connected"},
+            "placements": {"type": "object", "additionalProperties": false,
+              "required": ["JEV-DA938C3C7965", "JEV-EDF19BDB65F0"],
+              "properties": {
+                "JEV-DA938C3C7965": {"$ref": "#/$defs/dual_queue"},
+                "JEV-EDF19BDB65F0": {"$ref": "#/$defs/dual_alpha"}}},
+            "console_sha256": {"$ref": "#/$defs/sha"},
+            "loader_sha256": {"$ref": "#/$defs/sha"},
+            "project_sha256": {"$ref": "#/$defs/sha"},
+            "installed_execution": {"const": "qualified_offline_connected_dual_shadow_protocol"},
+            "provider": {"const": "unobserved"},
+            "canary": {"const": "pending_combined_observed_gate"},
+            "active": {"const": "pending_combined_observed_gate"},
+            "upgrade": {"const": "pending_connected_upgrade"},
+            "rollback": {"const": "pending_connected_rollback"},
+            "benefit": {"const": "unknown"},
+            "separate_from_use_case_c": {"const": true}}}
+      ]},
     "rows": {"type": "array", "minItems": 6, "maxItems": 6, "items": {"$ref": "#/$defs/row"}}
   },
   "$defs": {
     "sha": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "dual_queue": {"type": "object", "additionalProperties": false,
+      "required": ["file", "sha256"], "properties": {
+        "file": {"const": "src/registered_dual/work_queue.py"},
+        "sha256": {"$ref": "#/$defs/sha"}}},
+    "dual_alpha": {"type": "object", "additionalProperties": false,
+      "required": ["file", "sha256"], "properties": {
+        "file": {"const": "src/registered_dual/alpha.py"},
+        "sha256": {"$ref": "#/$defs/sha"}}},
     "row": {
       "type": "object", "additionalProperties": false,
       "allOf": [

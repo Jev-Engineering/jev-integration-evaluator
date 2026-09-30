@@ -186,6 +186,11 @@ def parser():
     s.add_argument('--install-plan',required=True); s.add_argument('--install-receipt',required=True)
     s.add_argument('--trusted-package-receipt-sha256',required=True)
     s.add_argument('--trusted-install-receipt-sha256',required=True); s.add_argument('--out',required=True)
+    s=template_sub.add_parser('connected-composite-installed-bind',help='Derive exact installed origins for reviewed composite Python placements')
+    s.add_argument('--package-plan',required=True); s.add_argument('--package-receipt',required=True)
+    s.add_argument('--install-plan',required=True); s.add_argument('--install-receipt',required=True)
+    s.add_argument('--trusted-package-receipt-sha256',required=True)
+    s.add_argument('--trusted-install-receipt-sha256',required=True); s.add_argument('--out',required=True)
     for action in ('install','install-status','install-recover'):
         s=template_sub.add_parser(action,help='Install, inspect, or explicitly recover one owned environment')
         s.add_argument('--plan',required=True)
@@ -203,7 +208,7 @@ def parser():
     s.add_argument('--trusted-package-receipt-sha256',required=True)
     s.add_argument('--installed-binding',required=True); s.add_argument('--trusted-binding-sha256',required=True)
     s.add_argument('--observation',required=True); s.add_argument('--launch-environment',required=True)
-    s.add_argument('--host-profile',choices=['retrieval-d-v1'],
+    s.add_argument('--host-profile',choices=['retrieval-d-v1','registered-dual-connected-v1'],
                    help='Omit for the legacy registered Alpha profile')
     s.add_argument('--out',required=True)
     s=template_sub.add_parser('connected-configure',help='Create one private connected shadow session from an exact plan')
@@ -374,6 +379,16 @@ def execute(args):
             from .template_installation import write_plan_exclusive
             package_plan=read_json(args.package_plan)
             report=derive_installed_binding(package_plan,read_json(args.package_receipt),
+                read_json(args.install_plan),read_json(args.install_receipt),
+                trusted_package_receipt_sha256=args.trusted_package_receipt_sha256,
+                trusted_install_receipt_sha256=args.trusted_install_receipt_sha256)
+            write_plan_exclusive(args.out,report,host_root=package_plan['request']['host_root'])
+            return report
+        if args.template_action=='connected-composite-installed-bind':
+            from .template_connected_composite_binding import derive_installed_composite_binding
+            from .template_installation import write_plan_exclusive
+            package_plan=read_json(args.package_plan)
+            report=derive_installed_composite_binding(package_plan,read_json(args.package_receipt),
                 read_json(args.install_plan),read_json(args.install_receipt),
                 trusted_package_receipt_sha256=args.trusted_package_receipt_sha256,
                 trusted_install_receipt_sha256=args.trusted_install_receipt_sha256)

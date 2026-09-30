@@ -46,6 +46,15 @@ ledger with a code-owned hard gate closed. This does not promote the C
 `examples/coding-agent/agent.py` row: that row has a different source contract.
 Provider reachability, canary, active and benefit remain unobserved or pending.
 
+A second checkpoint pins the independent dual 1.0.2 host, with both reviewed
+source files, one installed console, and one public-only authority loader. Its
+[composite installed binding](connected-composite-binding-v1.md) and normal
+installed shadow command exercise two real placements under one durable task
+owner and budget. The two baseline effect files and local TLS protocol fault
+are offline evidence. The C row remains pending for its different source.
+Real provider contact, a combined observed canary/active gate, connected
+upgrade/rollback and measured benefit remain pending.
+
 | Case | Recipe and source contract | Offline oracle | Apply/install/launch/provider | Benefit |
 | --- | --- | --- | --- | --- |
 | C registered tool | `python.C@1.0`; [coding-agent dispatch](../examples/coding-agent/agent.py), [#48](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/48) | Existing registered-action and at-most-once dispatch tests; complete installed journey is [#57](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/57) | Pending | Unknown |
