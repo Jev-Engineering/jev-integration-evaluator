@@ -41,9 +41,11 @@ exact grant and scope. A local synthetic issuer in tests is only a protocol
 fixture.
 
 The native fixture uses a separate registered host and proves offline package
-and install, a hard permit refusal, a durable shadow ledger, one-shot replay,
-exact Job stop, and a permitted loopback TLS typed response with independent
-ready and effect readback. It never contacts a JEV provider. Its local TLS
+and install, a hard permit refusal, hardlink drift refusal, blocked pending
+launch replay, a durable shadow ledger, one-shot replay, exact Job stop, and a
+permitted loopback TLS typed response with independent ready and effect
+readback. A second installed task receives a wrong-model local response and
+still executes only its baseline action. It never contacts a JEV provider. Its local TLS
 certificate, issuer key, fixture request and observations are private test
 inputs. The response and effects are explicitly synthetic. Run its focused
 case with a reviewed private offline wheelhouse:

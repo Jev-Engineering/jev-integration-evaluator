@@ -43,6 +43,7 @@ from jev_integration_evaluator.windows_template_connected_delivery import (
 from jev_integration_evaluator.windows_connected_verify import cng_identity
 from jev_integration_evaluator.windows_template_owned import (
     create_private_directory, write_private_bytes_exclusive,
+    write_private_json_exclusive,
 )
 from jev_integration_evaluator import windows_template_session as native_session
 
@@ -178,6 +179,7 @@ def _synthetic_shadow(tmp_path: Path, monkeypatch, install_plan: dict,
         stderr=subprocess.DEVNULL, timeout=30, check=False)
     assert generated.returncode == 0, 'Local synthetic TLS certificate setup failed'
     calls: list[dict] = []
+    response_mode = {'value': 'valid'}
 
     class SyntheticTypeSafe(BaseHTTPRequestHandler):
         def log_message(self, *_args):
@@ -198,7 +200,9 @@ def _synthetic_shadow(tmp_path: Path, monkeypatch, install_plan: dict,
                                      'confidence': 1.0,
                                      'probabilities': {label: float(label == selected)
                                                        for label in labels}}
-            response = json.dumps({'model': request['model'], 'answers': answers,
+            resolved_model = (request['model'] if response_mode['value'] == 'valid'
+                              else 'unapproved-model')
+            response = json.dumps({'model': resolved_model, 'answers': answers,
                                    'usage': {'input_tokens': 1,
                                              'output_tokens': 1}}).encode()
             self.send_response(200)
@@ -213,8 +217,8 @@ def _synthetic_shadow(tmp_path: Path, monkeypatch, install_plan: dict,
     server.socket = context.wrap_socket(server.socket, server_side=True)
     thread = Thread(target=server.serve_forever, daemon=True)
     thread.start()
-    launched = None
-    session = plan = None
+    launched = fault_launched = None
+    session = plan = fault_session = fault_plan = None
     try:
         references = create_private_directory(tmp_path / 'loopback-references')
         observations = create_private_directory(tmp_path / 'loopback-observations')
@@ -243,7 +247,7 @@ def _synthetic_shadow(tmp_path: Path, monkeypatch, install_plan: dict,
             'endpoint': connected_config['endpoint'],
             'environment_digest': connected_config['environment_digest'],
             'issued_at': (now - timedelta(minutes=1)).isoformat(),
-            'expires_at': (now + timedelta(minutes=45)).isoformat()}
+            'expires_at': (now + timedelta(minutes=90)).isoformat()}
         manifest = {'schema_version': '1.0', 'mode': 'shadow',
                     'connected_config': connected_config,
                     'authority': {'egress_grant': connected_grant, 'activation': None},
@@ -326,14 +330,84 @@ def _synthetic_shadow(tmp_path: Path, monkeypatch, install_plan: dict,
             role='outcome_verified')
         assert observed['status'] == 'matched'
         assert len(calls) == 1
+
+        # A second stable task uses the same installed generation and durable
+        # ledger. Its local TLS server returns an unpinned model, so the host
+        # still performs only its preauthorised baseline action.
+        assert not native_session._owned_process(launched)[0]
+        response_mode['value'] = 'wrong_model'
+        fault_task = 'alpha-wrong-model'
+        fault_ready = obs_root / 'fault-ready.txt'
+        fault_entrypoint = obs_root / 'fault-entrypoint.txt'
+        fault_integration = obs_root / 'fault-integration.txt'
+        fault_effect = obs_root / ('effect-' + fault_task + '.json')
+        fault_release = obs_root / 'fault-release.txt'
+        fault_observation = {'checks': [
+            {'role': role, 'path': str(path), 'before_sha256': empty,
+             'after_sha256': hashlib.sha256(expected).hexdigest()}
+            for role, path, expected in (
+                ('ready', fault_ready, b'in-flight\n'),
+                ('entrypoint_reached', fault_entrypoint, b'entrypoint reached\n'),
+                ('integration_reachable', fault_integration,
+                 b'integration reachable\n'),
+                ('outcome_verified', fault_effect, expected_effect.replace(
+                    task_id.encode(), fault_task.encode())))]}
+        fault_environment = dict(environment)
+        fault_environment.update({
+            'REGISTERED_ALPHA_TASK_ID': fault_task,
+            'REGISTERED_ALPHA_READY': str(fault_ready),
+            'REGISTERED_ALPHA_RELEASE': str(fault_release),
+            'REGISTERED_ALPHA_ENTRYPOINT': str(fault_entrypoint),
+            'REGISTERED_ALPHA_INTEGRATION': str(fault_integration),
+            'REGISTERED_ALPHA_AUDIT': str(obs_root / 'fault-audit.json'),
+        })
+        fault_plan = plan_windows_connected_delivery(
+            install_plan,
+            trusted_package_receipt_sha256=install_plan['package_receipt']['receipt_sha256'],
+            trusted_install_receipt_sha256=installed['receipt_sha256'],
+            installed_binding=report, trusted_binding_sha256=report['binding_sha256'],
+            reference_owner=references, observation_owner=observations,
+            launch_environment=fault_environment, observation=fault_observation)
+        fault_session = create_windows_connected_session(
+            tmp_path / 'wrong-model-session', fault_plan, install_plan, report)
+        fault_scope = _scope(fault_session, fault_plan, private, 'launch',
+                             duration_minutes=30)
+        fault_launched = launch_windows_connected_session(
+            fault_session, fault_plan, install_plan, report,
+            scope=fault_scope, approved_scope_sha256=fault_scope['scope_sha256'])
+        deadline = time.monotonic() + 30
+        while not fault_ready.is_file() and time.monotonic() < deadline:
+            time.sleep(.02)
+        assert _read_when_closed(fault_ready) == b'in-flight\n'
+        while len(calls) < 2 and time.monotonic() < deadline:
+            time.sleep(.02)
+        assert len(calls) == 2 and calls[1]['path'] == '/v1/systemone'
+        write_private_bytes_exclusive(observations, fault_release.name, b'go\n')
+        while not fault_effect.is_file() and time.monotonic() < deadline:
+            time.sleep(.02)
+        assert _read_when_closed(fault_effect) == expected_effect.replace(
+            task_id.encode(), fault_task.encode())
+        while native_session._owned_process(fault_launched)[0] and time.monotonic() < deadline:
+            time.sleep(.02)
+        assert not native_session._owned_process(fault_launched)[0]
+        fault_observed = observe_windows_connected_session(
+            fault_session, fault_plan, install_plan, report,
+            approved_identity_sha256=fault_launched['identity_sha256'],
+            role='outcome_verified')
+        assert fault_observed['status'] == 'matched'
     finally:
-        if launched is not None:
-            stop_scope = _scope(session, plan, private, 'stop', duration_minutes=30)
-            stopped = stop_windows_connected_session(session, plan, install_plan,
-                report, scope=stop_scope,
-                approved_scope_sha256=stop_scope['scope_sha256'],
-                approved_identity_sha256=launched['identity_sha256'])
-            assert stopped['status'] == 'stopped' and not stopped['process_alive']
+        for current_session, current_plan, current_launch in (
+                (fault_session, fault_plan, fault_launched),
+                (session, plan, launched)):
+            if current_launch is not None:
+                stop_scope = _scope(current_session, current_plan, private, 'stop',
+                                    duration_minutes=30)
+                stopped = stop_windows_connected_session(
+                    current_session, current_plan, install_plan, report,
+                    scope=stop_scope,
+                    approved_scope_sha256=stop_scope['scope_sha256'],
+                    approved_identity_sha256=current_launch['identity_sha256'])
+                assert stopped['status'] == 'stopped' and not stopped['process_alive']
         server.shutdown()
         server.server_close()
         thread.join(timeout=2)
@@ -461,6 +535,19 @@ def test_native_connected_installed_hard_block_and_replay(tmp_path, monkeypatch)
         installed_binding=report, trusted_binding_sha256=report['binding_sha256'],
         reference_owner=references, observation_owner=observation_owner,
         launch_environment=environment, observation=observation)
+    pending = create_windows_connected_session(tmp_path / 'pending-session',
+                                                plan, install_plan, report)
+    write_private_json_exclusive(pending['owned_directory'], 'launch-intent.json',
+        {'session_sha256': pending['session_sha256'],
+         'job': 'Local\\jev-template-' + pending['run_id'],
+         'status': 'launch_pending'})
+    assert windows_connected_session_status(pending, plan, install_plan,
+        report)['status'] == 'blocked_recovery'
+    pending_scope = _scope(pending, plan, private, 'launch', duration_minutes=30)
+    with pytest.raises(WindowsConnectedDeliveryError, match='launch_already_attempted'):
+        launch_windows_connected_session(pending, plan, install_plan, report,
+            scope=pending_scope,
+            approved_scope_sha256=pending_scope['scope_sha256'])
     session = create_windows_connected_session(tmp_path / 'connected-session',
                                                plan, install_plan, report)
     launch_scope = _scope(session, plan, private, 'launch')
