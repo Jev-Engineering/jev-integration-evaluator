@@ -137,18 +137,27 @@ def _journal(bundle, plan):
         verify(row)
         if row.get('sequence') != index or row.get('previous') != previous or row.get('bundle_digest') != plan['contract_digest']:
             raise InputError('Recovery journal chain mismatch')
-        if set(row) != {'sequence', 'previous', 'bundle_digest', 'event', 'path_hash', 'time', 'contract_digest'}:
+        required = {'sequence', 'previous', 'bundle_digest', 'event', 'path_hash', 'time', 'contract_digest'}
+        if (set(row) not in (required, required | {'owned_identity'}) or
+                ('owned_identity' in row and
+                 (row['event'] != 'apply_write_completed' or
+                  type(row['owned_identity']) is not list or
+                  len(row['owned_identity']) != 2 or
+                  any(type(value) is not int or value <= 0 for value in row['owned_identity'])))):
             raise InputError('Invalid recovery journal record')
         previous = row['contract_digest']
     return rows
 
 
-def _record(bundle, plan, event, relative=None):
+def _record(bundle, plan, event, relative=None, *, owned_identity=None):
     rows = _journal(bundle, plan)
     if len(rows) >= 512: raise InputError('Recovery journal event limit; retain and review this bundle')
-    row = seal({'sequence': len(rows), 'previous': rows[-1]['contract_digest'] if rows else None,
-                'bundle_digest': plan['contract_digest'], 'event': event, 'path_hash': digest(relative) if relative else None,
-                'time': utc_now()})
+    data = {'sequence': len(rows), 'previous': rows[-1]['contract_digest'] if rows else None,
+            'bundle_digest': plan['contract_digest'], 'event': event,
+            'path_hash': digest(relative) if relative else None, 'time': utc_now()}
+    if owned_identity is not None:
+        data['owned_identity'] = list(owned_identity)
+    row = seal(data)
     with safe_child(bundle, 'journal.jsonl').open('ab') as handle:
         handle.write(canonical(row) + b'\n'); handle.flush(); os.fsync(handle.fileno())
     _sync_dir(bundle)
@@ -458,7 +467,9 @@ def _apply_locked(root, bundle, plan, spec, inventory, patch, *, native_readable
             if native_readable_sources and change['operation'] == 'create':
                 os.chmod(safe_child(root, change['file']), 0o644)
             _sync_dir(safe_child(root, change['file']).parent)
-        _record(bundle, plan, 'apply_' + event, change['file'])
+        _record(bundle, plan, 'apply_' + event, change['file'],
+                owned_identity=(change.get('owned_identity') if os.name == 'nt'
+                                and event == 'write_completed' else None))
     try:
         apply_patch_plan(root, patch, patch['plan_digest'], progress=progress)
     except Exception:
@@ -481,6 +492,24 @@ def rollback_implementation(root, bundle, approval):
     with _lock(bundle, root):
         identities = {r['file']: _inspect_file(root, r) for r in plan['owned_files']}
         if 'drift' in identities.values(): raise InputError('Rollback refuses changed owned bytes or modes; concurrent work is preserved')
+        native_owned = {}
+        if os.name == 'nt':
+            from .. import capabilities as cap
+            records = _journal(bundle, plan)
+            for row in plan['owned_files']:
+                if identities[row['file']] != 'applied':
+                    continue
+                recorded = [entry['owned_identity'] for entry in records
+                            if entry['event'] == 'apply_write_completed' and
+                            entry['path_hash'] == digest(row['file']) and
+                            'owned_identity' in entry]
+                if not recorded:
+                    raise InputError('Native rollback lacks retained applied identity')
+                owned = tuple(recorded[-1])
+                p = safe_child(root, row['file'])
+                if cap._windows_file_identity(p.stat()) != owned:
+                    raise InputError('Native rollback refuses changed applied identity')
+                native_owned[row['file']] = owned
         if set(identities.values()) == {'baseline'}:
             _record(bundle, plan, 'rolled_back')
             return {'status': 'rolled_back', 'idempotent': True}
@@ -492,13 +521,19 @@ def rollback_implementation(root, bundle, approval):
             def progress(event, row):
                 if event == 'write_completed': _sync_dir(safe_child(root, row['file']).parent)
                 _record(bundle, plan, 'rollback_' + event, row['file'])
-            apply_patch_plan(root, patch, patch['plan_digest'], progress=progress)
+            apply_patch_plan(root, patch, patch['plan_digest'], progress=progress,
+                             expected_identities=native_owned if os.name == 'nt' else None)
         for row in plan['owned_files']:
             if row['preimage'] is None and identities[row['file']] == 'applied':
                 p = safe_child(root, row['file'])
                 if _inspect_file(root, row) != 'applied': raise InputError('Concurrent edit during rollback')
                 _record(bundle, plan, 'rollback_delete_started', row['file'])
-                p.unlink(); _sync_dir(p.parent)
+                if os.name == 'nt':
+                    from ..windows_source_mutation import remove_owned_created
+                    remove_owned_created(p, native_owned[row['file']], row['new_sha256'])
+                else:
+                    p.unlink()
+                _sync_dir(p.parent)
                 _record(bundle, plan, 'rollback_delete_completed', row['file'])
         if any(_inspect_file(root, r) != 'baseline' for r in plan['owned_files']):
             raise InputError('Rollback interrupted or concurrent edit detected; preserve the bundle for recovery')

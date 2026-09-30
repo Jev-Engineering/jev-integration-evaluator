@@ -504,7 +504,7 @@ def _windows_secure_input(path: Path, limit: int) -> bytes:
     return raw
 
 
-def _windows_create_private_file(path: str) -> int:
+def _windows_create_private_file(path: str, *, delete_access: bool = False) -> int:
     """Create a new file with a protected owner-only DACL and no link following."""
     import ctypes
     import msvcrt
@@ -530,7 +530,8 @@ def _windows_create_private_file(path: str) -> int:
 
     security = _SecurityAttributes(ctypes.sizeof(_SecurityAttributes), descriptor, False)
     try:
-        handle = kernel32.CreateFileW(path, 0x40000000 | 0x00000080, 0,
+        handle = kernel32.CreateFileW(path, 0x40000000 | 0x00000080 |
+                                      (0x00010000 if delete_access else 0), 0,
                                       ctypes.byref(security), 1, 0x00000080 | 0x00200000,
                                       None)  # GENERIC_WRITE, CREATE_NEW, OPEN_REPARSE_POINT
     finally:
