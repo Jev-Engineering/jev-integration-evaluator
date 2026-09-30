@@ -1,48 +1,221 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object", "additionalProperties": false,
-  "required": ["schema_version", "kind", "off_provenance", "installed_binding", "trusted_binding_sha256", "trusted_package_receipt_sha256", "reference_sha256", "requested_mode", "provider_reachable", "runtime_activation_authorized", "plan_sha256"],
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "off_provenance",
+    "installed_binding",
+    "trusted_binding_sha256",
+    "trusted_package_receipt_sha256",
+    "reference_sha256",
+    "requested_mode",
+    "provider_reachable",
+    "runtime_activation_authorized",
+    "plan_sha256"
+  ],
   "properties": {
-    "schema_version": {"const": "1.0"},
-    "kind": {"const": "connected-delivery-plan-v1"},
-    "host_profile": {"enum": ["retrieval-d-v1", "registered-dual-connected-v1"]},
-    "off_provenance": {"type": "object"},
-    "installed_binding": {"type": "object"},
-    "trusted_binding_sha256": {"$ref": "#/$defs/sha"},
-    "trusted_package_receipt_sha256": {"$ref": "#/$defs/sha"},
-    "reference_sha256": {"type": "object"},
-    "requested_mode": {"const": "shadow"},
-    "provider_reachable": {"type": "null"},
-    "runtime_activation_authorized": {"const": false},
-    "plan_sha256": {"$ref": "#/$defs/sha"}
+    "schema_version": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "connected-delivery-plan-v1"
+    },
+    "host_profile": {
+      "enum": [
+        "retrieval-d-v1",
+        "registered-dual-connected-v1",
+        "claim-m-v1"
+      ]
+    },
+    "off_provenance": {
+      "type": "object"
+    },
+    "installed_binding": {
+      "type": "object"
+    },
+    "trusted_binding_sha256": {
+      "$ref": "#/$defs/sha"
+    },
+    "trusted_package_receipt_sha256": {
+      "$ref": "#/$defs/sha"
+    },
+    "reference_sha256": {
+      "type": "object"
+    },
+    "requested_mode": {
+      "const": "shadow"
+    },
+    "provider_reachable": {
+      "type": "null"
+    },
+    "runtime_activation_authorized": {
+      "const": false
+    },
+    "plan_sha256": {
+      "$ref": "#/$defs/sha"
+    }
   },
   "allOf": [
-    {"if": {"properties": {"host_profile": {"const": "retrieval-d-v1"}},
-            "required": ["host_profile"]},
-     "then": {"properties": {"reference_sha256": {"$ref": "#/$defs/d_references"}}}},
-    {"if": {"properties": {"host_profile": {"const": "registered-dual-connected-v1"}},
-            "required": ["host_profile"]},
-     "then": {"properties": {"reference_sha256": {"$ref": "#/$defs/dual_references"}}}},
-    {"if": {"not": {"required": ["host_profile"]}},
-     "then": {"properties": {"reference_sha256": {"$ref": "#/$defs/alpha_references"}}}}
+    {
+      "if": {
+        "properties": {
+          "host_profile": {
+            "const": "retrieval-d-v1"
+          }
+        },
+        "required": [
+          "host_profile"
+        ]
+      },
+      "then": {
+        "properties": {
+          "reference_sha256": {
+            "$ref": "#/$defs/d_references"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "host_profile": {
+            "const": "registered-dual-connected-v1"
+          }
+        },
+        "required": [
+          "host_profile"
+        ]
+      },
+      "then": {
+        "properties": {
+          "reference_sha256": {
+            "$ref": "#/$defs/dual_references"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "not": {
+          "required": [
+            "host_profile"
+          ]
+        }
+      },
+      "then": {
+        "properties": {
+          "reference_sha256": {
+            "$ref": "#/$defs/alpha_references"
+          }
+        }
+      }
+    },
+    {
+      "then": {
+        "properties": {
+          "reference_sha256": {
+            "$ref": "#/$defs/m_references"
+          }
+        }
+      },
+      "if": {
+        "required": [
+          "host_profile"
+        ],
+        "properties": {
+          "host_profile": {
+            "const": "claim-m-v1"
+          }
+        }
+      }
+    }
   ],
   "$defs": {
-    "sha": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
-    "alpha_references": {"type": "object", "additionalProperties": false,
-      "required": ["REGISTERED_ALPHA_CONNECTED_REF", "REGISTERED_ALPHA_AUTH_PUBKEY_FILE"],
-      "properties": {"REGISTERED_ALPHA_CONNECTED_REF": {"$ref": "#/$defs/sha"},
-                     "REGISTERED_ALPHA_AUTH_PUBKEY_FILE": {"$ref": "#/$defs/sha"},
-                     "SSL_CERT_FILE": {"$ref": "#/$defs/sha"}}},
-    "d_references": {"type": "object", "additionalProperties": false,
-      "required": ["D_CONNECTED_REF", "D_AUTH_PUBKEY_FILE", "D_CORPUS_PATH"],
-      "properties": {"D_CONNECTED_REF": {"$ref": "#/$defs/sha"},
-                     "D_AUTH_PUBKEY_FILE": {"$ref": "#/$defs/sha"},
-                     "D_CORPUS_PATH": {"$ref": "#/$defs/sha"},
-                     "SSL_CERT_FILE": {"$ref": "#/$defs/sha"}}},
-    "dual_references": {"type": "object", "additionalProperties": false,
-      "required": ["REGISTERED_DUAL_CONNECTED_REF", "REGISTERED_DUAL_AUTH_PUBKEY_FILE"],
-      "properties": {"REGISTERED_DUAL_CONNECTED_REF": {"$ref": "#/$defs/sha"},
-                     "REGISTERED_DUAL_AUTH_PUBKEY_FILE": {"$ref": "#/$defs/sha"},
-                     "SSL_CERT_FILE": {"$ref": "#/$defs/sha"}}}
+    "sha": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "alpha_references": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "REGISTERED_ALPHA_CONNECTED_REF",
+        "REGISTERED_ALPHA_AUTH_PUBKEY_FILE"
+      ],
+      "properties": {
+        "REGISTERED_ALPHA_CONNECTED_REF": {
+          "$ref": "#/$defs/sha"
+        },
+        "REGISTERED_ALPHA_AUTH_PUBKEY_FILE": {
+          "$ref": "#/$defs/sha"
+        },
+        "SSL_CERT_FILE": {
+          "$ref": "#/$defs/sha"
+        }
+      }
+    },
+    "d_references": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "D_CONNECTED_REF",
+        "D_AUTH_PUBKEY_FILE",
+        "D_CORPUS_PATH"
+      ],
+      "properties": {
+        "D_CONNECTED_REF": {
+          "$ref": "#/$defs/sha"
+        },
+        "D_AUTH_PUBKEY_FILE": {
+          "$ref": "#/$defs/sha"
+        },
+        "D_CORPUS_PATH": {
+          "$ref": "#/$defs/sha"
+        },
+        "SSL_CERT_FILE": {
+          "$ref": "#/$defs/sha"
+        }
+      }
+    },
+    "dual_references": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "REGISTERED_DUAL_CONNECTED_REF",
+        "REGISTERED_DUAL_AUTH_PUBKEY_FILE"
+      ],
+      "properties": {
+        "REGISTERED_DUAL_CONNECTED_REF": {
+          "$ref": "#/$defs/sha"
+        },
+        "REGISTERED_DUAL_AUTH_PUBKEY_FILE": {
+          "$ref": "#/$defs/sha"
+        },
+        "SSL_CERT_FILE": {
+          "$ref": "#/$defs/sha"
+        }
+      }
+    },
+    "m_references": {
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "M_CONNECTED_REF": {
+          "$ref": "#/$defs/sha"
+        },
+        "SSL_CERT_FILE": {
+          "$ref": "#/$defs/sha"
+        },
+        "M_AUTH_PUBKEY_FILE": {
+          "$ref": "#/$defs/sha"
+        }
+      },
+      "required": [
+        "M_CONNECTED_REF",
+        "M_AUTH_PUBKEY_FILE"
+      ]
+    }
   }
 }

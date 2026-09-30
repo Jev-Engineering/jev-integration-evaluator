@@ -58,6 +58,18 @@ _PROFILES = {
         'binary': ('D_HOLD',),
         'injected': ('D_CONNECTED_REF_SHA256', 'D_AUTH_PUBKEY_SHA256'),
     },
+    'claim-m-v1': {
+        'source': 'claim_host/host_claim_support.py',
+        'members': {'host': 'claim_host/host_claim_support.py',
+                    'console': 'claim_host/console.py',
+                    'loader': 'claim_host/connected_authority.py'},
+        'references': ('M_CONNECTED_REF', 'M_AUTH_PUBKEY_FILE'),
+        'allowed': frozenset({'M_EFFECT_DIRECTORY', 'M_READY_PATH',
+                              'M_RELEASE_PATH', 'M_TASKS', 'M_HOLD',
+                              'M_APPROVAL', 'M_CLAIM_SCENARIO'}),
+        'binary': ('M_HOLD', 'M_APPROVAL'),
+        'injected': ('M_CONNECTED_REF_SHA256', 'M_AUTH_PUBKEY_SHA256'),
+    },
     'registered-dual-connected-v1': {
         'source': {'JEV-DA938C3C7965': 'src/registered_dual/work_queue.py',
                    'JEV-EDF19BDB65F0': 'src/registered_dual/alpha.py'},
@@ -134,7 +146,11 @@ def plan_connected_delivery(install_plan: dict, *, trusted_install_receipt_sha25
             or any(launch_environment.get(name, '0') not in ('0', '1')
                    for name in profile['binary'])
             or (host_profile == 'retrieval-d-v1'
-                and launch_environment.get('D_TASKS', 'two') not in ('two', 'duplicate'))):
+                and launch_environment.get('D_TASKS', 'two') not in ('two', 'duplicate'))
+            or (host_profile == 'claim-m-v1' and (
+                launch_environment.get('M_TASKS', 'two') not in ('two', 'duplicate')
+                or launch_environment.get('M_CLAIM_SCENARIO', 'accept') not in (
+                    'accept', 'revise', 'request_evidence', 'fabricated', 'partial')))):
         raise ConnectedDeliveryError('connected_host_references_required')
     if 'SSL_CERT_FILE' in launch_environment:
         _check_reference(launch_environment['SSL_CERT_FILE'])

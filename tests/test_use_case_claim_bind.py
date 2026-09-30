@@ -28,10 +28,15 @@ BINDING = {'version': '1.0', 'script': 'claim-host',
 pytestmark = pytest.mark.skipif(not PROFILE, reason='M source-bound bind fixture requires Linux x86-64 CPython 3.13')
 
 
-def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False) -> tuple[dict, dict]:
+def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False,
+                connected_authority_source: Path | None = None) -> tuple[dict, dict]:
     _, spec, request = _source_host(target, version)
     entry = spec['verification']['entry_point']
     console = target / 'claim_host/console.py'
+    if connected_authority_source is not None:
+        assert installed
+        (target / 'claim_host/connected_authority.py').write_bytes(
+            connected_authority_source.read_bytes())
     if installed:
         source = target / spec['source']['file']
         original = source.read_text(encoding='utf-8')
@@ -55,6 +60,14 @@ def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False
             'from __future__ import annotations\nimport os\nimport time\n'
             'from pathlib import Path\nfrom . import claim_consumer\n', 1).replace(old, new),
                           encoding='utf-8')
+        if connected_authority_source is not None:
+            original = source.read_text(encoding='utf-8')
+            # Author this finite host before scanning or deriving any binding.
+            start = original.index('def legacy_dispatch_claim_support(request):\n')
+            end = original.find('\ndef ', start + 1)
+            assert end != -1
+            original = original[:start] + _connected_baseline() + original[end:]
+            source.write_text(original, encoding='utf-8')
     console.write_text(
         _installed_console(entry, version, Path(spec['source']['file']).stem) if installed else
         f'from .{Path(spec["source"]["file"]).stem} import {entry}\n'
@@ -79,6 +92,9 @@ def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False
         '    return 0\n'
         "if __name__ == '__main__':\n    raise SystemExit(main())\n",
         encoding='utf-8')
+    if connected_authority_source is not None:
+        console.write_text(_connected_console(entry, Path(spec['source']['file']).stem),
+                           encoding='utf-8')
     runtime_files = {
         'requirements.lock': ('dependency_lock', 'jev-integration-evaluator==1.3.0.dev1\n',
                               'jev-integration-evaluator==1.3.0.dev12\n'),
@@ -127,6 +143,72 @@ def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False
     request['reviewed_inventory'] = inventory
     request['implementation_spec'] = spec
     return inventory, request
+
+
+def _connected_baseline() -> str:
+    return '''def legacy_dispatch_claim_support(request):
+    task = request['task_id']
+    if task not in ('claim-one', 'claim-two'):
+        raise ValueError('unregistered claim task')
+    directory = Path(os.environ['M_EFFECT_DIRECTORY']) / task
+    for name, member in (('M_SUPPORT_PATH', 'support.json'),
+                         ('M_AUDIT_PATH', 'audit.json'),
+                         ('M_CLAIM_PATH', 'claim.json')):
+        os.environ[name] = str(directory / member)
+    if task == 'claim-two':
+        with Path(os.environ['M_READY_PATH']).open('x', encoding='utf-8') as stream:
+            stream.write('ready\\n')
+        if os.environ.get('M_HOLD') == '1':
+            deadline = time.monotonic() + 15
+            release = Path(os.environ['M_RELEASE_PATH'])
+            while not release.exists() and time.monotonic() < deadline:
+                time.sleep(0.02)
+            if not release.exists():
+                raise TimeoutError('claim_release_timeout')
+    variant = os.environ.get('M_CLAIM_SCENARIO', 'accept')
+    draft = claim_consumer.fixture_draft(request, variant)
+    claim_consumer.commit(request, host_approved=os.environ.get('M_APPROVAL', '1') == '1',
+                          generated=draft)
+    return 'inspect'
+'''
+
+
+def _connected_console(entry: str, source_stem: str) -> str:
+    return f'''from .{source_stem} import {entry}
+from . import claim_consumer
+from pathlib import Path
+import os
+import hashlib
+class Audit:
+    def __init__(self): self.records = []
+    def append(self, record): self.records.append(record)
+def limits():
+    return dict(max_calls_per_task=2, max_cost_per_task=2,
+                max_total_calls=2, max_total_cost=2, max_in_flight=1, max_tasks=2)
+def audit():
+    return Audit()
+def dependencies():
+    base = Path(__file__).resolve().parent
+    return {{'files': [{{'path': str(base / name), 'sha256': hashlib.sha256((base / name).read_bytes()).hexdigest()}} for name in ('requirements.lock', 'runtime.json')]}}
+def options():
+    from . import connected_authority
+    return connected_authority.options()
+def make_requests():
+    mode = os.environ.get('M_TASKS', 'two')
+    if mode not in ('two', 'duplicate'):
+        raise ValueError('unregistered claim task schedule')
+    variant = os.environ.get('M_CLAIM_SCENARIO', 'accept')
+    base = claim_consumer.fixture_request(variant)
+    ids = ('claim-one', 'claim-one') if mode == 'duplicate' else ('claim-one', 'claim-two')
+    return [{{**base, 'task_id': task}} for task in ids]
+def main():
+    requests = make_requests()
+    for request in requests:
+        {entry}(request)
+    return 0
+if __name__ == '__main__':
+    raise SystemExit(main())
+'''
 
 
 def _installed_console(entry: str, version: str, source_stem: str) -> str:

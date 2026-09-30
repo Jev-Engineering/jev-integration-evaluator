@@ -3,6 +3,9 @@
 The source claim reviewer retains citation and critical-claim policy. This
 fixture's assessor accepts only one exact, host-owned assertion and passage;
 neither passage stance metadata nor a model label confers release authority.
+The finite task registry retains the original claim-task and adds claim-one and
+claim-two for the separately bound two-task console. Each task writes its own
+independently observed private support, audit and release files.
 """
 from __future__ import annotations
 
@@ -124,7 +127,7 @@ def commit(request: dict, *, host_approved: bool,
            generated: oracle.DraftAnswer | None = None) -> dict:
     """Apply finite host disposition; release only after exact raw readback."""
     if (type(request) is not dict or set(request) != {"task_id", "claim", "quote", "start", "end"}
-            or request.get("task_id") != "claim-task"
+            or request.get("task_id") not in {"claim-task", "claim-one", "claim-two"}
             or type(request.get("claim")) is not str
             or type(request.get("quote")) is not str
             or type(request.get("start")) is not int

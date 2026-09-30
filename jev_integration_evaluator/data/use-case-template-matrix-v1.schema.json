@@ -183,8 +183,10 @@
            "upgrade": {"const": "qualified_offline_e_synthetic_host"},
            "rollback": {"const": "qualified_offline_e_synthetic_host"}}}},
         {"if": {"properties": {"id": {"const": "M"}}},
-         "then": {"properties": {
+         "then": {"required": ["connected_shadow", "connected_upgrade"], "properties": {
            "consumer_adapter": {"const": "examples/use-case-host/claim_consumer.py"},
+           "connected_shadow": {"enum": ["pending", "qualified_offline_m_installed_shadow_protocol"]},
+           "connected_upgrade": {"const": "pending"},
            "installed_execution": {"const": "qualified_offline_m_synthetic_host"},
            "bind": {"const": "qualified_offline_m_synthetic_host"},
            "apply": {"const": "qualified_offline_m_synthetic_host"},
@@ -226,7 +228,7 @@
         "consumer_adapter_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
         "consumer_corpus": {"const": "examples/use-case-host/retrieval_corpus_v1.json"},
         "consumer_corpus_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
-        "connected_shadow": {"const": "qualified_offline_d_installed_shadow_protocol"},
+        "connected_shadow": {"enum": ["pending", "qualified_offline_d_installed_shadow_protocol", "qualified_offline_m_installed_shadow_protocol"]},
         "connected_upgrade": {"const": "pending"},
         "host_consumer": {"type": "string", "minLength": 1}, "host_oracle": {"type": "string", "minLength": 1},
         "offline_contract": {"enum": ["source_review_required", "tested_fixture"]},
