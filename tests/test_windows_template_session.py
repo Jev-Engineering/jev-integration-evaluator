@@ -26,6 +26,114 @@ from jev_integration_evaluator.windows_template_session import (
 )
 
 
+@pytest.mark.parametrize('recheck,exited', ((0, True), (0x102, False),
+                                             (0xffffffff, False)))
+@pytest.mark.parametrize('terminate', (False, True))
+def test_identity_query_race_requires_same_handle_exit(monkeypatch, recheck, exited,
+                                                        terminate):
+    class Kernel:
+        def __init__(self):
+            self.waits = [0x102, recheck]
+            self.closed = []
+
+        def OpenProcess(self, access, inherit, pid):
+            assert access == 0x101000 and not inherit and pid == 17
+            return 123
+
+        def WaitForSingleObject(self, handle, timeout):
+            assert handle == 123 and timeout == (0 if len(self.waits) == 2 else 100)
+            return self.waits.pop(0)
+
+        def CloseHandle(self, handle):
+            self.closed.append(handle)
+
+        def OpenJobObjectW(self, *args):
+            pytest.fail('uncertain identity must not reach job ownership')
+
+    kernel = Kernel()
+    monkeypatch.setattr(native_session, '_kernel', lambda: kernel)
+
+    def unavailable(handle, actual_kernel):
+        assert handle == 123 and actual_kernel is kernel
+        raise InputError('windows_session_process_identity_unavailable')
+
+    monkeypatch.setattr(native_session, '_identity', unavailable)
+    identity = {'pid': 17, 'created_filetime': 1, 'image': 'python.exe',
+                'job': 'Local\\owned'}
+    if exited:
+        assert native_session._owned_process(identity, terminate=terminate) == (False, None, None)
+    else:
+        with pytest.raises(InputError, match='windows_session_process_identity_unavailable'):
+            native_session._owned_process(identity, terminate=terminate)
+    assert kernel.waits == []
+    assert kernel.closed == [123]
+
+
+@pytest.mark.skipif(os.name != 'nt', reason='native Windows process handles only')
+def test_real_process_exit_during_image_query_is_rechecked_on_retained_handle(monkeypatch):
+    target = subprocess.Popen([sys._base_executable, '-I', '-c', 'import time;time.sleep(30)'],
+                              stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                              stderr=subprocess.DEVNULL,
+                              creationflags=subprocess.CREATE_NO_WINDOW)
+    kernel = _kernel()
+    unrelated = None
+    job = None
+    try:
+        unrelated = subprocess.Popen([sys._base_executable, '-I', '-c', 'import time;time.sleep(30)'],
+                                     stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                                     stderr=subprocess.DEVNULL,
+                                     creationflags=subprocess.CREATE_NO_WINDOW)
+        job_name = 'Local\\jev-template-race-' + str(uuid.uuid4())
+        job = kernel.CreateJobObjectW(None, job_name)
+        assert job and kernel.AssignProcessToJobObject(job, int(target._handle))
+        created, image = _identity(int(target._handle), kernel)
+        identity = {'pid': target.pid, 'created_filetime': created, 'image': image,
+                    'job': 'unused-before-identity-recheck'}
+
+        class ExitDuringQuery:
+            def __init__(self):
+                self.query_attempted = False
+                self.opened = None
+                self.closed = []
+
+            def __getattr__(self, name):
+                return getattr(kernel, name)
+
+            def OpenProcess(self, *args):
+                self.opened = kernel.OpenProcess(*args)
+                return self.opened
+
+            def QueryFullProcessImageNameW(self, *args):
+                target.terminate()
+                target.wait(timeout=5)
+                # Invoke the actual API on the retained Win32 handle after
+                # owned process exit. Force a query failure regardless of
+                # OS-specific post-exit behavior so the recheck is deterministic.
+                kernel.QueryFullProcessImageNameW(*args)
+                self.query_attempted = True
+                ctypes.set_last_error(5)
+                return 0
+
+            def CloseHandle(self, handle):
+                self.closed.append(handle)
+                return kernel.CloseHandle(handle)
+
+        raced = ExitDuringQuery()
+        monkeypatch.setattr(native_session, '_kernel', lambda: raced)
+        assert native_session._owned_process(identity) == (False, None, None)
+        assert raced.query_attempted and raced.opened in raced.closed
+        assert unrelated.poll() is None
+    finally:
+        if job:
+            kernel.CloseHandle(job)
+        if target.poll() is None:
+            target.terminate()
+            target.wait(timeout=5)
+        if unrelated is not None and unrelated.poll() is None:
+            unrelated.terminate()
+            unrelated.wait(timeout=5)
+
+
 @pytest.mark.skipif(os.name != 'nt', reason='native Windows Job Object only')
 def test_owned_job_stop_does_not_touch_unrelated_process(tmp_path, monkeypatch):
     owned = create_private_directory(tmp_path / 'session')

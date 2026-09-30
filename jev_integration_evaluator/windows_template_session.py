@@ -216,8 +216,18 @@ def _owned_process(identity: dict, *, terminate: bool = False) -> tuple[bool, ob
             return False, None, None
         if wait != 0x102:
             raise InputError('windows_session_process_state_unavailable')
-        if _identity(process, kernel) != (identity['created_filetime'],
-                                          identity['image'].casefold()):
+        try:
+            current_identity = _identity(process, kernel)
+        except InputError:
+            # During process teardown, an image query can return access
+            # denied while a zero-time wait still reports live. Wait only a
+            # bounded 100 ms on this same retained handle. Only a signaled
+            # handle proves exit; every other result remains uncertain.
+            if kernel.WaitForSingleObject(process, 100) == 0:
+                return False, None, None
+            raise
+        if current_identity != (identity['created_filetime'],
+                                identity['image'].casefold()):
             return False, None, None
         job = kernel.OpenJobObjectW(0x000c if terminate else 0x0004,
                                     False, identity['job'])
