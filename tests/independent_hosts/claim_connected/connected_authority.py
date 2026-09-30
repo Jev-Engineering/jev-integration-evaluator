@@ -1,4 +1,4 @@
-"""Host-owned connected startup boundary for the independent D retrieval fixture.
+"""Host-owned connected startup boundary for the independent M claim support fixture.
 
 The private files are provisioned by a separate owner. This module checks their
 ownership and authenticates exact digest grants; a descriptor hash is not a
