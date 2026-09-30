@@ -255,6 +255,67 @@ jobs:
         run: |
           python -c "import sys,xml.etree.ElementTree as E; r=E.parse(sys.argv[1]).getroot(); s=[r] if r.tag=='testsuite' else list(r.findall('testsuite')); n=sum(int(x.get('tests',0)) for x in s); k=sum(int(x.get('skipped',0)) for x in s); f=sum(int(x.get('failures',0))+int(x.get('errors',0)) for x in s); print(f'native Windows delivery cases: collected={n} skipped={k} failed={f}'); sys.exit(1 if n < 64 or k or f else 0)" "$env:RUNNER_TEMP\windows-template-delivery.xml"
       - run: python scripts/validate_package.py --check-manifest
+  windows-connected-shadow:
+    # Disposable Server qualification uses a local TLS fixture and synthetic issuer.
+    # No JEV provider credential or live endpoint is supplied to these jobs.
+    runs-on: windows-2022
+    timeout-minutes: 120
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.13"]
+    env:
+      TYPESAFE_API_KEY: ""
+    steps:
+      - name: Preserve committed bytes in the disposable checkout
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Record native connected runtime and synthetic issuer identity
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          git config --get core.autocrlf
+          python -c "import platform,sys; print(platform.platform()); print(sys.version); print(sys.executable)"
+          $issuer = 'C:\Program Files\Git\usr\bin\openssl.exe'
+          if (-not (Test-Path -LiteralPath $issuer -PathType Leaf)) { throw 'Declared synthetic issuer tooling absent' }
+          (Get-FileHash -LiteralPath $issuer -Algorithm SHA256).Hash
+      - name: Provision disposable native filesystem fixture settings
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $devMode = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock'
+          New-Item -Path $devMode -Force | Out-Null
+          New-ItemProperty -Path $devMode -Name AllowDevelopmentWithoutDevLicense `
+            -PropertyType DWord -Value 1 -Force | Out-Null
+          $fileSystem = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
+          New-ItemProperty -Path $fileSystem -Name LongPathsEnabled `
+            -PropertyType DWord -Value 1 -Force | Out-Null
+      - name: Prepare declared dependencies and exact offline wheels
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          python -m pip install -e ".[test]" wheel
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $wheelhouse = Join-Path $env:RUNNER_TEMP 'jev-windows-connected-wheelhouse'
+          python scripts/prepare_template_wheelhouse.py --out $wheelhouse
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          "JEV_WINDOWS_TEMPLATE_WHEELHOUSE=$wheelhouse" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Exercise required native installed connected shadow and faults
+        run: >-
+          python -m pytest -q tests/test_windows_connected_verify.py
+          tests/test_windows_template_connected.py
+          --junitxml "$env:RUNNER_TEMP\windows-connected-shadow.xml"
+      - name: Reject missing, failed or skipped native connected cases
+        run: |
+          python -c "import sys,xml.etree.ElementTree as E; r=E.parse(sys.argv[1]).getroot(); s=[r] if r.tag=='testsuite' else list(r.findall('testsuite')); n=sum(int(x.get('tests',0)) for x in s); k=sum(int(x.get('skipped',0)) for x in s); f=sum(int(x.get('failures',0))+int(x.get('errors',0)) for x in s); print(f'native connected cases: collected={n} skipped={k} failed={f}'); sys.exit(1 if n < 3 or k or f else 0)" "$env:RUNNER_TEMP\windows-connected-shadow.xml"
+      - run: python scripts/validate_package.py --check-manifest
   python-only:
     runs-on: ubuntu-latest
     steps:
