@@ -147,6 +147,8 @@ def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False
 
 def _connected_baseline() -> str:
     return '''def legacy_dispatch_claim_support(request):
+    if not os.environ.get('M_EFFECT_DIRECTORY'):
+        return 'inspect'
     task = request['task_id']
     if task not in ('claim-one', 'claim-two'):
         raise ValueError('unregistered claim task')

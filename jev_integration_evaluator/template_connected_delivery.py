@@ -148,7 +148,9 @@ def plan_connected_delivery(install_plan: dict, *, trusted_install_receipt_sha25
             or (host_profile == 'retrieval-d-v1'
                 and launch_environment.get('D_TASKS', 'two') not in ('two', 'duplicate'))
             or (host_profile == 'claim-m-v1' and (
-                launch_environment.get('M_TASKS', 'two') not in ('two', 'duplicate')
+                not {'M_EFFECT_DIRECTORY', 'M_READY_PATH'} <= set(launch_environment)
+                or (launch_environment.get('M_HOLD') == '1' and 'M_RELEASE_PATH' not in launch_environment)
+                or launch_environment.get('M_TASKS', 'two') not in ('two', 'duplicate')
                 or launch_environment.get('M_CLAIM_SCENARIO', 'accept') not in (
                     'accept', 'revise', 'request_evidence', 'fabricated', 'partial')))):
         raise ConnectedDeliveryError('connected_host_references_required')
