@@ -26,10 +26,14 @@ from test_node_template_installed_upgrade import (
 
 
 def _installed(tmp_path: Path, name: str, version: str, item: str,
-               tooling: Path, node: Path, npm: Path, *, prepare_only: bool = False) -> dict:
+               tooling: Path, node: Path, npm: Path, *, prepare_only: bool = False,
+               connected_model: bool = False) -> dict:
     work = tmp_path / name
     work.mkdir(mode=0o700)
     source, request = request_for(work, 'commonjs')
+    if connected_model:
+        request['implementation_spec']['runtime']['runtime']['model'] = 'jev-1.13.0'
+        request['implementation_spec']['runtime']['runtime']['timeout_ms'] = 1000
     host = source / 'host.cjs'
     if version == '1.0.1':
         before = ("events.push(['read', request.item]); "
@@ -53,21 +57,55 @@ def _installed(tmp_path: Path, name: str, version: str, item: str,
     lock_path.write_text(json.dumps(lock), encoding='utf-8')
     marker = ':v2' if version == '1.0.1' else ''
     entry = source / 'start.cjs'
+    connected_start = (
+        'if (process.env.JEV_RUNTIME_MODE === "shadow") {\n'
+        '  const crypto = require("node:crypto");\n'
+        '  const descriptor = JSON.parse(fs.readFileSync(process.env.JEV_CONNECTED_DESCRIPTOR));\n'
+        '  adapter.initializeConnected(descriptor, {\n'
+        '    audit: {append() {}},\n'
+        '    verifyAuthority: (kind, sha) => kind === "egress_grant" && '
+        'sha === (process.env.JEV_TRUSTED_GRANT_FILE ? '
+        'fs.readFileSync(process.env.JEV_TRUSTED_GRANT_FILE,"utf8").trim() : '
+        'process.env.JEV_TRUSTED_EGRESS_GRANT_SHA256),\n'
+        '    currentEnvironmentDigest: () => crypto.createHash("sha256")'
+        '.update(process.env.TYPESAFE_API_KEY).digest("hex"),\n'
+        '    transport: async () => { if (process.env.JEV_FAKE_TRANSPORT_MARKER) '
+        'fs.writeFileSync(process.env.JEV_FAKE_TRANSPORT_MARKER,"started",{flag:"wx"}); '
+        'await new Promise(resolve => '
+        'setTimeout(resolve,Number(process.env.JEV_FAKE_TRANSPORT_DELAY_MS||0))); '
+        'return Buffer.from(JSON.stringify({model:"jev-1.13.0", '
+        'answers:{choice:{type:"choice",choice:"read",confidence:1, '
+        'probabilities:{read:1,uncertain:0}}},usage:{input_tokens:1,output_tokens:1}})); }\n'
+        '  });\n'
+        '} else if (process.env.JEV_RUNTIME_MODE !== "off") throw Error("mode");\n'
+        if connected_model else
+        'if (process.env.JEV_RUNTIME_MODE !== "off") throw Error("mode");\n')
+    settle = ('  if (process.env.JEV_FAKE_TRANSPORT_MARKER) {\n'
+              '    for (let i=0;i<200 && '
+              'fs.readFileSync(process.env.JEV_TRUSTED_GRANT_FILE,"utf8").trim()==='
+              'process.env.JEV_TRUSTED_EGRESS_GRANT_SHA256;i++) '
+              'await new Promise(resolve=>setTimeout(resolve,25));\n'
+              '    adapter.status();\n'
+              '  } else await new Promise(resolve => setTimeout(resolve,800));\n'
+              if connected_model else
+              '  await new Promise(resolve => setTimeout(resolve, 800));\n')
     entry.write_text(
         'const fs = require("node:fs");\n'
         'const seam = require("./host.cjs");\n'
-        'if (process.env.JEV_RUNTIME_MODE !== "off") throw Error("mode");\n'
+        + ('const adapter = require("./jev_adapter.cjs");\n' if connected_model else '')
+        + connected_start +
         'for (const key of ["NODE_EFFECT_PATH","NODE_READY_PATH","NODE_INTEGRATION_PATH"]) '
         'if (!process.env[key]) throw Error("missing path");\n'
         'globalThis.__jev_probe_effect = (action,item) => '
         'fs.writeFileSync(process.env.NODE_EFFECT_PATH, action+":"+item+"\\n", {flag:"wx"});\n'
         'async function main() {\n'
-        f'  const result = await seam({{task_id:"task",invocation_id:"normal-{version}",'
+        f'  const result = await seam({{task_id:"task",'
+        f'invocation_id:process.env.JEV_INVOCATION_ID||"normal-{version}",'
         f'item:"{item}",permit:true}});\n'
         f'  if (result !== "read:{item}{marker}") throw Error("seam result");\n'
         '  fs.writeFileSync(process.env.NODE_READY_PATH,"ready\\n",{flag:"wx"});\n'
         '  fs.writeFileSync(process.env.NODE_INTEGRATION_PATH,"integration\\n",{flag:"wx"});\n'
-        '  await new Promise(resolve => setTimeout(resolve, 800));\n'
+        + settle +
         '}\nmain().catch(() => {process.exitCode = 1;});\n', encoding='utf-8')
     request['entrypoint'] = 'start.cjs'
     request['entrypoint_sha256'] = file_hash(entry)
@@ -126,7 +164,8 @@ def _installed(tmp_path: Path, name: str, version: str, item: str,
     assert json.loads((app / 'package.json').read_text())['scripts']['start'] == 'node start.cjs'
     assert file_hash(app / 'host.cjs') == file_hash(host)
     assert app != source and not app.is_relative_to(Path(__file__).resolve().parents[1])
-    return {'source': source, 'bundle': bundle, 'rollback_digest': verified['rollback_digest'],
+    return {'source': source, 'request': request, 'bundle': bundle,
+            'rollback_digest': verified['rollback_digest'],
             'reviewed_host': reviewed_host, 'install_plan': install_plan,
             'installed': installed, 'version': version, 'item': item}
 

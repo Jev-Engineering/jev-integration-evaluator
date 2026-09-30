@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:node-connected-session:1.0",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "kind", "run_id", "request_sha256", "descriptor_sha256", "stage", "pending", "disabled", "process", "attempts", "failures"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "node-connected-session-v1"},
+    "run_id": {"type": "string", "format": "uuid"},
+    "request_sha256": {"$ref": "#/$defs/sha"},
+    "descriptor_sha256": {"$ref": "#/$defs/sha"},
+    "stage": {"enum": ["created", "launch_pending", "running", "stop_pending", "stopped", "disabled", "blocked_recovery"]},
+    "pending": {"enum": [null, "launch", "stop", "disable"]},
+    "disabled": {"type": "boolean"},
+    "process": {"oneOf": [{"type": "null"}, {"type": "object", "additionalProperties": false,
+      "required": ["pid", "boot_id", "start_ticks"],
+      "properties": {"pid": {"type": "integer", "minimum": 1}, "boot_id": {"type": "string", "minLength": 1},
+        "start_ticks": {"type": "string", "minLength": 1}}}]},
+    "attempts": {"type": "object", "additionalProperties": false,
+      "required": ["launch", "stop"], "properties": {"launch": {"type": "integer", "minimum": 0},
+        "stop": {"type": "integer", "minimum": 0}}},
+    "failures": {"type": "array", "maxItems": 128, "items": {"type": "string", "maxLength": 128}}
+  },
+  "$defs": {"sha": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+}
