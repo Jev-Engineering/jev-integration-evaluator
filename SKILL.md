@@ -114,8 +114,18 @@ For an already applied and independently verified Python console host, a
 separate [native Windows offline API checkpoint](references/windows-template-native-delivery-v1.md)
 can build/install hash-locked wheels, supervise off-mode installed consoles,
 and select retained old/new installed generations under one run ID on local
-NTFS. Retained local Windows 11 CPython 3.10/3.13/3.14 fixture runs do not
-qualify Windows Server, untrusted execution or provider traffic.
+NTFS. Local Windows 11 CPython 3.10/3.13/3.14 runs retain private receipts.
+Separate Windows Server 2022 build 20348 CI passed the 31-case off-mode
+preparation, package/install, supervised console and retained-generation suite
+on CPython 3.10.11 and 3.13.15 with zero skips in the
+[PR #106 merge run](https://github.com/Jev-Engineering/jev-integration-evaluator/actions/runs/36647200079).
+These results do not establish broader source-filesystem qualification,
+untrusted execution, provider traffic or later interruption additions.
+The later 38-case Server suite separately passed controlled launch/install
+interruption and owned installer-process death on both interpreters with zero
+skips in the [PR #110 merge run](https://github.com/Jev-Engineering/jev-integration-evaluator/actions/runs/36669705064).
+Machine power-loss durability and broader source-filesystem qualification remain
+separate gates.
 
 Run `scripts/run_implementation_demo.py --out NEW_PRIVATE_DIRECTORY`, the existing v1.1/v1.2 demos, full regressions, installed-wheel host checks and package validation for implementation changes. Publish only minimal synthetic validation metadata, never private target source, preimages, raw test output or activation fixtures. Prior validation reports remain historical.
 

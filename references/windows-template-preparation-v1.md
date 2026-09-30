@@ -117,7 +117,9 @@ host execution profile and has not completed issue #61 qualification.
 The original #55 installer and #56 supervisor retain their Linux-only
 profiles. The repository session journal is POSIX. The native checkpoint
 uses separate NTFS owner artifacts and Job Object process ownership; it has
-not replaced the Linux contracts or completed a Windows upgrade/rollback path.
+not replaced the Linux contracts. Its synthetic off-mode installed-version
+upgrade/retained rollback path and later interruption cases have separate
+native evidence in [Windows native delivery](windows-template-native-delivery-v1.md).
 
 Full #61 qualification still requires the supported Windows/Python matrix,
 native ACL denial, real reparse ancestors, hard links, case collisions, long

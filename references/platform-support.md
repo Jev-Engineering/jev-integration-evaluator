@@ -7,8 +7,13 @@ absence proof.
 
 The `javascript.recipe-c@1.0.0` catalog entry declares Linux x86-64 with a
 trusted external Node executable and TypeScript 5.8.3 compiler. Its present
-qualification is source-bound planner materialization; npm installation,
-normal package launch, provider reachability and connected mode are pending.
+qualification includes source-bound planner materialization, scoped offline
+npm installation and supervised normal package commands for ESM, CommonJS
+and TypeScript in synthetic off-mode fixtures. The installed evaluator CLI
+journeys ran in [PR #99](https://github.com/Jev-Engineering/jev-integration-evaluator/pull/99)
+and [PR #104](https://github.com/Jev-Engineering/jev-integration-evaluator/pull/104);
+[the #104 merge run](https://github.com/Jev-Engineering/jev-integration-evaluator/actions/runs/36642699747)
+passed. Provider reachability and connected qualification remain pending.
 Windows Node interop does not qualify native Linux execution.
 
 The separate generated Python adaptation runtime profile has local offline
@@ -31,21 +36,33 @@ host. It is not native template delivery. Current stage support is:
 | Native Windows stage | Current qualification |
 | --- | --- |
 | Repository discovery | Qualified only as recorded below. |
-| Selected source/path preparation | Read-only local Windows 11 Pro build 26200, CPython 3.14.3 observation; Server 2022 candidates need independent runs. |
-| Selected package-input inventory | Read-only local Windows 11 Pro build 26200, CPython 3.14.3 observation. It checks reviewed files in its declared traversal and selected wheel bytes, reports skipped directories, and grants no build/install authority; Server 2022 candidates need independent runs. |
+| Selected source/path preparation | Read-only local Windows 11 Pro build 26200, CPython 3.14.3 observation; also exercised in the separate Server 2022 off-mode suite described below. |
+| Selected package-input inventory | Read-only local Windows 11 Pro build 26200, CPython 3.14.3 observation, also exercised in the separate Server 2022 off-mode suite. It checks reviewed files in its declared traversal and selected wheel bytes, reports skipped directories, and grants no build/install authority. |
 | Implementation planning and mutation | No complete native Windows template-delivery qualification. |
 | Repository session | POSIX journal contract; native Windows unsupported. |
-| Package build and install | Separate native offline API checkpoint locally ran on Windows 11 Pro build 26200, CPython 3.10.11, 3.13.13 and 3.14.3 on NTFS; it binds reviewed applied source and hash-locked wheels. Each interpreter has a retained private receipt archive. A 3.14.3 test also rejects dangling NTFS junctions at prospective package/install roots before status or replay. Server mutating/installed runs and broader recovery edges remain pending. The #55 installer remains Linux only. |
-| Normal console launch, observation and owned stop | Native API checkpoint locally ran installed off-mode consoles under a gated Job Object, with separate entry-ready and effect observations, exact owned stop, and retained 1.0.0 → 1.0.1 → 1.0.0 selection in one run. This is fixture evidence; the #56 delivery session remains Linux only. |
+| Package build and install | Separate native offline API checkpoint ran on Windows 11 Pro build 26200, CPython 3.10.11, 3.13.13 and 3.14.3 on NTFS, and in the Server 2022 off-mode suite below; it binds reviewed applied source and hash-locked wheels. Each local interpreter has a retained private receipt archive. A 3.14.3 test also rejects dangling NTFS junctions at prospective package/install roots before status or replay. Broader source-filesystem and recovery additions require separate evidence. The #55 installer remains Linux only. |
+| Normal console launch, observation and owned stop | Native API checkpoint ran installed off-mode consoles locally and in the Server 2022 suite under a gated Job Object, with separate entry-ready and effect observations, exact owned stop, and retained 1.0.0 → 1.0.1 → 1.0.0 selection in one run. This is synthetic fixture evidence; the #56 delivery session remains Linux only. |
 | Verification and execution isolation | No Windows seccomp-equivalent target isolation in this profile. |
 | Provider-connected runtime | Pending independent authority and live qualification. |
+
+The separate native off-mode suite passed 31 cases with zero skips on
+Windows Server 2022 build 20348, CPython 3.10.11 and 3.13.15, in the
+[PR #106 actual merge-commit run](https://github.com/Jev-Engineering/jev-integration-evaluator/actions/runs/36647200079)
+at `a7c0b025612f1fbb3a0cb7e1721773316db4821b`. This is distinct from discovery
+qualification and does not establish later interruption additions, arbitrary
+source mutation, untrusted execution, provider operation or measured benefit.
+The later 38-case native suite, including controlled launch/install interruption
+and owned installer-process death, passed on both Server interpreters with zero
+skips in the [PR #110 merge run](https://github.com/Jev-Engineering/jev-integration-evaluator/actions/runs/36669705064)
+at `1aff22197d0ff5c64b660544b77ed81e1ab310bc`. It does not establish machine
+power-loss durability, broader source mutation or provider qualification.
 
 | Platform and filesystem | Repository discovery | Qualification |
 | --- | --- | --- |
 | Linux, including WSL2 Linux filesystems | Supported through POSIX descriptor-relative reads with `O_NOFOLLOW`. | Existing Linux CI and recorded Linux/WSL runs. This change does not restart or reconfigure WSL. |
 | macOS with the required POSIX descriptor operations | Existing backend retained. | No macOS runner was added by issue #42; current macOS versions are not newly qualified here. |
 | Windows 11 Pro build 26200, CPython 3.14.3, local NTFS drive | Locally qualified for the dedicated discovery fixtures and source-bound preparation. | All 19 dedicated tests pass. This account cannot create real symbolic links, so hosted CI covers actual file and directory links. |
-| Windows Server 2022 hosted runner build 20348, NTFS, CPython 3.10.11 and 3.13.15 | Qualified for native repository discovery on local drive-letter roots. | The `windows-discovery` jobs pass all 19 tests on both interpreters with zero skips, including real symbolic links and junctions, ACL denial, long paths, UNC outcomes, and interruption. Broader workflows remain unqualified on Windows. |
+| Windows Server 2022 hosted runner build 20348, NTFS, CPython 3.10.11 and 3.13.15 | Qualified for native repository discovery on local drive-letter roots. | The `windows-discovery` jobs pass all 19 tests on both interpreters with zero skips, including real symbolic links and junctions, ACL denial, long paths, UNC outcomes, and interruption. Separate native off-mode delivery evidence is recorded above; discovery alone does not establish it. |
 | Windows 10, ReFS, FAT/exFAT, network shares, mapped drives, and device paths | Not qualified. UNC and mapped network roots are rejected; non-NTFS and device paths return explicit blocked outcomes. | No discovery report is emitted for an unsupported root. |
 
 ## Native Windows paths

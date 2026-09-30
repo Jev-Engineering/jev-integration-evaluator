@@ -72,8 +72,14 @@ inspect reviewed files on local NTFS. A separate
 has a locally observed Windows 11 package/install, supervised normal-console
 path, and retained installed-version cutover and rollback under one run ID.
 Local Windows 11 CPython 3.10/3.13/3.14 installed fixture runs have retained
-private receipts. Windows Server mutating runs, broader recovery edges and
-provider qualification remain pending.
+private receipts. Windows Server 2022 build 20348 also passed the native
+31-case off-mode preparation, package/install, supervised console and retained
+generation suite on CPython 3.10.11 and 3.13.15 with zero skips; see the
+[PR #106 merge run](https://github.com/Jev-Engineering/jev-integration-evaluator/actions/runs/36647200079).
+The later 38-case suite also passed controlled launch/install interruption and
+owned installer-process death on both Server interpreters, with zero skips in
+the [PR #110 merge run](https://github.com/Jev-Engineering/jev-integration-evaluator/actions/runs/36669705064).
+Broader source-filesystem and connected qualification remain pending.
 
 The separate [JavaScript recipe C template catalog](references/javascript-recipe-c-template-v1.md)
 validates reviewed ESM, CommonJS and TypeScript source through trusted external
@@ -107,12 +113,11 @@ its normal off-mode console on Linux CPython 3.13. A separate
 [M claim support host](references/claim-template-offline-v1.md) and
 [H retention host](references/retention-template-offline-v1.md) now have
 separate source-bound offline package/install/supervised normal-console effects,
-versioned upgrade and owned rollback. E completion also has a source-bound
-bounded task-loop console bind and owned edit. H retention has a separate
-source-bound task-loop console bind and installed normal-command check. M claim
-support has a separate source-bound bounded-loop console bind and owned edit.
-The other use-case-specific
-console binds, other individual templates, provider modes and benefit remain pending.
+versioned upgrade and owned rollback. All five use-case hosts also have fresh
+source-bound bounded-loop console bindings and owned edits carried through
+their documented installed normal-command journeys. These are synthetic
+off-mode results for the declared host shapes; other recipe profiles,
+provider modes and benefit remain pending.
 
 Want to see everything working first? Run the bundled offline demo:
 

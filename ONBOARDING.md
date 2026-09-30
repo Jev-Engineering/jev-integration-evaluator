@@ -18,10 +18,10 @@ The separate [L graph](references/graph-template-offline-v1.md),
 [E completion](references/completion-template-offline-v1.md),
 [M claim support](references/claim-template-offline-v1.md) and
 [H retention](references/retention-template-offline-v1.md) operator references
-describe their synthetic off-mode installed journeys and pending recipe-specific
-console binds except E's bounded task-loop and H's explicit-choice bounded-loop
-bindings. They do not establish
-provider or benefit qualification.
+describe their source-bound synthetic off-mode installed normal-console journeys,
+including fresh bounded-loop bindings, independently observed effects and owned
+versioned upgrade/rollback. Each documented host shape retains its own limits;
+these journeys do not establish provider or benefit qualification.
 
 For offline Node recipe C packaging, collect the independently retained JS modified verification receipt, exact applied source and render lock, native pinned Node/npm, trusted TypeScript 5.8.3, private offline npm cache, off configuration and secret references. The separate `node-package-request-v1` stages an owned generation only after two exact approvals; see `references/template-node-installation-v1.md`. Missing tooling or a changed source fails closed. A separate Node session may launch only that installed off-mode command under an exact scope and independently checked ready/effect paths; it does not grant connected mode. The independently pinned ESM fixture in `tests/independent_hosts/esm_recipe_c` exercises installed off-mode launch, versioned upgrade and retained rollback with raw host effects.
 
@@ -92,7 +92,14 @@ for owner-private package/install generations, supervised off-mode normal
 consoles, and retained installed-version cutover and rollback. Retain all
 receipt digests externally. Local Windows 11 CPython 3.10/3.13/3.14 installed
 fixture runs have retained private receipts.
-Windows Server mutating and installed qualification remains pending.
+Windows Server 2022 build 20348 passed the separate 31-case native off-mode
+preparation, package/install, supervised console and retained-generation suite
+on CPython 3.10.11 and 3.13.15 with zero skips in the
+[PR #106 merge run](https://github.com/Jev-Engineering/jev-integration-evaluator/actions/runs/36647200079).
+The later 38-case suite passed controlled launch/install interruption and owned
+installer-process death on both Server interpreters, with zero skips in the
+[PR #110 merge run](https://github.com/Jev-Engineering/jev-integration-evaluator/actions/runs/36669705064).
+Broader source-filesystem and connected qualification require separate evidence.
 
 For connected host runtime qualification, record the pinned endpoint/model,
 environment and reviewed source/configuration digests, budget scope, host-owned
