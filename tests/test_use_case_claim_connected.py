@@ -47,9 +47,9 @@ def _scope(status: dict, plan: dict, action: str) -> dict:
     return value
 
 
-def _observation(folder: Path) -> dict:
-    first_support, first_audit, _ = _expected('claim-one')
-    _, _, second_claim = _expected('claim-two')
+def _observation(folder: Path, *, revised: bool = False) -> dict:
+    first_support, first_audit, _ = _expected('claim-one', revised=revised)
+    _, _, second_claim = _expected('claim-two', revised=revised)
     return {'schema_version': '1.0', 'kind': 'template-delivery-observation-v1',
             'checks': [{'role': role, 'path': str(path), 'before_sha256': None,
                         'expected_sha256': hashlib.sha256(raw).hexdigest()}
@@ -60,7 +60,8 @@ def _observation(folder: Path) -> dict:
                            ('outcome_verified', folder / 'claim-two/claim.json', second_claim))]}
 
 
-def test_m_installed_connected_shadow_preserves_raw_claim_provenance(tmp_path, monkeypatch):
+@pytest.mark.parametrize('scenario', ('accept', 'revise'))
+def test_m_installed_connected_shadow_preserves_raw_claim_provenance(tmp_path, monkeypatch, scenario):
     name = os.environ.get('JEV_TEMPLATE_WHEELHOUSE')
     if not name:
         pytest.skip('exact private offline wheelhouse required')
@@ -113,9 +114,11 @@ def test_m_installed_connected_shadow_preserves_raw_claim_provenance(tmp_path, m
                     answers[name] = {'type': 'choice', 'choice': choice, 'confidence': 1.0,
                                      'probabilities': {label: float(label == choice)
                                                        for label in labels}}
-            model = request['model'] if response_mode['value'] == 'valid' else request['model'] + '-wrong'
+            model = request['model'] if response_mode['value'] != 'wrong' else request['model'] + '-wrong'
             payload = json.dumps({'model': model, 'answers': answers,
                                  'usage': {'input_tokens': 1, 'output_tokens': 1}}).encode()
+            if response_mode['value'] == 'malformed':
+                payload = b'{not-json'
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.send_header('Content-Length', str(len(payload)))
@@ -151,8 +154,13 @@ def test_m_installed_connected_shadow_preserves_raw_claim_provenance(tmp_path, m
         grant['environment_digest'] = config['environment_digest']
         monkeypatch.setenv('TYPESAFE_API_KEY', 'synthetic-local-only')
 
-        for label, minimum_calls in (('valid', 2), ('wrong-model', 1)):
-            response_mode['value'] = 'valid' if label == 'valid' else 'wrong'
+        cases = [('valid', 2), ('wrong-model', 1), ('malformed', 1)]
+        if scenario == 'accept':
+            cases.extend((label, 0) for label in
+                         ('fabricated', 'partial', 'request-evidence', 'approval-denied', 'duplicate'))
+        for label, minimum_calls in cases:
+            response_mode['value'] = 'wrong' if label == 'wrong-model' else (
+                'malformed' if label == 'malformed' else 'valid')
             prior_calls = len(calls)
             folder = tmp_path / ('effects-' + label)
             folder.mkdir(mode=0o700)
@@ -173,12 +181,23 @@ def test_m_installed_connected_shadow_preserves_raw_claim_provenance(tmp_path, m
             environment = {'M_CONNECTED_REF': str(reference), 'M_AUTH_PUBKEY_FILE': str(public),
                            'M_EFFECT_DIRECTORY': str(folder), 'M_READY_PATH': str(folder / 'ready.txt'),
                            'M_RELEASE_PATH': str(folder / 'release.txt'), 'M_HOLD': '1',
-                           'M_TASKS': 'two', 'M_CLAIM_SCENARIO': 'accept', 'M_APPROVAL': '1',
+                           'M_TASKS': 'two', 'M_CLAIM_SCENARIO': scenario, 'M_APPROVAL': '1',
                            'SSL_CERT_FILE': str(cert)}
+            denied = label in ('fabricated', 'partial', 'request-evidence', 'approval-denied', 'duplicate')
+            if label in ('fabricated', 'partial'):
+                environment['M_CLAIM_SCENARIO'] = label
+            elif label == 'request-evidence':
+                environment['M_CLAIM_SCENARIO'] = 'request_evidence'
+            elif label == 'approval-denied':
+                environment['M_APPROVAL'] = '0'
+            elif label == 'duplicate':
+                environment['M_TASKS'] = 'duplicate'
+            if denied:
+                environment['M_HOLD'] = '0'
             common = dict(trusted_install_receipt_sha256=receipt['receipt_sha256'],
                           trusted_package_receipt_sha256=package_receipt['receipt_sha256'],
                           installed_binding=report, trusted_binding_sha256=report['binding_sha256'],
-                          observation=_observation(folder), host_profile='claim-m-v1')
+                          observation=_observation(folder, revised=scenario == 'revise'), host_profile='claim-m-v1')
             if label == 'valid':
                 for wrong in ({k: v for k, v in environment.items() if k != 'M_CONNECTED_REF'},
                               {**environment, 'M_TASKS': 'unbounded'},
@@ -195,8 +214,23 @@ def test_m_installed_connected_shadow_preserves_raw_claim_provenance(tmp_path, m
             sessions.append((session, plan))
             launch = _scope(created, plan, 'launch')
             launch_connected_session(session, scope=launch, approved_scope_sha256=launch['scope_sha256'])
+            if denied:
+                deadline = time.monotonic() + 20
+                while connected_session_status(session)['process_alive'] and time.monotonic() < deadline:
+                    time.sleep(.05)
+                status = connected_session_status(session)
+                assert not status['process_alive']
+                for task in ('claim-one', 'claim-two'):
+                    for member in ('support.json', 'audit.json', 'claim.json'):
+                        assert not (folder / task / member).exists()
+                assert not status['independent_checks']['outcome_verified']
+                assert 0 <= len(calls) - prior_calls <= 2
+                stop = _scope(status, plan, 'stop')
+                assert stop_connected_session(session, scope=stop,
+                    approved_scope_sha256=stop['scope_sha256'])['stage'] == 'stopped'
+                continue
             _wait(folder / 'ready.txt', b'ready\n')
-            for member, raw in zip(('support.json', 'audit.json', 'claim.json'), _expected('claim-one')):
+            for member, raw in zip(('support.json', 'audit.json', 'claim.json'), _expected('claim-one', revised=scenario == 'revise')):
                 _wait(folder / 'claim-one' / member, raw)
             status = connected_session_status(session)
             assert status['process_alive']
@@ -208,7 +242,7 @@ def test_m_installed_connected_shadow_preserves_raw_claim_provenance(tmp_path, m
             assert minimum_calls <= len(calls) - prior_calls <= 2
             assert calls[-1]['path'] == '/v1/systemone'
             (folder / 'release.txt').write_bytes(b'go\n')
-            for member, raw in zip(('support.json', 'audit.json', 'claim.json'), _expected('claim-two')):
+            for member, raw in zip(('support.json', 'audit.json', 'claim.json'), _expected('claim-two', revised=scenario == 'revise')):
                 _wait(folder / 'claim-two' / member, raw)
             assert connected_session_status(session)['independent_checks']['outcome_verified']
             deadline = time.monotonic() + 20

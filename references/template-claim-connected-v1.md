@@ -43,6 +43,14 @@ uncertain failures for reconciliation; never rerun a partial claim trio.
 `tests/test_use_case_claim_connected.py` is the installed qualification driver;
 it uses a local TLS synthetic protocol endpoint and a separate grant issuer.
 The consumer and the expected raw effect oracle are separate. Source matching,
+The qualification schedule includes accepted and revised claims, wrong-model
+and malformed responses, fabricated and partial citations, requests for more
+evidence, denied host approval and duplicate task IDs. Every rejected claim
+must leave support, audit and claim files absent. Public-key signatures use
+the exact hashed PEM snapshot through an owned file descriptor, including a
+foreign-key path-replacement negative. These rows remain pending until the
+fresh installed qualification completes.
+Source matching,
 installed-host execution, external provider connectivity and measured benefit
 are distinct evidence levels. This new component is pending final installed
 qualification, independent review and CI until those actual runs complete.
