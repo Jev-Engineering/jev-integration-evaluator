@@ -207,6 +207,7 @@ def validate(check_manifest=False):
                  'references/retrieval-template-connected-v1.md',
                  'references/graph-template-connected-v1.md',
                  'tests/test_use_case_graph_connected.py',
+                 'tests/test_client_timeout_classification.py',
                  'tests/independent_hosts/graph_connected/connected_authority.py',
                  'tests/test_use_case_retrieval_connected.py',
                  'tests/independent_hosts/retrieval_connected/connected_authority.py',

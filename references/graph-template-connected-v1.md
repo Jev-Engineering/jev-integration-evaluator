@@ -36,6 +36,14 @@ missing credential/reference, wrong scope key, reference/source drift, denied
 approval and revision conflict fail closed. The fixture uses model
 `jev-1.13.0`. Revoking the owner-private reference after the first committed
 effect retains that raw effect and blocks the second task before provider I/O.
+An additional authored schedule sends malformed JSON and delayed local TLS
+responses. The connected host audit retains only fixed `assessment_error`
+classifications (`JSONDecodeError` or `EvaluationTimeoutError`) in owner-private
+JSONL; the test checks those events, both raw SQLite effects and the two-call
+ledger without accepting provider text. `EvaluationTimeoutError` remains an
+`InputError` subtype, so existing fallback behavior and public error messages
+are preserved. These new fault rows require a fresh installed Linux run before
+they can be called qualified.
 The fixture uses
 a local TypeSafe-shaped TLS server and a dummy credential. Its
 issuer is synthetic; no external JEV provider, spend or benefit is observed.

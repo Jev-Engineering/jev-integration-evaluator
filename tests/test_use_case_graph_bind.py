@@ -94,10 +94,23 @@ def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False
             f'from .{Path(spec["source"]["file"]).stem} import {entry}\n'
             f'from . import {Path(spec["source"]["file"]).stem} as observed_host\n'
             'from . import connected_authority\n'
-            'from pathlib import Path\nimport hashlib\nimport os\nimport time\n'
+            'from pathlib import Path\nimport hashlib\nimport json\nimport os\nimport threading\nimport time\n'
             'class Audit:\n'
-            '    def __init__(self): self.records = []\n'
-            '    def append(self, record): self.records.append(record)\n'
+            '    def __init__(self):\n'
+            '        self.records = []\n'
+            '        self.lock = threading.Lock()\n'
+            '    def append(self, record):\n'
+            '        self.records.append(record)\n'
+            "        if record.get('type') == 'assessment_error' and record.get('error_class') in ('EvaluationTimeoutError', 'JSONDecodeError'):\n"
+            "            folder = Path(os.environ['GRAPH_EFFECT_PATH']).parent\n"
+            "            path = folder / 'failure-events.jsonl'\n"
+            "            raw = (json.dumps({'type': 'assessment_error', 'error_class': record['error_class']}, sort_keys=True) + '\\n').encode()\n"
+            '            with self.lock:\n'
+            '                descriptor = os.open(path, os.O_WRONLY | os.O_APPEND | os.O_CREAT | os.O_NOFOLLOW, 0o600)\n'
+            "                with os.fdopen(descriptor, 'ab') as stream:\n"
+            '                    stream.write(raw)\n'
+            '                    stream.flush()\n'
+            '                    os.fsync(stream.fileno())\n'
             'def limits():\n'
             '    return dict(max_calls_per_task=2, max_cost_per_task=2, '
             'max_total_calls=2, max_total_cost=2, max_in_flight=1, max_tasks=2)\n'

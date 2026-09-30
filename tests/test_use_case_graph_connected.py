@@ -157,6 +157,8 @@ def test_l_source_bound_installed_connected_shadow_graph_sqlite(tmp_path, monkey
             calls.append({'path': self.path, 'sha256': hashlib.sha256(raw).hexdigest()})
             if response_mode['value'] == 'hold_first':
                 release_response.wait(timeout=12)
+            if response_mode['value'] == 'timeout':
+                time.sleep(3)
             answers = {}
             for name, question in request['questions'].items():
                 if question['type'] == 'noul':
@@ -168,14 +170,19 @@ def test_l_source_bound_installed_connected_shadow_graph_sqlite(tmp_path, monkey
                                      'confidence': 1.0,
                                      'probabilities': {label: float(label == choice)
                                                        for label in labels}}
-            model = request['model'] if response_mode['value'] == 'valid' else request['model'] + '-wrong'
-            result = json.dumps({'model': model, 'answers': answers,
-                                 'usage': {'input_tokens': 1, 'output_tokens': 1}}).encode()
+            model = (request['model'] if response_mode['value'] in ('valid', 'malformed', 'timeout')
+                     else request['model'] + '-wrong')
+            result = (b'{not-json' if response_mode['value'] == 'malformed' else
+                      json.dumps({'model': model, 'answers': answers,
+                                  'usage': {'input_tokens': 1, 'output_tokens': 1}}).encode())
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.send_header('Content-Length', str(len(result)))
             self.end_headers()
-            self.wfile.write(result)
+            try:
+                self.wfile.write(result)
+            except (OSError, ssl.SSLError):
+                pass
 
     cert, cert_key = tmp_path / 'loopback.crt', tmp_path / 'loopback.key'
     generated = subprocess.run(['openssl', 'req', '-x509', '-newkey', 'rsa:2048',
@@ -316,6 +323,16 @@ def test_l_source_bound_installed_connected_shadow_graph_sqlite(tmp_path, monkey
                         time.sleep(.02)
                     else:
                         raise AssertionError('first graph shadow reservation did not settle')
+                if mode in ('malformed', 'timeout'):
+                    expected_error = ('JSONDecodeError' if mode == 'malformed'
+                                      else 'EvaluationTimeoutError')
+                    evidence = folder / 'failure-events.jsonl'
+                    deadline = time.monotonic() + 5
+                    while not evidence.is_file() and time.monotonic() < deadline:
+                        time.sleep(.02)
+                    first_events = [json.loads(line) for line in evidence.read_text().splitlines()]
+                    assert first_events == [{'type': 'assessment_error',
+                                             'error_class': expected_error}]
                 original_reference = reference.read_bytes()
                 if mode == 'revoke_ref':
                     reference.write_bytes(original_reference + b'\n')
@@ -343,6 +360,11 @@ def test_l_source_bound_installed_connected_shadow_graph_sqlite(tmp_path, monkey
                     assert connected_session_status(session)['private_references_current']
                 else:
                     _database(folder / 'graph.sqlite', first, second)
+                if mode in ('malformed', 'timeout'):
+                    events = [json.loads(line) for line in
+                              (folder / 'failure-events.jsonl').read_text().splitlines()]
+                    assert events == [{'type': 'assessment_error',
+                                       'error_class': expected_error}] * 2
                 assert len(calls) - prior_calls == (1 if mode in ('hold_first', 'revoke_ref') else 2)
                 assert calls[-1]['path'] == '/v1/systemone'
                 snapshot = _ledger(ledger)
@@ -359,10 +381,16 @@ def test_l_source_bound_installed_connected_shadow_graph_sqlite(tmp_path, monkey
 
         valid, valid_status = one_run('valid')
         wrong, wrong_status = one_run('wrong-model', mode='wrong_model')
+        malformed, _ = one_run('malformed-response', mode='malformed')
+        timed_out, _ = one_run('actual-timeout', mode='timeout')
         held, _ = one_run('inflight-budget', mode='hold_first')
         revoked, _ = one_run('revoked-reference', mode='revoke_ref')
         assert (valid / 'first.json').read_bytes() == (wrong / 'first.json').read_bytes()
         assert (valid / 'second.json').read_bytes() == (wrong / 'second.json').read_bytes()
+        assert (valid / 'first.json').read_bytes() == (malformed / 'first.json').read_bytes()
+        assert (valid / 'second.json').read_bytes() == (malformed / 'second.json').read_bytes()
+        assert (valid / 'first.json').read_bytes() == (timed_out / 'first.json').read_bytes()
+        assert (valid / 'second.json').read_bytes() == (timed_out / 'second.json').read_bytes()
         assert (valid / 'first.json').read_bytes() == (revoked / 'first.json').read_bytes()
         assert not (revoked / 'second.json').exists()
         assert valid_status['run_id'] != wrong_status['run_id']

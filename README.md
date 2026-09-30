@@ -124,7 +124,8 @@ provider modes and benefit remain pending.
 
 The separate [L installed synthetic graph shadow protocol](references/graph-template-connected-v1.md)
 checks two host-owned SQLite task effects through the same reviewed L source
-binding. The separate
+binding. Its added malformed-response and actual-timeout schedule awaits fresh
+installed qualification. The separate
 [D installed synthetic shadow protocol](references/retrieval-template-connected-v1.md)
 checks an offline local TLS fixture through the same reviewed D source binding.
 External provider operation, connected upgrade and measured benefit remain pending.
