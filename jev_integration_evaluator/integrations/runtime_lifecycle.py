@@ -93,12 +93,15 @@ class HostRuntimeLifecycle:
         if startup_mode not in ('off', 'shadow', 'canary', 'active'):
             raise LifecycleError('activation_requires_separate_reviewed_runtime')
         connected = connected_config is not None
+        installed_binding = (connected_config.get('installed_binding')
+                             if type(connected_config) is dict else None)
         if connected and startup_mode == 'off':
             raise LifecycleError('connected_off_mode_not_supported')
         if connected and (type(connected_config) is not dict or
-                set(connected_config) != {'endpoint', 'credential_ref', 'model',
+                set(connected_config) != ({'endpoint', 'credential_ref', 'model',
                                           'environment_digest', 'source_root',
-                                          'source_plan', 'source_bindings'} or
+                                          'source_plan', 'source_bindings'} |
+                                         ({'installed_binding'} if installed_binding is not None else set())) or
                 connected_config['credential_ref'] != 'env:TYPESAFE_API_KEY' or
                 type(connected_config['model']) is not str or
                 connected_config['model'] not in SUPPORTED_CONNECTED_MODELS or
@@ -117,6 +120,18 @@ class HostRuntimeLifecycle:
         check_dependency_plan(dependency_plan)
         if connected:
             check_dependency_plan(connected_config['source_plan'])
+            if installed_binding is not None:
+                from ..contracts import validate_contract
+                try:
+                    validate_contract(installed_binding, 'connected-installed-binding-v1')
+                    if (digest({key: value for key, value in installed_binding.items()
+                                if key != 'binding_sha256'}) != installed_binding['binding_sha256']
+                            or connected_config['source_plan'] != installed_binding['source_plan']
+                            or connected_config['source_root'] != installed_binding['site']
+                            or verify_authority('installed_binding', installed_binding['binding_sha256']) is not True):
+                        raise LifecycleError('connected_installed_binding_unverified')
+                except (InputError, KeyError, TypeError, ValueError):
+                    raise LifecycleError('connected_installed_binding_unverified') from None
             root = Path(connected_config['source_root'])
             if (not root.is_absolute() or not root.is_dir() or
                     any(part.is_symlink() for part in (root, *root.parents))):
@@ -140,21 +155,44 @@ class HostRuntimeLifecycle:
                     raise LifecycleError('connected_source_binding_missing')
                 adapter_relative = bound['adapter_path']
                 origin = getattr(adapter, '__file__', None)
-                if origin is None or Path(origin).resolve() != (root / adapter_relative).resolve():
-                    raise LifecycleError('connected_source_binding_mismatch')
-                if (spec.get('output', {}).get('module') is not None and
-                        adapter_relative != spec['output']['module']):
-                    raise LifecycleError('connected_source_binding_mismatch')
-                for relative in (source_relative, adapter_relative):
-                    candidate = root / relative
-                    if (Path(relative).is_absolute() or '..' in Path(relative).parts
-                            or candidate.resolve() not in covered
-                            or not candidate.resolve().is_relative_to(root)):
-                        raise LifecycleError('connected_source_binding_missing')
-                if (bound['reviewed_file_sha256'] != spec['source'].get('file_sha256')
-                        or bound['applied_file_sha256'] != covered[(root / source_relative).resolve()]
-                        or bound['adapter_sha256'] != covered[(root / adapter_relative).resolve()]):
-                    raise LifecycleError('connected_source_binding_mismatch')
+                if installed_binding is not None:
+                    origins = installed_binding['origins']
+                    if (installed_binding['candidate_id'] != name
+                            or installed_binding['source_file'] != source_relative
+                            or installed_binding['reviewed_file_sha256'] != spec['source'].get('file_sha256')
+                            or installed_binding['applied_file_sha256'] != bound['applied_file_sha256']
+                            or adapter_relative != origins['adapter']['wheel_member']
+                            or origin is None or Path(origin).resolve() != Path(origins['adapter']['path'])
+                            or bound['adapter_sha256'] != origins['adapter']['sha256']
+                            or bound['reviewed_file_sha256'] != installed_binding['reviewed_file_sha256']
+                            or covered.get(Path(origins['host']['path'])) != origins['host']['sha256']
+                            or covered.get(Path(origins['adapter']['path'])) != origins['adapter']['sha256']
+                            or covered.get(Path(origins['console']['path'])) != origins['console']['sha256']
+                            or covered.get(Path(installed_binding['reviewed_project_path'])) !=
+                               installed_binding['reviewed_project_sha256']):
+                        raise LifecycleError('connected_source_binding_mismatch')
+                    if ('loader' in origins and covered.get(Path(origins['loader']['path'])) !=
+                            origins['loader']['sha256']):
+                        raise LifecycleError('connected_source_binding_mismatch')
+                    if any(not Path(row['path']).resolve().is_relative_to(root)
+                           for role, row in origins.items()):
+                        raise LifecycleError('connected_source_binding_mismatch')
+                else:
+                    if origin is None or Path(origin).resolve() != (root / adapter_relative).resolve():
+                        raise LifecycleError('connected_source_binding_mismatch')
+                    if (spec.get('output', {}).get('module') is not None and
+                            adapter_relative != spec['output']['module']):
+                        raise LifecycleError('connected_source_binding_mismatch')
+                    for relative in (source_relative, adapter_relative):
+                        candidate = root / relative
+                        if (Path(relative).is_absolute() or '..' in Path(relative).parts
+                                or candidate.resolve() not in covered
+                                or not candidate.resolve().is_relative_to(root)):
+                            raise LifecycleError('connected_source_binding_missing')
+                    if (bound['reviewed_file_sha256'] != spec['source'].get('file_sha256')
+                            or bound['applied_file_sha256'] != covered[(root / source_relative).resolve()]
+                            or bound['adapter_sha256'] != covered[(root / adapter_relative).resolve()]):
+                        raise LifecycleError('connected_source_binding_mismatch')
             try:
                 if current_environment_digest() != connected_config['environment_digest']:
                     raise LifecycleError('connected_environment_drift')
@@ -168,13 +206,15 @@ class HostRuntimeLifecycle:
                     or type(authority['egress_grant']) is not dict):
                 raise LifecycleError('connected_egress_authority_required')
             grant = authority['egress_grant']
+            source_identity = {'root': str(root), 'plan': connected_config['source_plan'],
+                               'bindings': connected_config['source_bindings']}
+            if installed_binding is not None:
+                source_identity['installed_binding_sha256'] = installed_binding['binding_sha256']
             expected_grant = {'endpoint': connected_config['endpoint'],
                               'credential_ref': connected_config['credential_ref'],
                               'model': connected_config['model'],
                               'environment_digest': connected_config['environment_digest'],
-                              'source_digest': digest({'root': str(root),
-                                                       'plan': connected_config['source_plan'],
-                                                       'bindings': connected_config['source_bindings']}),
+                              'source_digest': digest(source_identity),
                               'dependency_digest': digest(dependency_plan),
                               'budget_digest': digest(budget_limits),
                               'adapters_digest': digest({k: digest(v.SPEC) for k, v in adapters.items()}),
@@ -304,6 +344,8 @@ class HostRuntimeLifecycle:
         self._connected_config_digest = digest(connected_config) if connected else None
         self._dependency_plan = copy.deepcopy(dependency_plan)
         self._source_plan = copy.deepcopy(connected_config['source_plan']) if connected else None
+        self._installed_binding_digest = (installed_binding['binding_sha256']
+                                          if installed_binding is not None else None)
         self._grant_digest = digest(authority['egress_grant']) if connected else None
         self._grant_expires = authority['egress_grant']['expires_at'] if connected else None
         self._deployment_expires = (authority['activation']['evidence']['deployment_grant']['expires_at']
@@ -477,6 +519,9 @@ class HostRuntimeLifecycle:
                     raise LifecycleError('connected_adapter_contract_changed')
                 if self._current_environment_digest() != self._expected_environment_digest:
                     raise LifecycleError('connected_environment_drift')
+                if (self._installed_binding_digest is not None and
+                        self._verify_authority('installed_binding', self._installed_binding_digest) is not True):
+                    raise LifecycleError('connected_installed_binding_revoked')
         except Exception:
             self.coordinator.suspend()
             self._effective_mode = 'off'

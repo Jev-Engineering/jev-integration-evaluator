@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "kind", "run_id", "plan_sha256", "stage", "pending", "launch_attempts", "process", "failures"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "connected-delivery-session-v1"},
+    "run_id": {"type": "string", "format": "uuid"},
+    "plan_sha256": {"$ref": "#/$defs/sha"},
+    "stage": {"enum": ["installed", "launch_pending", "launched", "running", "stop_pending", "blocked_recovery", "stopped"]},
+    "pending": {"enum": [null, "launch", "stop"]},
+    "launch_attempts": {"type": "integer", "minimum": 0, "maximum": 1},
+    "process": {"anyOf": [{"type": "null"}, {"type": "object", "additionalProperties": false,
+      "required": ["pid", "boot_id", "start_ticks"],
+      "properties": {"pid": {"type": "integer", "minimum": 1},
+                     "boot_id": {"type": "string", "minLength": 1},
+                     "start_ticks": {"type": "string", "minLength": 1}}}]},
+    "failures": {"type": "array", "maxItems": 16, "items": {"type": "string", "maxLength": 128}}
+  },
+  "$defs": {"sha": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+}

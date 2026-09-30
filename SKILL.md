@@ -45,6 +45,8 @@ For a source-matched, semantically reviewed opportunity, consult `implementation
 
 For independently reviewed method, async, or fixed-positional Python tail calls in a declared regular package, read `references/python-adaptation-runtime-v1.md`. A generated adapter uses one #52 host lifecycle for off or offline synthetic shadow only. Its bootstrap, legacy one-source adaptation, final adapter revision and fresh adapted-source review have separate exact receipts and rollback ownership; they are not a `template package` implementation receipt. Connected async, canary and active remain unsupported.
 
+For the separately reviewed Alpha 1.0.2 fixture, an additive [installed binding](references/connected-installed-binding-v1.md) maps source to wheel RECORD and installed origins. Its [connected shadow delivery](references/connected-delivery-v1.md) uses a host-owned private options loader, authenticated exact egress grants, a durable ledger and a separate one-attempt supervisor. Package/install remain off. Offline normal-console tests do not establish provider reachability or measured benefit. Canary and active await observed raw gates and independently authenticated receipts.
+
 For two to four compatible reviewed placements in one unchanged source snapshot,
 use the separate `implement-composite-*` transaction described in
 `references/composite-transactions-v1.md`. Its exact selected graph, final edits,

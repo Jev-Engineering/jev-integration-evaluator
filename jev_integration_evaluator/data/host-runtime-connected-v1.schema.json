@@ -31,6 +31,41 @@
       "required": ["reviewed_file_sha256", "applied_file_sha256", "adapter_path", "adapter_sha256"],
       "additionalProperties": false
     },
+    "installed_origin": {
+      "type": "object", "properties": {
+        "path": {"$ref": "#/$defs/nonempty"},
+        "sha256": {"$ref": "#/$defs/sha"},
+        "wheel_member": {"$ref": "#/$defs/nonempty"}},
+      "required": ["path", "sha256", "wheel_member"], "additionalProperties": false
+    },
+    "installed_binding": {
+      "type": "object", "properties": {
+        "schema_version": {"const": "1.0"},
+        "kind": {"const": "connected-installed-binding-v1"},
+        "candidate_id": {"$ref": "#/$defs/nonempty"},
+        "source_file": {"$ref": "#/$defs/nonempty"},
+        "reviewed_file_sha256": {"$ref": "#/$defs/sha"},
+        "applied_file_sha256": {"$ref": "#/$defs/sha"},
+        "package_plan_sha256": {"$ref": "#/$defs/sha"},
+        "package_receipt_sha256": {"$ref": "#/$defs/sha"},
+        "install_plan_sha256": {"$ref": "#/$defs/sha"},
+        "install_receipt_sha256": {"$ref": "#/$defs/sha"},
+        "wheel_sha256": {"$ref": "#/$defs/sha"},
+        "installed_files_sha256": {"$ref": "#/$defs/sha"},
+        "site": {"$ref": "#/$defs/nonempty"},
+        "origins": {"type": "object", "properties": {
+          "host": {"$ref": "#/$defs/installed_origin"},
+          "adapter": {"$ref": "#/$defs/installed_origin"},
+          "console": {"$ref": "#/$defs/installed_origin"},
+          "loader": {"$ref": "#/$defs/installed_origin"}},
+          "required": ["host", "adapter", "console"], "additionalProperties": false},
+        "reviewed_project_path": {"$ref": "#/$defs/nonempty"},
+        "reviewed_project_sha256": {"$ref": "#/$defs/sha"},
+        "source_plan": {"$ref": "#/$defs/plan"},
+        "binding_sha256": {"$ref": "#/$defs/sha"}},
+      "required": ["schema_version", "kind", "candidate_id", "source_file", "reviewed_file_sha256", "applied_file_sha256", "package_plan_sha256", "package_receipt_sha256", "install_plan_sha256", "install_receipt_sha256", "wheel_sha256", "installed_files_sha256", "site", "origins", "reviewed_project_path", "reviewed_project_sha256", "source_plan", "binding_sha256"],
+      "additionalProperties": false
+    },
     "config": {
       "type": "object", "properties": {
         "endpoint": {"type": "string", "pattern": "^https://[^?#]+$"},
@@ -40,7 +75,8 @@
         "source_root": {"$ref": "#/$defs/nonempty"},
         "source_plan": {"$ref": "#/$defs/plan"},
         "source_bindings": {"type": "object", "minProperties": 1,
-          "additionalProperties": {"$ref": "#/$defs/source_binding"}}
+          "additionalProperties": {"$ref": "#/$defs/source_binding"}},
+        "installed_binding": {"$ref": "#/$defs/installed_binding"}
       },
       "required": ["endpoint", "credential_ref", "model", "environment_digest", "source_root", "source_plan", "source_bindings"],
       "additionalProperties": false

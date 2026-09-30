@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "kind", "run_id", "plan_sha256", "session_head_sha256", "stage", "pending", "launch_attempts", "process_alive", "independent_checks", "failure_history", "installed_sources_current", "private_references_current", "evidence_type", "requested_mode", "provider_reachable", "observed_benefit"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "connected-delivery-result-v1"},
+    "run_id": {"type": "string", "format": "uuid"},
+    "plan_sha256": {"$ref": "#/$defs/sha"},
+    "session_head_sha256": {"$ref": "#/$defs/sha"},
+    "stage": {"enum": ["installed", "launch_pending", "launched", "running", "stop_pending", "blocked_recovery", "stopped"]},
+    "pending": {"enum": [null, "launch", "stop"]},
+    "launch_attempts": {"type": "integer", "minimum": 0, "maximum": 1},
+    "process_alive": {"type": "boolean"},
+    "independent_checks": {"type": "object", "additionalProperties": false,
+      "required": ["ready", "entrypoint_reached", "integration_reachable", "outcome_verified"],
+      "properties": {"ready": {"type": "boolean"}, "entrypoint_reached": {"type": "boolean"},
+                     "integration_reachable": {"type": "boolean"}, "outcome_verified": {"type": "boolean"}}},
+    "failure_history": {"type": "array", "maxItems": 16, "items": {"type": "string", "maxLength": 128}},
+    "installed_sources_current": {"type": "boolean"},
+    "private_references_current": {"type": "boolean"},
+    "evidence_type": {"const": "offline_protocol"},
+    "requested_mode": {"const": "shadow"},
+    "provider_reachable": {"type": "null"},
+    "observed_benefit": {"type": "null"}
+  },
+  "$defs": {"sha": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+}

@@ -39,6 +39,13 @@ Every new host requires a fresh source review and binding. The Python recipe
 catalog's `implemented_bounded_shape` is a transform capability for a narrow
 shape, not an installed use-case qualification.
 
+The matrix also pins an `independent_host_checkpoints` entry for the separate
+Alpha 1.0.2 fixture. Its [installed connected shadow protocol](connected-delivery-v1.md)
+uses reviewed source, wheel RECORD, a normal installed console and a durable
+ledger with a code-owned hard gate closed. This does not promote the C
+`examples/coding-agent/agent.py` row: that row has a different source contract.
+Provider reachability, canary, active and benefit remain unobserved or pending.
+
 | Case | Recipe and source contract | Offline oracle | Apply/install/launch/provider | Benefit |
 | --- | --- | --- | --- | --- |
 | C registered tool | `python.C@1.0`; [coding-agent dispatch](../examples/coding-agent/agent.py), [#48](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/48) | Existing registered-action and at-most-once dispatch tests; complete installed journey is [#57](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/57) | Pending | Unknown |
