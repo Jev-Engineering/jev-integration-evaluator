@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Read-only use-case template coverage matrix v1",
   "type": "object", "additionalProperties": false,
-  "required": ["schema_version", "scope", "host", "rows"],
+  "required": ["schema_version", "scope", "host", "independent_host_checkpoints", "rows"],
   "properties": {
     "schema_version": {"const": "1.0"},
     "scope": {"const": "offline_source_contracts_and_partial_l_d_e_m_h_installed"},
@@ -16,9 +16,27 @@
         "project_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
       }
     },
+    "independent_host_checkpoints": {"type": "array", "minItems": 1, "maxItems": 1,
+      "items": {"type": "object", "additionalProperties": false,
+        "required": ["kind", "root", "host_sha256", "console_sha256", "loader_sha256", "project_sha256", "installed_execution", "provider", "canary", "active", "benefit", "separate_from_use_case_c"],
+        "properties": {
+          "kind": {"const": "registered-alpha-connected-shadow-v1"},
+          "root": {"const": "tests/independent_hosts/registered_alpha_connected"},
+          "host_sha256": {"$ref": "#/$defs/sha"},
+          "console_sha256": {"$ref": "#/$defs/sha"},
+          "loader_sha256": {"$ref": "#/$defs/sha"},
+          "project_sha256": {"$ref": "#/$defs/sha"},
+          "installed_execution": {"const": "qualified_offline_connected_shadow_startup_protocol"},
+          "provider": {"const": "unobserved"},
+          "canary": {"const": "pending_observed_gate"},
+          "active": {"const": "pending_observed_gate"},
+          "benefit": {"const": "unknown"},
+          "separate_from_use_case_c": {"const": true}
+        }}},
     "rows": {"type": "array", "minItems": 6, "maxItems": 6, "items": {"$ref": "#/$defs/row"}}
   },
   "$defs": {
+    "sha": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
     "row": {
       "type": "object", "additionalProperties": false,
       "allOf": [

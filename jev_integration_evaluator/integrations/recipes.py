@@ -462,6 +462,10 @@ def _host_lifecycle(names, binding, adapter_alias, candidate_id, runtime_files, 
     marker = host_lifecycle_marker(names, binding, candidate_id)
     expected = {row['file']: hashlib.sha256(row['new_content'].encode('utf-8')).hexdigest()
                 for row in runtime_files}
+    project_sha = next((sha for rel, sha in connected_sources.items()
+                        if Path(rel).name == 'pyproject.toml'), None)
+    console_sha = next((sha for rel, sha in connected_sources.items()
+                        if Path(rel).name != 'pyproject.toml'), None)
     return f'''
 {marker} = None
 {marker}_started = False
@@ -491,11 +495,21 @@ def {names['startup']}(*, budget_limits, audit_log, dependency_plan, client=None
                    for row in dependency_plan['files'])):
         raise LifecycleError('reviewed_dependency_plan_mismatch')
     if connected_config is not None:
-        required_sources = {{str((Path(__file__).resolve().parent / rel).resolve()): sha
-                            for rel, sha in {connected_sources!r}.items()}}
         if (type(connected_config) is not dict
                 or type(connected_config.get('source_plan')) is not dict
                 or type(connected_config['source_plan'].get('files')) is not list):
+            raise LifecycleError('connected_entrypoint_source_plan_missing')
+        installed = connected_config.get('installed_binding')
+        if installed is None:
+            required_sources = {{str((Path(__file__).resolve().parent / rel).resolve()): sha
+                                for rel, sha in {connected_sources!r}.items()}}
+        elif (type(installed) is dict and type(installed.get('origins')) is dict
+                and type(installed['origins'].get('console')) is dict
+                and installed['origins']['console'].get('sha256') == {console_sha!r}
+                and installed.get('reviewed_project_sha256') == {project_sha!r}):
+            required_sources = {{installed['origins']['console']['path']: {console_sha!r},
+                                installed['reviewed_project_path']: {project_sha!r}}}
+        else:
             raise LifecycleError('connected_entrypoint_source_plan_missing')
         covered_sources = {{row['path']: row['sha256']
                            for row in connected_config['source_plan']['files']

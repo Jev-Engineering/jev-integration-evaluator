@@ -7,6 +7,22 @@
     "project": "examples/use-case-host/pyproject.toml",
     "project_sha256": "01a9eaeb37869a796a5660e77d4bf4e88fa6bbbcd127bf35a0c53c0f4b9a8fb0"
   },
+  "independent_host_checkpoints": [
+    {
+      "kind": "registered-alpha-connected-shadow-v1",
+      "root": "tests/independent_hosts/registered_alpha_connected",
+      "host_sha256": "097d23c5ce68b53c59038fb8ac195744d8ab9adafa2bdf1ce1939ed91a67d4e5",
+      "console_sha256": "19f152bfa720de7ab3baa9c6db24c000f9058904bec741a3a5f19fc8dd08f7c7",
+      "loader_sha256": "da82b6ea432a108fbb6788a5532bcb881a993003d84748d5dab6da3034353a75",
+      "project_sha256": "0f1663c62c614bb5053fbcc0175760889391326bd56f808f02ecd8babea0ef17",
+      "installed_execution": "qualified_offline_connected_shadow_startup_protocol",
+      "provider": "unobserved",
+      "canary": "pending_observed_gate",
+      "active": "pending_observed_gate",
+      "benefit": "unknown",
+      "separate_from_use_case_c": true
+    }
+  ],
   "rows": [
     {
       "id": "C",

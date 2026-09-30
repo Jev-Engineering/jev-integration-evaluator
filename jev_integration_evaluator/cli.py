@@ -181,6 +181,11 @@ def parser():
     s.add_argument('--plan',required=True)
     s=template_sub.add_parser('install-plan',help='Plan an owned offline environment from a built wheel')
     s.add_argument('--package-plan',required=True); s.add_argument('--package-receipt',required=True); s.add_argument('--out',required=True)
+    s=template_sub.add_parser('connected-installed-bind',help='Derive a read-only source-to-installed binding from anchored receipts')
+    s.add_argument('--package-plan',required=True); s.add_argument('--package-receipt',required=True)
+    s.add_argument('--install-plan',required=True); s.add_argument('--install-receipt',required=True)
+    s.add_argument('--trusted-package-receipt-sha256',required=True)
+    s.add_argument('--trusted-install-receipt-sha256',required=True); s.add_argument('--out',required=True)
     for action in ('install','install-status','install-recover'):
         s=template_sub.add_parser(action,help='Install, inspect, or explicitly recover one owned environment')
         s.add_argument('--plan',required=True)
@@ -193,6 +198,23 @@ def parser():
     s.add_argument('--install-plan',required=True); s.add_argument('--trusted-install-receipt-sha256',required=True)
     s.add_argument('--observation',required=True); s.add_argument('--launch-environment')
     s.add_argument('--out',required=True)
+    s=template_sub.add_parser('connected-plan',help='Bind an installed Alpha console to exact connected shadow references')
+    s.add_argument('--install-plan',required=True); s.add_argument('--trusted-install-receipt-sha256',required=True)
+    s.add_argument('--trusted-package-receipt-sha256',required=True)
+    s.add_argument('--installed-binding',required=True); s.add_argument('--trusted-binding-sha256',required=True)
+    s.add_argument('--observation',required=True); s.add_argument('--launch-environment',required=True)
+    s.add_argument('--out',required=True)
+    s=template_sub.add_parser('connected-configure',help='Create one private connected shadow session from an exact plan')
+    s.add_argument('--session',required=True); s.add_argument('--plan',required=True)
+    s.add_argument('--approve-plan-sha256',required=True)
+    for action in ('connected-launch','connected-stop'):
+        s=template_sub.add_parser(action,help='Apply one exact expiring connected session scope')
+        s.add_argument('--session',required=True); s.add_argument('--scope',required=True)
+        s.add_argument('--approve-scope-sha256',required=True)
+    for action in ('connected-resume','connected-status'):
+        s=template_sub.add_parser(action,help='Reconcile or inspect the exact connected session without replay')
+        s.add_argument('--session',required=True)
+        s.add_argument('--trusted-session-head',required=action=='connected-resume')
     s=template_sub.add_parser('journey-create',help='Start one source-to-runtime delivery run before source application')
     s.add_argument('--session',required=True); s.add_argument('--source-root',required=True)
     s.add_argument('--bundle',required=True); s.add_argument('--source-kind',choices=['single','composite'],default='single')
@@ -326,6 +348,45 @@ def execute(args):
             return materialize_template(args.repo,request,args.out,tooling_dir=args.tooling)
         if args.template_action=='bind':
             return bind_template(args.repo,read_json(args.request),read_json(args.binding),args.out)
+        if args.template_action=='connected-installed-bind':
+            from .template_connected_binding import derive_installed_binding
+            from .template_installation import write_plan_exclusive
+            package_plan=read_json(args.package_plan)
+            report=derive_installed_binding(package_plan,read_json(args.package_receipt),
+                read_json(args.install_plan),read_json(args.install_receipt),
+                trusted_package_receipt_sha256=args.trusted_package_receipt_sha256,
+                trusted_install_receipt_sha256=args.trusted_install_receipt_sha256)
+            write_plan_exclusive(args.out,report,host_root=package_plan['request']['host_root'])
+            return report
+        if args.template_action.startswith('connected-'):
+            from .template_connected_delivery import (
+                plan_connected_delivery, create_connected_session, launch_connected_session,
+                resume_connected_session, connected_session_status, stop_connected_session)
+            action=args.template_action
+            if action=='connected-plan':
+                result=plan_connected_delivery(read_json(args.install_plan),
+                    trusted_install_receipt_sha256=args.trusted_install_receipt_sha256,
+                    trusted_package_receipt_sha256=args.trusted_package_receipt_sha256,
+                    installed_binding=read_json(args.installed_binding),
+                    trusted_binding_sha256=args.trusted_binding_sha256,
+                    observation=read_json(args.observation),
+                    launch_environment=read_json(args.launch_environment))
+                from .template_installation import write_plan_exclusive
+                write_plan_exclusive(args.out,result,
+                    host_root=result['off_provenance']['install_plan']['package_plan']['request']['host_root'])
+                return result
+            if action=='connected-configure':
+                return create_connected_session(args.session,read_json(args.plan),
+                    approved_plan_sha256=args.approve_plan_sha256)
+            if action=='connected-launch':
+                return launch_connected_session(args.session,scope=read_json(args.scope),
+                    approved_scope_sha256=args.approve_scope_sha256)
+            if action=='connected-stop':
+                return stop_connected_session(args.session,scope=read_json(args.scope),
+                    approved_scope_sha256=args.approve_scope_sha256)
+            if action=='connected-resume':
+                return resume_connected_session(args.session,trusted_session_head=args.trusted_session_head)
+            return connected_session_status(args.session,trusted_session_head=args.trusted_session_head)
         if args.template_action.startswith('node-'):
             from .template_node_installation import (
                 plan_node_package, build_node_package, package_status as node_package_status,

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "kind", "run_id", "plan_sha256", "public_key_sha256", "trusted_session_head", "action", "expires_at", "scope_sha256"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "connected-delivery-scope-v1"},
+    "run_id": {"type": "string", "format": "uuid"},
+    "plan_sha256": {"$ref": "#/$defs/sha"},
+    "public_key_sha256": {"$ref": "#/$defs/sha"},
+    "trusted_session_head": {"$ref": "#/$defs/sha"},
+    "action": {"enum": ["launch", "stop"]},
+    "expires_at": {"type": "string", "format": "date-time"},
+    "scope_sha256": {"$ref": "#/$defs/sha"}
+  },
+  "$defs": {"sha": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+}

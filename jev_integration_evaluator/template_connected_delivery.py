@@ -1,0 +1,371 @@
+"""Separate, durable installed connected-shadow supervisor for an owned Linux console.
+
+Package/install provenance remains off. No model output grants launch authority.
+This supervisor records intent before releasing a child and never replays a
+possibly executed console command after an uncertain outcome.
+"""
+from __future__ import annotations
+
+from contextlib import contextmanager
+from datetime import datetime, timezone
+import copy
+import json
+import os
+from pathlib import Path
+import signal
+import stat
+import subprocess
+import sys
+import time
+import uuid
+
+from .contracts import parse_utc, validate_contract
+from .io import InputError, canonical, digest, file_hash, read_json
+from .template_connected_binding import derive_installed_binding
+from . import template_delivery as offline
+
+
+class ConnectedDeliveryError(InputError):
+    """Fixed diagnostic; no reference or credential content is included."""
+
+
+def _private_file(path: Path, maximum: int) -> None:
+    offline._owned_file(path, maximum=maximum)
+
+
+def _check_reference(path: str) -> None:
+    target = Path(path)
+    if (not target.is_absolute() or any(part.is_symlink() for part in (target, *target.parents))
+            or not target.is_file()):
+        raise ConnectedDeliveryError('connected_private_reference_invalid')
+    _private_file(target, 256_000)
+    offline._private(target.parent)
+
+
+def plan_connected_delivery(install_plan: dict, *, trusted_install_receipt_sha256: str,
+                            trusted_package_receipt_sha256: str,
+                            installed_binding: dict, trusted_binding_sha256: str,
+                            observation: dict, launch_environment: dict[str, str],
+                            requested_mode: str = 'shadow') -> dict:
+    """Bind exact installed bytes and externally authored shadow observations."""
+    offline._linux_profile()
+    if requested_mode != 'shadow':
+        raise ConnectedDeliveryError('connected_mode_requires_observed_gate')
+    references = {'REGISTERED_ALPHA_CONNECTED_REF', 'REGISTERED_ALPHA_AUTH_PUBKEY_FILE'}
+    allowed = references | {'REGISTERED_ALPHA_PERMIT', 'REGISTERED_ALPHA_AUDIT',
+                            'REGISTERED_ALPHA_EFFECTS', 'REGISTERED_ALPHA_TASK_ID',
+                            'REGISTERED_ALPHA_HOLD', 'REGISTERED_ALPHA_READY',
+                            'REGISTERED_ALPHA_RELEASE', 'SSL_CERT_FILE'}
+    if (type(launch_environment) is not dict or not references <= set(launch_environment)
+            or not set(launch_environment) <= allowed
+            or launch_environment.get('REGISTERED_ALPHA_PERMIT', '0') not in ('0', '1')
+            or launch_environment.get('REGISTERED_ALPHA_HOLD', '0') not in ('0', '1')):
+        raise ConnectedDeliveryError('connected_host_references_required')
+    if 'SSL_CERT_FILE' in launch_environment:
+        _check_reference(launch_environment['SSL_CERT_FILE'])
+    for name in references:
+        _check_reference(launch_environment[name])
+    base = offline.plan_delivery(install_plan,
+        trusted_install_receipt_sha256=trusted_install_receipt_sha256,
+        observation=observation, launch_environment=launch_environment)
+    if {row['role'] for row in observation['checks']} != {
+            'ready', 'entrypoint_reached', 'integration_reachable', 'outcome_verified'}:
+        raise ConnectedDeliveryError('connected_independent_outcome_schedule_required')
+    receipt = offline._receipt(install_plan, trusted_install_receipt_sha256)
+    actual = derive_installed_binding(install_plan['package_plan'],
+        install_plan['package_receipt'], install_plan, receipt,
+        trusted_package_receipt_sha256=trusted_package_receipt_sha256,
+        trusted_install_receipt_sha256=trusted_install_receipt_sha256)
+    if (actual != installed_binding or actual['binding_sha256'] != trusted_binding_sha256
+            or 'loader' not in actual['origins']):
+        raise ConnectedDeliveryError('connected_installed_binding_unverified')
+    plan = {'schema_version': '1.0', 'kind': 'connected-delivery-plan-v1',
+            'off_provenance': base, 'installed_binding': actual,
+            'trusted_binding_sha256': trusted_binding_sha256,
+            'trusted_package_receipt_sha256': trusted_package_receipt_sha256,
+            'reference_sha256': {name: file_hash(Path(launch_environment[name]))
+                                 for name in sorted(references | ({'SSL_CERT_FILE'}
+                                 if 'SSL_CERT_FILE' in launch_environment else set()))},
+            'requested_mode': requested_mode,
+            'provider_reachable': None, 'runtime_activation_authorized': False}
+    plan['plan_sha256'] = digest(plan)
+    validate_contract(plan, 'connected-delivery-plan-v1')
+    return plan
+
+
+def _check_plan(plan: dict) -> None:
+    validate_contract(plan, 'connected-delivery-plan-v1')
+    if digest({k: v for k, v in plan.items() if k != 'plan_sha256'}) != plan['plan_sha256']:
+        raise ConnectedDeliveryError('connected_plan_digest_changed')
+    base = plan['off_provenance']
+    actual = plan_connected_delivery(base['install_plan'],
+        trusted_install_receipt_sha256=base['trusted_install_receipt_sha256'],
+        trusted_package_receipt_sha256=plan['trusted_package_receipt_sha256'],
+        installed_binding=plan['installed_binding'],
+        trusted_binding_sha256=plan['trusted_binding_sha256'],
+        observation=base['observation'], launch_environment=base['launch_environment'],
+        requested_mode=plan['requested_mode'])
+    if actual != plan:
+        raise ConnectedDeliveryError('connected_plan_or_reference_drift')
+    for name in plan['reference_sha256']:
+        if file_hash(Path(base['launch_environment'][name])) != plan['reference_sha256'][name]:
+            raise ConnectedDeliveryError('connected_reference_changed')
+
+
+def _write_exclusive(path: Path, value: bytes) -> None:
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+    try:
+        os.write(fd, value)
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+
+
+@contextmanager
+def _locked(target: Path):
+    import fcntl
+    lock = target / 'session.lock'
+    _private_file(lock, 64)
+    fd = os.open(lock, os.O_RDWR | os.O_NOFOLLOW)
+    try:
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            raise ConnectedDeliveryError('connected_session_owned_by_another_controller') from None
+        yield
+    finally:
+        os.close(fd)
+
+
+def _event(target: Path, previous: list[dict], event: str, state: dict) -> str:
+    validate_contract(state, 'connected-delivery-session-v1')
+    body = {'sequence': len(previous), 'event': event,
+            'previous_sha256': previous[-1]['record_sha256'] if previous else None,
+            'state': copy.deepcopy(state)}
+    body['record_sha256'] = digest(body)
+    stream = target / 'events.jsonl'
+    fd = os.open(stream, os.O_WRONLY | os.O_APPEND | os.O_NOFOLLOW)
+    try:
+        os.write(fd, canonical(body) + b'\n')
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+    previous.append(body)
+    return body['record_sha256']
+
+
+def _open(directory: str | Path) -> tuple[Path, list[dict], dict, dict]:
+    target = offline._safe_directory(directory, exists=True)
+    offline._private(target)
+    _private_file(target / 'plan.json', 4_000_000)
+    _private_file(target / 'events.jsonl', 4_000_000)
+    plan = read_json(target / 'plan.json')
+    validate_contract(plan, 'connected-delivery-plan-v1')
+    if digest({k: v for k, v in plan.items() if k != 'plan_sha256'}) != plan['plan_sha256']:
+        raise ConnectedDeliveryError('connected_session_plan_changed')
+    rows = []
+    with (target / 'events.jsonl').open('rb') as stream:
+        for raw in stream:
+            if len(rows) >= 128 or len(raw) > 1_000_000:
+                raise ConnectedDeliveryError('connected_journal_bound_exceeded')
+            row = json.loads(raw)
+            if (type(row) is not dict or set(row) !=
+                    {'sequence', 'event', 'previous_sha256', 'state', 'record_sha256'}
+                    or row['sequence'] != len(rows)
+                    or row['previous_sha256'] != (rows[-1]['record_sha256'] if rows else None)
+                    or row['record_sha256'] != digest({k: v for k, v in row.items()
+                                                        if k != 'record_sha256'})):
+                raise ConnectedDeliveryError('connected_journal_changed')
+            validate_contract(row['state'], 'connected-delivery-session-v1')
+            rows.append(row)
+    if not rows or rows[-1]['state']['plan_sha256'] != plan['plan_sha256']:
+        raise ConnectedDeliveryError('connected_session_plan_changed')
+    return target, rows, copy.deepcopy(rows[-1]['state']), plan
+
+
+def create_connected_session(directory: str | Path, plan: dict,
+                             *, approved_plan_sha256: str) -> dict:
+    offline._linux_profile()
+    _check_plan(plan)
+    if plan['plan_sha256'] != approved_plan_sha256:
+        raise ConnectedDeliveryError('exact_connected_plan_approval_required')
+    target = offline._safe_directory(directory, exists=False)
+    offline._private(target.parent)
+    target.mkdir(mode=0o700)
+    _write_exclusive(target / 'session.lock', b'')
+    _write_exclusive(target / 'plan.json', canonical(plan) + b'\n')
+    _write_exclusive(target / 'events.jsonl', b'')
+    state = {'schema_version': '1.0', 'kind': 'connected-delivery-session-v1',
+             'run_id': str(uuid.uuid4()), 'plan_sha256': plan['plan_sha256'],
+             'stage': 'installed', 'pending': None, 'launch_attempts': 0,
+             'process': None, 'failures': []}
+    rows = []
+    head = _event(target, rows, 'created', state)
+    return _result(state, head, plan)
+
+
+def _authority(scope: dict, approved_scope_sha256: str, head: str,
+               state: dict, plan: dict, action: str) -> None:
+    validate_contract(scope, 'connected-delivery-scope-v1')
+    if (scope['scope_sha256'] != approved_scope_sha256
+            or scope['scope_sha256'] != digest({k: v for k, v in scope.items()
+                                                if k != 'scope_sha256'})
+            or scope['run_id'] != state['run_id']
+            or scope['plan_sha256'] != state['plan_sha256']
+            or scope['public_key_sha256'] != plan['reference_sha256']['REGISTERED_ALPHA_AUTH_PUBKEY_FILE']
+            or scope['trusted_session_head'] != head
+            or scope['action'] != action
+            or parse_utc(scope['expires_at']) <= datetime.now(timezone.utc)):
+        raise ConnectedDeliveryError('exact_expiring_connected_scope_required')
+
+
+def launch_connected_session(directory: str | Path, *, scope: dict,
+                             approved_scope_sha256: str) -> dict:
+    offline._linux_profile()
+    target = offline._safe_directory(directory, exists=True)
+    with _locked(target):
+        _, rows, state, plan = _open(target)
+        _authority(scope, approved_scope_sha256, rows[-1]['record_sha256'], state, plan, 'launch')
+        if state['pending'] or state['launch_attempts'] or state['stage'] != 'installed':
+            raise ConnectedDeliveryError('connected_launch_already_attempted')
+        _check_plan(plan)
+        if not os.environ.get('TYPESAFE_API_KEY'):
+            raise ConnectedDeliveryError('connected_credential_unavailable')
+        base = plan['off_provenance']
+        for row in base['observation']['checks']:
+            if offline._probe_hash(Path(row['path'])) != row['before_sha256']:
+                raise ConnectedDeliveryError('connected_observation_baseline_changed')
+        state['launch_attempts'] = 1
+        state['stage'], state['pending'] = 'launch_pending', 'launch'
+        _event(target, rows, 'launch_pending', state)
+        read_fd, write_fd = os.pipe()
+        try:
+            env = dict(base['launch_environment'])
+            env.update({'PATH': str(Path(base['environment']) / 'venv/bin'),
+                        'PYTHONNOUSERSITE': '1',
+                        'TYPESAFE_API_KEY': os.environ['TYPESAFE_API_KEY'],
+                        'REGISTERED_ALPHA_CONNECTED_REF_SHA256':
+                            plan['reference_sha256']['REGISTERED_ALPHA_CONNECTED_REF'],
+                        'REGISTERED_ALPHA_AUTH_PUBKEY_SHA256':
+                            plan['reference_sha256']['REGISTERED_ALPHA_AUTH_PUBKEY_FILE']})
+            child = subprocess.Popen([sys.executable, '-I', '-c', offline._HELPER,
+                                      str(read_fd), base['console_script'], base['environment']],
+                                     pass_fds=(read_fd,), stdin=subprocess.DEVNULL,
+                                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                                     close_fds=True, start_new_session=True, env=env,
+                                     cwd=base['environment'])
+            os.close(read_fd); read_fd = -1
+            start = None
+            for _ in range(100):
+                info = offline._process_info(child.pid)
+                if info is not None:
+                    start = info[0]
+                    break
+                time.sleep(0.001)
+            if start is None:
+                raise ConnectedDeliveryError('connected_child_identity_unavailable')
+            state['process'] = {'pid': child.pid, 'boot_id': offline._boot_id(),
+                                'start_ticks': start}
+            state['stage'] = 'launched'
+            _event(target, rows, 'launched', state)
+            os.write(write_fd, b'G')
+        finally:
+            if read_fd != -1:
+                os.close(read_fd)
+            os.close(write_fd)
+        state['stage'], state['pending'] = 'running', None
+        head = _event(target, rows, 'running', state)
+        return _result(state, head, plan)
+
+
+def resume_connected_session(directory: str | Path, *, trusted_session_head: str) -> dict:
+    target = offline._safe_directory(directory, exists=True)
+    with _locked(target):
+        _, rows, state, plan = _open(target)
+        if trusted_session_head != rows[-1]['record_sha256']:
+            raise ConnectedDeliveryError('externally_retained_connected_head_required')
+        if state['pending'] == 'launch':
+            if state['process'] is not None and offline._execed_console(
+                    state['process'], plan['off_provenance']['console_script']):
+                state['stage'], state['pending'] = 'running', None
+                head = _event(target, rows, 'running', state)
+                return _result(state, head, plan)
+            state['stage'], state['pending'] = 'blocked_recovery', None
+            state['failures'].append('launch_effect_unknown')
+            head = _event(target, rows, 'blocked_recovery', state)
+            return _result(state, head, plan)
+        if state['pending'] == 'stop' and not offline._process_alive(state['process']):
+            state['stage'], state['pending'] = 'stopped', None
+            head = _event(target, rows, 'stopped', state)
+            return _result(state, head, plan)
+        return _result(state, rows[-1]['record_sha256'], plan)
+
+
+def stop_connected_session(directory: str | Path, *, scope: dict,
+                           approved_scope_sha256: str) -> dict:
+    offline._linux_profile()
+    target = offline._safe_directory(directory, exists=True)
+    with _locked(target):
+        _, rows, state, plan = _open(target)
+        _authority(scope, approved_scope_sha256, rows[-1]['record_sha256'], state, plan, 'stop')
+        if state['process'] is None or state['pending'] not in (None, 'stop'):
+            raise ConnectedDeliveryError('connected_stop_requires_known_process')
+        if state['pending'] is None:
+            state['stage'], state['pending'] = 'stop_pending', 'stop'
+            _event(target, rows, 'stop_pending', state)
+        if offline._process_alive(state['process']):
+            offline._signal_owned(state['process'], signal.SIGTERM)
+            deadline = time.monotonic() + 1.0
+            while offline._process_alive(state['process']) and time.monotonic() < deadline:
+                time.sleep(0.02)
+        if offline._process_alive(state['process']):
+            return _result(state, rows[-1]['record_sha256'], plan)
+        state['stage'], state['pending'] = 'stopped', None
+        head = _event(target, rows, 'stopped', state)
+        return _result(state, head, plan)
+
+
+def connected_session_status(directory: str | Path, *, trusted_session_head: str | None = None) -> dict:
+    target, rows, state, plan = _open(directory)
+    if trusted_session_head is not None and trusted_session_head != rows[-1]['record_sha256']:
+        raise ConnectedDeliveryError('externally_retained_connected_head_required')
+    return _result(state, rows[-1]['record_sha256'], plan)
+
+
+def _result(state: dict, head: str, plan: dict) -> dict:
+    base = plan['off_provenance']
+    checks = {row['role']: offline._probe_hash(Path(row['path'])) == row['expected_sha256']
+              for row in base['observation']['checks']}
+    def current(path: str, expected: str, *, private: bool = False,
+                origin: bool = False) -> bool:
+        try:
+            target = Path(path)
+            if private:
+                _check_reference(path)
+            if origin:
+                info = target.stat()
+                if (info.st_uid != os.geteuid() or info.st_nlink != 1
+                        or stat.S_IMODE(info.st_mode) & 0o022):
+                    return False
+            return target.is_file() and not target.is_symlink() and file_hash(target) == expected
+        except (OSError, InputError):
+            return False
+    origin_paths = {row['path'] for row in plan['installed_binding']['origins'].values()}
+    sources_current = all(current(row['path'], row['sha256'],
+                                  origin=row['path'] in origin_paths)
+                          for row in plan['installed_binding']['source_plan']['files'])
+    references_current = all(current(base['launch_environment'][name], expected, private=True)
+                             for name, expected in plan['reference_sha256'].items())
+    result = {'schema_version': '1.0', 'kind': 'connected-delivery-result-v1',
+            'run_id': state['run_id'], 'plan_sha256': state['plan_sha256'],
+            'session_head_sha256': head, 'stage': state['stage'],
+            'pending': state['pending'], 'launch_attempts': state['launch_attempts'],
+            'process_alive': offline._process_alive(state['process']),
+            'independent_checks': checks, 'failure_history': list(state['failures']),
+            'installed_sources_current': sources_current,
+            'private_references_current': references_current,
+            'evidence_type': 'offline_protocol',
+            'requested_mode': 'shadow', 'provider_reachable': None,
+            'observed_benefit': None}
+    validate_contract(result, 'connected-delivery-result-v1')
+    return result
