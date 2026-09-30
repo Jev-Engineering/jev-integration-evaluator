@@ -95,6 +95,9 @@ class HostRuntimeLifecycle:
         connected = connected_config is not None
         installed_binding = (connected_config.get('installed_binding')
                              if type(connected_config) is dict else None)
+        windows_installed = (type(installed_binding) is dict and
+                             installed_binding.get('kind') ==
+                             'windows-connected-installed-binding-v1')
         if connected and startup_mode == 'off':
             raise LifecycleError('connected_off_mode_not_supported')
         if connected and (type(connected_config) is not dict or
@@ -125,8 +128,11 @@ class HostRuntimeLifecycle:
                 try:
                     binding_kind = installed_binding['kind']
                     if binding_kind not in ('connected-installed-binding-v1',
-                                            'connected-installed-composite-binding-v1'):
+                                            'connected-installed-composite-binding-v1',
+                                            'windows-connected-installed-binding-v1'):
                         raise LifecycleError('connected_installed_binding_unverified')
+                    if windows_installed and os.name != 'nt':
+                        raise LifecycleError('connected_installed_binding_platform')
                     validate_contract(installed_binding, binding_kind)
                     if (digest({key: value for key, value in installed_binding.items()
                                 if key != 'binding_sha256'}) != installed_binding['binding_sha256']
@@ -387,6 +393,10 @@ class HostRuntimeLifecycle:
                   for origin in placement['origins'].values())))
         else:
             self._installed_origin_paths = tuple(row['path'] for row in installed_binding['origins'].values())
+        self._windows_installed_origins = (
+            tuple(installed_binding['origins'].values()) +
+            (installed_binding['reviewed_project'], installed_binding['installed_record'])
+            if windows_installed else ())
         self._grant_digest = digest(authority['egress_grant']) if connected else None
         self._grant_expires = authority['egress_grant']['expires_at'] if connected else None
         self._deployment_expires = (authority['activation']['evidence']['deployment_grant']['expires_at']
@@ -556,13 +566,18 @@ class HostRuntimeLifecycle:
             if self._source_plan is not None:
                 check_dependency_plan(self._source_plan)
                 if self._installed_binding_digest is not None:
-                    for path in self._installed_origin_paths:
-                        source = Path(path)
-                        info = source.stat()
-                        if (source.is_symlink() or not stat.S_ISREG(info.st_mode)
-                                or info.st_uid != os.geteuid() or info.st_nlink != 1
-                                or stat.S_IMODE(info.st_mode) & 0o022):
+                    if self._windows_installed_origins:
+                        from ..windows_template_connected_binding import current_origin
+                        if any(not current_origin(row) for row in self._windows_installed_origins):
                             raise LifecycleError('connected_installed_origin_changed')
+                    else:
+                        for path in self._installed_origin_paths:
+                            source = Path(path)
+                            info = source.stat()
+                            if (source.is_symlink() or not stat.S_ISREG(info.st_mode)
+                                    or info.st_uid != os.geteuid() or info.st_nlink != 1
+                                    or stat.S_IMODE(info.st_mode) & 0o022):
+                                raise LifecycleError('connected_installed_origin_changed')
                 if any(digest(self._adapters[name].SPEC) != wanted
                        for name, wanted in self._adapter_digests.items()):
                     raise LifecycleError('connected_adapter_contract_changed')

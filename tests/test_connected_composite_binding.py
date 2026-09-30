@@ -73,7 +73,8 @@ def test_dual_connected_matrix_retains_distinct_source_and_pending_gates():
     checkpoints = use_case_matrix()['independent_host_checkpoints']
     assert [row['kind'] for row in checkpoints] == [
         'registered-alpha-connected-shadow-v1',
-        'registered-dual-connected-shadow-v1']
+        'registered-dual-connected-shadow-v1',
+        'registered-alpha-connected-windows-shadow-v1']
     dual = checkpoints[1]
     root = Path(__file__).resolve().parents[1] / dual['root']
     for row in dual['placements'].values():

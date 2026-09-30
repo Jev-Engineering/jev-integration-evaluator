@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "kind", "run_id", "session_sha256", "identity_sha256", "role", "path", "expected_sha256", "observed_sha256", "job_assigned_count", "job_members", "status", "observation_sha256"],
+  "properties": {
+    "schema_version": {"const": "1.0"}, "kind": {"const": "windows-connected-observation-v1"},
+    "run_id": {"type": "string", "format": "uuid"},
+    "session_sha256": {"$ref": "#/$defs/sha"}, "identity_sha256": {"$ref": "#/$defs/sha"},
+    "role": {"enum": ["ready", "entrypoint_reached", "integration_reachable", "outcome_verified"]},
+    "path": {"type": "string", "minLength": 1},
+    "expected_sha256": {"$ref": "#/$defs/sha"}, "observed_sha256": {"$ref": "#/$defs/sha"},
+    "job_assigned_count": {"type": ["integer", "null"], "minimum": 0},
+    "job_members": {"type": "array", "maxItems": 64,
+      "items": {"type": "object", "additionalProperties": false,
+        "required": ["pid", "created_filetime", "image"],
+        "properties": {"pid": {"type": "integer", "minimum": 1},
+                       "created_filetime": {"type": "integer", "minimum": 1},
+                       "image": {"type": "string", "minLength": 1}}}},
+    "status": {"enum": ["matched", "mismatched"]},
+    "observation_sha256": {"$ref": "#/$defs/sha"}
+  },
+  "$defs": {"sha": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+}

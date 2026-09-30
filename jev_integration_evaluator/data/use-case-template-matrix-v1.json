@@ -40,6 +40,20 @@
       "rollback": "pending_connected_rollback",
       "benefit": "unknown",
       "separate_from_use_case_c": true
+    },
+    {
+      "kind": "registered-alpha-connected-windows-shadow-v1",
+      "root": "tests/independent_hosts/registered_alpha_connected_windows",
+      "host_sha256": "7be4d35ea059cfb1956ced38780a80e3f26dfa99078f31aa1b10063cc7a71996",
+      "console_sha256": "fdf0ee37ba29d03f4ef9220fc6624d97ce195eb9c327e66a2015826895be4aa8",
+      "loader_sha256": "c6a95ea87626f09e45ddd76de45f6d6b4b57cba86ac1fa772984d0ed5bb57139",
+      "project_sha256": "3a363259dac73f0adf1ff1e8c7b0f1e204440f329f13d91e7ebbbcf4f2af85b0",
+      "installed_execution": "pending_native_windows_connected_shadow_qualification",
+      "provider": "unobserved",
+      "canary": "pending_observed_gate",
+      "active": "pending_observed_gate",
+      "benefit": "unknown",
+      "separate_from_use_case_c": true
     }
   ],
   "rows": [
@@ -88,8 +102,8 @@
       "source_sha256": "6484f40eee708ddd805bfd4f36128be89ca0aa4c1eb6ea132dedb4d4a61dac0c",
       "consumer_adapter": "examples/use-case-host/graph_runtime.py",
       "consumer_adapter_sha256": "e4ab3d68724042d7559cf06f54d9e59f9438a9329ab64a18eefc1ecd60cbe9e0",
-        "host_consumer": "reconcile / SQLite entity transaction",
-        "host_oracle": "approval, exact entities, revision and audit with independent committed database readback",
+      "host_consumer": "reconcile / SQLite entity transaction",
+      "host_oracle": "approval, exact entities, revision and audit with independent committed database readback",
       "offline_contract": "tested_fixture",
       "installed_execution": "qualified_offline_l_synthetic_host",
       "apply": "qualified_offline_l_synthetic_host",
