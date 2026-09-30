@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import os
+import json
 import struct
 import subprocess
+import sys
 
 import pytest
 
@@ -136,6 +138,106 @@ def test_native_post_replace_failure_restores_owned_original(tmp_path, monkeypat
     assert not list(tmp_path.glob('.jev-source-*'))
 
 
+def test_native_atomic_save_peer_at_vacated_name_is_preserved(tmp_path, monkeypatch):
+    from jev_integration_evaluator import windows_source_mutation as mutation
+
+    source = tmp_path / 'owned.py'
+    source.write_bytes(b'old\n')
+    plan = make_patch_plan(tmp_path, [{'file': source.name,
+                                       'new_content': 'reviewed\n'}], ['native-source'])
+    original_rename = mutation._rename_owned
+    calls = 0
+    def peer_after_owned_backup(fd, destination):
+        nonlocal calls
+        original_rename(fd, destination)
+        calls += 1
+        if calls == 1:
+            # This is a real name-race at the former source path, not a
+            # changed in-place writer blocked by the retained source handle.
+            source.write_bytes(b'peer atomic save\n')
+    monkeypatch.setattr(mutation, '_rename_owned', peer_after_owned_backup)
+    with pytest.raises(InputError, match='windows_source_recovery_required'):
+        apply_patch_plan(tmp_path, plan, plan['plan_digest'])
+    assert source.read_bytes() == b'peer atomic save\n'
+    backups = list(tmp_path.glob('.jev-source-*.backup'))
+    assert len(backups) == 1 and backups[0].read_bytes() == b'old\n'
+
+
+@pytest.mark.parametrize('peer', [False, True])
+def test_native_abrupt_death_reconciles_owned_backup_without_replay(tmp_path, peer):
+    from jev_integration_evaluator import windows_source_mutation as mutation
+
+    source = tmp_path / 'owned.py'
+    source.write_bytes(b'old\n')
+    plan = make_patch_plan(tmp_path, [{'file': source.name,
+                                       'new_content': 'reviewed\n'}], ['native-source'])
+    planfile = tmp_path / 'reviewed-plan.json'
+    planfile.write_text(json.dumps(plan), encoding='utf-8')
+    child = '''import json,os,sys
+from jev_integration_evaluator import windows_source_mutation as m
+from jev_integration_evaluator.implementation import apply_patch_plan
+real=m._rename_owned
+def crash(fd,destination):
+    real(fd,destination)
+    os._exit(71)
+m._rename_owned=crash
+plan=json.loads(open(sys.argv[2],encoding='utf-8').read())
+apply_patch_plan(sys.argv[1],plan,plan['plan_digest'])
+'''
+    result = subprocess.run([sys.executable, '-c', child, str(tmp_path), str(planfile)],
+                            capture_output=True, text=True, timeout=20)
+    assert result.returncode == 71
+    assert not source.exists()
+    intent = mutation._intent_path(source, plan['changes'][0]['old_sha256'],
+                                   plan['changes'][0]['new_sha256'], tmp_path)
+    assert intent.is_file()
+    if peer:
+        source.write_bytes(b'peer atomic save\n')
+        with pytest.raises(InputError, match='windows_source_peer_target_preserved'):
+            apply_patch_plan(tmp_path, plan, plan['plan_digest'])
+        assert source.read_bytes() == b'peer atomic save\n'
+        assert intent.is_file()
+        source.unlink()  # only this disposable test-owned peer
+    with pytest.raises(InputError, match='reconciled; review a new plan'):
+        apply_patch_plan(tmp_path, plan, plan['plan_digest'])
+    assert source.read_bytes() == b'old\n'
+    assert not intent.exists()
+    assert not list(tmp_path.glob('.jev-source-*'))
+
+
+def test_native_committed_intent_death_cleans_backup_without_replay(tmp_path):
+    from jev_integration_evaluator import windows_source_mutation as mutation
+
+    source = tmp_path / 'owned.py'
+    source.write_bytes(b'old\n')
+    plan = make_patch_plan(tmp_path, [{'file': source.name,
+                                       'new_content': 'reviewed\n'}], ['native-source'])
+    planfile = tmp_path / 'reviewed-plan.json'
+    planfile.write_text(json.dumps(plan), encoding='utf-8')
+    child = '''import json,os,sys
+from jev_integration_evaluator import windows_source_mutation as m
+from jev_integration_evaluator.implementation import apply_patch_plan
+real=m._commit_intent
+def crash(*args):
+    real(*args)
+    os._exit(72)
+m._commit_intent=crash
+plan=json.loads(open(sys.argv[2],encoding='utf-8').read())
+apply_patch_plan(sys.argv[1],plan,plan['plan_digest'])
+'''
+    result = subprocess.run([sys.executable, '-c', child, str(tmp_path), str(planfile)],
+                            capture_output=True, text=True, timeout=20)
+    assert result.returncode == 72
+    assert source.read_bytes() == b'reviewed\n'
+    intent = mutation._intent_path(source, plan['changes'][0]['old_sha256'],
+                                   plan['changes'][0]['new_sha256'], tmp_path)
+    assert intent.is_file() and list(tmp_path.glob('.jev-source-*.backup'))
+    with pytest.raises(InputError, match='reconciled; review a new plan'):
+        apply_patch_plan(tmp_path, plan, plan['plan_digest'])
+    assert source.read_bytes() == b'reviewed\n'
+    assert not intent.exists() and not list(tmp_path.glob('.jev-source-*'))
+
+
 def test_native_create_verification_failure_removes_owned_file(tmp_path, monkeypatch):
     from jev_integration_evaluator import windows_source_mutation as mutation
 
@@ -153,6 +255,27 @@ def test_native_create_verification_failure_removes_owned_file(tmp_path, monkeyp
     with pytest.raises(InputError, match='injected_post_create_failure'):
         apply_patch_plan(tmp_path, plan, plan['plan_digest'])
     assert not (tmp_path / 'created.py').exists()
+
+
+def test_native_partial_create_is_deleted_by_exclusive_handle(tmp_path, monkeypatch):
+    import msvcrt
+    from jev_integration_evaluator import windows_source_mutation as mutation
+
+    source = tmp_path / 'created.py'
+    _, source_io = cap._windows_absolute_path(source)
+    real_write = os.write
+    def partial_target_write(fd, data):
+        actual = cap._windows_final_path(msvcrt.get_osfhandle(fd))
+        if cap._windows_same_path(actual, source_io):
+            real_write(fd, data[:3])
+            return 3
+        return real_write(fd, data)
+    monkeypatch.setattr(mutation.os, 'write', partial_target_write)
+    plan = make_patch_plan(tmp_path, [{'file': source.name,
+                                       'new_content': 'value = 1\n'}], ['native-source'])
+    with pytest.raises(InputError, match='windows_source_partial_write'):
+        apply_patch_plan(tmp_path, plan, plan['plan_digest'])
+    assert not source.exists()
 
 
 def test_native_rollback_preserves_concurrent_same_content_replacement(tmp_path):
@@ -185,6 +308,14 @@ def test_native_owned_creation_rolls_back_after_later_failure(tmp_path):
     with pytest.raises(RuntimeError, match='injected_later_failure'):
         apply_patch_plan(tmp_path, plan, plan['plan_digest'], progress=fail_after_write)
     assert not source.exists()
+
+
+def test_native_new_nested_parent_creation_keeps_legacy_plan(tmp_path):
+    source = tmp_path / 'new' / 'nested' / 'created.py'
+    plan = make_patch_plan(tmp_path, [{'file': 'new/nested/created.py',
+                                       'new_content': 'value = 1\n'}], ['native-source'])
+    assert apply_patch_plan(tmp_path, plan, plan['plan_digest'])['status'] == 'applied'
+    assert source.read_bytes() == b'value = 1\n'
 
 
 def test_native_multifile_failure_restores_owned_first_write(tmp_path):
@@ -312,3 +443,42 @@ def test_native_long_path_apply_and_rollback(tmp_path):
     assert source.read_bytes() == b'old\n'
     assert apply_patch_plan(tmp_path, plan, plan['plan_digest'])['status'] == 'applied'
     assert source.read_bytes() == b'new\n'
+
+
+@pytest.mark.parametrize('kind', ['create', 'update'])
+def test_native_real_implementation_rollback_uses_applied_identity(tmp_path, kind):
+    from jev_integration_evaluator.integrations.lifecycle import (
+        apply_implementation, plan_implementation, rollback_implementation)
+    from jev_integration_evaluator.integrations.verification import verify_implementation
+    from jev_integration_evaluator.io import read_json
+    from scripts.implementation_fixtures import fixture
+
+    root, bundle = tmp_path / 'host', tmp_path / 'private-bundle'
+    inventory, spec = fixture(root, 'C')
+    planned = plan_implementation(root, inventory, spec['candidate_id'], spec, bundle)
+    baseline = verify_implementation(root, bundle, 'baseline', approve_execution=True)
+    assert baseline['status'] == 'baseline_passed'
+    applied = apply_implementation(root, bundle, planned['bundle_digest'],
+                                   baseline_sha256=baseline['receipt_sha256'])
+    assert applied['status'] == 'applied_unverified'
+    plan = read_json(bundle / 'implementation-plan.json')
+    row = next(row for row in plan['owned_files']
+               if (row['preimage'] is None) == (kind == 'create'))
+    target = root / row['file']
+    original_bytes = target.read_bytes()
+    original_identity = cap._windows_file_identity(target.stat())
+    saved = tmp_path / 'saved-owned-file'
+    os.rename(target, saved)
+    competitor = tmp_path / 'same-content-peer'
+    competitor.write_bytes(original_bytes)
+    competitor.chmod(row['new_mode'])
+    peer_identity = cap._windows_file_identity(competitor.stat())
+    os.rename(competitor, target)
+    with pytest.raises(InputError, match='changed applied identity'):
+        rollback_implementation(root, bundle, applied['rollback_digest'])
+    assert target.read_bytes() == original_bytes
+    assert cap._windows_file_identity(target.stat()) == peer_identity
+    target.unlink()  # disposable test-owned competing file
+    os.rename(saved, target)
+    assert cap._windows_file_identity(target.stat()) == original_identity
+    assert rollback_implementation(root, bundle, applied['rollback_digest'])['status'] == 'rolled_back'

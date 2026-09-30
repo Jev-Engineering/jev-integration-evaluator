@@ -39,7 +39,8 @@ def make_patch_plan(root: str | Path, changes: list[dict], candidate_ids: list[s
     return body
 
 
-def apply_patch_plan(root: str | Path, plan: dict, approval: str, *, progress=None) -> dict:
+def apply_patch_plan(root: str | Path, plan: dict, approval: str, *, progress=None,
+                     expected_identities: dict | None = None) -> dict:
     if os.name == 'nt':
         from . import capabilities as cap
         try:
@@ -58,6 +59,10 @@ def apply_patch_plan(root: str | Path, plan: dict, approval: str, *, progress=No
         paths.add(path_key)
         p=safe_child(root,c["file"])
         if hashlib.sha256(c["new_content"].encode()).hexdigest()!=c["new_sha256"]: raise InputError("New content hash mismatch")
+        if os.name == 'nt' and c['old_sha256'] is not None:
+            from .windows_source_mutation import reconcile_pending_reviewed_write
+            if reconcile_pending_reviewed_write(p, c['old_sha256'], c['new_sha256'], root):
+                raise InputError('Interrupted owned source write reconciled; review a new plan')
         actual=file_hash(p) if p.exists() else None
         if actual!=c["old_sha256"]: raise InputError("Stale patch: target changed after planning")
         before[c["file"]]=p.read_bytes() if p.exists() else None
@@ -71,11 +76,15 @@ def apply_patch_plan(root: str | Path, plan: dict, approval: str, *, progress=No
             if os.name == 'nt':
                 from .windows_source_mutation import write_reviewed_text
                 owned_identities[c['file']] = write_reviewed_text(
-                    p, c['new_content'], c['old_sha256'])
+                    p, c['new_content'], c['old_sha256'], repository_root=root,
+                    expected_identity=(expected_identities or {}).get(c['file']))
             else:
                 atomic_text(p,c["new_content"])
             written.append(c)
-            if progress is not None: progress("write_completed", c)
+            if progress is not None:
+                completed = ({**c, 'owned_identity': owned_identities[c['file']]}
+                             if os.name == 'nt' else c)
+                progress("write_completed", completed)
     except Exception:
         for c in reversed(written):
             p=safe_child(root,c["file"])
@@ -86,7 +95,8 @@ def apply_patch_plan(root: str | Path, plan: dict, approval: str, *, progress=No
                     remove_owned_created(p, owned_identities[c['file']], c['new_sha256'])
                 else:
                     write_reviewed_text(p, original.decode('utf-8'), c['new_sha256'],
-                                        expected_identity=owned_identities[c['file']])
+                                        expected_identity=owned_identities[c['file']],
+                                        repository_root=root)
                 continue
             if p.exists() and file_hash(p)==c["new_sha256"]:
                 original=before[c["file"]]

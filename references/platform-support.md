@@ -149,3 +149,9 @@ The broader repository-session filesystem, placement selection/conclusion,
 executable integration lifecycle, native isolation runner, provider operations
 and runtime activation retain their separate platform and authorization
 contracts. Windows discovery does not qualify or authorize those operations.
+
+Reviewed source mutation on a supported local NTFS path has an additional
+handle-bound contract described in [Native Windows reviewed source mutation](windows-source-mutation-v1.md).
+Its private recovery intent is stored outside the approved source tree. A
+same-content peer replacement, unknown file identity, or changed ACL refuses
+rollback; Windows symlink and junction coverage requires native runner evidence.
