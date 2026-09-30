@@ -87,6 +87,17 @@ without running another effect command, and rejects use as an anchored install.
 It checks unchanged reviewed source and unrelated fixture bytes. These are
 software fault injections; abrupt process death and power loss remain distinct
 qualification cases. No retained partial install grants launch authority.
+The separate abrupt-death test schedules the same three boundaries in an
+installer child. The parent creates the launcher suspended and assigns it
+to a test-owned Windows Job before resuming its first instruction, including
+any venv redirector descendants. After an independently read checkpoint, the
+parent verifies the actual installer identity and membership, terminates only
+that Job without Python cleanup, then reaps it and checks an empty Job.
+The partial generation must still reject replay and receipt use while source,
+owner, intent and unrelated process/file state remain intact. Failure cleanup
+closes only that Job and the separately owned sentinel. This source describes
+the scheduled test; its native final-revision execution remains pending.
+Abrupt process death does not establish machine power-loss durability.
 
 The installer makes a separate protected NTFS venv generation, installs only
 hash-locked offline wheels, checks dependency closure, wheel RECORD, native
