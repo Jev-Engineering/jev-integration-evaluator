@@ -39,10 +39,42 @@ BINDING = {'version': '1.0', 'script': 'retention-host',
                               'dependency_plan': 'dependencies', 'startup_options': 'options'}}
 
 
-def _bound_host(target: Path) -> tuple[dict, dict, dict]:
-    _, spec, request = _host(target)
+def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False) -> tuple[dict, dict, dict]:
+    _, spec, request = _host(target, version)
     source = target / spec['source']['file']
     entry = spec['verification']['entry_point']
+    if installed:
+        original = source.read_text(encoding='utf-8')
+        marker = "    STATE['kept'] = retention_consumer.commit(request, action)\n"
+        assert original.count(marker) == 1
+        ready = (
+            "    import os\n"
+            "    ready_path = os.environ.get('H_READY_PATH')\n"
+            "    if ready_path:\n"
+            "        from pathlib import Path\n"
+            "        with Path(ready_path).open('x', encoding='utf-8') as stream:\n"
+            "            stream.write('ready\\n')\n"
+            "        import time\n"
+            "        time.sleep(15)\n"
+        )
+        source.write_text(original.replace(marker, marker + ready), encoding='utf-8')
+    requests = (
+        'def make_requests():\n'
+        "    command = os.environ['H_COMMAND']\n"
+        "    base = {'task_id': 'retention-task', 'command': command}\n"
+        "    mode = os.environ.get('H_REQUEST_SCENARIO', 'normal')\n"
+        "    if mode == 'duplicate':\n"
+        "        return [base, dict(base)]\n"
+        "    if mode == 'budget':\n"
+        "        proposed = [base, {**base, 'task_id': 'other-task'}]\n"
+        "        if len(proposed) > limits()['max_tasks']:\n"
+        "            raise ValueError('retention task budget refused')\n"
+        "        return proposed\n"
+        "    return [base]\n"
+    ) if installed else (
+        'def make_requests():\n'
+        "    return [{'task_id': 'retention-task', 'command': os.environ['H_COMMAND']}]\n"
+    )
     console = target / 'retention_host/console.py'
     console.write_text(
         f'from .{source.stem} import {entry}\n'
@@ -57,9 +89,8 @@ def _bound_host(target: Path) -> tuple[dict, dict, dict]:
         'def dependencies():\n'
         '    base = Path(__file__).resolve().parent\n'
         "    return {'files': [{'path': str(base / name), 'sha256': hashlib.sha256((base / name).read_bytes()).hexdigest()} for name in ('requirements.lock', 'runtime.json')]}\n"
-        'def options():\n    return {}\n'
-        'def make_requests():\n'
-        "    return [{'task_id': 'retention-task', 'command': os.environ['H_COMMAND']}]\n"
+        'def options():\n    return {}\n' +
+        requests +
         'def main():\n'
         '    requests = make_requests()\n'
         '    for request in requests:\n'

@@ -42,11 +42,11 @@ shape, not an installed use-case qualification.
 | Case | Recipe and source contract | Offline oracle | Apply/install/launch/provider | Benefit |
 | --- | --- | --- | --- | --- |
 | C registered tool | `python.C@1.0`; [coding-agent dispatch](../examples/coding-agent/agent.py), [#48](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/48) | Existing registered-action and at-most-once dispatch tests; complete installed journey is [#57](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/57) | Pending | Unknown |
-| L graph identity | `python.L@1.0`; [graph fixture](../examples/graph-system/entities.py) and [pinned consumer](../examples/use-case-host/graph_runtime.py), [#44](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/44) | Approval, exact entity snapshot, revision and audit before merge | Offline synthetic L host: separate source-bound #54 bounded-loop console bind/plan/apply/verify/rollback, #55 install, #56 normal-console observation/disable/versioned upgrade/generation rollback; provider pending | Unknown |
-| D retrieval evidence | `python.D@1.0`; [RAG fixture](../examples/rag-system/pipeline.py), [pinned corpus](../examples/use-case-host/retrieval_corpus_v1.json) and [consumer](../examples/use-case-host/retrieval_consumer.py), [#45](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/45) | Passage provenance, missing evidence and material contradiction retention | Offline synthetic D host: separate source-bound #54 bounded-loop console bind/plan/apply/verify/rollback, #55 install, #56 normal-console observation/disable/versioned upgrade/generation rollback; provider pending | Unknown |
+| L graph identity | `python.L@1.0`; [graph fixture](../examples/graph-system/entities.py) and [pinned consumer](../examples/use-case-host/graph_runtime.py), [#44](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/44) | Approval, exact entity snapshot, revision and audit before merge | Offline synthetic L host: source-bound #54 bounded-loop console bind carried through plan/apply/verify/rollback, #55 install and #56 normal-console observation/disable/versioned upgrade/generation rollback; provider pending | Unknown |
+| D retrieval evidence | `python.D@1.0`; [RAG fixture](../examples/rag-system/pipeline.py), [pinned corpus](../examples/use-case-host/retrieval_corpus_v1.json) and [consumer](../examples/use-case-host/retrieval_consumer.py), [#45](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/45) | Passage provenance, missing evidence and material contradiction retention | Offline synthetic D host: source-bound #54 bounded-loop console bind carried through plan/apply/verify/rollback, #55 install and #56 normal-console observation/disable/versioned upgrade/generation rollback; provider pending | Unknown |
 | E completion | `python.E@1.0`; [raw-state oracle](../examples/coding-agent/completion_oracle.py), [#46](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/46) | Raw objective and effect receipts independent of executor success | Offline synthetic E host: source-bound #54 task-loop console bind/plan/apply/verify, #55 install, #56 normal-console observation/disable/versioned upgrade/generation rollback; provider pending | Unknown |
-| M claim support | `python.M@1.0`; [claim reviewer](../examples/rag-system/pipeline.py) and [pinned consumer](../examples/use-case-host/claim_consumer.py), [#47](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/47) | Exact citation spans, critical-claim block and audit before release | Offline synthetic M host: separate source-bound #54 bounded-loop bind and plan/apply/verify/rollback, #55 install, #56 normal-console observation/disable/versioned upgrade/generation rollback; provider pending | Unknown |
-| H retention | `python.H@1.0`; [memory oracle](../examples/coding-agent/retention_oracle.py) and [consumer adapter](../examples/use-case-host/retention_consumer.py), [#49](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/49) | Raw retained-item bytes, pinned provenance, budget and explicit `/prune` | Offline synthetic H host: source-bound #54 bounded-loop console bind/plan/apply/verify and #55 installed normal command; separate #56 observation/disable/versioned upgrade/generation rollback; provider pending | Unknown |
+| M claim support | `python.M@1.0`; [claim reviewer](../examples/rag-system/pipeline.py) and [pinned consumer](../examples/use-case-host/claim_consumer.py), [#47](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/47) | Exact citation spans, critical-claim block and audit before release | Offline synthetic M host: source-bound #54 bounded-loop bind carried through plan/apply/verify/rollback, #55 install and #56 normal-console observation/disable/versioned upgrade/generation rollback; provider pending | Unknown |
+| H retention | `python.H@1.0`; [memory oracle](../examples/coding-agent/retention_oracle.py) and [consumer adapter](../examples/use-case-host/retention_consumer.py), [#49](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/49) | Raw retained-item bytes, pinned provenance, budget and explicit `/prune` | Offline synthetic H host: source-bound #54 bounded-loop console bind carried through plan/apply/verify/rollback, #55 install and #56 normal-console observation/disable/versioned upgrade/generation rollback; provider pending | Unknown |
 
 ## Operator use and binding limits
 
@@ -150,9 +150,16 @@ not model generation or source-truth adjudication. The #55/#56 path installs
 and normally launches the off-mode console, checks the raw withheld-answer
 effect against independently derived corpus expectations, disables, upgrades
 a second reviewed fixture version, and rolls back its owned generation and
-source edits. A separate D binding test checks the reviewed bounded console caller,
-exact source and project hashes, owned edit, rejection on drift or a one-shot
-caller, and source rollback. It does not replace the installed D journey.
+source edits. The [D binder test](../tests/test_use_case_retrieval_bind.py)
+checks the reviewed bounded console caller, exact source and project hashes,
+owned edit, rejection on drift or a one-shot caller, and source rollback. The
+[bound installed journey](../tests/test_use_case_retrieval_bound_installed.py)
+carries that freshly bound caller through the same #54/#55/#56 APIs, checks two
+stable task IDs under one startup, raw conflict-withheld effects from the
+matrix-pinned consumer, duplicate-ID and invalid-budget refusal, disabled
+normal execution, a separately reviewed 1.0.1 generation and retained
+rollback. Invalid-budget refusal is a startup validation check in off mode;
+this test makes no provider reservation or spend claim.
 Provider operation and answer benefit remain pending. See the
 [D operator reference](retrieval-template-offline-v1.md) for exact inputs and
 limits.
@@ -248,8 +255,14 @@ only the Linux x86-64 CPython 3.13 synthetic off-mode H host. A separate
 `template bind` report, owns the exact caller edit and carries it through
 baseline, apply, modified verification and an installed normal console. It
 requires an explicit `/prune` choice and rejects missing choice or `/compact`
-without a retained-state effect. This bound check is not the supervised
-upgrade journey above. Interruption and
+without a retained-state effect. The
+[bound installed H journey](../tests/test_use_case_retention_bound_installed.py)
+carries that reviewed caller through #55 offline install and #56 supervised
+normal launch, independently checks raw retained bytes and pinned provenance,
+refuses duplicate IDs, excess tasks, `/compact`, missing choice and occupied
+effect paths, and exercises reviewed 1.0.1 upgrade, retained-generation
+rollback and both matching owned-source rollbacks. It remains an offline
+synthetic fixture with one successful task ID. Interruption and
 connected/provider operation also remain pending. The
 [H operator reference](retention-template-offline-v1.md) lists exact inputs and
 limits.

@@ -86,12 +86,13 @@ pins six illustrative source contracts and five distinct offline host oracles.
 Its source match is read-only. Separate L graph, D retrieval, E completion, M claim support and H retention synthetic
 hosts have offline source-bound apply/install/supervised normal-console/disable/
 versioned upgrade/rollback journeys. E completion also has a source-bound
-bounded task-loop console bind and owned edit. H retention separately has a
-bounded-loop bind with an explicit `/prune` choice and installed normal command.
+bounded task-loop console bind and owned edit. H retention has a bounded-loop
+bind with an explicit `/prune` choice carried through a separate offline
+installed normal console, supervised upgrade and retained generation rollback.
 M claim support has a source-bound bounded-loop bind and owned console edit
-carried through a separate offline installed claim effect journey. D retrieval also has
-a source-bound bounded-loop bind and owned console edit, separate from its
-installed retrieval effect. L graph identity has a source-bound bounded-loop
+carried through a separate offline installed claim effect journey. D retrieval
+carries its source-bound bounded-loop bind and owned console edit through a
+separate offline installed two-task retrieval journey. L graph identity has a source-bound bounded-loop
 bind and owned console edit carried through a separate offline installed normal
 console journey with independent graph effect and conflict readback.
 Individual provider modes and benefit remain pending. Keep `/prune` and `/compact` as separate
