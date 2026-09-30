@@ -33,7 +33,7 @@ if _spec is None or _spec.loader is None:
 _qualification = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_qualification)
 ROOT = _qualification.ROOT
-FROZEN_REVIEW_SHA256 = '97f1402c1b152a36f03d38fb5fb54f16acbaa3c841c11e030dbb8b407ecda6fa'
+FROZEN_REVIEW_SHA256 = '6c601061db97483454c86dcadba98c18315fab6f54b7b80a354a70ab6f711980'
 FROZEN_ORACLE_SHA256 = '23570482720c6a32ac0480b678458d2ec96b6419f879b5304cca91696a52c77e'
 
 
