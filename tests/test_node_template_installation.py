@@ -333,7 +333,11 @@ def test_real_source_verified_node_install_and_normal_command(tmp_path, format_n
     for _ in range(150):
         observed = node_session.observe_node_session(owned_session,
             trusted_session_head=observed['session_head_sha256'])
-        if observed['observations']['integration_reachable']:
+        # Independent files are read separately: the child can publish ready
+        # after that probe but before the integration probe in the same pass.
+        # Wait for the complete existing schedule before asserting its results.
+        if all(value for name, value in observed['observations'].items()
+               if name != 'outcome_verified'):
             break
         time.sleep(.01)
     assert observed['process_alive']
