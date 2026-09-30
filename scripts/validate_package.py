@@ -378,6 +378,21 @@ def validate(check_manifest=False):
                               'windows-template-run-intent-v1',
                               'windows-template-run-generation-v1',
                               'windows-template-run-selection-v1')]
+    required += ['jev_integration_evaluator/windows_connected_verify.py',
+                 'jev_integration_evaluator/windows_template_connected_binding.py',
+                 'jev_integration_evaluator/windows_template_connected_delivery.py',
+                 'jev_integration_evaluator/windows_template_connected_cli.py',
+                 'tests/test_windows_connected_verify.py',
+                 'tests/test_windows_template_connected.py',
+                 'tests/independent_hosts/registered_alpha_connected_windows/qualification.py',
+                 'references/windows-template-connected-v1.md']
+    required += [f'{directory}/{name}.schema.json'
+                 for directory in ('schemas', 'jev_integration_evaluator/data')
+                 for name in ('windows-connected-installed-binding-v1',
+                              'windows-connected-delivery-plan-v1',
+                              'windows-connected-delivery-scope-v1',
+                              'windows-connected-session-v1',
+                              'windows-connected-observation-v1')]
     for item in required:
         if not (ROOT/item).is_file():raise InputError('Required package file missing: '+item)
     front=(ROOT/'SKILL.md').read_text(encoding='utf-8').split('---',2)

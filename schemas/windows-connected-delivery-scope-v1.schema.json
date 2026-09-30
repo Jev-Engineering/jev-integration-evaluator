@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "kind", "run_id", "plan_sha256", "session_sha256", "public_key_sha256", "action", "expires_at", "scope_sha256", "issuer_signature"],
+  "properties": {
+    "schema_version": {"const": "1.0"}, "kind": {"const": "windows-connected-delivery-scope-v1"},
+    "run_id": {"type": "string", "format": "uuid"},
+    "plan_sha256": {"$ref": "#/$defs/sha"}, "session_sha256": {"$ref": "#/$defs/sha"},
+    "public_key_sha256": {"$ref": "#/$defs/sha"},
+    "action": {"enum": ["launch", "stop"]},
+    "expires_at": {"type": "string", "format": "date-time"},
+    "scope_sha256": {"$ref": "#/$defs/sha"},
+    "issuer_signature": {"type": "string", "minLength": 1, "maxLength": 8192}
+  },
+  "$defs": {"sha": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+}

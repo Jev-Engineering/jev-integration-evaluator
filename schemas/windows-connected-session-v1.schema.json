@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "kind", "run_id", "owned_directory", "plan_sha256", "installed_binding_sha256", "install_plan_sha256", "install_receipt_sha256", "install_environment", "python", "python_sha256", "console_script", "console_script_sha256", "guardian_python", "guardian_python_sha256", "mode", "session_sha256"],
+  "properties": {
+    "schema_version": {"const": "1.0"}, "kind": {"const": "windows-connected-session-v1"},
+    "run_id": {"type": "string", "format": "uuid"},
+    "owned_directory": {"type": "object", "additionalProperties": false,
+      "required": ["path", "volume_id", "file_id", "acl_sha256", "lock_acl_sha256"],
+      "properties": {"path": {"type": "string", "minLength": 1},
+        "volume_id": {"type": "integer", "minimum": 1}, "file_id": {"type": "integer", "minimum": 1},
+        "acl_sha256": {"$ref": "#/$defs/sha"}, "lock_acl_sha256": {"$ref": "#/$defs/sha"}}},
+    "plan_sha256": {"$ref": "#/$defs/sha"},
+    "installed_binding_sha256": {"$ref": "#/$defs/sha"},
+    "install_plan_sha256": {"$ref": "#/$defs/sha"},
+    "install_receipt_sha256": {"$ref": "#/$defs/sha"},
+    "install_environment": {"type": "string", "minLength": 1},
+    "python": {"type": "string", "minLength": 1}, "python_sha256": {"$ref": "#/$defs/sha"},
+    "console_script": {"type": "string", "minLength": 1},
+    "console_script_sha256": {"$ref": "#/$defs/sha"},
+    "guardian_python": {"type": "string", "minLength": 1},
+    "guardian_python_sha256": {"$ref": "#/$defs/sha"},
+    "mode": {"const": "shadow"}, "session_sha256": {"$ref": "#/$defs/sha"}
+  },
+  "$defs": {"sha": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+}

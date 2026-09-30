@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "kind", "candidate_id", "source_file", "reviewed_file_sha256", "applied_file_sha256", "package_plan_sha256", "package_receipt_sha256", "install_plan_sha256", "install_receipt_sha256", "wheel_sha256", "installed_files_sha256", "site", "origins", "reviewed_project", "reviewed_project_path", "reviewed_project_sha256", "installed_record", "source_plan", "binding_sha256"],
+  "properties": {
+    "schema_version": {"const": "1.0"}, "kind": {"const": "windows-connected-installed-binding-v1"},
+    "candidate_id": {"type": "string", "minLength": 1}, "source_file": {"type": "string", "minLength": 1},
+    "reviewed_file_sha256": {"$ref": "#/$defs/sha"}, "applied_file_sha256": {"$ref": "#/$defs/sha"},
+    "package_plan_sha256": {"$ref": "#/$defs/sha"}, "package_receipt_sha256": {"$ref": "#/$defs/sha"},
+    "install_plan_sha256": {"$ref": "#/$defs/sha"}, "install_receipt_sha256": {"$ref": "#/$defs/sha"},
+    "wheel_sha256": {"$ref": "#/$defs/sha"}, "installed_files_sha256": {"$ref": "#/$defs/sha"},
+    "site": {"type": "string", "minLength": 1},
+    "origins": {"type": "object", "additionalProperties": false, "required": ["host", "adapter", "console"],
+      "properties": {"host": {"$ref": "#/$defs/origin"}, "adapter": {"$ref": "#/$defs/origin"},
+                     "console": {"$ref": "#/$defs/origin"}, "loader": {"$ref": "#/$defs/origin"}}},
+    "reviewed_project": {"$ref": "#/$defs/regular"}, "installed_record": {"$ref": "#/$defs/regular"},
+    "reviewed_project_path": {"type": "string", "minLength": 1},
+    "reviewed_project_sha256": {"$ref": "#/$defs/sha"},
+    "source_plan": {"type": "object", "additionalProperties": false, "required": ["files"],
+      "properties": {"files": {"type": "array", "minItems": 4, "maxItems": 5,
+        "items": {"type": "object", "additionalProperties": false, "required": ["path", "sha256"],
+          "properties": {"path": {"type": "string", "minLength": 1}, "sha256": {"$ref": "#/$defs/sha"}}}}}},
+    "binding_sha256": {"$ref": "#/$defs/sha"}
+  },
+  "$defs": {
+    "sha": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "regular": {"type": "object", "additionalProperties": false,
+      "required": ["path", "sha256", "volume_id", "file_id", "acl_sha256"],
+      "properties": {"path": {"type": "string", "minLength": 1}, "sha256": {"$ref": "#/$defs/sha"},
+                     "volume_id": {"type": "integer", "minimum": 1}, "file_id": {"type": "integer", "minimum": 1},
+                     "acl_sha256": {"$ref": "#/$defs/sha"}}},
+    "origin": {"type": "object", "additionalProperties": false,
+      "required": ["path", "sha256", "volume_id", "file_id", "acl_sha256", "wheel_member"],
+      "properties": {"path": {"type": "string", "minLength": 1}, "sha256": {"$ref": "#/$defs/sha"},
+                     "volume_id": {"type": "integer", "minimum": 1}, "file_id": {"type": "integer", "minimum": 1},
+                     "acl_sha256": {"$ref": "#/$defs/sha"}, "wheel_member": {"type": "string", "minLength": 1}}}
+  }
+}

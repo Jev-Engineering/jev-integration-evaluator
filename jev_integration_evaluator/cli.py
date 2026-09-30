@@ -900,6 +900,9 @@ def execute(args):
 
 def main(argv=None):
     supplied=list(sys.argv[1:] if argv is None else argv)
+    if supplied and supplied[0]=='windows-connected':
+        from .windows_template_connected_cli import main as windows_connected_main
+        return windows_connected_main(supplied[1:])
     if supplied and supplied[0]=="repository-discovery":
         # Route before generic argparse so untrusted argument values cannot leak
         # through its diagnostics. The staged CLI owns exclusive private output.
