@@ -152,7 +152,7 @@ def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False
             directory = os.environ.get('H_EFFECT_DIRECTORY')
             if directory:
                 path = Path(directory) / 'timeout-events.jsonl'
-                raw = (json.dumps(dict(type='assessment_error', error_class='EvaluationTimeoutError'), sort_keys=True) + '\n').encode()
+                raw = (json.dumps(dict(type='assessment_error', error_class='EvaluationTimeoutError'), sort_keys=True) + '\\n').encode()
                 with self.lock:
                     descriptor = os.open(path, os.O_WRONLY | os.O_APPEND | os.O_CREAT | os.O_NOFOLLOW, 0o600)
                     with os.fdopen(descriptor, 'ab') as stream:
