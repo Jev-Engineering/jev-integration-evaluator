@@ -84,6 +84,11 @@ and distinct raw effects through supervised upgrade and retained rollback.
 The CommonJS fixture also resumes an interrupted upgrade selection.
 Separate installed evaluator CLI checks package, install and supervise each
 format under exact digest approvals and independent off-mode effect files.
+The [installed connected owner protocol](references/template-node-connected-v1.md)
+binds an installed off generation to a separate private descriptor, host
+authenticated grants, typed JEV client, and durable single-owner ledger.
+Only offline shadow protocol fixtures are qualified; live provider and
+observed canary/active outcomes remain pending.
 It does not extend the Python #56 supervisor or grant connected authority.
 
 The [issue #59 use-case matrix](references/use-case-template-matrix-v1.md)

@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 from .config import load_config
 from . import __version__
-from .io import InputError, atomic_text, read_json, read_jsonl, write_json
+from .io import InputError, atomic_text, digest, read_json, read_jsonl, write_json
 
 
 def _records(path):
@@ -263,6 +263,25 @@ def parser():
     s.add_argument('--plan',required=True); s.add_argument('--approve-plan-sha256',required=True)
     s=template_sub.add_parser('node-install-status',help='Inspect a Node generation without installing or launching')
     s.add_argument('--plan',required=True); s.add_argument('--trusted-receipt-sha256')
+    s=template_sub.add_parser('node-connected-core',help='Prepare private exact installed scope for separate connected authority')
+    s.add_argument('--request',required=True); s.add_argument('--out',required=True)
+    s=template_sub.add_parser('node-connected-plan',help='Bind exact connected grants and raw observed gates without launch')
+    s.add_argument('--request',required=True); s.add_argument('--out',required=True)
+    s=template_sub.add_parser('node-connected-status',help='Recheck a connected descriptor and external anchor without launch')
+    s.add_argument('--request',required=True); s.add_argument('--descriptor',required=True)
+    s.add_argument('--trusted-descriptor-sha256',required=True)
+    s=template_sub.add_parser('node-connected-session-create',help='Create one private connected Node session')
+    s.add_argument('--session',required=True); s.add_argument('--request',required=True)
+    s.add_argument('--descriptor',required=True); s.add_argument('--trusted-descriptor-sha256',required=True)
+    s.add_argument('--observation',required=True); s.add_argument('--launch-environment',required=True)
+    for action in ('node-connected-session-launch', 'node-connected-session-stop',
+                   'node-connected-session-disable'):
+        s=template_sub.add_parser(action,help='Perform one exact connected session action')
+        s.add_argument('--session',required=True); s.add_argument('--scope',required=True)
+        s.add_argument('--approve-scope-sha256',required=True)
+    for action in ('node-connected-session-observe', 'node-connected-session-resume'):
+        s=template_sub.add_parser(action,help='Inspect or reconcile an owned connected session')
+        s.add_argument('--session',required=True); s.add_argument('--trusted-session-head',required=True)
     s=template_sub.add_parser('node-session-create',help='Create an owned unlaunched Node session')
     s.add_argument('--session',required=True); s.add_argument('--descriptor',required=True)
     for action in ('node-launch','node-stop','node-disable','node-upgrade','node-rollback'):
@@ -411,6 +430,45 @@ def execute(args):
                 return install_node_package(read_json(args.plan),approved_plan_sha256=args.approve_plan_sha256)
             if action=='node-install-status':
                 return node_install_status(read_json(args.plan),trusted_receipt_sha256=args.trusted_receipt_sha256)
+            if action in ('node-connected-core', 'node-connected-plan', 'node-connected-status'):
+                from .template_node_connected import (inspect_connected_core,
+                    plan_node_connected, connected_status)
+                request=read_json(args.request)
+                if action=='node-connected-status':
+                    return connected_status(request,read_json(args.descriptor),
+                        trusted_descriptor_sha256=args.trusted_descriptor_sha256)
+                if action=='node-connected-core':
+                    core, _, _ = inspect_connected_core(request)
+                    write_plan_exclusive(args.out,core,
+                        host_root=request['install_plan']['package_plan']['request']['host_root'])
+                    return {'status':'scope_prepared', 'core_sha256':digest(core)}
+                result=plan_node_connected(request)
+                write_plan_exclusive(args.out,result,
+                    host_root=request['install_plan']['package_plan']['request']['host_root'])
+                return {'status':'connected_bound_unlaunched',
+                        'descriptor_sha256':result['descriptor_sha256'], 'mode':result['mode']}
+            if action.startswith('node-connected-session-'):
+                from .template_node_connected_session import (
+                    create_connected_session, launch_connected_session,
+                    observe_connected_session, reconcile_connected_session,
+                    stop_connected_session)
+                if action == 'node-connected-session-create':
+                    return create_connected_session(args.session,read_json(args.request),
+                        read_json(args.descriptor), read_json(args.observation),
+                        read_json(args.launch_environment),
+                        trusted_descriptor_sha256=args.trusted_descriptor_sha256)
+                if action == 'node-connected-session-observe':
+                    return observe_connected_session(args.session,
+                        trusted_session_head=args.trusted_session_head)
+                if action == 'node-connected-session-resume':
+                    return reconcile_connected_session(args.session,
+                        trusted_session_head=args.trusted_session_head)
+                if action == 'node-connected-session-launch':
+                    return launch_connected_session(args.session,read_json(args.scope),
+                        approved_scope_sha256=args.approve_scope_sha256)
+                return stop_connected_session(args.session,read_json(args.scope),
+                    approved_scope_sha256=args.approve_scope_sha256,
+                    disable=action == 'node-connected-session-disable')
             from .template_node_delivery import plan_node_delivery
             from .template_node_session import (create_node_session, launch_node_session,
                 resume_node_session, observe_node_session, node_session_status,
@@ -855,13 +913,16 @@ def main(argv=None):
                  'package','package-build','package-status','package-recover','install-plan',
                  'install','install-status','install-recover', 'node-package-plan',
                  'node-package-build','node-package-status','node-install-plan',
-                 'node-install','node-install-status'):
+                 'node-install','node-install-status', 'node-connected-core',
+                 'node-connected-plan','node-connected-status'):
             display={'schema_version':'1.0','status': result.get('status') or {
                 'package':'planned','package-build':'built','install-plan':'planned',
                 'install':'installed', 'node-package-plan':'planned',
                 'node-package-build':'packaged','node-install-plan':'planned',
-                'node-install':'installed'}.get(args.template_action,'recorded')}
-            for field in ('plan_sha256','receipt_sha256','generation_sha256','journal_head_sha256'):
+                'node-install':'installed', 'node-connected-core':'scope_prepared',
+                'node-connected-plan':'connected_bound_unlaunched'}.get(args.template_action,'recorded')}
+            for field in ('plan_sha256','receipt_sha256','generation_sha256','journal_head_sha256',
+                          'core_sha256','descriptor_sha256','mode','provider_requests'):
                 if field in result: display[field]=result[field]
         elif getattr(args,"out",None) and args.command not in ("scan","architecture","report","scaffold","implement-plan","implement-verify","implement-composite-plan","template"):
             display={"status":"written","output":args.out}
@@ -888,7 +949,8 @@ def main(argv=None):
                     'package-recover','install-plan','install','install-status',
                     'install-recover','node-package-plan','node-package-build',
                     'node-package-status','node-install-plan','node-install',
-                    'node-install-status') and isinstance(exc,OSError):
+                    'node-install-status','node-connected-core','node-connected-plan',
+                    'node-connected-status') and isinstance(exc,OSError):
                 exc=InputError('template_installation_io_unavailable')
             print(json.dumps(template_error(exc)),file=sys.stderr)
             return 2

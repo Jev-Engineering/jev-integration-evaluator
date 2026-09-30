@@ -160,6 +160,7 @@ def validate(check_manifest=False):
                  'jev_integration_evaluator/data/js_emit.cjs',
                  'jev_integration_evaluator/data/js_probe.cjs',
                  'jev_integration_evaluator/data/native_js_runtime.cjs',
+                 'jev_integration_evaluator/template_node_connected_session.py',
                  'references/javascript-typescript-backend-v1.md',
                  'validation/JAVASCRIPT-TYPESCRIPT-SUPPORT.md',
                  'tests/test_js_lifecycle.py', 'tests/test_js_wheel.py',
@@ -208,12 +209,15 @@ def validate(check_manifest=False):
                  'schemas/retrieval-answer-handoff-v1.schema.json',
                  'jev_integration_evaluator/data/retrieval-answer-handoff-v1.schema.json']
     required += ['jev_integration_evaluator/template_node_installation.py',
+                 'jev_integration_evaluator/template_node_connected.py',
                  'jev_integration_evaluator/template_node_delivery.py',
                  'jev_integration_evaluator/template_node_session.py',
                  'references/template-node-installation-v1.md',
+                 'references/template-node-connected-v1.md',
                  'tests/test_node_template_installation.py',
                  'tests/test_node_template_installed_upgrade.py',
                  'tests/test_node_template_installed_esm.py',
+                 'tests/test_node_template_connected.py',
                  'tests/test_node_template_session.py']
     required += [f'{directory}/independent-esm-recipe-c-review-v1.schema.json'
                  for directory in ('schemas', 'jev_integration_evaluator/data')]
@@ -227,7 +231,8 @@ def validate(check_manifest=False):
                  for directory in ('schemas', 'jev_integration_evaluator/data')
                  for name in ('node-package-request-v1', 'node-package-plan-v1',
                               'node-package-receipt-v1', 'node-install-plan-v1',
-                              'node-install-receipt-v1',
+                              'node-install-receipt-v1', 'node-connected-owner-v1',
+                              'node-connected-session-v1',
                               'node-delivery-descriptor-v1',
                               'node-delivery-session-v1',
                               'node-delivery-status-v1')]

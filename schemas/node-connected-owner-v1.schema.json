@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:completetech:jev:node-connected-owner:1.0",
+  "type": "object",
+  "required": ["schema_version", "kind", "runtime_profile", "mode", "spec_sha256", "source_sha256", "source_plan", "environment_digest", "endpoint", "credential_ref", "model", "budget_limits", "ledger_path", "install_receipt_sha256", "configuration_sha256", "core_sha256", "egress_grant", "activation", "descriptor_sha256"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "node-connected-owner-v1"},
+    "runtime_profile": {"type": "object", "required": ["platform", "node", "apis"],
+      "additionalProperties": false, "properties": {"platform": {"const": "linux"},
+        "node": {"const": "v24.18.0"}, "apis": {"const": ["node:sqlite.DatabaseSync", "AbortSignal", "node:https", "node:crypto"]}}},
+    "mode": {"enum": ["shadow", "canary", "active"]},
+    "spec_sha256": {"$ref": "#/$defs/sha"},
+    "source_sha256": {"$ref": "#/$defs/sha"},
+    "source_plan": {
+      "type": "object", "required": ["files"], "additionalProperties": false,
+      "properties": {"files": {"type": "array", "minItems": 7, "maxItems": 64,
+        "items": {"type": "object", "required": ["role", "path", "sha256"], "additionalProperties": false,
+          "properties": {"role": {"enum": ["executed_source", "reviewed_source", "runtime", "adapter", "entrypoint", "package", "lock", "node", "npm", "reviewed_configuration", "typescript_compiler"]},
+            "path": {"type": "string", "minLength": 1}, "sha256": {"$ref": "#/$defs/sha"}}}}}
+    },
+    "environment_digest": {"$ref": "#/$defs/sha"},
+    "endpoint": {"type": "string", "pattern": "^https://[^?#]+$"},
+    "credential_ref": {"const": "env:TYPESAFE_API_KEY"},
+    "model": {"const": "jev-1.13.0"},
+    "budget_limits": {"type": "object", "required": ["max_calls", "max_cost"], "additionalProperties": false,
+      "properties": {"max_calls": {"type": "integer", "minimum": 1}, "max_cost": {"type": "number", "exclusiveMinimum": 0},
+        "max_tasks": {"type": "integer", "minimum": 1}, "max_calls_per_task": {"type": "integer", "minimum": 1}}},
+    "ledger_path": {"type": "string", "minLength": 1},
+    "install_receipt_sha256": {"$ref": "#/$defs/sha"},
+    "configuration_sha256": {"$ref": "#/$defs/sha"},
+    "core_sha256": {"$ref": "#/$defs/sha"},
+    "egress_grant": {"type": "object", "required": ["core_sha256", "mode", "endpoint", "model", "credential_ref", "environment_digest", "issued_at", "expires_at"],
+      "additionalProperties": false,
+      "properties": {"core_sha256": {"$ref": "#/$defs/sha"}, "mode": {"enum": ["shadow", "canary", "active"]},
+        "endpoint": {"type": "string", "pattern": "^https://[^?#]+$"}, "model": {"const": "jev-1.13.0"},
+        "credential_ref": {"const": "env:TYPESAFE_API_KEY"}, "environment_digest": {"$ref": "#/$defs/sha"},
+        "issued_at": {"type": "string", "minLength": 1}, "expires_at": {"type": "string", "minLength": 1}}},
+    "activation": {"oneOf": [{"type": "null"}, {"type": "object", "required": ["recomputed_report", "deployment_grant", "receipt", "evidence_refs"],
+      "additionalProperties": false, "properties": {"recomputed_report": {"type": "object"},
+        "deployment_grant": {"type": "object"}, "receipt": {"type": "object"},
+        "evidence_refs": {"type": "object", "required": ["study", "baseline", "treatment", "gate_bundle", "inventory"],
+          "additionalProperties": false, "properties": {
+            "study": {"$ref": "#/$defs/ref"}, "baseline": {"$ref": "#/$defs/ref"},
+            "treatment": {"$ref": "#/$defs/ref"}, "gate_bundle": {"$ref": "#/$defs/ref"},
+            "inventory": {"$ref": "#/$defs/ref"}}}}}]},
+    "descriptor_sha256": {"$ref": "#/$defs/sha"}
+  },
+  "$defs": {
+    "sha": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "ref": {"type": "object", "required": ["path", "sha256"], "additionalProperties": false,
+      "properties": {"path": {"type": "string", "minLength": 1}, "sha256": {"$ref": "#/$defs/sha"}}}
+  }
+}

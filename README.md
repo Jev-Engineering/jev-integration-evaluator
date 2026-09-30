@@ -99,8 +99,11 @@ launch under the same session run ID and refuses source drift before upgrade.
 The CommonJS journey also resumes an interrupted upgrade selection under the
 same session run ID. The ESM fixture materializes, applies, verifies, packages,
 installs and launches through an exact branch-built installed evaluator CLI.
-Connected provider qualification remains pending;
-live benefit is unknown.
+An [installed connected owner protocol](references/template-node-connected-v1.md)
+adds an exact private descriptor, typed JEV client, independently authenticated
+grant callbacks, durable single-owner budget, and finite CLI launch. Its offline
+shadow fixture is synthetic protocol evidence; live provider and observed
+canary/active qualification remain pending, and live benefit is unknown.
 
 The [six-use-case source matrix](references/use-case-template-matrix-v1.md)
 pins offline host contracts for registered tools, graph identity, retrieval,

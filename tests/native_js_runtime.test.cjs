@@ -1,7 +1,12 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const {digest, SharedBudget, NativeRouter} = require('../jev_integration_evaluator/data/native_js_runtime.cjs');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const {digest, SharedBudget, DurableSharedBudget, NativeRouter, TypeSafeConnectedClient,
+  validateTypedResponse, ConnectedNativeOwner} =
+  require('../jev_integration_evaluator/data/native_js_runtime.cjs');
 
 function fixture(mode = 'off', overrides = {}) {
   const spec = {recipe_id: 'javascript.C', candidate_id: 'candidate', source_sha256: 'a'.repeat(64),
@@ -187,4 +192,164 @@ test('host permission change after assessment blocks both proposed and fallback 
     {task_id: 'task', invocation_id: 'one'}, f.bindings);
   assert.equal(result, 'blocked');
   assert.deepEqual(f.counts(), {baselineCalls: 0, summaryCalls: 0});
+});
+
+test('typed TypeSafe client validates exact model, answer and key rotation without network', async () => {
+  const environment = {TYPESAFE_API_KEY: 'fixture-only-key'};
+  const questions = {choice: {type: 'choice', criteria: {read: 'Read', uncertain: 'Unclear'}}};
+  const response = {model: 'jev-1.13.0', answers: {choice: {type: 'choice', choice: 'read',
+    confidence: 0.9, probabilities: {read: 0.9, uncertain: 0.1}}},
+    usage: {input_tokens: 3, output_tokens: 2}};
+  let requests = 0;
+  const transport = async (url, body, key) => {
+    requests++;
+    assert.equal(url, 'https://api.typesafe.ai/v1/systemone');
+    assert.equal(key, 'fixture-only-key');
+    assert.deepEqual(JSON.parse(body.toString()), {state: {marker: 'fixture'}, questions,
+      model: 'jev-1.13.0'});
+    return Buffer.from(JSON.stringify(response));
+  };
+  const client = new TypeSafeConnectedClient({endpoint: 'https://api.typesafe.ai/v1/systemone',
+    environment, transport});
+  assert.deepEqual(await client.evaluate({marker: 'fixture'}, questions, 'jev-1.13.0', 100),
+    {choice: {label: 'read', confidence: 0.9}});
+  const twoChoices = {secondary: {type: 'choice', criteria: {read: 'Read', uncertain: 'Unclear'}},
+    primary: {type: 'choice', criteria: {read: 'Read', uncertain: 'Unclear'}}};
+  const twoAnswers = {model: 'jev-1.13.0', answers: {
+    secondary: {type: 'choice', choice: 'uncertain', confidence: 0.9,
+      probabilities: {read: 0.1, uncertain: 0.9}},
+    primary: {type: 'choice', choice: 'read', confidence: 0.9,
+      probabilities: {read: 0.9, uncertain: 0.1}}},
+    usage: {input_tokens: 3, output_tokens: 2}};
+  const multi = new TypeSafeConnectedClient({endpoint: 'https://api.typesafe.ai/v1/systemone',
+    environment, transport: async () => Buffer.from(JSON.stringify(twoAnswers))});
+  assert.deepEqual(await multi.evaluate({}, twoChoices, 'jev-1.13.0', 100), {
+    secondary: {label: 'uncertain', confidence: 0.9},
+    primary: {label: 'read', confidence: 0.9}});
+  assert.equal(requests, 1);
+  assert.throws(() => validateTypedResponse({...response, model: 'jev-latest'}, questions,
+    'jev-1.13.0'), /invalid_typed_response/);
+  assert.throws(() => validateTypedResponse({...response, answers: {choice: {
+    ...response.answers.choice, probabilities: {read: 0.2, uncertain: 0.8}}}}, questions,
+    'jev-1.13.0'), /invalid_typed_response/);
+  const duplicate = new TypeSafeConnectedClient({endpoint: 'https://api.typesafe.ai/v1/systemone',
+    environment, transport: async () => Buffer.from(JSON.stringify(response).replace(
+      '"model":"jev-1.13.0"', '"model":"jev-1.13.0","model":"jev-1.13.0"'))});
+  await assert.rejects(duplicate.evaluate({marker: 'fixture'}, questions, 'jev-1.13.0', 100),
+    /invalid_typed_response/);
+  environment.TYPESAFE_API_KEY = 'rotated-fixture-key';
+  await assert.rejects(client.evaluate({marker: 'fixture'}, questions, 'jev-1.13.0', 100),
+    /provider_credential_rotated/);
+  assert.equal(requests, 1);
+  const direct = fixture();
+  assert.throws(() => new NativeRouter({spec: direct.spec, client,
+    budget: direct.budget, audit: direct.router.audit, mode: 'shadow',
+    sourceAttest: () => direct.spec.executed_source_sha256}), /connected_owner_required/);
+});
+
+test('durable native ledger retains charges and refuses unresolved or revoked restarts',
+  {skip: process.platform !== 'linux' || process.version !== 'v24.18.0'}, () => {
+  const parent = fs.mkdtempSync(path.join(os.tmpdir(), 'jev-node-ledger-'));
+  fs.chmodSync(parent, 0o700);
+  const limits = {max_calls: 2, max_cost: 2};
+  const identity = 'a'.repeat(64);
+  const ledgerPath = path.join(parent, 'ledger.sqlite');
+  try {
+    let ledger = new DurableSharedBudget({limits, ledgerPath, identity});
+    assert.throws(() => new DurableSharedBudget({limits, ledgerPath, identity}));
+    ledger.trackTask('one');
+    const reservation = ledger.reserve('one', 1);
+    ledger.finishReservation(reservation);
+    ledger.claimInvocation('one', 'first', 'candidate');
+    ledger.settleInvocation('one', 'first', 'candidate');
+    ledger.close();
+    ledger = new DurableSharedBudget({limits, ledgerPath, identity});
+    assert.equal(ledger.calls, 1);
+    assert.throws(() => ledger.claimInvocation('one', 'first', 'candidate'), /effect_replay_denied/);
+    ledger.claimInvocation('one', 'second', 'candidate');
+    ledger.close();
+    assert.throws(() => new DurableSharedBudget({limits, ledgerPath, identity}),
+      /runtime_ledger_unresolved_or_revoked/);
+  } finally {
+    fs.rmSync(parent, {recursive: true, force: true});
+  }
+});
+
+test('connected shadow owner checks independent grant and installed bytes before fake transport',
+  {skip: process.platform !== 'linux' || process.version !== 'v24.18.0'}, async () => {
+  const parent = fs.mkdtempSync(path.join(os.tmpdir(), 'jev-connected-shadow-'));
+  fs.chmodSync(parent, 0o700);
+  try {
+    const roles = ['executed_source', 'runtime', 'adapter', 'entrypoint', 'package', 'lock',
+      'node', 'npm', 'reviewed_configuration'];
+    const files = roles.map(role => {
+      const filename = path.join(parent, role);
+      fs.writeFileSync(filename, role);
+      return {role, path: filename,
+        sha256: require('node:crypto').createHash('sha256').update(role).digest('hex')};
+    });
+    const f = fixture();
+    const spec = {...f.spec, executed_source_sha256: files[0].sha256,
+      runtime: {...f.spec.runtime, model: 'jev-1.13.0'}};
+    const now = () => Date.parse('2026-09-28T00:00:00Z');
+    const environment = {TYPESAFE_API_KEY: 'offline-fixture-placeholder'};
+    const core = {schema_version: '1.0', kind: 'node-connected-owner-v1',
+      runtime_profile: {platform: 'linux', node: 'v24.18.0',
+        apis: ['node:sqlite.DatabaseSync', 'AbortSignal', 'node:https', 'node:crypto']},
+      mode: 'shadow',
+      spec_sha256: digest(spec), source_sha256: spec.executed_source_sha256,
+      source_plan: {files}, environment_digest: 'c'.repeat(64),
+      endpoint: 'https://api.typesafe.ai/v1/systemone', credential_ref: 'env:TYPESAFE_API_KEY',
+      model: 'jev-1.13.0', budget_limits: {max_calls: 2, max_cost: 2},
+      ledger_path: path.join(parent, 'ledger.sqlite'),
+      install_receipt_sha256: 'd'.repeat(64), configuration_sha256: 'e'.repeat(64)};
+    const grant = {core_sha256: digest(core), mode: 'shadow', endpoint: core.endpoint,
+      model: core.model, credential_ref: core.credential_ref,
+      environment_digest: core.environment_digest,
+      issued_at: '2026-09-27T23:59:00Z', expires_at: '2026-09-28T00:01:00Z'};
+    const descriptorBody = {...core, core_sha256: digest(core), egress_grant: grant,
+      activation: null};
+    const descriptor = {...descriptorBody, descriptor_sha256: digest(descriptorBody)};
+    const linkedSource = path.join(parent, 'linked-source');
+    fs.linkSync(files[0].path, linkedSource);
+    assert.throws(() => new ConnectedNativeOwner({spec, descriptor, audit: f.router.audit,
+      verifyAuthority: () => true, currentEnvironmentDigest: () => core.environment_digest,
+      sourceAttest: () => spec.executed_source_sha256,
+      environment: {TYPESAFE_API_KEY: 'offline-fixture-placeholder'}, now,
+      transport: async () => { throw Error('unexpected'); }}), /connected_source_drift/);
+    assert.equal(fs.readFileSync(files[0].path, 'utf8'), 'executed_source');
+    fs.unlinkSync(linkedSource);
+    let allowed = true; let evaluations = 0;
+    const owner = new ConnectedNativeOwner({spec, descriptor, audit: f.router.audit,
+      verifyAuthority: (kind, sha) => allowed && kind === 'egress_grant' && sha === digest(grant),
+      currentEnvironmentDigest: () => core.environment_digest,
+      sourceAttest: () => spec.executed_source_sha256, environment, now,
+      transport: async () => {
+        evaluations++;
+        return Buffer.from(JSON.stringify({model: 'jev-1.13.0',
+          answers: {choice: {type: 'choice', choice: 'read', confidence: 1,
+            probabilities: {read: 1, summary: 0, uncertain: 0}}},
+          usage: {input_tokens: 1, output_tokens: 1}}));
+      }});
+    assert.equal(owner.status().evidence_type, 'synthetic_protocol');
+    assert.equal(await owner.invoke(f.original,
+      {task_id: 'task', invocation_id: 'first'}, f.bindings), 'baseline');
+    for (let i = 0; i < 30 && evaluations === 0; i++) await new Promise(setImmediate);
+    assert.equal(evaluations, 1);
+    allowed = false;
+    await assert.rejects(owner.invoke(f.original,
+      {task_id: 'task', invocation_id: 'second'}, f.bindings), /connected_authority_expired_or_revoked/);
+    assert.deepEqual(f.counts(), {baselineCalls: 1, summaryCalls: 0});
+    assert.deepEqual(owner.status().mode, 'off');
+    owner.close();
+    allowed = true;
+    assert.throws(() => new ConnectedNativeOwner({spec, descriptor, audit: f.router.audit,
+      verifyAuthority: (kind, sha) => kind === 'egress_grant' && sha === digest(grant),
+      currentEnvironmentDigest: () => core.environment_digest,
+      sourceAttest: () => spec.executed_source_sha256, environment, now,
+      transport: async () => { throw Error('unexpected'); }}),
+      /runtime_ledger_unresolved_or_revoked/);
+  } finally {
+    fs.rmSync(parent, {recursive: true, force: true});
+  }
 });

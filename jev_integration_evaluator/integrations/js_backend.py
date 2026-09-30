@@ -151,7 +151,7 @@ def render_js_adapter(spec: dict, *, runtime_path: str = './jev_runtime.cjs') ->
     # strict semantic validation when the host starts or first invokes off mode.
     return f'''// Generated reviewed recipe C adapter. Default mode is off.
 'use strict';
-const {{NativeRouter, SharedBudget}} = require({json.dumps(runtime_path)});
+const {{NativeRouter, SharedBudget, ConnectedNativeOwner}} = require({json.dumps(runtime_path)});
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
@@ -182,11 +182,26 @@ function initialize(options = {{}}) {{
     now: options.now || (() => Date.now())}});
   return owner;
 }}
+function initializeConnected(descriptor, hostAuthority) {{
+  if (owner !== null) throw Error('runtime_already_started');
+  if (!hostAuthority || typeof hostAuthority.verifyAuthority !== 'function' ||
+      typeof hostAuthority.currentEnvironmentDigest !== 'function' ||
+      !hostAuthority.audit || typeof hostAuthority.audit.append !== 'function')
+    throw Error('trusted_host_authority_required');
+  attestSource();
+  owner = new ConnectedNativeOwner({{spec: SPEC, descriptor,
+    audit: hostAuthority.audit, verifyAuthority: hostAuthority.verifyAuthority,
+    currentEnvironmentDigest: hostAuthority.currentEnvironmentDigest,
+    sourceAttest: attestSource, transport: hostAuthority.transport}});
+  return owner.status();
+}}
 function invoke(original, request, bindings, options) {{
   if (owner === null) initialize();
   return owner.invoke(original, request, bindings, options);
 }}
 function completeTask(taskId) {{ if (owner === null) throw Error('runtime_not_started'); owner.budget.closeTask(taskId); }}
+function status() {{ if (owner === null) throw Error('runtime_not_started'); return owner.status(); }}
 function close() {{ if (owner !== null) owner.close(); }}
-module.exports = Object.freeze({{SPEC, SPEC_SHA256, initialize, invoke, completeTask, close}});
+module.exports = Object.freeze({{SPEC, SPEC_SHA256, initialize, initializeConnected,
+  invoke, completeTask, status, close}});
 '''
