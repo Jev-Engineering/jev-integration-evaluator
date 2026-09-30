@@ -60,15 +60,18 @@ def _verify(public: Path, kind: str, exact: str, signature: str) -> bool:
                 or b'ASN1 OID: prime256v1' not in key_info.stdout):
             return False
         raw = base64.b64decode(signature, validate=True)
-        with tempfile.TemporaryFile(mode='w+b') as stream:
+        with (tempfile.TemporaryFile(mode='w+b') as stream,
+              tempfile.TemporaryFile(mode='w+b') as public_stream):
             stream.write(raw)
             stream.flush()
+            public_stream.write(pem)
+            public_stream.flush()
             result = subprocess.run([str(_OPENSSL), 'dgst', '-sha256', '-verify',
-                                     str(public), '-signature',
+                                     f'/proc/self/fd/{public_stream.fileno()}', '-signature',
                                      f'/proc/self/fd/{stream.fileno()}'],
                                     input=(kind + ':' + exact).encode('ascii'),
                                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                                    pass_fds=(stream.fileno(),), timeout=2,
+                                    pass_fds=(stream.fileno(), public_stream.fileno()), timeout=2,
                                     env=_OPENSSL_ENV, check=False)
         return result.returncode == 0
     except (OSError, ValueError, subprocess.TimeoutExpired):
