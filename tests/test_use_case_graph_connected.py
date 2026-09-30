@@ -284,7 +284,7 @@ def test_l_source_bound_installed_connected_shadow_graph_sqlite(tmp_path, monkey
                 assert connected_session_status(session)['private_references_current']
             monkeypatch.setenv('TYPESAFE_API_KEY', 'synthetic-local-only')
             prior_calls = len(calls)
-            response_mode['value'] = mode
+            response_mode['value'] = 'valid' if mode == 'revoke_ref' else mode
             launched = launch_connected_session(session, scope=scope,
                 approved_scope_sha256=scope['scope_sha256'])
             assert launched['launch_attempts'] == 1
@@ -316,23 +316,38 @@ def test_l_source_bound_installed_connected_shadow_graph_sqlite(tmp_path, monkey
                         time.sleep(.02)
                     else:
                         raise AssertionError('first graph shadow reservation did not settle')
+                original_reference = reference.read_bytes()
+                if mode == 'revoke_ref':
+                    reference.write_bytes(original_reference + b'\n')
+                    assert not connected_session_status(session)['private_references_current']
                 (folder / 'release.txt').write_bytes(b'go\n')
-                _wait(folder / 'second.json', second)
                 if mode == 'hold_first':
+                    _wait(folder / 'second.json', second)
                     assert len(calls) == prior_calls + 1
                     snapshot = _ledger(ledger)
                     assert snapshot is not None and snapshot['calls'] == 1
                     release_response.set()
+                elif mode != 'revoke_ref':
+                    _wait(folder / 'second.json', second)
                 deadline = time.monotonic() + 20
                 while connected_session_status(session)['process_alive'] and time.monotonic() < deadline:
                     time.sleep(.05)
                 assert not connected_session_status(session)['process_alive']
-                _database(folder / 'graph.sqlite', first, second)
-                assert len(calls) - prior_calls == (1 if mode == 'hold_first' else 2)
+                if mode == 'revoke_ref':
+                    assert not (folder / 'second.json').exists()
+                    with sqlite3.connect(folder / 'graph.sqlite') as db:
+                        assert db.execute('SELECT value FROM revision').fetchall() == [(1,)]
+                        assert [json.loads(row[0]) for row in db.execute(
+                            'SELECT receipt FROM audit ORDER BY id')] == [json.loads(first)['receipt']]
+                    reference.write_bytes(original_reference)
+                    assert connected_session_status(session)['private_references_current']
+                else:
+                    _database(folder / 'graph.sqlite', first, second)
+                assert len(calls) - prior_calls == (1 if mode in ('hold_first', 'revoke_ref') else 2)
                 assert calls[-1]['path'] == '/v1/systemone'
                 snapshot = _ledger(ledger)
                 assert snapshot is not None
-                assert snapshot['calls'] == (1 if mode == 'hold_first' else 2)
+                assert snapshot['calls'] == (1 if mode in ('hold_first', 'revoke_ref') else 2)
                 assert len(snapshot['tasks']) == 2
                 assert not snapshot['inflight']
             status = connected_session_status(session)
@@ -345,8 +360,11 @@ def test_l_source_bound_installed_connected_shadow_graph_sqlite(tmp_path, monkey
         valid, valid_status = one_run('valid')
         wrong, wrong_status = one_run('wrong-model', mode='wrong_model')
         held, _ = one_run('inflight-budget', mode='hold_first')
+        revoked, _ = one_run('revoked-reference', mode='revoke_ref')
         assert (valid / 'first.json').read_bytes() == (wrong / 'first.json').read_bytes()
         assert (valid / 'second.json').read_bytes() == (wrong / 'second.json').read_bytes()
+        assert (valid / 'first.json').read_bytes() == (revoked / 'first.json').read_bytes()
+        assert not (revoked / 'second.json').exists()
         assert valid_status['run_id'] != wrong_status['run_id']
         denied, _ = one_run('approval-denied', approval='0')
         conflict, _ = one_run('revision-conflict', expected_revision='1')

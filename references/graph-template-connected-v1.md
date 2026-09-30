@@ -34,7 +34,10 @@ merge receipts, and the baseline effects under wrong-model fallback. A held
 first local TLS response demonstrates the one-in-flight budget; duplicate task,
 missing credential/reference, wrong scope key, reference/source drift, denied
 approval and revision conflict fail closed. The fixture uses model
-`jev-1.13.0`, a local TypeSafe-shaped TLS server and a dummy credential. Its
+`jev-1.13.0`. Revoking the owner-private reference after the first committed
+effect retains that raw effect and blocks the second task before provider I/O.
+The fixture uses
+a local TypeSafe-shaped TLS server and a dummy credential. Its
 issuer is synthetic; no external JEV provider, spend or benefit is observed.
 
 Omitting `--host-profile` retains the original Alpha plan bytes. D and dual
