@@ -207,6 +207,13 @@ receipts; the component recomputes those gates before startup. See the
 by an independent live qualification. Offline fixture tests do not establish
 real provider connectivity, operational safety, or measured benefit.
 
+For the separately reviewed installed Alpha console, a
+[stopped generation transfer](references/connected-generation-transfer-v1.md)
+can carry one durable ledger and run ID from version 1.0.2 to 1.0.3 and back
+under distinct issuer-signed grants. A pending child needs explicit receipt
+reconciliation before launch, and the original run cutoff remains binding.
+The installed two-version test uses only a local synthetic TLS protocol.
+
 ## ⚠️ Honest limits
 
 - **No live-model benefit has been measured** for this build. All validation to date uses synthetic fixtures and mocked HTTP.

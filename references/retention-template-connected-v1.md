@@ -1,5 +1,12 @@
 # Installed retention connected shadow
 
+The [stopped generation controller](connected-generation-transfer-v1.md) now
+has a finite H two-version candidate in this branch. It reuses fresh installed
+bindings and signed transfer authority while retaining the ledger, stable task
+history, and cutoff. Actual Linux upgrade and retained rollback execution
+remain pending; this candidate does not qualify `/compact` or change the
+explicit `/prune` choice.
+
 Timeout diagnostics use `EvaluationTimeoutError`, a subtype of the existing
 `InputError`. Direct transport timeouts, wrapped timeout causes and responses
 over the elapsed budget receive this type; other transport failures retain
