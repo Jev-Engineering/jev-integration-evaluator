@@ -8,6 +8,7 @@ from __future__ import annotations
 import ast
 import base64
 import copy
+import hashlib
 from datetime import datetime, timezone
 import json
 import os
@@ -36,7 +37,8 @@ _OPENSSL_ENV = {'LANG': 'C', 'OPENSSL_CONF': os.devnull,
                 'OPENSSL_MODULES': '/nonexistent', 'OPENSSL_ENGINES': '/nonexistent'}
 
 
-def _verify(public: Path, kind: str, exact: str, signature: str) -> bool:
+def _verify(public: Path, kind: str, exact: str, signature: str,
+            *, expected_public_sha256: str) -> bool:
     """Verify a detached P-256 signature with the fixed host verifier."""
     try:
         info = _OPENSSL.stat()
@@ -49,7 +51,8 @@ def _verify(public: Path, kind: str, exact: str, signature: str) -> bool:
         if version.returncode or not version.stdout.startswith(b'OpenSSL 3.'):
             return False
         pem = public.read_bytes()
-        if (len(pem) > 4096 or not pem.startswith(b'-----BEGIN PUBLIC KEY-----\n')
+        if (hashlib.sha256(pem).hexdigest() != expected_public_sha256
+                or len(pem) > 4096 or not pem.startswith(b'-----BEGIN PUBLIC KEY-----\n')
                 or b'PRIVATE KEY' in pem):
             return False
         key_info = subprocess.run([str(_OPENSSL), 'pkey', '-pubin', '-text', '-noout'],
@@ -184,9 +187,11 @@ def _installed(plan: dict, dependency_plan: dict, limits: dict) -> dict:
     if (digest(dependency_plan) != authority['egress_grant'].get('dependency_digest')
             or digest(limits) != authority['egress_grant'].get('budget_digest')
             or not _verify(public, 'installed_binding', binding['binding_sha256'],
-                           manifest['signatures'].get('installed_binding', ''))
+                           manifest['signatures'].get('installed_binding', ''),
+                           expected_public_sha256=plan['reference_sha256'][public_name])
             or not _verify(public, 'egress_grant', digest(authority['egress_grant']),
-                           manifest['signatures'].get('egress_grant', ''))):
+                           manifest['signatures'].get('egress_grant', ''),
+                           expected_public_sha256=plan['reference_sha256'][public_name])):
         raise ConnectedGenerationError('connected_generation_runtime_authority_unverified')
     spec = _literal_spec(Path(binding['origins']['adapter']['path']))
     candidate = binding['candidate_id']
@@ -290,7 +295,8 @@ def _authority(plan: dict, grant: dict, signature_file: str | Path):
     except (OSError, UnicodeError):
         raise ConnectedGenerationError('connected_generation_signature_invalid') from None
     if (binding['binding_sha256'] != grant['old_binding_sha256']
-            or not _verify(public, 'generation_transfer', digest(grant), signature)):
+            or not _verify(public, 'generation_transfer', digest(grant), signature,
+                           expected_public_sha256=plan['reference_sha256'][public_name])):
         raise ConnectedGenerationError('connected_generation_transfer_unverified')
     signature_sha256 = file_hash(signature_file)
     verifier_sha256 = file_hash(_OPENSSL)
@@ -302,7 +308,8 @@ def _authority(plan: dict, grant: dict, signature_file: str | Path):
                     and file_hash(public) == plan['reference_sha256'][public_name]
                     and file_hash(signature_file) == signature_sha256
                     and file_hash(_OPENSSL) == verifier_sha256
-                    and _verify(public, kind, exact, signature_file.read_text(encoding='ascii')))
+                    and _verify(public, kind, exact, signature_file.read_text(encoding='ascii'),
+                                expected_public_sha256=plan['reference_sha256'][public_name]))
         except (OSError, UnicodeError, InputError):
             return False
     return verify

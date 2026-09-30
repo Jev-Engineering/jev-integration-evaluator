@@ -10,6 +10,11 @@ This branch adds a finite `retention-h-v1` candidate; its actual installed
 Linux qualification remains pending. D retrieval, composite placement, and
 Windows generation transfer have no qualified path in this branch.
 
+Signature verification compares the exact public PEM snapshot to the
+externally anchored public-key hash before inspecting P-256 or checking the
+signature. Both OpenSSL operations use those same bytes. Outer path checks
+alone cannot authorize a replacement key read after the path was hashed.
+
 The host installs both generations through existing offline receipts, derives
 each `connected-installed-binding-v1`, and creates fresh connected delivery
 plans with exact external receipt anchors. Each version's private reference

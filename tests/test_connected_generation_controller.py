@@ -10,6 +10,7 @@ import pytest
 
 from jev_integration_evaluator.template_connected_generation import _verify, _OPENSSL_ENV
 from jev_integration_evaluator import template_connected_generation as generation
+from jev_integration_evaluator.io import file_hash
 
 
 @pytest.mark.skipif(sys.platform != 'linux', reason='fixed OpenSSL verifier is Linux only')
@@ -33,8 +34,10 @@ def test_transfer_signature_requires_public_p256_not_merely_valid_rsa(tmp_path):
             input=('generation_transfer:' + exact).encode('ascii'), capture_output=True,
             check=True, timeout=10, env=_OPENSSL_ENV)
         signature = base64.b64encode(signed.stdout).decode('ascii')
-        assert _verify(public, 'generation_transfer', exact, signature) is (algorithm == 'EC')
-        assert not _verify(public, 'generation_transfer', 'b' * 64, signature)
+        assert _verify(public, 'generation_transfer', exact, signature,
+                       expected_public_sha256=file_hash(public)) is (algorithm == 'EC')
+        assert not _verify(public, 'generation_transfer', 'b' * 64, signature,
+                           expected_public_sha256=file_hash(public))
 
 
 @pytest.mark.skipif(sys.platform != 'linux', reason='fixed OpenSSL verifier is Linux only')
@@ -69,11 +72,13 @@ def test_transfer_verification_consumes_the_inspected_public_key_bytes(tmp_path,
         timeout=2, env=_OPENSSL_ENV)
     assert verified.returncode == 0
     swapped = []
+    expected = file_hash(trusted)
     def swap_before_verify(args, **kwargs):
         if len(args) > 1 and args[1] == 'dgst':
             trusted.write_bytes(foreign_public.read_bytes())
             swapped.append(True)
         return real_run(args, **kwargs)
     monkeypatch.setattr(generation.subprocess, 'run', swap_before_verify)
-    assert not _verify(trusted, 'generation_transfer', exact, signature)
+    assert not _verify(trusted, 'generation_transfer', exact, signature,
+                       expected_public_sha256=expected)
     assert swapped == [True]
