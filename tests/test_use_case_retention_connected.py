@@ -226,7 +226,7 @@ def test_h_installed_connected_shadow_preserves_pins_and_explicit_choice(tmp_pat
                     records = [json.loads(line) for line in
                                (folder / 'timeout-events.jsonl').read_text().splitlines()]
                     assert records and all(record == {'type': 'assessment_error',
-                        'error_class': 'TimeoutError'} for record in records)
+                        'error_class': 'EvaluationTimeoutError'} for record in records)
                 if label == 'revoke':
                     reference.write_bytes(original_reference + b'\n')
                 (folder / 'release.txt').write_bytes(b'go\n')

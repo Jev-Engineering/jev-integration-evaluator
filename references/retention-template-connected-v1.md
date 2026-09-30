@@ -1,5 +1,12 @@
 # Installed retention connected shadow
 
+Timeout diagnostics use `EvaluationTimeoutError`, a subtype of the existing
+`InputError`. Direct transport timeouts, wrapped timeout causes and responses
+over the elapsed budget receive this type; other transport failures retain
+the generic error. The host audit writes only the fixed type and error-class
+metadata when the actual router reports this timeout. Provider exception text
+is suppressed. Fresh installed verification of this correction remains pending.
+
 The finite `retention-h-v1` profile binds the reviewed
 `retention_host/host_retention_consumer.py`, normal `retention-host` console and
 public-only options loader to an exact installed source generation. It reuses
