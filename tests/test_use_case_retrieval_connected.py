@@ -274,7 +274,11 @@ def test_d_source_bound_installed_connected_shadow_raw_retrieval(tmp_path, monke
                                                  'D_HOLD_POINT': 'between-tasks'}.items()
                                if k != 'D_RELEASE_PATH'},
                               {**launch_env, 'D_TASKS': 'unbounded'},
-                              {**launch_env, 'D_HOLD': 'yes'}):
+                              {**launch_env, 'D_HOLD': 'yes'},
+                              # Each private reference is required by name.
+                              *({k: v for k, v in launch_env.items() if k != missing}
+                                for missing in ('D_CONNECTED_REF', 'D_AUTH_PUBKEY_FILE',
+                                                'D_CORPUS_PATH'))):
                     with pytest.raises(ConnectedDeliveryError,
                                        match='connected_host_references_required'):
                         plan_connected_delivery(install_plan, **common,
@@ -319,6 +323,18 @@ def test_d_source_bound_installed_connected_shadow_raw_retrieval(tmp_path, monke
                 launch_connected_session(session, scope=wrong_key,
                     approved_scope_sha256=wrong_key['scope_sha256'])
             monkeypatch.setenv('TYPESAFE_API_KEY', 'synthetic-local-only')
+            if label == 'valid':
+                # A missing credential is refused before any launch attempt,
+                # provider request or retrieval effect.
+                with monkeypatch.context() as no_credential:
+                    no_credential.delenv('TYPESAFE_API_KEY')
+                    with pytest.raises(ConnectedDeliveryError,
+                                       match='connected_credential_unavailable'):
+                        launch_connected_session(session, scope=launch,
+                            approved_scope_sha256=launch['scope_sha256'])
+                unlaunched = connected_session_status(session)
+                assert unlaunched['launch_attempts'] == 0 and not unlaunched['process_alive']
+                assert len(calls) == previous_calls and list(folder.iterdir()) == []
             original_reference = reference.read_bytes()
             reference.write_bytes(original_reference + b'\n')
             assert not connected_session_status(session)['private_references_current']

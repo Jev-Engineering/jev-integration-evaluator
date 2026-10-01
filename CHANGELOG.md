@@ -2,6 +2,44 @@
 
 ## Unreleased — native Windows delivery gap qualification
 
+- Issue #60 follow-up: add an installed connected-shadow fault matrix for
+  CommonJS, ESM and TypeScript recipe C hosts
+  (`tests/test_node_template_connected_faults.py`). It covers configuration
+  drift after install refused at session launch, duplicate invocation replay,
+  grant revocation between two seam calls, a late response after timeout,
+  malformed and mistyped responses, asynchronous transport and executor
+  rejection, and a supervisor stop during an open provider call, each read
+  back from effect files, the durable ledger, the host audit sink, the
+  transport request log and the session journal. The TypeScript upgrade
+  journey now recovers an interrupted first start. The connected supervisor
+  forwards one more fixture-only environment name, `JEV_FIXTURE_FAULT`, to the
+  child. The `connected-node24-qualification` job requires 26 installed tests
+  (was 23) and 19 native tests. All of this is offline synthetic protocol
+  evidence in shadow; selected-effect faults stay native unit tests, and an
+  interrupted build or install still has no automated owned rollback. Live
+  provider operation and observed canary/active outcomes remain pending.
+- Issue #59 follow-up, offline synthetic tests only except one finite profile
+  input. `tests/test_reusable_templates.py` is parametrized by use case: the
+  existing source, adapter and corpus drift checks and consumer checks keep
+  every assertion, and new always-on cases for L, D, E, M and H refuse a
+  missing recipe policy, a missing or unresolved host startup input and a
+  missing, inline or unreviewed credential reference at bind, validate,
+  materialize and plan with the exact reason and no written file or
+  directory. Each use case's installed journey module adds an interrupted
+  reviewed apply (stopped after the first journaled owned write) that must
+  report `blocked_recovery` and `reconcile_exact_source_transaction` under
+  the same journey run, refuse a replay, keep unrelated source bytes and
+  restore exact preimages by owned rollback; the installed lifecycle tests
+  also refuse a package request whose secret reference is missing or
+  mismatched. The D connected test adds missing-reference and
+  missing-credential refusals. The `completion-e-v1` profile accepts new
+  finite `E_HOLD` (`0` default, `1`) and `E_RELEASE_PATH` launch inputs;
+  `E_HOLD` `1` without `E_READY_PATH` and `E_RELEASE_PATH`, or any other
+  value, is refused, and existing plans are unchanged. The E connected test
+  uses the hold for a revocation schedule: no provider request after the
+  reference changes and no second-task effect. Matrix cells and their
+  evidence modules are unchanged; connected upgrade, provider operation,
+  canary/active and benefit remain pending.
 - Issue #57 follow-up: the installed Alpha connected test module adds four
   offline synthetic local-TLS fault schedules with independent read-back of
   the raw effect file, durable ledger rows, session journal and server
@@ -58,6 +96,10 @@
   `windows_source_acl_not_reproducible`; the exact owner/DACL check is
   unchanged. The `windows-template-delivery` job now requires 86 cases;
   hosted execution of the six new cases is pending.
+- The runtime ledger's owning connection now waits up to two seconds for a
+  competing SQLite lock. Before, a read-only inspection that overlapped a
+  durable commit made the write fail at once and suspended the runtime.
+  A lock held past the bound still fails closed.
 
 ## Unreleased — connected shadow profiles and generation transfer
 

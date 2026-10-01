@@ -198,7 +198,7 @@ def launch_connected_session(directory: str | Path, scope: dict, *, approved_sco
                     'NODE_EFFECT_PATH', 'NODE_READY_PATH', 'NODE_INTEGRATION_PATH',
                     'JEV_TRUSTED_EGRESS_GRANT_SHA256', 'JEV_TRUSTED_GRANT_FILE',
                     'JEV_FAKE_TRANSPORT_DELAY_MS', 'JEV_FAKE_TRANSPORT_MARKER',
-                    'JEV_INVOCATION_ID')
+                    'JEV_INVOCATION_ID', 'JEV_FIXTURE_FAULT')
             environment = {key: os.environ[key] for key in keys if key in os.environ}
             environment['JEV_CONNECTED_DESCRIPTOR'] = str(target / 'descriptor.json')
             child = subprocess.Popen([sys.executable, '-I', '-c', _HELPER,
