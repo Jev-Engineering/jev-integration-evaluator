@@ -216,6 +216,23 @@ jobs:
   windows-template-delivery:
     # Native delivery runs on a disposable Server 2022 VM with no secrets.
     # These synthetic off-mode fixtures do not grant provider authority.
+    # The required files are split into two shards by measured duration so
+    # each leg stays well inside the limit. Every shard prepares the same
+    # environment, applies the same selector and rejects any skipped case;
+    # `minimum` is that shard's exact collected count, checked by
+    # tests/test_windows_delivery_shards.py, which also fails when a native
+    # delivery test file is in no shard. Scheduled files (each in one shard):
+    #   lifecycle: tests/test_windows_template_preflight.py
+    #              tests/test_windows_template_package_inputs.py
+    #              tests/test_windows_template_owned.py
+    #              tests/test_windows_template_session.py
+    #              tests/test_windows_template_run.py
+    #              tests/test_windows_template_install_faults.py
+    #              tests/test_windows_template_install_death.py
+    #              tests/test_windows_source_mutation.py
+    #              tests/test_windows_source_read_refusal.py
+    #   delivery:  tests/test_windows_template_delivery.py
+    name: windows-template-delivery (${{ matrix.python }}, ${{ matrix.shard.name }})
     runs-on: windows-2022
     timeout-minutes: 90
     permissions:
@@ -224,6 +241,23 @@ jobs:
       fail-fast: false
       matrix:
         python: ["3.10", "3.13", "3.14"]
+        shard:
+          - name: lifecycle
+            minimum: 165
+            files: >-
+              tests/test_windows_template_preflight.py
+              tests/test_windows_template_package_inputs.py
+              tests/test_windows_template_owned.py
+              tests/test_windows_template_session.py
+              tests/test_windows_template_run.py
+              tests/test_windows_template_install_faults.py
+              tests/test_windows_template_install_death.py
+              tests/test_windows_source_mutation.py
+              tests/test_windows_source_read_refusal.py
+          - name: delivery
+            minimum: 12
+            files: >-
+              tests/test_windows_template_delivery.py
     steps:
       - name: Preserve committed bytes in the disposable checkout
         run: git config --global core.autocrlf false
@@ -260,16 +294,11 @@ jobs:
           "JEV_WINDOWS_TEMPLATE_WHEELHOUSE=$wheelhouse" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       - name: Execute required native delivery and installed-host cases
         run: >-
-          python -m pytest -q tests/test_windows_template_preflight.py
-          tests/test_windows_template_package_inputs.py tests/test_windows_template_owned.py
-          tests/test_windows_template_session.py tests/test_windows_template_delivery.py
-          tests/test_windows_template_run.py tests/test_windows_template_install_faults.py
-          tests/test_windows_template_install_death.py tests/test_windows_source_mutation.py
-          -k "not non_windows"
+          python -m pytest -q ${{ matrix.shard.files }} -k "not non_windows"
           --junitxml "$env:RUNNER_TEMP\windows-template-delivery.xml"
       - name: Reject skipped or missing required delivery cases
         run: |
-          python -c "import sys,xml.etree.ElementTree as E; r=E.parse(sys.argv[1]).getroot(); s=[r] if r.tag=='testsuite' else list(r.findall('testsuite')); n=sum(int(x.get('tests',0)) for x in s); k=sum(int(x.get('skipped',0)) for x in s); f=sum(int(x.get('failures',0))+int(x.get('errors',0)) for x in s); print(f'native Windows delivery cases: collected={n} skipped={k} failed={f}'); sys.exit(1 if n < 91 or k or f else 0)" "$env:RUNNER_TEMP\windows-template-delivery.xml"
+          python -c "import sys,xml.etree.ElementTree as E; r=E.parse(sys.argv[1]).getroot(); s=[r] if r.tag=='testsuite' else list(r.findall('testsuite')); n=sum(int(x.get('tests',0)) for x in s); k=sum(int(x.get('skipped',0)) for x in s); f=sum(int(x.get('failures',0))+int(x.get('errors',0)) for x in s); print(f'native Windows delivery cases (${{ matrix.shard.name }} shard): collected={n} skipped={k} failed={f}'); sys.exit(1 if n < ${{ matrix.shard.minimum }} or k or f else 0)" "$env:RUNNER_TEMP\windows-template-delivery.xml"
       - run: python scripts/validate_package.py --check-manifest
   windows-connected-shadow:
     # Disposable Server qualification uses a local TLS fixture and synthetic issuer.

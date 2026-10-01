@@ -15,7 +15,8 @@ from contextlib import contextmanager
 from .. import __version__
 from ..contracts import seal, verify, utc_now, validate_contract
 from ..implementation import make_patch_plan, apply_patch_plan, FORBIDDEN
-from ..io import InputError, atomic_text, canonical, digest, file_hash, read_json, read_jsonl, safe_child, write_json
+from ..io import (InputError, atomic_text, canonical, digest, file_hash, read_json, read_jsonl,
+                  read_source, safe_child, write_json)
 from .contracts import validate_spec, validate_inventory
 from .recipes import RECIPES, transform
 
@@ -165,7 +166,7 @@ def _record(bundle, plan, event, relative=None, *, owned_identity=None):
 
 def _inspect_file(root, row):
     p = safe_child(root, row['file'])
-    actual = file_hash(p) if p.is_file() else None
+    actual = read_source(p, file_hash) if p.is_file() else None
     mode = stat.S_IMODE(p.stat().st_mode) if p.exists() else None
     if p.exists() and not p.is_file(): return 'drift'
     if actual == row['old_sha256'] and mode == row['old_mode']: return 'baseline'
@@ -215,7 +216,7 @@ def _load(root, bundle, *, current_engine=False):
         raise InputError('Console entrypoint differs from the reviewed specification')
     if spec.get('entrypoint_binding'):
         bound = spec['entrypoint_binding']
-        if file_hash(safe_child(root, 'pyproject.toml')) != bound['pyproject_sha256']:
+        if read_source(safe_child(root, 'pyproject.toml'), file_hash) != bound['pyproject_sha256']:
             raise InputError('Console script configuration changed since planning')
     if spec.get('package_binding') and spec['source']['file'] not in manifest.get('contributing_sources', {}):
         raise InputError('Package manifest omits the selected source dependency')
@@ -226,7 +227,7 @@ def _load(root, bundle, *, current_engine=False):
         p = safe_child(root, rel)
         allowed = {expected}
         if rel in owned_sources: allowed.add(owned_sources[rel]['new_sha256'])
-        if not p.is_file() or file_hash(p) not in allowed:
+        if not p.is_file() or read_source(p, file_hash) not in allowed:
             raise InputError('Contributing package module changed since planning')
     owned = {row['file']: row for row in plan['owned_files']}
     if len(owned) != len(plan['owned_files']) or set(owned) != set(spec['output']['permitted_edits']):
@@ -282,7 +283,7 @@ def plan_implementation(root, inventory, candidate_id, spec, output, *, native_r
         if p.exists():
             mode = stat.S_IMODE(p.stat().st_mode)
             preimage = 'preimages/' + digest(change['file']) + '.utf8'
-            _write_bytes(safe_child(out, preimage), p.read_bytes())
+            _write_bytes(safe_child(out, preimage), read_source(p, Path.read_bytes))
         owned.append({'file': change['file'], 'old_sha256': change['old_sha256'], 'new_sha256': change['new_sha256'],
                       'old_mode': mode, 'new_mode': mode if mode is not None else (0o644 if native_readable_sources else (0o666 if os.name == 'nt' else 0o600)), 'preimage': preimage})
     write_json(out / 'implementation-spec.json', spec)
@@ -352,7 +353,7 @@ def _check_discovery(root, plan, applied=False):
         expected = original['sha256']
         if applied and rel in owned: expected = owned[rel]['new_sha256']
         p = safe_child(root, rel)
-        if not p.is_file() or file_hash(p) != expected or stat.S_IMODE(p.stat().st_mode) != original['mode']:
+        if not p.is_file() or read_source(p, file_hash) != expected or stat.S_IMODE(p.stat().st_mode) != original['mode']:
             raise InputError('Reviewed source or file mode drift')
 
 
@@ -444,7 +445,7 @@ def apply_native_implementation(root, bundle, approval, *, baseline_spec, baseli
                 {row['file'] for row in plan['owned_files'] if row['preimage'] is not None}
                 - {row['path'] for row in baseline_spec['files']} or
                 any(not safe_child(root, row['path']).is_file() or
-                    file_hash(safe_child(root, row['path'])) != row['sha256'] or
+                    read_source(safe_child(root, row['path']), file_hash) != row['sha256'] or
                     stat.S_IMODE(safe_child(root, row['path']).stat().st_mode) != row['mode']
                     for row in baseline_spec['files'])):
             raise InputError('Native baseline source or bundle changed')

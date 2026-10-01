@@ -13,7 +13,7 @@ import os
 import re
 import sys
 
-from ..io import InputError, canonical, digest, safe_child
+from ..io import InputError, canonical, digest, read_source, safe_child
 from ..implementation import FORBIDDEN
 from .errors import UnsupportedShape, MissingBinding, AmbiguousBinding
 from .package_bindings import StaticBindings, module_layout
@@ -255,7 +255,7 @@ def transform(root: Path, spec: dict) -> dict:
         raise InputError('Protected or invalid implementation output path')
     p, new_module = safe_child(root, rel), safe_child(root, output)
     if new_module.exists(): raise InputError('Integration-owned output already exists; do not overwrite it')
-    raw = p.read_bytes()
+    raw = read_source(p, Path.read_bytes)
     if len(raw) > 2_000_000 or raw.startswith(b'\xef\xbb\xbf'):
         raise UnsupportedShape('Unsupported oversized/BOM source; UTF-8 without BOM is required')
     try:

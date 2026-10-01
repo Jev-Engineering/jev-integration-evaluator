@@ -1,4 +1,5 @@
 """Static package resolution never imports or executes host modules."""
+import os
 from pathlib import Path
 
 import pytest
@@ -98,3 +99,36 @@ def test_dynamic_namespace_rebinding_rejected(tmp_path):
     write(tmp_path, 'pkg/other.py', 'def callback(request):\n    return request\n')
     with pytest.raises(UnsupportedShape, match='Dynamic module binding'):
         StaticBindings(tmp_path, 'pkg/host.py').resolve('callback')
+
+
+@pytest.mark.parametrize('raised,reason', [
+    (PermissionError(13, 'Permission denied', 'private-root/pkg/host.py'),
+     'windows_source_read_access_denied'),
+    (FileNotFoundError(2, 'No such file or directory', 'private-root/pkg/host.py'),
+     'windows_source_read_unavailable')])
+def test_selected_source_read_failure_is_platform_exact(tmp_path, monkeypatch, raised, reason):
+    """Native Windows gets a fixed path-free reason; POSIX keeps the same error."""
+    from jev_integration_evaluator.io import InputError, read_source
+
+    write(tmp_path, 'pkg/__init__.py', '')
+    write(tmp_path, 'pkg/host.py', 'def callback(request):\n    return request\n')
+    assert StaticBindings(tmp_path, 'pkg/host.py').resolve('callback')[0] == 'pkg/host.py'
+    assert read_source(tmp_path / 'pkg/host.py', Path.read_bytes).startswith(b'def callback')
+    original = Path.read_bytes
+
+    def failing(path):
+        if path.name == 'host.py':
+            raise raised
+        return original(path)
+
+    monkeypatch.setattr(Path, 'read_bytes', failing)
+    for operation in (lambda: StaticBindings(tmp_path, 'pkg/host.py'),
+                      lambda: read_source(tmp_path / 'pkg/host.py', Path.read_bytes)):
+        with pytest.raises((OSError, InputError)) as caught:
+            operation()
+        if os.name == 'nt':
+            assert type(caught.value) is InputError and caught.value.args == (reason,)
+            assert caught.value.__cause__ is None and caught.value.__suppress_context__
+            assert 'private-root' not in str(caught.value) and 'host' not in str(caught.value)
+        else:
+            assert caught.value is raised

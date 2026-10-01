@@ -14,7 +14,7 @@ import re
 import tokenize
 from pathlib import Path
 
-from ..io import InputError, file_hash, safe_child
+from ..io import InputError, file_hash, read_source, safe_child
 from .errors import MissingBinding, UnsupportedShape
 
 CONTRACT_VERSION = '1.0'
@@ -91,7 +91,7 @@ class StaticBindings:
     def _read(self, rel: str) -> ast.Module:
         p = safe_child(self.root, rel)
         if not p.is_file(): raise MissingBinding('Missing static binding module: ' + rel)
-        raw = p.read_bytes()
+        raw = read_source(p, Path.read_bytes)
         if len(raw) > 2_000_000 or raw.startswith(b'\xef\xbb\xbf'):
             raise UnsupportedShape('Unsupported static binding module encoding or size: ' + rel)
         try:
@@ -102,7 +102,7 @@ class StaticBindings:
             raise UnsupportedShape('Invalid static binding module encoding: ' + rel) from None
         try: tree = ast.parse(raw.decode('utf-8'), filename=rel)
         except (SyntaxError, UnicodeError): raise UnsupportedShape('Invalid UTF-8 Python binding module: ' + rel) from None
-        self.dependencies[rel] = file_hash(p)
+        self.dependencies[rel] = read_source(p, file_hash)
         return tree
 
     def resolve(self, name: str) -> tuple[str, str, ast.FunctionDef]:
