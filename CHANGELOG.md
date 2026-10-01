@@ -2,6 +2,16 @@
 
 ## Unreleased — native Windows delivery gap qualification
 
+- Issue #57 follow-up: the installed Alpha connected test module adds four
+  offline synthetic local-TLS fault schedules with independent read-back of
+  the raw effect file, durable ledger rows, session journal and server
+  request count: an actual provider timeout, a stop while the response is
+  withheld, a missing secret or private reference at launch, and repeat
+  execution of a session and of a task ID. No production, fixture-profile or
+  schema change. `references/connected-delivery-v1.md` records what is
+  exercised, what is not, and that a concurrent reader of the ledger database
+  makes an owner commit fail closed. Provider operation, canary/active and
+  benefit remain pending.
 - Issue #59 follow-up: the installed D retrieval connected test adds
   malformed-response, actual-timeout and between-task revocation schedules
   with exact call and ledger counts. The `retrieval-d-v1` profile accepts a
