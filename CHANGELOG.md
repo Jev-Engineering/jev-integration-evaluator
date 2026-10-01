@@ -2,6 +2,28 @@
 
 ## Unreleased — native Windows delivery gap qualification
 
+- Issue #59 follow-up, offline synthetic tests only except one finite profile
+  input. `tests/test_reusable_templates.py` is parametrized by use case: the
+  existing source, adapter and corpus drift checks and consumer checks keep
+  every assertion, and new always-on cases for L, D, E, M and H refuse a
+  missing recipe policy, a missing or unresolved host startup input and a
+  missing, inline or unreviewed credential reference at bind, validate,
+  materialize and plan with the exact reason and no written file or
+  directory. Each use case's installed journey module adds an interrupted
+  reviewed apply (stopped after the first journaled owned write) that must
+  report `blocked_recovery` and `reconcile_exact_source_transaction` under
+  the same journey run, refuse a replay, keep unrelated source bytes and
+  restore exact preimages by owned rollback; the installed lifecycle tests
+  also refuse a package request whose secret reference is missing or
+  mismatched. The D connected test adds missing-reference and
+  missing-credential refusals. The `completion-e-v1` profile accepts new
+  finite `E_HOLD` (`0` default, `1`) and `E_RELEASE_PATH` launch inputs;
+  `E_HOLD` `1` without `E_READY_PATH` and `E_RELEASE_PATH`, or any other
+  value, is refused, and existing plans are unchanged. The E connected test
+  uses the hold for a revocation schedule: no provider request after the
+  reference changes and no second-task effect. Matrix cells and their
+  evidence modules are unchanged; connected upgrade, provider operation,
+  canary/active and benefit remain pending.
 - Issue #59 follow-up: the installed D retrieval connected test adds
   malformed-response, actual-timeout and between-task revocation schedules
   with exact call and ledger counts. The `retrieval-d-v1` profile accepts a

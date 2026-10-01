@@ -25,6 +25,7 @@ from jev_integration_evaluator.integrations.verification import verify_implement
 from tests.test_template_installation import _metadata
 from tests.test_use_case_claim_bind import BINDING, PROFILE, _bound_host
 from tests.test_use_case_claim_host import _expected, _observation, _observe, _scope
+from tests.use_case_faults import interrupted_apply_recovery, missing_secret_package_refusals
 
 
 pytestmark = pytest.mark.skipif(
@@ -136,6 +137,8 @@ def test_m_bound_installed_claim_lifecycle_and_refusals(tmp_path):
     first = _applied(tmp_path, 'bound-claim-v1', '1.0.0')
     first_plan, first_receipt = _installed(
         tmp_path, first, wheelhouse, rows, requirements, environments, 'package-v1')
+    missing_secret_package_refusals(first_plan['package_plan']['request'],
+                                    tmp_path / 'package-without-secret')
     effects = tmp_path / 'external-effects'
     effects.mkdir(mode=0o700)
     v1 = effects / 'v1'
@@ -214,3 +217,11 @@ def test_m_bound_installed_claim_lifecycle_and_refusals(tmp_path):
             host['applied']['rollback_digest'])['status'] == 'rolled_back'
         assert file_hash(host['target'] / 'claim_host/console.py') == \
             host['spec']['entrypoint_binding']['file_sha256']
+
+
+def test_m_bound_interrupted_apply_requires_recovery_and_owned_rollback(tmp_path):
+    result = interrupted_apply_recovery(
+        tmp_path, sys.modules[__name__], 'interrupted-claim',
+        lambda: _applied(tmp_path, 'interrupted-claim', '1.0.0'),
+        letter='M', consumer='claim_host/claim_consumer.py')
+    assert result['target'] == tmp_path / 'interrupted-claim'

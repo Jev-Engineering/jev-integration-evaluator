@@ -212,6 +212,8 @@ authority.
 | `SSL_CERT_FILE` | connected launch environment | absolute owner-private trust certificate, pinned by hash | unset | `connected_private_reference_invalid` |
 | `TYPESAFE_API_KEY` | supervisor process environment at `template connected-launch` | present and non-empty; the value is never written to a plan or log | unset | `connected_credential_unavailable` before any launch attempt |
 | `E_TASKS` | connected launch environment | `two`, `duplicate` | `two` | `connected_host_references_required`; `duplicate` is refused before replaying an effect |
+| `E_HOLD` | connected launch environment | `0`, `1` | `0` | `connected_host_references_required` for another value, or for `1` without `E_RELEASE_PATH` |
+| `E_RELEASE_PATH` | connected launch environment | absolute path the operator creates to release a hold | unset | with `E_HOLD` `1` the held fixture host stops after 15 seconds without it |
 
 ## Unsupported cases
 

@@ -10,6 +10,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import sqlite3
 import ssl
 import subprocess
 import sys
@@ -132,6 +133,11 @@ def _grant(report: dict, receipt: dict, public: Path, endpoint: str,
     return config, grant
 
 
+def _ledger_state(ledger: Path) -> dict:
+    with sqlite3.connect(f'file:{ledger}.sqlite?mode=ro', uri=True) as db:
+        return json.loads(db.execute('SELECT payload FROM state WHERE id=1').fetchone()[0])
+
+
 def _wait(path: Path, expected: bytes, seconds: float = 20) -> None:
     end = time.monotonic() + seconds
     while time.monotonic() < end:
@@ -222,8 +228,8 @@ def test_e_source_bound_installed_connected_shadow_raw_completion(tmp_path, monk
         oracle = fixture_module('examples/coding-agent/completion_oracle.py', 'connected_e_oracle')
         for label, expected_calls in (('valid', 2), ('wrong-model', 1),
                                       ('malformed', 1), ('timeout', 1),
-                                      ('duplicate', 0)):
-            response_mode['value'] = label.replace('-', '_')
+                                      ('revoke', 0), ('duplicate', 0)):
+            response_mode['value'] = 'valid' if label == 'revoke' else label.replace('-', '_')
             before_calls = len(calls)
             folder = tmp_path / ('effects-' + label)
             folder.mkdir(mode=0o700)
@@ -242,6 +248,10 @@ def test_e_source_bound_installed_connected_shadow_raw_completion(tmp_path, monk
             launch_env = {'E_CONNECTED_REF': str(reference), 'E_AUTH_PUBKEY_FILE': str(public),
                           **effect_env, 'E_TASKS': 'duplicate' if label == 'duplicate' else 'two',
                           'SSL_CERT_FILE': str(cert)}
+            if label == 'revoke':
+                # The host holds after its first committed effect and ready
+                # marker until the release file exists.
+                launch_env.update({'E_HOLD': '1', 'E_RELEASE_PATH': str(folder / 'release.txt')})
             common = dict(trusted_install_receipt_sha256=receipt['receipt_sha256'],
                           trusted_package_receipt_sha256=package_receipt['receipt_sha256'],
                           installed_binding=report, trusted_binding_sha256=report['binding_sha256'],
@@ -250,6 +260,23 @@ def test_e_source_bound_installed_connected_shadow_raw_completion(tmp_path, monk
                 with pytest.raises(ConnectedDeliveryError, match='connected_host_references_required'):
                     plan_connected_delivery(install_plan, **common,
                         launch_environment={**launch_env, 'D_CONNECTED_REF': str(reference)})
+                # A missing private reference, a hold value outside `0`/`1` and
+                # a hold without its release path or ready marker are refused
+                # at planning.
+                release = str(folder / 'release.txt')
+                for wrong in ({k: v for k, v in launch_env.items() if k != 'E_CONNECTED_REF'},
+                              {k: v for k, v in launch_env.items() if k != 'E_AUTH_PUBKEY_FILE'},
+                              {**launch_env, 'E_HOLD': 'yes', 'E_RELEASE_PATH': release},
+                              {**launch_env, 'E_HOLD': '1'},
+                              {k: v for k, v in {**launch_env, 'E_HOLD': '1',
+                                                 'E_RELEASE_PATH': release}.items()
+                               if k != 'E_READY_PATH'}):
+                    with pytest.raises(ConnectedDeliveryError,
+                                       match='connected_host_references_required'):
+                        plan_connected_delivery(install_plan, **common, launch_environment=wrong)
+                unheld = plan_connected_delivery(install_plan, **common,
+                    launch_environment={**launch_env, 'E_HOLD': '0'})
+                assert unheld['host_profile'] == 'completion-e-v1'
             plan = plan_connected_delivery(install_plan, **common, launch_environment=launch_env)
             validate_contract(plan, 'connected-delivery-plan-v1')
             session = tmp_path / ('session-' + label)
@@ -319,6 +346,44 @@ def test_e_source_bound_installed_connected_shadow_raw_completion(tmp_path, monk
             assert oracle.exact_goal(json.loads(first_state), objective)
             assert not oracle.exact_goal({**json.loads(first_state), 'labels': []}, objective)
             assert not oracle.exact_goal({**json.loads(first_state), 'executor_success': True}, objective)
+            if label == 'revoke':
+                # The executor is held after its committed first effect, so no
+                # post-effect observation has been routed yet. Revoke, then
+                # release: nothing later in this process may reach the provider.
+                ledger = tmp_path / ('ledger-' + label)
+                held = connected_session_status(session)
+                assert held['process_alive'] and held['private_references_current']
+                assert len(calls) == before_calls
+                reference.write_bytes(original + b'\n')
+                (folder / 'release.txt').write_bytes(b'go\n')
+                deadline = time.monotonic() + 30
+                while connected_session_status(session)['process_alive'] and time.monotonic() < deadline:
+                    time.sleep(.05)
+                revoked = connected_session_status(session)
+                assert not revoked['process_alive']
+                assert not revoked['private_references_current']
+                assert revoked['independent_checks']['integration_reachable']
+                assert not revoked['independent_checks']['outcome_verified']
+                # No request reached the provider. The one attempt reserved
+                # before the refused egress check stays charged, not refunded.
+                assert len(calls) == before_calls
+                state = _ledger_state(ledger)
+                assert state['revoked'] is True and state['inflight'] == {}
+                assert state['calls'] == 1 and state['overruns'] == 0
+                assert sorted(task['calls'] for task in state['tasks'].values()) == [0, 1]
+                assert all(task['closed'] for task in state['tasks'].values())
+                # The committed first effect is unchanged; the second task
+                # was refused before its executor and left nothing.
+                assert sorted(path.name for path in folder.iterdir()) == [
+                    'ready.txt', 'receipt-completion-one.json', 'release.txt',
+                    'state-completion-one.json']
+                assert (folder / 'state-completion-one.json').read_bytes() == first_state
+                assert (folder / 'receipt-completion-one.json').read_bytes() == first_receipt
+                reference.write_bytes(original)
+                stop = _scope(connected_session_status(session), plan, 'stop')
+                assert stop_connected_session(session, scope=stop,
+                    approved_scope_sha256=stop['scope_sha256'])['stage'] == 'stopped'
+                continue
             deadline = time.monotonic() + 10
             while len(calls) < before_calls + 1 and time.monotonic() < deadline:
                 time.sleep(.02)
