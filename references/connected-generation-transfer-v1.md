@@ -8,7 +8,10 @@ protocol. Package and install steps
 remain off mode. Transfer never
 launches a console, creates provider authority, resets spend or changes the
 run ID. A retained environment can be selected by a separately signed reverse
-transfer. This controller accepts the legacy Alpha and finite D profiles only;
+transfer. Planning requires the stopped session's existing ledger marker and
+database; a missing ledger fails closed as
+`connected_generation_existing_ledger_required` instead of being recreated
+empty. This controller accepts the legacy Alpha and finite D profiles only;
 composite placement and Windows generation transfer have no path here.
 
 The host installs both generations through existing offline receipts, derives
