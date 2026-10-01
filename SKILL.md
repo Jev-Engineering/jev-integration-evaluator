@@ -115,6 +115,10 @@ carries its source-bound bounded-loop bind and owned console edit through a
 separate offline installed two-task retrieval journey. L graph identity has a source-bound bounded-loop
 bind and owned console edit carried through a separate offline installed normal
 console journey with independent graph effect and conflict readback.
+The separate [L installed graph shadow protocol](references/graph-template-connected-v1.md)
+binds that reviewed console and SQLite consumer to a public-only issuer,
+durable shared budget and local synthetic TypeSafe transport. It does not
+qualify external provider operation or connected generation transfer.
 Individual provider modes and benefit remain pending. Keep `/prune` and `/compact` as separate
 explicit user choices.
 The finite offline use-case console fixture checks six separate fixture-emitted outcome records

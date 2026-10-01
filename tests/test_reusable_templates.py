@@ -84,6 +84,9 @@ def test_completion_adapter_drift_fails_closed(tmp_path):
 
 def test_graph_adapter_drift_fails_closed(tmp_path):
     row = next(row for row in use_case_matrix()["rows"] if row["id"] == "L")
+    assert row["connected_shadow"] == "qualified_offline_l_installed_shadow_protocol"
+    assert row["connected_upgrade"] == "pending"
+    assert row["provider"] == "pending" and row["benefit"] == "unknown"
     for key in ("source", "consumer_adapter"):
         path = tmp_path / row[key]
         path.parent.mkdir(parents=True, exist_ok=True)

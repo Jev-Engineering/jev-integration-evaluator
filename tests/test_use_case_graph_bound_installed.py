@@ -33,9 +33,11 @@ pytestmark = pytest.mark.skipif(
     not PROFILE, reason='L bound installed journey requires Linux x86-64 CPython 3.13')
 
 
-def _applied(tmp_path: Path, name: str, version: str) -> dict:
+def _applied(tmp_path: Path, name: str, version: str,
+             connected_authority_source: Path | None = None) -> dict:
     target = tmp_path / name
-    inventory, request = _bound_host(target, version=version, installed=True)
+    inventory, request = _bound_host(target, version=version, installed=True,
+                                    connected_authority_source=connected_authority_source)
     prepared = prepare_template_binding(target, request, BINDING)
     bound = prepared['request']
     spec = bound['implementation_spec']
