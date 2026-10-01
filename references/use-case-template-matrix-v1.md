@@ -58,7 +58,7 @@ upgrade/rollback and measured benefit remain pending.
 | Case | Recipe and source contract | Offline oracle | Apply/install/launch/provider | Benefit |
 | --- | --- | --- | --- | --- |
 | C registered tool | `python.C@1.0`; [coding-agent dispatch](../examples/coding-agent/agent.py), [#48](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/48) | Existing registered-action and at-most-once dispatch tests; complete installed journey is [#57](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/57) | Pending | Unknown |
-| L graph identity | `python.L@1.0`; [graph fixture](../examples/graph-system/entities.py) and [pinned consumer](../examples/use-case-host/graph_runtime.py), [#44](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/44) | Approval, exact entity snapshot, revision and audit before merge | Offline synthetic L host: source-bound #54 bounded-loop console bind carried through plan/apply/verify/rollback, #55 install and #56 normal-console observation/disable/versioned upgrade/generation rollback; provider pending | Unknown |
+| L graph identity | `python.L@1.0`; [graph fixture](../examples/graph-system/entities.py) and [pinned consumer](../examples/use-case-host/graph_runtime.py), [#44](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/44) | Approval, exact entity snapshot, revision and audit before merge | Offline synthetic L host: source-bound #54 bounded-loop console bind carried through plan/apply/verify/rollback, #55 install and #56 normal-console observation/disable/versioned upgrade/generation rollback. [Separate installed synthetic graph shadow protocol](graph-template-connected-v1.md) checks two SQLite effects and local TLS fallback; external provider and connected upgrade pending | Unknown |
 | D retrieval evidence | `python.D@1.0`; [RAG fixture](../examples/rag-system/pipeline.py), [pinned corpus](../examples/use-case-host/retrieval_corpus_v1.json) and [consumer](../examples/use-case-host/retrieval_consumer.py), [#45](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/45) | Passage provenance, missing evidence and material contradiction retention | Offline synthetic D host: source-bound #54 bounded-loop console bind carried through plan/apply/verify/rollback, #55 install and #56 normal-console observation/disable/versioned upgrade/generation rollback. [Separate installed synthetic shadow protocol](retrieval-template-connected-v1.md) checks local TLS/fallback; external provider and connected upgrade pending | Unknown |
 | E completion | `python.E@1.0`; [raw-state oracle](../examples/coding-agent/completion_oracle.py), [#46](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/46) | Raw objective and effect receipts independent of executor success | Offline synthetic E host: source-bound #54 task-loop console bind/plan/apply/verify, #55 install, #56 normal-console observation/disable/versioned upgrade/generation rollback. [Separate installed shadow protocol](completion-template-connected-v1.md) checks local TLS/fallback and two raw tasks; real provider and connected upgrade pending | Unknown |
 | M claim support | `python.M@1.0`; [claim reviewer](../examples/rag-system/pipeline.py) and [pinned consumer](../examples/use-case-host/claim_consumer.py), [#47](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/47) | Exact citation spans, critical-claim block and audit before release | Offline synthetic M host: source-bound #54 bounded-loop bind carried through plan/apply/verify/rollback, #55 install and #56 normal-console observation/disable/versioned upgrade/generation rollback; provider pending | Unknown |
@@ -282,6 +282,13 @@ synthetic fixture with one successful task ID. Interruption and
 connected/provider operation also remain pending. The
 [H operator reference](retention-template-offline-v1.md) lists exact inputs and
 limits.
+
+The separate [H connected profile](retention-template-connected-v1.md) carries
+explicit `/prune`, private reference pins and two bounded task IDs. Its
+authored installed schedule is designed to assert raw retained bytes and provenance,
+actual timeout audit events and between-task reference revocation. Fresh
+installed qualification and connected upgrade remain pending; the schedule
+does not establish external provider operation or benefit.
 
 ## Whole-catalog support boundary
 

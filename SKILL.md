@@ -39,6 +39,12 @@ observed benefit, provider connectivity, or activation eligibility.
 
 ## Executable implementation mode
 
+The finite [H connected retention profile](references/retention-template-connected-v1.md)
+requires an explicit `/prune` choice, private authority references and
+independent retained-item observations. Fresh installed qualification of its
+timeout and between-task revocation schedule remains pending, as do external
+provider operation, connected upgrade and measured benefit.
+
 Native Windows `apply_patch_plan` source writes have separate local NTFS
 ownership and recovery limits; see `references/windows-source-mutation-v1.md`.
 
@@ -51,6 +57,8 @@ For independently reviewed method, async, or fixed-positional Python tail calls 
 For the separately reviewed Alpha 1.0.2 fixture, an additive [installed binding](references/connected-installed-binding-v1.md) maps source to wheel RECORD and installed origins. Its [connected shadow delivery](references/connected-delivery-v1.md) uses a host-owned private options loader, authenticated exact egress grants, a durable ledger and a separate one-attempt supervisor. The finite [D retrieval shadow profile](references/retrieval-template-connected-v1.md) and [E completion shadow profile](references/completion-template-connected-v1.md) carry fresh source bindings through installed local synthetic protocols. Package/install remain off. Offline normal-console tests do not establish provider reachability or measured benefit. Canary and active await observed raw gates and independently authenticated receipts.
 
 For the independent dual 1.0.2 host, [composite installed binding](references/connected-composite-binding-v1.md) maps two reviewed placements plus a shared console and public-only loader to exact installed origins. Its opt-in connected shadow profile retains one durable task owner and budget across both normal-console decisions. The installed local TLS and effect tests are offline synthetic evidence; real provider reachability, combined observed canary/active gates, connected upgrade/rollback and benefit are pending.
+
+A separate [stopped connected generation transfer](references/connected-generation-transfer-v1.md) links two reviewed installed Alpha or finite D retrieval versions under one run ID and durable ledger. Transfer requires an issuer-signed exact grant, stopped source-bound session, unchanged limits and original cutoff, and an inert child reconciled from the durable transfer receipt before launch. Local synthetic protocol qualification does not grant live egress or activation.
 
 For two to four compatible reviewed placements in one unchanged source snapshot,
 use the separate `implement-composite-*` transaction described in
@@ -102,11 +110,17 @@ bounded task-loop console bind and owned edit. H retention has a bounded-loop
 bind with an explicit `/prune` choice carried through a separate offline
 installed normal console, supervised upgrade and retained generation rollback.
 M claim support has a source-bound bounded-loop bind and owned console edit
-carried through a separate offline installed claim effect journey. D retrieval
-carries its source-bound bounded-loop bind and owned console edit through a
+carried through a separate offline installed claim effect journey. Its separate
+pending [M connected shadow profile](references/template-claim-connected-v1.md)
+retains exact citation policy, two stable tasks and a shared durable ledger.
+D retrieval carries its source-bound bounded-loop bind and owned console edit through a
 separate offline installed two-task retrieval journey. L graph identity has a source-bound bounded-loop
 bind and owned console edit carried through a separate offline installed normal
 console journey with independent graph effect and conflict readback.
+The separate [L installed graph shadow protocol](references/graph-template-connected-v1.md)
+binds that reviewed console and SQLite consumer to a public-only issuer,
+durable shared budget and local synthetic TypeSafe transport. It does not
+qualify external provider operation or connected generation transfer.
 Individual provider modes and benefit remain pending. Keep `/prune` and `/compact` as separate
 explicit user choices.
 The finite offline use-case console fixture checks six separate fixture-emitted outcome records

@@ -11,6 +11,9 @@ from typing import Protocol, Any
 from .io import InputError, canonical, digest, finite, loads
 from .questions import validate_questions
 
+class EvaluationTimeoutError(InputError):
+    """A transport or elapsed-budget timeout, without provider details."""
+
 class EvaluationClient(Protocol):
     is_remote: bool
     def evaluate(self, state: Any, questions: dict, model: str, timeout_ms: int) -> dict: ...
@@ -91,10 +94,16 @@ class TypeSafeHTTPClient:
         except urllib.error.HTTPError as exc:
             # No body/headers in error messages: they may contain sensitive request data.
             raise InputError(f"TypeSafe HTTP {exc.code}; single-attempt fallback, no automatic spending retry") from None
-        except (urllib.error.URLError,TimeoutError,OSError):
+        except TimeoutError:
+            raise EvaluationTimeoutError("TypeSafe transport failed or timed out") from None
+        except urllib.error.URLError as exc:
+            if isinstance(exc.reason, TimeoutError):
+                raise EvaluationTimeoutError("TypeSafe transport failed or timed out") from None
+            raise InputError("TypeSafe transport failed or timed out") from None
+        except OSError:
             raise InputError("TypeSafe transport failed or timed out") from None
         if len(raw)>2_000_000: raise InputError("Response exceeds byte budget")
-        if (time.monotonic()-started)*1000>timeout_ms: raise InputError("Evaluation exceeded latency budget; result discarded")
+        if (time.monotonic()-started)*1000>timeout_ms: raise EvaluationTimeoutError("Evaluation exceeded latency budget; result discarded")
         result=loads(raw.decode("utf-8"))
         validate_response(result,questions,model)
         return result

@@ -1,5 +1,11 @@
 # Progressive onboarding
 
+For the finite [H connected retention profile](references/retention-template-connected-v1.md),
+collect the explicit `/prune` choice, private connected and public-key
+references, exact host scope and independent retained-item postconditions.
+The authored timeout and revocation schedule still requires fresh installed
+qualification; it grants no external provider or canary/active authority.
+
 Start with facts already supplied by the user and the local scan. Do not ask for a repository path twice, ask about languages the scan identifies, or infer modification/network authority from access to files. Default to analysis and STANDARD depth. A null benchmark/trace path explicitly means unavailable, not permission to invent data.
 
 The `onboard` command accepts an optional JSON answer object. It returns at most five missing fields at a time, keeps subsequent missing fields separate and reuses all answers. Fields are `objective`, `latency_budget_ms`, `cost_budget_per_task`, `risk_tolerance`, `environment`, `benchmark_path`, `trace_path`, and, only for implementation, `modification_authority`. Optional metadata includes mode, depth, repository and branding.
@@ -22,6 +28,12 @@ describe their source-bound synthetic off-mode installed normal-console journeys
 including fresh bounded-loop bindings, independently observed effects and owned
 versioned upgrade/rollback. Each documented host shape retains its own limits;
 these journeys do not establish provider or benefit qualification.
+
+For the separately scoped `claim-m-v1` installed shadow profile, read
+[claim connected delivery](references/template-claim-connected-v1.md).
+Collect exact installed origins, private signed reference/public-key files and
+independent raw support/audit/claim observations. Its qualification is pending;
+it grants no live provider or activation authority.
 
 For offline Node recipe C packaging, collect the independently retained JS modified verification receipt, exact applied source and render lock, native pinned Node/npm, trusted TypeScript 5.8.3, private offline npm cache, off configuration and secret references. The separate `node-package-request-v1` stages an owned generation only after two exact approvals; see `references/template-node-installation-v1.md`. Missing tooling or a changed source fails closed. A separate Node session may launch only that installed off-mode command under an exact scope and independently checked ready/effect paths; it does not grant connected mode. The independently pinned ESM fixture in `tests/independent_hosts/esm_recipe_c` exercises installed off-mode launch, versioned upgrade and retained rollback with raw host effects.
 
