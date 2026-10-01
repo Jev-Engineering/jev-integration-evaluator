@@ -33,6 +33,7 @@ from jev_integration_evaluator.use_case_templates import use_case_matrix
 from scripts.implementation_fixtures import fixture
 from tests.test_template_installation import _metadata
 from tests.test_reusable_templates import fixture_module
+from tests.use_case_faults import interrupted_apply_recovery, missing_secret_package_refusals
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -72,6 +73,18 @@ def _source_host(target: Path, version: str = "1.0.0",
         "            if template_key in os.environ:\n"
         "                os.environ[output_key] = os.environ[template_key].replace('{task_id}', request['task_id'])\n"
         if len(task_ids) > 1 else "")
+    # Connected fixture only: an optional finite hold once the first raw effect
+    # and its ready marker are committed, before the executor returns and so
+    # before any post-effect observation is routed.
+    hold = (
+        "            if __import__('os').environ.get('E_HOLD') == '1':\n"
+        "                import time\n"
+        "                release = Path(__import__('os').environ['E_RELEASE_PATH'])\n"
+        "                deadline = time.monotonic() + 15\n"
+        "                while not release.exists() and time.monotonic() < deadline:\n"
+        "                    time.sleep(.02)\n"
+        "                if not release.exists(): raise TimeoutError('completion_release_timeout')\n"
+        if connected_authority_source is not None else "")
     new = ("STATE['effects'].append('first')\n"
            "    if not STATE['ineffective']:\n"
            "        from . import completion_consumer\n"
@@ -84,6 +97,7 @@ def _source_host(target: Path, version: str = "1.0.0",
            "            with Path(ready).open('x', encoding='utf-8') as stream:\n"
            "                stream.write('ready\\n')\n"
            "            if 'E_CONNECTED_REF' not in __import__('os').environ: __import__('time').sleep(15)\n"
+           + hold +
            "    return {'reported': 'ok'}")
     assert text.count(old) == 1
     text = text.replace(old, new)
@@ -532,6 +546,8 @@ def test_completion_installed_offline_upgrade_and_rollback(tmp_path):
         return install_plan, installed
 
     original_plan, original_install = install(first, "package-v1")
+    missing_secret_package_refusals(original_plan["package_plan"]["request"],
+                                    tmp_path / "package-without-secret")
     effects = tmp_path / "external-effects"
     effects.mkdir(mode=0o700)
     original_effects = effects / "v1"
@@ -596,3 +612,11 @@ def test_completion_installed_offline_upgrade_and_rollback(tmp_path):
     for host in (second, first):
         assert rollback_implementation(host["target"], host["bundle"],
             host["applied"]["rollback_digest"])["status"] == "rolled_back"
+
+
+def test_completion_bound_interrupted_apply_requires_recovery_and_owned_rollback(tmp_path):
+    result = interrupted_apply_recovery(
+        tmp_path, sys.modules[__name__], "interrupted-completion",
+        lambda: _applied(tmp_path, "interrupted-completion", "1.0.0"),
+        letter="E", consumer="completion_host/completion_consumer.py")
+    assert result["target"] == tmp_path / "interrupted-completion"

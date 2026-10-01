@@ -88,6 +88,43 @@ host credentials, endpoint approval, budget and spend limits, and external
 grant signatures. Canary/active additionally require raw observed holdouts and
 exact runtime receipts validated by `HostRuntimeLifecycle`.
 
+The same installed Alpha test module adds four offline synthetic local-TLS
+fault schedules. Each is read back from the raw effect file, the durable
+ledger rows, the session journal and the loopback server's request count.
+
+- **Actual timeout.** The server withholds its response past the adapter's
+  2000 ms transport timeout. The audit record is an `EvaluationTimeoutError`,
+  one nonrefundable call stays charged with no open reservation, and the host
+  commits its baseline effect exactly once.
+- **Stop during a held response.** `connected-stop` terminates the recorded
+  process while the response is withheld and the host is held before its
+  commit. No process remains in the child's session, the status has no
+  integration or outcome observation, no effect exists, and the ledger keeps
+  the charged call as one unresolved reservation. The stopped session cannot
+  be launched again. A new session on that ledger starts the console, which
+  refuses the unresolved history before any provider request or effect and
+  leaves the ledger rows unchanged.
+- **Missing secret and reference.** An absent or empty `TYPESAFE_API_KEY`, an
+  absent options reference and an absent public key are each refused at
+  launch before the durable launch intent: no process, request, ledger or
+  effect exists, and the unchanged scope still launches once they are
+  restored. A correctly signed reference that names an unregistered credential
+  source launches the console, whose connected startup refuses it before a
+  ledger, provider request or effect exists.
+- **Repeat execution.** A second launch of an attempted session is refused
+  before and after its stop. A second session for the same task ID on the
+  same ledger and effect file makes no provider request, appends no second
+  effect and leaves the charge unchanged. A later, different task adds one
+  call to the retained charge.
+
+These schedules do not exercise a stop after the effect commits, an
+interruption during a ledger commit, or recovery of an unresolved
+reservation, which remains an owner action. The ledger owner commits with a
+zero SQLite busy timeout, so a separate reader holding a shared lock during a
+commit makes that commit fail closed with `runtime_ledger_write_failed`; read
+the ledger only while its owner is held or has exited. Provider operation,
+canary/active and measured benefit remain pending.
+
 A separate [stopped generation transfer](connected-generation-transfer-v1.md)
 carries the same ledger and run ID between two reviewed installed Alpha
 versions under a new issuer-signed grant. It retains the original cutoff and

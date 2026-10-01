@@ -27,6 +27,7 @@ from tests.test_use_case_graph_bind import BINDING, PROFILE, _bound_host
 from tests.test_use_case_graph_installed import (
     _database_readback, _observation, _observe, _scope,
 )
+from tests.use_case_faults import interrupted_apply_recovery, missing_secret_package_refusals
 
 
 pytestmark = pytest.mark.skipif(
@@ -131,6 +132,8 @@ def test_l_bound_installed_graph_lifecycle_and_revision_conflict(tmp_path):
     first = _applied(tmp_path, 'bound-graph-v1', '1.0.0')
     first_plan, first_receipt = _installed(
         tmp_path, first, wheelhouse, rows, requirements, environments, 'package-v1')
+    missing_secret_package_refusals(first_plan['package_plan']['request'],
+                                    tmp_path / 'package-without-secret')
     effects = tmp_path / 'external-effects'
     effects.mkdir(mode=0o700)
     v1 = effects / 'v1'
@@ -210,3 +213,11 @@ def test_l_bound_installed_graph_lifecycle_and_revision_conflict(tmp_path):
             host['applied']['rollback_digest'])['status'] == 'rolled_back'
         assert file_hash(host['target'] / 'graph_host/console.py') == \
             host['spec']['entrypoint_binding']['file_sha256']
+
+
+def test_l_bound_interrupted_apply_requires_recovery_and_owned_rollback(tmp_path):
+    result = interrupted_apply_recovery(
+        tmp_path, sys.modules[__name__], 'interrupted-graph',
+        lambda: _applied(tmp_path, 'interrupted-graph', '1.0.0'),
+        letter='L', consumer='graph_host/graph_runtime.py')
+    assert result['target'] == tmp_path / 'interrupted-graph'

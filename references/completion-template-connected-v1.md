@@ -26,7 +26,11 @@ The reviewed launch environment accepts `E_RAW_STATE_TEMPLATE` and
 owner-only `0700` directory. The duplicate selector is a negative preflight
 fixture: it exits before startup or effects. No free-form task list or host
 callback is accepted. The fixed profile also accepts an owner-private
-`SSL_CERT_FILE` for the local TLS test.
+`SSL_CERT_FILE` for the local TLS test. `E_HOLD=0|1` with `E_RELEASE_PATH`
+selects a finite fixture hold after the first committed effect and its ready
+marker; `1` without both `E_READY_PATH` and `E_RELEASE_PATH` is refused with
+`connected_host_references_required`, and a held host stops after 15 seconds
+without the release file.
 
 In connected shadow, the code-owned runtime calls the original E executor
 exactly once. Only after it completes does a read-only assessment receive
@@ -43,8 +47,13 @@ second-task receipt, and the ready marker. The test separately checks both
 raw states and receipts against the unchanged completion oracle. It proves
 two intended local TLS typed calls, wrong-model and malformed/timeout
 fallback effects, a wrong-key scope and reference drift refusal, duplicate
-task preflight, replay refusal, and an exact owned stop. The local server is
-explicitly synthetic. These results do not show a real JEV provider call,
+task preflight, replay refusal, and an exact owned stop. A revocation
+schedule changes the private reference while the host is held after its first
+committed effect, before any post-effect observation is routed: no request
+reaches the local server afterwards, the one attempt reserved before the
+refused egress check stays charged in the ledger, the first raw state and
+receipt are unchanged and the second task is refused before its executor.
+The local server is explicitly synthetic. These results do not show a real JEV provider call,
 measured benefit, or observed canary/active gate. Connected upgrade and
 generation rollback remain pending; the separately qualified off-mode
 upgrade/rollback and source rollback do not grant connected authority.
