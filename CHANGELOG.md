@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased — connected shadow profiles and generation transfer
+
+- Add finite installed connected shadow profiles for D retrieval, L graph,
+  H retention (explicit `/prune` only), M claim support and E completion, and
+  a stopped connected generation transfer for the Alpha, D and H profiles.
+  All evidence is offline synthetic local TLS; provider operation, canary and
+  active gates, connected upgrade and benefit remain pending.
+- Transfer planning requires the existing durable ledger and never recreates
+  it. Status and reconcile compare the complete recomputed parent link.
+- Transport and latency-budget timeouts now raise `EvaluationTimeoutError`,
+  a subtype of `InputError`. Messages are unchanged, but recorded error type
+  names in assessment events, replay and robustness rows and CLI output
+  change from `InputError` to `EvaluationTimeoutError` for those cases.
+- Connected E shadow observes the completed executor result once and never
+  retries or replaces it; interrupts propagate unchanged.
+
 ## Unreleased — JavaScript recipe C template catalog
 
 - Add a separate `javascript.recipe-c@1.0.0` source-bound catalog entry for

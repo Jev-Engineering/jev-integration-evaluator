@@ -11,7 +11,10 @@ run ID. A retained environment can be selected by a separately signed reverse
 transfer. Planning requires the stopped session's existing ledger marker and
 database; a missing ledger fails closed as
 `connected_generation_existing_ledger_required` instead of being recreated
-empty. This controller accepts the legacy Alpha profile and the finite
+empty. Status and reconcile recompute the complete parent link from the
+stopped session, including the original cutoff and failure history, and
+refuse a child whose recorded link differs in any field.
+This controller accepts the legacy Alpha profile and the finite
 `retrieval-d-v1` and `retention-h-v1` profiles only, and refuses a transfer
 between different profiles. Composite placement and Windows generation
 transfer have no path here.
