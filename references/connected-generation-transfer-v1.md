@@ -11,8 +11,15 @@ run ID. A retained environment can be selected by a separately signed reverse
 transfer. Planning requires the stopped session's existing ledger marker and
 database; a missing ledger fails closed as
 `connected_generation_existing_ledger_required` instead of being recreated
-empty. This controller accepts the legacy Alpha and finite D profiles only;
-composite placement and Windows generation transfer have no path here.
+empty. This controller accepts the legacy Alpha profile and the finite
+`retrieval-d-v1` and `retention-h-v1` profiles only, and refuses a transfer
+between different profiles. Composite placement and Windows generation
+transfer have no path here.
+
+Signature verification compares the exact public PEM snapshot to the
+externally anchored public-key hash before inspecting P-256 or checking the
+signature. Both OpenSSL operations use those same bytes. Outer path checks
+alone cannot authorize a replacement key read after the path was hashed.
 
 The host installs both generations through existing offline receipts, derives
 each `connected-installed-binding-v1`, and creates fresh connected delivery
@@ -78,6 +85,18 @@ effect or protocol call. The ledger separately refuses a reservation for the
 closed task; shadow fallback alone does not suppress the host baseline. The
 profile selector, private reference names and
 installed console and loader wheel origins are checked at each boundary.
+
+The H candidate uses separately reviewed and bound 1.0.0 and 1.0.1 normal
+`retention-host` commands. Each authors one of the existing two stable task IDs
+before scanning and binding, and requires the explicit `/prune` choice. The
+independent raw retention expectation checks pinned bytes and source provenance
+in both generations. Transfers use the same two-task ledger and original
+cutoff. A signed reverse transfer selects the retained generation without
+resetting calls or closed tasks. Its normal console attempt uses the original
+private effect directory; an exclusive host owner marker refuses a second
+startup before shadow fallback can run the baseline again. A separate fixed,
+source-authored attempt marker establishes command reachability. This candidate
+does not yet establish executed upgrade or rollback qualification.
 
 This is synthetic shadow qualification. It does not establish real provider
 connectivity, observed benefit, canary/active eligibility, power-loss

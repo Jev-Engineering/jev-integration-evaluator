@@ -32,6 +32,17 @@ class ConnectedDeliveryError(InputError):
 # These are reviewed host shapes, not grants.  The absent selector retains the
 # original Alpha plan representation and its exact canonical digest.
 _PROFILES = {
+    'retention-h-v1': {
+        'source': 'retention_host/host_retention_consumer.py',
+        'members': {'host': 'retention_host/host_retention_consumer.py',
+                    'console': 'retention_host/console.py',
+                    'loader': 'retention_host/connected_authority.py'},
+        'references': ('H_CONNECTED_REF', 'H_AUTH_PUBKEY_FILE'),
+        'allowed': frozenset({'H_COMMAND', 'H_EFFECT_DIRECTORY', 'H_READY_PATH',
+                              'H_RELEASE_PATH', 'H_HOLD', 'H_TASKS'}),
+        'binary': ('H_HOLD',),
+        'injected': ('H_CONNECTED_REF_SHA256', 'H_AUTH_PUBKEY_SHA256'),
+    },
     None: {
         'source': 'src/registered_alpha/host.py',
         'members': {'host': 'registered_alpha/host.py',
@@ -127,6 +138,16 @@ def plan_connected_delivery(install_plan: dict, *, trusted_install_receipt_sha25
     if requested_mode != 'shadow':
         raise ConnectedDeliveryError('connected_mode_requires_observed_gate')
     profile = _profile(host_profile)
+    if host_profile == 'retention-h-v1':
+        if type(launch_environment) is not dict:
+            raise ConnectedDeliveryError('connected_host_references_required')
+        if launch_environment.get('H_COMMAND') != '/prune':
+            raise ConnectedDeliveryError('connected_retention_requires_explicit_prune')
+        if (not {'H_EFFECT_DIRECTORY', 'H_READY_PATH'} <= set(launch_environment)
+                or launch_environment.get('H_TASKS', 'two') not in ('two', 'duplicate')
+                or (launch_environment.get('H_HOLD', '0') == '1'
+                    and 'H_RELEASE_PATH' not in launch_environment)):
+            raise ConnectedDeliveryError('connected_host_references_required')
     references = set(profile['references'])
     allowed = references | profile['allowed'] | {'SSL_CERT_FILE'}
     if (type(launch_environment) is not dict or not references <= set(launch_environment)

@@ -39,6 +39,12 @@ observed benefit, provider connectivity, or activation eligibility.
 
 ## Executable implementation mode
 
+The finite [H connected retention profile](references/retention-template-connected-v1.md)
+requires an explicit `/prune` choice, private authority references and
+independent retained-item observations. Fresh installed qualification of its
+timeout and between-task revocation schedule remains pending, as do external
+provider operation, connected upgrade and measured benefit.
+
 Native Windows `apply_patch_plan` source writes have separate local NTFS
 ownership and recovery limits; see `references/windows-source-mutation-v1.md`.
 

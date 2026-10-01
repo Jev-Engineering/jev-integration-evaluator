@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import platform
 import subprocess
+import shutil
 import sys
 
 import pytest
@@ -39,11 +40,44 @@ BINDING = {'version': '1.0', 'script': 'retention-host',
                               'dependency_plan': 'dependencies', 'startup_options': 'options'}}
 
 
-def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False) -> tuple[dict, dict, dict]:
+def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False,
+                connected_loader: Path | None = None,
+                generation_task: str | None = None) -> tuple[dict, dict, dict]:
+    if generation_task is not None:
+        assert generation_task in ('retention-one', 'retention-two')
+        assert installed and connected_loader is not None
     _, spec, request = _host(target, version)
     source = target / spec['source']['file']
     entry = spec['verification']['entry_point']
-    if installed:
+    if connected_loader is not None:
+        assert installed
+        shutil.copyfile(connected_loader, target / 'retention_host/connected_authority.py')
+        original = source.read_text(encoding='utf-8')
+        marker = "    STATE['kept'] = retention_consumer.commit(request, action)\n"
+        assert original.count(marker) == 1
+        before = (
+            "    import os\n"
+            "    from pathlib import Path\n"
+            "    directory = os.environ.get('H_EFFECT_DIRECTORY')\n"
+            "    if directory:\n"
+            "        task = request['task_id']\n"
+            "        if task not in ('retention-one', 'retention-two'):\n"
+            "            raise ValueError('unregistered retention task')\n"
+            "        os.environ['H_RETAINED_PATH'] = str(Path(directory) / (task + '.json'))\n")
+        after = (
+            f"    if directory and request['task_id'] == '{generation_task or 'retention-one'}':\n"
+            "        with Path(os.environ['H_READY_PATH']).open('x', encoding='utf-8') as stream:\n"
+            "            stream.write('ready\\n')\n"
+            "        if os.environ.get('H_HOLD') == '1':\n"
+            "            import time\n"
+            "            deadline = time.monotonic() + 15\n"
+            "            release = Path(os.environ['H_RELEASE_PATH'])\n"
+            "            while not release.exists() and time.monotonic() < deadline:\n"
+            "                time.sleep(.02)\n"
+            "            if not release.exists():\n"
+            "                raise TimeoutError('retention_release_timeout')\n")
+        source.write_text(original.replace(marker, before + marker + after), encoding='utf-8')
+    elif installed:
         original = source.read_text(encoding='utf-8')
         marker = "    STATE['kept'] = retention_consumer.commit(request, action)\n"
         assert original.count(marker) == 1
@@ -75,6 +109,23 @@ def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False
         'def make_requests():\n'
         "    return [{'task_id': 'retention-task', 'command': os.environ['H_COMMAND']}]\n"
     )
+    if connected_loader is not None:
+        requests = (
+            'def make_requests():\n'
+            "    command = os.environ['H_COMMAND']\n"
+            "    mode = os.environ.get('H_TASKS', 'two')\n"
+            "    if mode not in ('two', 'duplicate'):\n"
+            "        raise ValueError('unregistered retention task schedule')\n"
+            "    ids = ('retention-one', 'retention-one') if mode == 'duplicate' else ('retention-one', 'retention-two')\n"
+            "    return [{'task_id': task, 'command': command} for task in ids]\n")
+        if generation_task is not None:
+            requests = (
+                'def make_requests():\n'
+                "    release = os.environ.get('H_RELEASE_PATH')\n"
+                "    if release:\n"
+                "        with Path(release).with_suffix('.attempt').open('x', encoding='utf-8') as stream:\n"
+                "            stream.write('attempt\\n')\n"
+                f"    return [{{'task_id': '{generation_task}', 'command': os.environ['H_COMMAND']}}]\n")
     console = target / 'retention_host/console.py'
     console.write_text(
         f'from .{source.stem} import {entry}\n'
@@ -98,6 +149,46 @@ def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False
         '    return 0\n'
         "if __name__ == '__main__':\n    raise SystemExit(main())\n",
         encoding='utf-8')
+    if connected_loader is not None:
+        raw = console.read_text(encoding='utf-8')
+        raw = raw.replace('import hashlib\nimport os\n',
+                          'import hashlib\nimport os\nimport json\nimport threading\n')
+        old_audit = ('    def __init__(self): self.records = []\n'
+                     '    def append(self, record): self.records.append(record)\n')
+        new_audit = '''    def __init__(self):
+        self.records = []
+        self.lock = threading.Lock()
+    def append(self, record):
+        self.records.append(record)
+        if record.get('type') == 'assessment_error' and record.get('error_class') == 'EvaluationTimeoutError':
+            directory = os.environ.get('H_EFFECT_DIRECTORY')
+            if directory:
+                path = Path(directory) / 'timeout-events.jsonl'
+                raw = (json.dumps(dict(type='assessment_error', error_class='EvaluationTimeoutError'), sort_keys=True) + '\\n').encode()
+                with self.lock:
+                    descriptor = os.open(path, os.O_WRONLY | os.O_APPEND | os.O_CREAT | os.O_NOFOLLOW, 0o600)
+                    with os.fdopen(descriptor, 'ab') as stream:
+                        stream.write(raw)
+                        stream.flush()
+                        os.fsync(stream.fileno())
+'''
+        assert raw.count(old_audit) == 1
+        raw = raw.replace(old_audit, new_audit)
+        raw = raw.replace('max_tasks=1)', 'max_tasks=2)')
+        if generation_task is not None:
+            # The retained generation owns the same effects directory. A
+            # second normal console must refuse ownership before shadow
+            # fallback can call the original retention consumer again.
+            marker = 'def limits():\n'
+            assert raw.count(marker) == 1
+            raw = raw.replace(marker, marker +
+                "    directory = os.environ.get('H_EFFECT_DIRECTORY')\n"
+                "    if directory:\n"
+                "        with (Path(directory) / 'owner.txt').open('x', encoding='utf-8') as stream:\n"
+                "            stream.write('one-runtime-startup\\n')\n")
+        raw = raw.replace('def options():\n    return {}\n',
+                          'def options():\n    from . import connected_authority\n    return connected_authority.options()\n')
+        console.write_text(raw, encoding='utf-8')
     runtime_files = {
         'requirements.lock': ('dependency_lock', 'jev-integration-evaluator==1.3.0.dev1\n',
                               'jev-integration-evaluator==1.3.0.dev12\n'),
