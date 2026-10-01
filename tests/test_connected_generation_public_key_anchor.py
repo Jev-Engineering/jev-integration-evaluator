@@ -28,18 +28,20 @@ def test_generation_authority_refuses_foreign_p256_snapshot_after_path_hash(tmp_
     signature.write_text(_issue(foreign_private, 'generation_transfer', digest(grant)))
     original_pem = trusted_public.read_bytes()
     foreign_pem = foreign_public.read_bytes()
-    real_read = Path.read_bytes
+    real_open = Path.open
     swaps = []
 
-    def swap_before_snapshot(path):
-        if path == trusted_public:
+    def swap_before_snapshot(path, *args, **kwargs):
+        if (path == trusted_public and not swaps
+                and sys._getframe(1).f_code.co_name == '_verify'):
             # Replace actual path bytes after the controller's outer hash,
-            # before its verifier snapshots and validates the public key.
-            trusted_public.write_bytes(foreign_pem)
+            # before its verifier opens, snapshots and validates the public key.
             swaps.append(True)
-        return real_read(path)
+            with real_open(trusted_public, 'wb') as stream:
+                stream.write(foreign_pem)
+        return real_open(path, *args, **kwargs)
 
-    monkeypatch.setattr(Path, 'read_bytes', swap_before_snapshot)
+    monkeypatch.setattr(Path, 'open', swap_before_snapshot)
     try:
         with pytest.raises(InputError, match='transfer_unverified'):
             generation._authority(plan, grant, signature)
