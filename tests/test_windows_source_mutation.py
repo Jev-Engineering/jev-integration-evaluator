@@ -632,3 +632,165 @@ def test_native_write_path_acl_denial_refuses_apply_without_effect(tmp_path):
     finally:
         _allow(source, account)
     unchanged()
+
+
+def _source_security(path):
+    """Owner, complete self-relative descriptor and policy hash of one file."""
+    from jev_integration_evaluator import windows_source_mutation as mutation
+
+    _, io_path = cap._windows_absolute_path(path)
+    fd, _ = mutation._lease(io_path)
+    try:
+        owner, descriptor = mutation._security_snapshot(fd)
+    finally:
+        os.close(fd)
+    return owner, descriptor, mutation._dacl_hash(descriptor)
+
+
+def test_native_read_denied_source_refuses_apply_with_private_reason(tmp_path):
+    from jev_integration_evaluator import windows_source_mutation as mutation
+
+    root = tmp_path / 'host'
+    root.mkdir()
+    first, denied = root / 'first.py', root / 'owned.py'
+    first.write_bytes(b'first old\n')
+    denied.write_bytes(b'old\n')
+    plan = make_patch_plan(root, [
+        {'file': 'first.py', 'new_content': 'first new\n'},
+        {'file': 'owned.py', 'new_content': 'new\n'},
+    ], ['native-source'])
+    intents = [mutation._intent_path(root / change['file'], change['old_sha256'],
+                                     change['new_sha256'], root)
+               for change in plan['changes']]
+    identities = {path: cap._windows_file_identity(path.stat()) for path in (first, denied)}
+    events = []
+    # Deny file data reads only; WRITE_DAC stays available for the cleanup.
+    account = _deny(denied, '(RD)')
+    try:
+        with pytest.raises(PermissionError):
+            denied.read_bytes()
+        with pytest.raises(InputError) as refused:
+            apply_patch_plan(root, plan, plan['plan_digest'],
+                             progress=lambda phase, _change: events.append(phase))
+        assert str(refused.value) == 'windows_source_read_access_denied'
+        assert refused.value.args == ('windows_source_read_access_denied',)
+        assert refused.value.__cause__ is None and refused.value.__suppress_context__
+        assert not isinstance(refused.value, OSError)
+        for private in (str(tmp_path), tmp_path.name, 'owned.py', 'host'):
+            assert private not in str(refused.value)
+        # No effect: no write started, no stage, backup or external intent.
+        assert events == []
+        assert first.read_bytes() == b'first old\n'
+        assert sorted(entry.name for entry in root.iterdir()) == ['first.py', 'owned.py']
+        assert {path: cap._windows_file_identity(path.stat())
+                for path in (first, denied)} == identities
+        assert not any(os.path.lexists(intent) for intent in intents)
+    finally:
+        _allow(denied, account)
+    assert denied.read_bytes() == b'old\n' and first.read_bytes() == b'first old\n'
+    assert {path: cap._windows_file_identity(path.stat())
+            for path in (first, denied)} == identities
+    # The same approved plan applies once the read is allowed again.
+    assert apply_patch_plan(root, plan, plan['plan_digest'])['status'] == 'applied'
+    assert denied.read_bytes() == b'new\n' and first.read_bytes() == b'first new\n'
+
+
+def _case_sensitive(directory, state: str) -> None:
+    changed = subprocess.run(
+        ['fsutil', 'file', 'setCaseSensitiveInfo', str(directory), state],
+        capture_output=True, text=True, timeout=15)
+    assert changed.returncode == 0, 'Per-directory NTFS case sensitivity is unavailable'
+
+
+def test_native_real_case_alias_refuses_apply_without_effect(tmp_path):
+    """A selected target with an on-disk sibling differing only by case."""
+    from jev_integration_evaluator import windows_source_mutation as mutation
+
+    root = tmp_path / 'host'
+    package = root / 'pkg'
+    package.mkdir(parents=True)
+    _case_sensitive(package, 'enable')
+    lower, upper = package / 'module.py', package / 'MODULE.py'
+    try:
+        lower.write_bytes(b'value = 1\n')
+        update = make_patch_plan(root, [{'file': 'pkg/module.py',
+                                         'new_content': 'value = 3\n'}], ['native-source'])
+        # Creating the other spelling beside the existing entry would make the alias.
+        create = make_patch_plan(root, [{'file': 'pkg/MODULE.py',
+                                         'new_content': 'value = 4\n'}], ['native-source'])
+        assert create['changes'][0]['operation'] == 'create'
+        with pytest.raises(InputError, match='^windows_source_case_alias_refused$'):
+            apply_patch_plan(root, create, create['plan_digest'])
+        assert os.listdir(package) == ['module.py'] and lower.read_bytes() == b'value = 1\n'
+
+        upper.write_bytes(b'value = 2\n')
+        assert sorted(os.listdir(package)) == ['MODULE.py', 'module.py']
+        other = make_patch_plan(root, [{'file': 'pkg/MODULE.py',
+                                        'new_content': 'value = 5\n'}], ['native-source'])
+        assert other['changes'][0]['operation'] == 'update'
+        identities = {path: cap._windows_file_identity(path.stat()) for path in (lower, upper)}
+        intents = [mutation._intent_path(root / plan['changes'][0]['file'],
+                                         plan['changes'][0]['old_sha256'],
+                                         plan['changes'][0]['new_sha256'], root)
+                   for plan in (update, other, create)]
+        events = []
+        for plan in (update, other):
+            with pytest.raises(InputError, match='^windows_source_case_alias_refused$'):
+                apply_patch_plan(root, plan, plan['plan_digest'],
+                                 progress=lambda phase, _change: events.append(phase))
+        assert events == []
+        assert lower.read_bytes() == b'value = 1\n' and upper.read_bytes() == b'value = 2\n'
+        assert sorted(os.listdir(package)) == ['MODULE.py', 'module.py']
+        assert {path: cap._windows_file_identity(path.stat())
+                for path in (lower, upper)} == identities
+        assert not any(os.path.lexists(intent) for intent in intents)
+        upper.unlink()
+        # With the alias gone the same approved update applies in that directory.
+        assert apply_patch_plan(root, update, update['plan_digest'])['status'] == 'applied'
+        assert lower.read_bytes() == b'value = 3\n' and os.listdir(package) == ['module.py']
+    finally:
+        for path in (upper, lower):
+            if os.path.lexists(path):
+                path.unlink()
+        _case_sensitive(package, 'disable')
+
+
+@pytest.mark.parametrize('touched', ('file', 'parent'))
+def test_native_icacls_touched_inherited_dacl_is_reproduced_exactly(tmp_path, touched):
+    """An ACE added and removed by icacls leaves SE_DACL_AUTO_INHERITED set."""
+    root = tmp_path / 'host'
+    root.mkdir()
+    source = root / 'owned.py'
+    source.write_bytes(b'old\n')
+    target = source if touched == 'file' else root
+    account = _deny(target, '(WD)')
+    _allow(target, account)
+    owner, descriptor, policy = _source_security(source)
+    control = struct.unpack_from('<H', descriptor, 2)[0]
+    offset = struct.unpack_from('<I', descriptor, 16)[0]
+    dacl = descriptor[offset:offset + struct.unpack_from('<H', descriptor, offset + 2)[0]]
+    # Not protected, automatically inherited: the control bit a plain
+    # SetKernelObjectSecurity restore drops unless it is requested.
+    assert control & 0x0400 and not control & 0x1000
+    plan = make_patch_plan(root, [{'file': 'owned.py', 'new_content': 'new\n'}],
+                           ['native-source'])
+
+    def fail_after_write(phase, _change):
+        if phase == 'write_completed':
+            raise RuntimeError('injected_following_failure')
+
+    def exact() -> None:
+        now_owner, now, now_policy = _source_security(source)
+        start = struct.unpack_from('<I', now, 16)[0]
+        assert (now_owner, now_policy) == (owner, policy)
+        assert struct.unpack_from('<H', now, 2)[0] & 0x150C == control & 0x150C
+        assert now[start:start + struct.unpack_from('<H', now, start + 2)[0]] == dacl
+
+    with pytest.raises(RuntimeError, match='injected_following_failure'):
+        apply_patch_plan(root, plan, plan['plan_digest'], progress=fail_after_write)
+    assert source.read_bytes() == b'old\n'
+    exact()
+    assert apply_patch_plan(root, plan, plan['plan_digest'])['status'] == 'applied'
+    assert source.read_bytes() == b'new\n'
+    assert [entry.name for entry in root.iterdir()] == ['owned.py']
+    exact()

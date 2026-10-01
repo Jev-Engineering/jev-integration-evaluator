@@ -87,7 +87,16 @@ def _restore_dacl(fd: int, descriptor: bytes) -> None:
     advapi.GetSecurityDescriptorControl.restype = wintypes.BOOL
     advapi.SetKernelObjectSecurity.argtypes = (wintypes.HANDLE, wintypes.DWORD, ctypes.c_void_p)
     advapi.SetKernelObjectSecurity.restype = wintypes.BOOL
-    buffer = ctypes.create_string_buffer(descriptor)
+    if len(descriptor) < 20:
+        raise InputError('windows_source_acl_restore_unavailable')
+    material = bytearray(descriptor)
+    recorded = struct.unpack_from('<H', material, 2)[0]
+    if recorded & 0x0400:
+        # The kernel keeps SE_DACL_AUTO_INHERITED only when the request bit
+        # accompanies it; otherwise the restored control word loses the
+        # recorded bit. Callers still compare the complete resulting DACL.
+        struct.pack_into('<H', material, 2, recorded | 0x0100)
+    buffer = ctypes.create_string_buffer(bytes(material), len(material))
     control, revision = wintypes.WORD(), wintypes.DWORD()
     if not advapi.GetSecurityDescriptorControl(buffer, ctypes.byref(control), ctypes.byref(revision)):
         raise InputError('windows_source_acl_restore_unavailable')

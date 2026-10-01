@@ -60,6 +60,48 @@ def _checked_files(files: dict[str, str]) -> dict[str, str]:
     return dict(sorted(result.items()))
 
 
+def _case_colliding_names(names) -> frozenset:
+    """Case-folded names carried by more than one entry of one directory."""
+    seen: set = set()
+    colliding = set()
+    for name in names:
+        key = name.casefold()
+        if key in seen:
+            colliding.add(key)
+        seen.add(key)
+    return frozenset(colliding)
+
+
+def refuse_case_alias(root: str | Path, relative: str, prefix: str) -> None:
+    """Refuse a selected target whose path component has an on-disk case alias.
+
+    Read-only. A per-directory case-sensitive NTFS directory can hold two
+    entries that differ only by case; a selected spelling is then ambiguous
+    for every case-insensitive consumer. A new name beside a differently
+    cased entry in such a directory is refused for the same reason.
+    """
+    directory = Path(root)
+    for part in PurePosixPath(relative).parts:
+        key = part.casefold()
+        try:
+            _, io_path = cap._windows_absolute_path(directory)
+            with os.scandir(io_path) as stream:
+                names = [entry.name for entry in stream if entry.name.casefold() == key]
+            absent = (bool(names) and part not in names
+                      and not os.path.lexists(os.path.join(io_path, part)))
+        except (FileNotFoundError, NotADirectoryError):
+            # Nothing is listed below a missing parent; later exact checks decide.
+            return
+        except cap.CapabilityError as exc:
+            raise InputError(prefix + exc.code) from None
+        except OSError as exc:
+            raise InputError(prefix + cap._windows_oserror_reason(
+                exc, directory=True)) from None
+        if _case_colliding_names(names) or absent:
+            raise InputError(prefix + 'case_alias_refused')
+        directory = directory / part
+
+
 def inspect_windows_template_source(root: str | Path, files: dict[str, str],
                                     output_parent: str | Path) -> dict:
     """Check selected exact source bytes and external NTFS path without writing.
@@ -82,6 +124,7 @@ def inspect_windows_template_source(root: str | Path, files: dict[str, str],
             total = 0
             for relative, expected in checked.items():
                 path = root_path.joinpath(*PurePosixPath(relative).parts)
+                refuse_case_alias(root_path, relative, 'windows_preflight_')
                 raw = cap._windows_secure_input(path, _MAX_FILE_BYTES)
                 total += len(raw)
                 if total > _MAX_TOTAL_BYTES:

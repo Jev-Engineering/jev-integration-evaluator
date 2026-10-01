@@ -39,6 +39,22 @@ def make_patch_plan(root: str | Path, changes: list[dict], candidate_ids: list[s
     return body
 
 
+def _read_target(p: Path, reader):
+    """Read an existing patch target, or None when absent.
+
+    A native Windows read refusal becomes a fixed reason without the path.
+    """
+    try:
+        return reader(p) if p.exists() else None
+    except OSError as exc:
+        if os.name != 'nt':
+            raise
+        from . import capabilities as cap
+        denied = cap._windows_oserror_reason(exc) == 'access_denied'
+        raise InputError('windows_source_read_access_denied' if denied
+                         else 'windows_source_read_unavailable') from None
+
+
 def apply_patch_plan(root: str | Path, plan: dict, approval: str, *, progress=None,
                      expected_identities: dict | None = None) -> dict:
     if os.name == 'nt':
@@ -61,20 +77,24 @@ def apply_patch_plan(root: str | Path, plan: dict, approval: str, *, progress=No
         if hashlib.sha256(c["new_content"].encode()).hexdigest()!=c["new_sha256"]: raise InputError("New content hash mismatch")
         if os.name == 'nt':
             from .windows_source_mutation import reconcile_pending_reviewed_write
+            from .windows_template_preflight import refuse_case_alias
+            refuse_case_alias(root, c['file'], 'windows_source_')
             if reconcile_pending_reviewed_write(p, c['old_sha256'], c['new_sha256'], root):
                 raise InputError('Interrupted owned source write reconciled; review a new plan')
-        actual=file_hash(p) if p.exists() else None
+        actual=_read_target(p, file_hash)
         if actual!=c["old_sha256"]: raise InputError("Stale patch: target changed after planning")
-        before[c["file"]]=p.read_bytes() if p.exists() else None
+        before[c["file"]]=_read_target(p, Path.read_bytes)
     written=[]; owned_identities={}
     try:
         for c in plan["changes"]:
             p=safe_child(root,c["file"])
             # Recheck just before writing. For concurrent writers use a dedicated worktree.
-            if (file_hash(p) if p.exists() else None)!=c["old_sha256"]: raise InputError("Concurrent source change")
+            if _read_target(p, file_hash)!=c["old_sha256"]: raise InputError("Concurrent source change")
             if progress is not None: progress("write_started", c)
             if os.name == 'nt':
                 from .windows_source_mutation import write_reviewed_text
+                from .windows_template_preflight import refuse_case_alias
+                refuse_case_alias(root, c['file'], 'windows_source_')
                 owned_identities[c['file']] = write_reviewed_text(
                     p, c['new_content'], c['old_sha256'], repository_root=root,
                     expected_identity=(expected_identities or {}).get(c['file']))

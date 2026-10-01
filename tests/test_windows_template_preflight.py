@@ -266,6 +266,55 @@ def test_native_unc_mapped_and_non_ntfs_roots_are_refused_without_effect(tmp_pat
     assert 'localhost' not in blocked.stdout and not list(external.iterdir())
 
 
+@pytest.mark.skipif(os.name != 'nt', reason='native Windows NTFS only')
+def test_native_real_case_alias_blocks_selected_source_preparation(tmp_path):
+    """A reviewed file or directory component with an on-disk case-only sibling."""
+    root, external, files = _fixture(tmp_path)
+    tree = root / 'cased'
+    tree.mkdir()
+    enabled = subprocess.run(
+        ['fsutil', 'file', 'setCaseSensitiveInfo', str(tree), 'enable'],
+        capture_output=True, text=True, timeout=15)
+    assert enabled.returncode == 0, 'Per-directory NTFS case sensitivity is unavailable'
+    lower, upper = tree / 'module.py', tree / 'MODULE.py'
+    low_dir, up_dir = tree / 'sub', tree / 'SUB'
+    try:
+        lower.write_bytes(b'value = 1\n')
+        upper.write_bytes(b'value = 2\n')
+        low_dir.mkdir()
+        (low_dir / 'inner.py').write_bytes(b'value = 3\n')
+        up_dir.mkdir()
+        assert sorted(os.listdir(tree)) == ['MODULE.py', 'SUB', 'module.py', 'sub']
+        before = _tree(tmp_path)
+        for relative, path in (('cased/module.py', lower), ('cased/MODULE.py', upper),
+                               ('cased/sub/inner.py', low_dir / 'inner.py')):
+            with pytest.raises(InputError, match='^windows_preflight_case_alias_refused$'):
+                inspect_windows_template_source(root, {**files, relative: _hash(path)}, external)
+        with pytest.raises(InputError, match='^case_ambiguous_windows_source_manifest$'):
+            inspect_windows_template_source(
+                root, {**files, 'cased/module.py': _hash(lower),
+                       'cased/MODULE.py': _hash(upper)}, external)
+        assert _tree(tmp_path) == before and not list(external.iterdir())
+        upper.unlink()
+        up_dir.rmdir()
+        # With both aliases gone the same reviewed spellings are prepared.
+        reviewed = {**files, 'cased/module.py': _hash(lower),
+                    'cased/sub/inner.py': _hash(low_dir / 'inner.py')}
+        report = inspect_windows_template_source(root, reviewed, external)
+        assert report['source_files'] == dict(sorted(reviewed.items()))
+        assert not list(external.iterdir())
+    finally:
+        if os.path.lexists(upper):
+            upper.unlink()
+        if os.path.lexists(up_dir):
+            up_dir.rmdir()
+        for directory in (low_dir, tree):
+            restored = subprocess.run(
+                ['fsutil', 'file', 'setCaseSensitiveInfo', str(directory), 'disable'],
+                capture_output=True, text=True, timeout=15)
+            assert restored.returncode == 0, 'Disposable case-sensitive directory was not restored'
+
+
 def test_non_windows_has_no_delivery_claim(tmp_path):
     if os.name == 'nt':
         pytest.skip('non-Windows rejection applies on POSIX')

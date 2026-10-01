@@ -13,7 +13,7 @@ from .contracts import validate_contract
 from .io import InputError, digest, file_hash, loads
 from .windows_template_owned import (
     check_private_directory, create_private_directory, generation_root_present,
-    read_private_json,
+    private_json_bytes, read_private_json,
     write_private_bytes_exclusive, write_private_json_exclusive,
 )
 from .windows_template_package_inputs import inspect_windows_template_package_inputs
@@ -84,6 +84,18 @@ def owned_windows_install_receipt(plan: dict, trusted_sha256: str) -> dict:
             or canonical['installed']['console_script'] != str(expected_console)):
         raise InputError('windows_session_install_receipt_unverified')
     return canonical
+
+
+def _installed_configuration_exact(plan: dict, root: Path) -> bool:
+    """Compare installed ``config.json`` bytes with the bytes written at install.
+
+    Installation writes the plan-bound configuration in one canonical byte form
+    and rechecks those exact bytes before the receipt exists, so the receipt's
+    ``plan_sha256`` already fixes them. A whitespace, key-order, duplicate-key
+    or trailing-newline change parses identically but is not that file.
+    """
+    expected = private_json_bytes(plan['package_plan']['request']['configuration'])
+    return cap._windows_secure_input(root / 'config.json', 100_000) == expected
 
 
 def plan_windows_template_install(package_plan: dict, package_receipt: dict,
@@ -162,7 +174,7 @@ def _verify_environment(plan: dict, root: Path, *, import_entry: bool) -> dict:
     for path in (python, script):
         if path.is_symlink() or not path.is_file() or path.stat().st_nlink != 1:
             raise InputError('windows_install_executable_missing_or_linked')
-    if loads(cap._windows_secure_input(root / 'config.json', 100_000)) != package['request']['configuration']:
+    if not _installed_configuration_exact(plan, root):
         raise InputError('windows_install_configuration_drift')
     versions = {row['name']: row['version'] for row in package['inputs']['wheel_files']}
     versions[package['inputs']['project_name']] = package['inputs']['project_version']
@@ -215,8 +227,7 @@ def _verify_installed_bytes(plan: dict, root: Path, expected: dict) -> None:
             raise InputError('windows_install_distribution_drift')
     if digest(files) != expected['installed_files_sha256']:
         raise InputError('windows_install_record_invalid')
-    if (loads(cap._windows_secure_input(root / 'config.json', 100_000)) != plan[
-            'package_plan']['request']['configuration']
+    if (not _installed_configuration_exact(plan, root)
             or acl_sha256(root / 'config.json') != expected['config_acl_sha256']):
         raise InputError('windows_install_configuration_drift')
 
