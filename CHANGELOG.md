@@ -48,6 +48,27 @@
   `windows_source_acl_not_reproducible`; the exact owner/DACL check is
   unchanged. The `windows-template-delivery` job now requires 86 cases;
   hosted execution of the six new cases is pending.
+- Issue #61 plan and lock follow-up. On native Windows `make_patch_plan` now
+  refuses a target whose read is denied or blocked by an exclusive handle
+  with the path-free `windows_source_read_access_denied` (another read
+  failure is `windows_source_read_unavailable`) instead of a raw
+  `PermissionError`, and refuses an on-disk case alias with
+  `windows_source_case_alias_refused` through the helpers `apply_patch_plan`
+  uses. That listing check also refuses a plan root on a UNC, mapped or
+  non-NTFS volume with a `windows_source_` reason. Other platforms, the plan
+  format and the CLI are unchanged. The `plan_implementation`,
+  `implementation_status`, `apply_implementation`, `rollback_implementation`
+  and binding-preparation readers still raise the raw error for a
+  read-denied source; that is recorded, not fixed. Five native tests are
+  added: the three plan refusals, a locked wheel, reviewed source file or
+  built host wheel at package planning, build, install planning and install
+  (including a lock that arrives after the build intent), and a locked file
+  in the selected or retained installed generation at upgrade and rollback.
+  The locked-file cases needed no production change. The
+  `windows-template-delivery` job now requires 91 cases and adds CPython 3.14
+  to its matrix; hosted execution of the new cases, a complete passing local
+  run of the upgrade and rollback lock case and the first hosted 3.14
+  delivery run are pending.
 
 ## Unreleased — connected shadow profiles and generation transfer
 

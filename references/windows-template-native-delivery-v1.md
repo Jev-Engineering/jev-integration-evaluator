@@ -20,7 +20,10 @@ the [PR #110 merge run](https://github.com/Jev-Engineering/jev-integration-evalu
 at `1aff22197d0ff5c64b660544b77ed81e1ab310bc`.
 The `windows-template-delivery` CI job schedules the native preparation,
 ownership, package/install, Job Object session and retained-generation tests
-on disposable Windows Server 2022 runners with CPython 3.10 and 3.13. It
+on disposable Windows Server 2022 runners with CPython 3.10, 3.13 and 3.14.
+The 3.14 entry was added to the matrix after the recorded Server runs: hosted
+3.14 delivery qualification is pending until that job's first run completes,
+and no hosted 3.14 delivery result is claimed here. It
 prepares the declared dependency closure before the offline tests and rejects
 any skipped required native case. Additive interruption cases require fresh
 qualification on their final committed revision; the historical 31-case run
@@ -122,6 +125,21 @@ lock and checks that no session directory is created and unrelated bytes remain
 intact. The unchanged `94d355b` implementation passes that same test. This
 qualifies one locked-file refusal, not the broader locked-root, ACL and
 interrupted-install matrix.
+A second installed-host test holds the same kind of handle on package
+inputs. A locked reviewed wheel or reviewed source file refuses package
+planning, build, install planning and install with
+`windows_package_access_denied`, and a locked built host wheel refuses
+install planning and install with `windows_package_status_unavailable`; each
+refusal leaves the output and environment parents without a new generation.
+When the lock arrives after the build intent, the offline tool install fails
+with `windows_package_offline_command_failed`, the retained partial
+generation reports `blocked_recovery` and refuses replay, and closing the
+handle does not make it acceptable. A separately reviewed output parent then
+builds and installs, and the installed console runs once under the off-mode
+supervisor (`test_native_locked_package_inputs_block_build_and_install_fail_closed`).
+The handles are held on a private copy of the wheelhouse. A lock taken after
+the last input check of a successful stage, directory handles, byte-range
+locks and third-party scanner handles are not exercised.
 A separate installed-host test rewrites the installed `config.json` content in
 place, keeping its file identity, owner and DACL, to a different runtime mode.
 Trusted and untrusted status then return `windows_install_configuration_drift`,
@@ -256,6 +274,22 @@ blocks for review; it is never deleted or replayed. This rollback selects a
 retained installed version; it does not undo #54 source edits. Restore source
 only through the independently reviewed #54 exact rollback with current
 ownership/ACL checks.
+
+An exclusive sharing handle on a file inside the currently selected
+generation, or inside the generation an upgrade would select, refuses
+`upgrade_windows_template_run` with `windows_install_status_unavailable`; the
+same handle inside the retained generation refuses
+`rollback_windows_template_run` with that reason, or with
+`windows_owned_record_unavailable` when the locked file is the retained
+install receipt. The refusal happens before
+the stage intent: no intent, generation, selection or child session is
+recorded, run status still returns the previous selection, and after the
+handle is closed that generation's install status is `installed_recorded`,
+one supervised off-mode console run succeeds, and the same upgrade or
+rollback is accepted
+(`test_native_locked_generation_file_blocks_upgrade_and_rollback_selection`).
+The test locks an installed module, `config.json`, the venv interpreter and
+the install receipt; it does not lock a directory or the run ledger itself.
 
 An interrupted install or launch still requires read-only status and manual
 review before a fresh generation is authorized. This checkpoint does not
