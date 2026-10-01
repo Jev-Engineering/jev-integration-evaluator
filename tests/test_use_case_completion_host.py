@@ -44,8 +44,12 @@ pytestmark = pytest.mark.skipif(not PROFILE, reason="E installed fixture require
 
 def _source_host(target: Path, version: str = "1.0.0",
                  task_ids: tuple[str, ...] = ("completion-task",),
-                 connected_authority_source: Path | None = None) -> tuple[dict, dict, dict]:
+                 connected_authority_source: Path | None = None,
+                 generation_task: str | None = None) -> tuple[dict, dict, dict]:
     assert version in ("1.0.0", "1.0.1")
+    if generation_task is not None:
+        assert generation_task in ("completion-one", "completion-two")
+        assert connected_authority_source is not None and len(task_ids) > 1
     assert task_ids and all(type(value) is str for value in task_ids)
     inventory, spec = fixture(target, "E", tag="raw_completion", layout="package",
                               package_name="completion_host")
@@ -130,7 +134,15 @@ def _source_host(target: Path, version: str = "1.0.0",
         "class Audit:\n"
         "    def __init__(self): self.records = []\n"
         "    def append(self, record): self.records.append(record)\n"
-        "def limits():\n"
+        "def limits():\n" +
+        # The retained generation reuses the original effect directory. A
+        # second normal console must refuse ownership before shadow fallback
+        # can call the original completion consumer again.
+        ("    import os\n"
+         "    if os.environ.get('E_CONNECTED_REF'):\n"
+         "        with (Path(os.environ['E_RAW_STATE_TEMPLATE']).parent / 'owner.txt').open('x', encoding='utf-8') as stream:\n"
+         "            stream.write('one-runtime-startup\\n')\n"
+         if generation_task is not None else "") +
         "    return dict(max_calls_per_task=2, max_cost_per_task=2, max_total_calls=2, max_total_cost=2, max_in_flight=1, max_tasks=2)\n"
         "def audit():\n    return Audit()\n"
         "def dependencies():\n"
@@ -141,6 +153,13 @@ def _source_host(target: Path, version: str = "1.0.0",
          "def options():\n    return {}\n") +
         "def make_requests():\n" +
         ("    import os\n"
+         "    release = os.environ.get('E_RELEASE_PATH')\n"
+         "    if release:\n"
+         "        with Path(release).with_suffix('.attempt').open('x', encoding='utf-8') as stream:\n"
+         "            stream.write('attempt\\n')\n"
+         f"    return [{{'task_id': '{generation_task}', 'operation': 'close_and_label'}}]\n"
+         if generation_task is not None else
+         "    import os\n"
          "    names = ('completion-one', 'completion-two') if os.environ.get('E_TASKS', 'two') == 'two' else ('completion-one', 'completion-one')\n"
          "    return [{'task_id': name, 'operation': 'close_and_label'} for name in names]\n"
          if connected_authority_source is not None else
@@ -271,10 +290,11 @@ def test_completion_bind_refuses_single_request_exit_shape(tmp_path):
 
 def _applied(tmp_path: Path, name: str, version: str,
              task_ids: tuple[str, ...] = ("completion-task",),
-             connected_authority_source: Path | None = None) -> dict:
+             connected_authority_source: Path | None = None,
+             generation_task: str | None = None) -> dict:
     target = tmp_path / name
     inventory, spec, request = _source_host(target, version, task_ids,
-                                            connected_authority_source)
+                                            connected_authority_source, generation_task)
     prepared = prepare_template_binding(target, request, _binding())
     request = prepared["request"]
     spec = request["implementation_spec"]

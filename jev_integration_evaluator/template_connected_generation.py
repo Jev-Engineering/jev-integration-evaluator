@@ -32,6 +32,12 @@ class ConnectedGenerationError(InputError):
     """Fixed diagnostic without source, credential, or private grant content."""
 
 
+# Finite single-placement host shapes with an installed two-generation
+# test. The composite selector and any unlisted name stay refused.
+_TRANSFER_PROFILES = (None, 'retrieval-d-v1', 'retention-h-v1', 'graph-l-v1',
+                      'claim-m-v1', 'completion-e-v1')
+
+
 _OPENSSL = Path('/usr/bin/openssl')
 _OPENSSL_ENV = {'LANG': 'C', 'OPENSSL_CONF': os.devnull,
                 'OPENSSL_MODULES': '/nonexistent', 'OPENSSL_ENGINES': '/nonexistent'}
@@ -122,7 +128,7 @@ def _installed(plan: dict, dependency_plan: dict, limits: dict) -> dict:
     # bytes here; the prospective child gets the full fresh-plan check below.
     validate_contract(plan, 'connected-delivery-plan-v1')
     host_profile = plan.get('host_profile')
-    if host_profile not in (None, 'retrieval-d-v1', 'retention-h-v1'):
+    if host_profile not in _TRANSFER_PROFILES:
         raise ConnectedGenerationError('connected_generation_profile_not_supported')
     profile = delivery._profile(host_profile)
     if digest({key: value for key, value in plan.items() if key != 'plan_sha256'}) != plan['plan_sha256']:
@@ -288,7 +294,7 @@ def plan_connected_generation_transfer(old_session: str | Path, new_plan: dict,
 
 
 def _authority(plan: dict, grant: dict, signature_file: str | Path):
-    if plan.get('host_profile') not in (None, 'retrieval-d-v1', 'retention-h-v1'):
+    if plan.get('host_profile') not in _TRANSFER_PROFILES:
         raise ConnectedGenerationError('connected_generation_profile_not_supported')
     binding = plan['installed_binding']
     public_name = delivery._profile(plan.get('host_profile'))['references'][1]

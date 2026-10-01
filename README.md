@@ -216,7 +216,8 @@ receipts; the component recomputes those gates before startup. See the
 by an independent live qualification. Offline fixture tests do not establish
 real provider connectivity, operational safety, or measured benefit.
 
-For the separately reviewed installed Alpha or finite D retrieval console, a
+For the separately reviewed installed Alpha console, or one finite D, H, L,
+M or E use-case console, a
 [stopped generation transfer](references/connected-generation-transfer-v1.md)
 can carry one durable ledger and run ID between two versions and back
 under distinct issuer-signed grants. A pending child needs explicit receipt

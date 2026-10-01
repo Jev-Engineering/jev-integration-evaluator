@@ -123,7 +123,7 @@
         "upgrade": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_completion_host.py"]},
         "rollback": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_completion_host.py"]},
         "connected_shadow": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_completion_connected.py"]},
-        "connected_upgrade": {"status": "pending", "evidence": []},
+        "connected_upgrade": {"status": "implemented_unqualified", "evidence": ["tests/test_connected_generation_completion_installed.py"], "note": "A stopped generation transfer driver exists for the bound E host and passed a local Linux x86-64 CPython 3.13 run with an explicit offline wheelhouse. The changelog and use-case matrix keep connected upgrade pending, so no qualification is claimed here."},
         "canary_active": {"status": "pending", "evidence": []},
         "provider_operation": {"status": "pending", "evidence": []},
         "measured_benefit": {"status": "pending", "evidence": []}
@@ -305,7 +305,7 @@
         "upgrade": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_graph_bound_installed.py", "tests/test_use_case_graph_installed.py"]},
         "rollback": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_graph_bound_installed.py", "tests/test_use_case_graph_installed.py"]},
         "connected_shadow": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_graph_connected.py"], "note": "Later fault rows added to this driver need a fresh installed Linux run before they count."},
-        "connected_upgrade": {"status": "pending", "evidence": []},
+        "connected_upgrade": {"status": "implemented_unqualified", "evidence": ["tests/test_connected_generation_graph_installed.py"], "note": "A stopped generation transfer driver exists for the bound L host and passed a local Linux x86-64 CPython 3.13 run with an explicit offline wheelhouse. The changelog and use-case matrix keep connected upgrade pending, so no qualification is claimed here."},
         "canary_active": {"status": "pending", "evidence": []},
         "provider_operation": {"status": "pending", "evidence": []},
         "measured_benefit": {"status": "pending", "evidence": []}
@@ -331,7 +331,7 @@
         "upgrade": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_claim_bound_installed.py", "tests/test_use_case_claim_host.py"]},
         "rollback": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_claim_bound_installed.py", "tests/test_use_case_claim_host.py"]},
         "connected_shadow": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_claim_connected.py"], "note": "A local Linux x86-64 CPython 3.13 run with an explicit offline wheelhouse executed this driver with no skip; the hosted 3.13 leg requires the module through .github/required-installed-journeys.txt."},
-        "connected_upgrade": {"status": "pending", "evidence": []},
+        "connected_upgrade": {"status": "implemented_unqualified", "evidence": ["tests/test_connected_generation_claim_installed.py"], "note": "A stopped generation transfer driver exists for the bound M host and passed a local Linux x86-64 CPython 3.13 run with an explicit offline wheelhouse. The changelog and use-case matrix keep connected upgrade pending, so no qualification is claimed here."},
         "canary_active": {"status": "pending", "evidence": []},
         "provider_operation": {"status": "pending", "evidence": []},
         "measured_benefit": {"status": "pending", "evidence": []}

@@ -54,9 +54,14 @@ reaches the local server afterwards, the one attempt reserved before the
 refused egress check stays charged in the ledger, the first raw state and
 receipt are unchanged and the second task is refused before its executor.
 The local server is explicitly synthetic. These results do not show a real JEV provider call,
-measured benefit, or observed canary/active gate. Connected upgrade and
-generation rollback remain pending; the separately qualified off-mode
-upgrade/rollback and source rollback do not grant connected authority.
+measured benefit, or observed canary/active gate. The
+[stopped generation controller](connected-generation-transfer-v1.md) accepts
+the `completion-e-v1` profile, with a two-version installed candidate in
+[test_connected_generation_completion_installed.py](../tests/test_connected_generation_completion_installed.py);
+its one protocol call per generation follows the committed raw effect. That
+is offline synthetic local-TLS evidence: connected upgrade and generation
+rollback remain pending in the use-case matrix, and the separately qualified
+off-mode upgrade/rollback and source rollback do not grant connected authority.
 
 Use the existing `template bind`, `materialize`, implementation, package and
 install CLI stages with exact reviewed inputs as in the offline E reference.
