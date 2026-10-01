@@ -52,6 +52,8 @@ For the separately reviewed Alpha 1.0.2 fixture, an additive [installed binding]
 
 For the independent dual 1.0.2 host, [composite installed binding](references/connected-composite-binding-v1.md) maps two reviewed placements plus a shared console and public-only loader to exact installed origins. Its opt-in connected shadow profile retains one durable task owner and budget across both normal-console decisions. The installed local TLS and effect tests are offline synthetic evidence; real provider reachability, combined observed canary/active gates, connected upgrade/rollback and benefit are pending.
 
+A separate [stopped connected generation transfer](references/connected-generation-transfer-v1.md) links two reviewed installed Alpha versions under one run ID and durable ledger. It requires an issuer-signed exact grant, stopped source-bound session, unchanged limits and original cutoff, and an inert child reconciled from the durable transfer receipt before launch. Local synthetic protocol qualification does not grant live egress or activation.
+
 For two to four compatible reviewed placements in one unchanged source snapshot,
 use the separate `implement-composite-*` transaction described in
 `references/composite-transactions-v1.md`. Its exact selected graph, final edits,
