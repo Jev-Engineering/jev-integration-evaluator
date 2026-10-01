@@ -101,6 +101,7 @@ Only offline shadow protocol fixtures are qualified; live provider and
 observed canary/active outcomes remain pending.
 It does not extend the Python #56 supervisor or grant connected authority.
 
+The [recipe lifecycle matrix](references/recipe-lifecycle-matrix-v1.md) gives each Python recipe A–M and the separate JS/TS recipe C entry explicit per-stage and per-platform cells; one qualified host never qualifies another recipe, language or platform.
 The [issue #59 use-case matrix](references/use-case-template-matrix-v1.md)
 pins six illustrative source contracts and five distinct offline host oracles.
 Its source match is read-only. Separate L graph, D retrieval, E completion, M claim support and H retention synthetic

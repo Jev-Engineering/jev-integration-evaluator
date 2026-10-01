@@ -292,6 +292,10 @@ does not establish external provider operation or benefit.
 
 ## Whole-catalog support boundary
 
+The [recipe lifecycle matrix](recipe-lifecycle-matrix-v1.md) gives every Python
+recipe A–M and the separate JS/TS recipe C entry an explicit cell per stage
+and platform, each bound to the test module that exercises it.
+
 Python recipes A, B, C, D, E, F, G, H, I, J, K, L and M remain catalogued at
 version 1.0 for the narrow `module-tail-call-v1` transform. For each of A, B,
 F, G, I, J and K, use-case-specific source contract, installed execution,
