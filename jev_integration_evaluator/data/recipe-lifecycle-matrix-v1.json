@@ -200,14 +200,14 @@
         "disable": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_retention_bound_installed.py", "tests/test_use_case_retention_host.py"]},
         "upgrade": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_retention_bound_installed.py", "tests/test_use_case_retention_host.py"]},
         "rollback": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_retention_bound_installed.py", "tests/test_use_case_retention_host.py"]},
-        "connected_shadow": {"status": "implemented_unqualified", "evidence": ["tests/test_use_case_retention_connected.py"], "note": "The connected driver is authored; its reference states fresh installed qualification is pending. Explicit /prune only; /compact is never performed."},
+        "connected_shadow": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_retention_connected.py"], "note": "A local Linux x86-64 CPython 3.13 run with an explicit offline wheelhouse executed this driver with no skip; the hosted 3.13 leg requires the module through .github/required-installed-journeys.txt. Explicit /prune only; /compact is never performed."},
         "connected_upgrade": {"status": "implemented_unqualified", "evidence": ["tests/test_connected_generation_retention_installed.py"], "note": "Two-version transfer candidate only; its reference states executed upgrade and rollback qualification is not yet established."},
         "canary_active": {"status": "pending", "evidence": []},
         "provider_operation": {"status": "pending", "evidence": []},
         "measured_benefit": {"status": "pending", "evidence": []}
       },
       "platforms": {
-        "linux": {"status": "qualified_offline_synthetic", "stages": ["source_transform", "template_materialize", "entrypoint_bind", "package_install", "supervised_launch_off", "disable", "upgrade", "rollback"], "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py", "tests/test_use_case_retention_bind.py", "tests/test_use_case_retention_bound_installed.py", "tests/test_use_case_retention_host.py"], "note": "Installed stages require Linux x86-64 CPython 3.13 and an explicit offline wheelhouse; without that input the cited installed cases skip."},
+        "linux": {"status": "qualified_offline_synthetic", "stages": ["source_transform", "template_materialize", "entrypoint_bind", "package_install", "supervised_launch_off", "disable", "upgrade", "rollback", "connected_shadow"], "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py", "tests/test_use_case_retention_bind.py", "tests/test_use_case_retention_bound_installed.py", "tests/test_use_case_retention_connected.py", "tests/test_use_case_retention_host.py"], "note": "Installed stages require Linux x86-64 CPython 3.13 and an explicit offline wheelhouse; without that input the cited installed cases skip."},
         "windows_native": {"status": "pending", "stages": [], "evidence": [], "note": "The transform tests are not platform gated, but the hosted native Windows jobs run only the named Windows modules, whose fixture is recipe C. No native Windows run is recorded for this recipe."},
         "node": {"status": "not_applicable", "stages": [], "evidence": [], "note": "Python recipe; the Node backend has its own row."}
       }
@@ -330,14 +330,14 @@
         "disable": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_claim_bound_installed.py", "tests/test_use_case_claim_host.py"]},
         "upgrade": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_claim_bound_installed.py", "tests/test_use_case_claim_host.py"]},
         "rollback": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_claim_bound_installed.py", "tests/test_use_case_claim_host.py"]},
-        "connected_shadow": {"status": "implemented_unqualified", "evidence": ["tests/test_use_case_claim_connected.py"], "note": "The connected driver is authored; its reference states the rows remain pending until the fresh installed qualification completes."},
+        "connected_shadow": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_claim_connected.py"], "note": "A local Linux x86-64 CPython 3.13 run with an explicit offline wheelhouse executed this driver with no skip; the hosted 3.13 leg requires the module through .github/required-installed-journeys.txt."},
         "connected_upgrade": {"status": "pending", "evidence": []},
         "canary_active": {"status": "pending", "evidence": []},
         "provider_operation": {"status": "pending", "evidence": []},
         "measured_benefit": {"status": "pending", "evidence": []}
       },
       "platforms": {
-        "linux": {"status": "qualified_offline_synthetic", "stages": ["source_transform", "template_materialize", "entrypoint_bind", "package_install", "supervised_launch_off", "disable", "upgrade", "rollback"], "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py", "tests/test_use_case_claim_bind.py", "tests/test_use_case_claim_bound_installed.py", "tests/test_use_case_claim_host.py"], "note": "Installed stages require Linux x86-64 CPython 3.13 and an explicit offline wheelhouse; without that input the cited installed cases skip."},
+        "linux": {"status": "qualified_offline_synthetic", "stages": ["source_transform", "template_materialize", "entrypoint_bind", "package_install", "supervised_launch_off", "disable", "upgrade", "rollback", "connected_shadow"], "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py", "tests/test_use_case_claim_bind.py", "tests/test_use_case_claim_bound_installed.py", "tests/test_use_case_claim_connected.py", "tests/test_use_case_claim_host.py"], "note": "Installed stages require Linux x86-64 CPython 3.13 and an explicit offline wheelhouse; without that input the cited installed cases skip."},
         "windows_native": {"status": "pending", "stages": [], "evidence": [], "note": "The transform tests are not platform gated, but the hosted native Windows jobs run only the named Windows modules, whose fixture is recipe C. No native Windows run is recorded for this recipe."},
         "node": {"status": "not_applicable", "stages": [], "evidence": [], "note": "Python recipe; the Node backend has its own row."}
       }

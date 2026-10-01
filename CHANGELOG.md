@@ -2,6 +2,20 @@
 
 ## Unreleased — native Windows delivery gap qualification
 
+- Issue #59 follow-up: the installed D retrieval connected test adds
+  malformed-response, actual-timeout and between-task revocation schedules
+  with exact call and ledger counts. The `retrieval-d-v1` profile accepts a
+  new finite `D_HOLD_POINT` launch value (`pre-commit` default,
+  `between-tasks`); other values, or `between-tasks` without `D_HOLD` `1` and
+  `D_RELEASE_PATH`, are refused. The use-case matrix gains per-row
+  `host_interfaces`, explicit `configure` and `normal_start` cells and a
+  per-cell `evidence` map that the loader enforces; its schema requires the
+  new fields. M and H `connected_shadow` are promoted to their offline
+  synthetic protocol labels in both matrices after a local Linux x86-64
+  CPython 3.13 run with no skipped case. Each of the five operator
+  references gains a parser-checked quickstart, a parameter and binding
+  table and an unsupported-case list. Connected upgrade, provider operation,
+  canary/active and benefit remain pending.
 - Add the registered-tool template quickstart for issue #57
   (`references/registered-tool-template-quickstart-v1.md`): the ordered Linux
   x86-64 CPython 3.13 recipe C journey with parser-checked commands, expected

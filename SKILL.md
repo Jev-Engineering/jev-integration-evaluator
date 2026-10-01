@@ -41,9 +41,10 @@ observed benefit, provider connectivity, or activation eligibility.
 
 The finite [H connected retention profile](references/retention-template-connected-v1.md)
 requires an explicit `/prune` choice, private authority references and
-independent retained-item observations. Fresh installed qualification of its
-timeout and between-task revocation schedule remains pending, as do external
-provider operation, connected upgrade and measured benefit.
+independent retained-item observations. Its timeout and between-task
+revocation schedule is qualified only as an offline synthetic installed
+protocol; external provider operation, connected upgrade and measured benefit
+remain pending.
 
 Native Windows `apply_patch_plan` source writes have separate local NTFS
 ownership and recovery limits; see `references/windows-source-mutation-v1.md`.
@@ -112,7 +113,7 @@ bind with an explicit `/prune` choice carried through a separate offline
 installed normal console, supervised upgrade and retained generation rollback.
 M claim support has a source-bound bounded-loop bind and owned console edit
 carried through a separate offline installed claim effect journey. Its separate
-pending [M connected shadow profile](references/template-claim-connected-v1.md)
+offline synthetic [M connected shadow profile](references/template-claim-connected-v1.md)
 retains exact citation policy, two stable tasks and a shared durable ledger.
 D retrieval carries its source-bound bounded-loop bind and owned console edit through a
 separate offline installed two-task retrieval journey. L graph identity has a source-bound bounded-loop

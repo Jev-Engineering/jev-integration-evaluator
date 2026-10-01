@@ -78,12 +78,12 @@ The JSON file holds the full values, evidence paths and notes.
 | `python.E` | qualified | qualified | qualified | qualified | qualified | qualified | qualified | qualified | qualified | pending | pending | pending | pending | qualified | pending | n/a |
 | `python.F` | qualified | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | qualified | pending | n/a |
 | `python.G` | qualified | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | qualified | pending | n/a |
-| `python.H` | qualified | qualified | qualified | qualified | qualified | qualified | qualified | qualified | implemented | implemented | pending | pending | pending | qualified | pending | n/a |
+| `python.H` | qualified | qualified | qualified | qualified | qualified | qualified | qualified | qualified | qualified | implemented | pending | pending | pending | qualified | pending | n/a |
 | `python.I` | qualified | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | qualified | pending | n/a |
 | `python.J` | qualified | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | qualified | pending | n/a |
 | `python.K` | qualified | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | qualified | pending | n/a |
 | `python.L` | qualified | qualified | qualified | qualified | qualified | qualified | qualified | qualified | qualified | pending | pending | pending | pending | qualified | pending | n/a |
-| `python.M` | qualified | qualified | qualified | qualified | qualified | qualified | qualified | qualified | implemented | pending | pending | pending | pending | qualified | pending | n/a |
+| `python.M` | qualified | qualified | qualified | qualified | qualified | qualified | qualified | qualified | qualified | pending | pending | pending | pending | qualified | pending | n/a |
 | `javascript.recipe-c@1.0.0` | qualified | qualified | qualified | qualified | qualified | qualified | qualified | qualified | qualified | pending | pending | pending | pending | qualified | unsupported | qualified |
 
 A platform cell is qualified only for the stages it lists in the JSON
@@ -111,9 +111,13 @@ A qualified platform cell therefore does not mean every stage runs there.
 - **L, D, E, M, H.** Each cites only its own use-case host, bind, installed
   and connected modules. A test checks that no qualified cell here exceeds the
   corresponding field in the use-case matrix.
-- **Connected shadow for M and H** is `implemented_unqualified`: the drivers
-  exist, and their references state that fresh installed qualification is
-  still pending.
+- **Connected shadow for M and H** is `qualified_offline_synthetic`: a local
+  Linux x86-64 CPython 3.13 run with an explicit offline wheelhouse executed
+  `tests/test_use_case_claim_connected.py` and
+  `tests/test_use_case_retention_connected.py` with no skip, and the hosted
+  3.13 leg lists both modules in `.github/required-installed-journeys.txt`,
+  so a skipped case fails that job. This is a local synthetic TLS protocol
+  result, not provider operation.
 - **Connected upgrade for C, D and H** is `implemented_unqualified`: stopped
   generation transfer drivers exist, while the changelog and the use-case
   matrix keep connected upgrade pending. L, E, M and JS/TS have no transfer

@@ -61,8 +61,158 @@ upgrade/rollback and measured benefit remain pending.
 | L graph identity | `python.L@1.0`; [graph fixture](../examples/graph-system/entities.py) and [pinned consumer](../examples/use-case-host/graph_runtime.py), [#44](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/44) | Approval, exact entity snapshot, revision and audit before merge | Offline synthetic L host: source-bound #54 bounded-loop console bind carried through plan/apply/verify/rollback, #55 install and #56 normal-console observation/disable/versioned upgrade/generation rollback. [Separate installed synthetic graph shadow protocol](graph-template-connected-v1.md) checks two SQLite effects and local TLS fallback; external provider and connected upgrade pending | Unknown |
 | D retrieval evidence | `python.D@1.0`; [RAG fixture](../examples/rag-system/pipeline.py), [pinned corpus](../examples/use-case-host/retrieval_corpus_v1.json) and [consumer](../examples/use-case-host/retrieval_consumer.py), [#45](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/45) | Passage provenance, missing evidence and material contradiction retention | Offline synthetic D host: source-bound #54 bounded-loop console bind carried through plan/apply/verify/rollback, #55 install and #56 normal-console observation/disable/versioned upgrade/generation rollback. [Separate installed synthetic shadow protocol](retrieval-template-connected-v1.md) checks local TLS/fallback; external provider and connected upgrade pending | Unknown |
 | E completion | `python.E@1.0`; [raw-state oracle](../examples/coding-agent/completion_oracle.py), [#46](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/46) | Raw objective and effect receipts independent of executor success | Offline synthetic E host: source-bound #54 task-loop console bind/plan/apply/verify, #55 install, #56 normal-console observation/disable/versioned upgrade/generation rollback. [Separate installed shadow protocol](completion-template-connected-v1.md) checks local TLS/fallback and two raw tasks; real provider and connected upgrade pending | Unknown |
-| M claim support | `python.M@1.0`; [claim reviewer](../examples/rag-system/pipeline.py) and [pinned consumer](../examples/use-case-host/claim_consumer.py), [#47](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/47) | Exact citation spans, critical-claim block and audit before release | Offline synthetic M host: source-bound #54 bounded-loop bind carried through plan/apply/verify/rollback, #55 install and #56 normal-console observation/disable/versioned upgrade/generation rollback; provider pending | Unknown |
-| H retention | `python.H@1.0`; [memory oracle](../examples/coding-agent/retention_oracle.py) and [consumer adapter](../examples/use-case-host/retention_consumer.py), [#49](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/49) | Raw retained-item bytes, pinned provenance, budget and explicit `/prune` | Offline synthetic H host: source-bound #54 bounded-loop console bind carried through plan/apply/verify/rollback, #55 install and #56 normal-console observation/disable/versioned upgrade/generation rollback; provider pending | Unknown |
+| M claim support | `python.M@1.0`; [claim reviewer](../examples/rag-system/pipeline.py) and [pinned consumer](../examples/use-case-host/claim_consumer.py), [#47](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/47) | Exact citation spans, critical-claim block and audit before release | Offline synthetic M host: source-bound #54 bounded-loop bind carried through plan/apply/verify/rollback, #55 install and #56 normal-console observation/disable/versioned upgrade/generation rollback. [Separate installed synthetic claim shadow protocol](template-claim-connected-v1.md) checks local TLS fallback, citation refusals and between-task revocation; external provider and connected upgrade pending | Unknown |
+| H retention | `python.H@1.0`; [memory oracle](../examples/coding-agent/retention_oracle.py) and [consumer adapter](../examples/use-case-host/retention_consumer.py), [#49](https://github.com/Jev-Engineering/jev-integration-evaluator/issues/49) | Raw retained-item bytes, pinned provenance, budget and explicit `/prune` | Offline synthetic H host: source-bound #54 bounded-loop console bind carried through plan/apply/verify/rollback, #55 install and #56 normal-console observation/disable/versioned upgrade/generation rollback. [Separate installed synthetic retention shadow protocol](retention-template-connected-v1.md) checks local TLS fallback, explicit `/prune` and between-task revocation; external provider and connected upgrade pending | Unknown |
+
+## Explicit lifecycle cells, host interfaces and evidence
+
+Each JSON row states every lifecycle cell explicitly, names the code-owned host
+functions its template binds, and maps every cell to the test modules that
+exercise it. `use_case_matrix()` refuses a matrix in which a qualified cell has
+no evidence, a pending cell cites evidence, an evidence cell is missing, or a
+host interface lies outside the row's pinned files.
+
+- `host_interfaces` lists `{file, symbol}` pairs. Every file is the row's pinned
+  `source` or `consumer_adapter`; the test parses those files without importing
+  them and checks that each symbol is defined there.
+- `configure` is the reviewed off-mode configuration: the #55 package request
+  carries the strict `configuration` object and its independently retained
+  `reviewed_configuration_sha256`, the install writes it, and status rechecks it.
+  It is not provider or credential configuration.
+- `normal_start` is the supervised launch of the installed console script through
+  a #56 session and exact launch scope. It is backed by the same modules as
+  `launch`; it is listed separately so the cell is explicit.
+- `evidence` has one entry per cell: `materialize`, `bind`, `apply`, `install`,
+  `configure`, `normal_start`, `launch`, `verify`, `status`, `disable`, `upgrade`,
+  `rollback`, `connected_shadow`, `connected_upgrade`, `provider` and `benefit`.
+  The last three are never qualified offline and always cite nothing. A
+  `connected_shadow` module must also be listed in
+  `.github/required-installed-journeys.txt`, so the hosted Linux CPython 3.13
+  leg fails when it skips.
+
+| Case | `host_interfaces` |
+| --- | --- |
+| C registered tool | [agent.py](../examples/coding-agent/agent.py): `admissible`, `dispatch_once` |
+| L graph identity | [entities.py](../examples/graph-system/entities.py): `InMemoryGraph.merge_if_current`, `reconcile`; [graph_runtime.py](../examples/use-case-host/graph_runtime.py): `merge` |
+| D retrieval evidence | [pipeline.py](../examples/rag-system/pipeline.py): `select_evidence`, `answer_with_evidence`; [retrieval_consumer.py](../examples/use-case-host/retrieval_consumer.py): `answer_handoff`, `commit` |
+| E completion | [completion_oracle.py](../examples/coding-agent/completion_oracle.py): `exact_goal`, `score_trace`; [completion_consumer.py](../examples/use-case-host/completion_consumer.py): `commit` |
+| M claim support | [pipeline.py](../examples/rag-system/pipeline.py): `select_evidence`, `review_claims`; [claim_consumer.py](../examples/use-case-host/claim_consumer.py): `commit` |
+| H retention | [retention_oracle.py](../examples/coding-agent/retention_oracle.py): `raw_postconditions`, `score_recall`; [retention_consumer.py](../examples/use-case-host/retention_consumer.py): `commit` |
+
+The C row has no qualified cell and therefore cites no evidence; its installed
+profile is tracked by #57. For the other rows:
+
+**L graph identity.**
+
+| Cell | State | Evidence |
+| --- | --- | --- |
+| `materialize` | `qualified_offline_l_synthetic_host` | [`tests/test_use_case_graph_bound_installed.py`](../tests/test_use_case_graph_bound_installed.py), [`tests/test_use_case_graph_installed.py`](../tests/test_use_case_graph_installed.py) |
+| `bind` | `qualified_offline_l_synthetic_host` | [`tests/test_use_case_graph_bind.py`](../tests/test_use_case_graph_bind.py) |
+| `apply` | `qualified_offline_l_synthetic_host` | [`tests/test_use_case_graph_host.py`](../tests/test_use_case_graph_host.py) |
+| `install` | `qualified_offline_l_synthetic_host` | [`tests/test_use_case_graph_bound_installed.py`](../tests/test_use_case_graph_bound_installed.py), [`tests/test_use_case_graph_installed.py`](../tests/test_use_case_graph_installed.py) |
+| `configure` | `qualified_offline_l_synthetic_host` | [`tests/test_use_case_graph_bound_installed.py`](../tests/test_use_case_graph_bound_installed.py), [`tests/test_use_case_graph_installed.py`](../tests/test_use_case_graph_installed.py) |
+| `normal_start` | `qualified_offline_l_synthetic_host` | [`tests/test_use_case_graph_bound_installed.py`](../tests/test_use_case_graph_bound_installed.py), [`tests/test_use_case_graph_installed.py`](../tests/test_use_case_graph_installed.py) |
+| `launch` | `qualified_offline_l_synthetic_host` | [`tests/test_use_case_graph_bound_installed.py`](../tests/test_use_case_graph_bound_installed.py), [`tests/test_use_case_graph_installed.py`](../tests/test_use_case_graph_installed.py) |
+| `verify` | `qualified_offline_l_synthetic_host` | [`tests/test_use_case_graph_host.py`](../tests/test_use_case_graph_host.py) |
+| `status` | `qualified_offline_l_synthetic_host` | [`tests/test_use_case_graph_bound_installed.py`](../tests/test_use_case_graph_bound_installed.py), [`tests/test_use_case_graph_installed.py`](../tests/test_use_case_graph_installed.py) |
+| `disable` | `qualified_offline_l_synthetic_host` | [`tests/test_use_case_graph_bound_installed.py`](../tests/test_use_case_graph_bound_installed.py), [`tests/test_use_case_graph_installed.py`](../tests/test_use_case_graph_installed.py) |
+| `upgrade` | `qualified_offline_l_synthetic_host` | [`tests/test_use_case_graph_bound_installed.py`](../tests/test_use_case_graph_bound_installed.py), [`tests/test_use_case_graph_installed.py`](../tests/test_use_case_graph_installed.py) |
+| `rollback` | `qualified_offline_l_synthetic_host` | [`tests/test_use_case_graph_bound_installed.py`](../tests/test_use_case_graph_bound_installed.py), [`tests/test_use_case_graph_installed.py`](../tests/test_use_case_graph_installed.py) |
+| `connected_shadow` | `qualified_offline_l_installed_shadow_protocol` | [`tests/test_use_case_graph_connected.py`](../tests/test_use_case_graph_connected.py) |
+| `connected_upgrade` | `pending` | none |
+| `provider` | `pending` | none |
+| `benefit` | `unknown` | none |
+
+**D retrieval evidence.**
+
+| Cell | State | Evidence |
+| --- | --- | --- |
+| `materialize` | `qualified_offline_d_synthetic_host` | [`tests/test_use_case_retrieval_host.py`](../tests/test_use_case_retrieval_host.py) |
+| `bind` | `qualified_offline_d_synthetic_host` | [`tests/test_use_case_retrieval_bind.py`](../tests/test_use_case_retrieval_bind.py) |
+| `apply` | `qualified_offline_d_synthetic_host` | [`tests/test_use_case_retrieval_host.py`](../tests/test_use_case_retrieval_host.py) |
+| `install` | `qualified_offline_d_synthetic_host` | [`tests/test_use_case_retrieval_bound_installed.py`](../tests/test_use_case_retrieval_bound_installed.py), [`tests/test_use_case_retrieval_host.py`](../tests/test_use_case_retrieval_host.py) |
+| `configure` | `qualified_offline_d_synthetic_host` | [`tests/test_use_case_retrieval_bound_installed.py`](../tests/test_use_case_retrieval_bound_installed.py), [`tests/test_use_case_retrieval_host.py`](../tests/test_use_case_retrieval_host.py) |
+| `normal_start` | `qualified_offline_d_synthetic_host` | [`tests/test_use_case_retrieval_bound_installed.py`](../tests/test_use_case_retrieval_bound_installed.py), [`tests/test_use_case_retrieval_host.py`](../tests/test_use_case_retrieval_host.py) |
+| `launch` | `qualified_offline_d_synthetic_host` | [`tests/test_use_case_retrieval_bound_installed.py`](../tests/test_use_case_retrieval_bound_installed.py), [`tests/test_use_case_retrieval_host.py`](../tests/test_use_case_retrieval_host.py) |
+| `verify` | `qualified_offline_d_synthetic_host` | [`tests/test_use_case_retrieval_host.py`](../tests/test_use_case_retrieval_host.py) |
+| `status` | `qualified_offline_d_synthetic_host` | [`tests/test_use_case_retrieval_bound_installed.py`](../tests/test_use_case_retrieval_bound_installed.py), [`tests/test_use_case_retrieval_host.py`](../tests/test_use_case_retrieval_host.py) |
+| `disable` | `qualified_offline_d_synthetic_host` | [`tests/test_use_case_retrieval_bound_installed.py`](../tests/test_use_case_retrieval_bound_installed.py), [`tests/test_use_case_retrieval_host.py`](../tests/test_use_case_retrieval_host.py) |
+| `upgrade` | `qualified_offline_d_synthetic_host` | [`tests/test_use_case_retrieval_bound_installed.py`](../tests/test_use_case_retrieval_bound_installed.py), [`tests/test_use_case_retrieval_host.py`](../tests/test_use_case_retrieval_host.py) |
+| `rollback` | `qualified_offline_d_synthetic_host` | [`tests/test_use_case_retrieval_bound_installed.py`](../tests/test_use_case_retrieval_bound_installed.py), [`tests/test_use_case_retrieval_host.py`](../tests/test_use_case_retrieval_host.py) |
+| `connected_shadow` | `qualified_offline_d_installed_shadow_protocol` | [`tests/test_use_case_retrieval_connected.py`](../tests/test_use_case_retrieval_connected.py) |
+| `connected_upgrade` | `pending` | none |
+| `provider` | `pending` | none |
+| `benefit` | `unknown` | none |
+
+**E completion.**
+
+| Cell | State | Evidence |
+| --- | --- | --- |
+| `materialize` | `qualified_offline_e_synthetic_host` | [`tests/test_use_case_completion_host.py`](../tests/test_use_case_completion_host.py) |
+| `bind` | `qualified_offline_e_synthetic_host` | [`tests/test_use_case_completion_host.py`](../tests/test_use_case_completion_host.py) |
+| `apply` | `qualified_offline_e_synthetic_host` | [`tests/test_use_case_completion_host.py`](../tests/test_use_case_completion_host.py) |
+| `install` | `qualified_offline_e_synthetic_host` | [`tests/test_use_case_completion_host.py`](../tests/test_use_case_completion_host.py) |
+| `configure` | `qualified_offline_e_synthetic_host` | [`tests/test_use_case_completion_host.py`](../tests/test_use_case_completion_host.py) |
+| `normal_start` | `qualified_offline_e_synthetic_host` | [`tests/test_use_case_completion_host.py`](../tests/test_use_case_completion_host.py) |
+| `launch` | `qualified_offline_e_synthetic_host` | [`tests/test_use_case_completion_host.py`](../tests/test_use_case_completion_host.py) |
+| `verify` | `qualified_offline_e_synthetic_host` | [`tests/test_use_case_completion_host.py`](../tests/test_use_case_completion_host.py) |
+| `status` | `qualified_offline_e_synthetic_host` | [`tests/test_use_case_completion_host.py`](../tests/test_use_case_completion_host.py) |
+| `disable` | `qualified_offline_e_synthetic_host` | [`tests/test_use_case_completion_host.py`](../tests/test_use_case_completion_host.py) |
+| `upgrade` | `qualified_offline_e_synthetic_host` | [`tests/test_use_case_completion_host.py`](../tests/test_use_case_completion_host.py) |
+| `rollback` | `qualified_offline_e_synthetic_host` | [`tests/test_use_case_completion_host.py`](../tests/test_use_case_completion_host.py) |
+| `connected_shadow` | `qualified_offline_e_installed_shadow_protocol` | [`tests/test_use_case_completion_connected.py`](../tests/test_use_case_completion_connected.py) |
+| `connected_upgrade` | `pending` | none |
+| `provider` | `pending` | none |
+| `benefit` | `unknown` | none |
+
+**M claim support.**
+
+| Cell | State | Evidence |
+| --- | --- | --- |
+| `materialize` | `qualified_offline_m_synthetic_host` | [`tests/test_use_case_claim_host.py`](../tests/test_use_case_claim_host.py) |
+| `bind` | `qualified_offline_m_synthetic_host` | [`tests/test_use_case_claim_bind.py`](../tests/test_use_case_claim_bind.py) |
+| `apply` | `qualified_offline_m_synthetic_host` | [`tests/test_use_case_claim_host.py`](../tests/test_use_case_claim_host.py) |
+| `install` | `qualified_offline_m_synthetic_host` | [`tests/test_use_case_claim_bound_installed.py`](../tests/test_use_case_claim_bound_installed.py), [`tests/test_use_case_claim_host.py`](../tests/test_use_case_claim_host.py) |
+| `configure` | `qualified_offline_m_synthetic_host` | [`tests/test_use_case_claim_bound_installed.py`](../tests/test_use_case_claim_bound_installed.py), [`tests/test_use_case_claim_host.py`](../tests/test_use_case_claim_host.py) |
+| `normal_start` | `qualified_offline_m_synthetic_host` | [`tests/test_use_case_claim_bound_installed.py`](../tests/test_use_case_claim_bound_installed.py), [`tests/test_use_case_claim_host.py`](../tests/test_use_case_claim_host.py) |
+| `launch` | `qualified_offline_m_synthetic_host` | [`tests/test_use_case_claim_bound_installed.py`](../tests/test_use_case_claim_bound_installed.py), [`tests/test_use_case_claim_host.py`](../tests/test_use_case_claim_host.py) |
+| `verify` | `qualified_offline_m_synthetic_host` | [`tests/test_use_case_claim_host.py`](../tests/test_use_case_claim_host.py) |
+| `status` | `qualified_offline_m_synthetic_host` | [`tests/test_use_case_claim_bound_installed.py`](../tests/test_use_case_claim_bound_installed.py), [`tests/test_use_case_claim_host.py`](../tests/test_use_case_claim_host.py) |
+| `disable` | `qualified_offline_m_synthetic_host` | [`tests/test_use_case_claim_bound_installed.py`](../tests/test_use_case_claim_bound_installed.py), [`tests/test_use_case_claim_host.py`](../tests/test_use_case_claim_host.py) |
+| `upgrade` | `qualified_offline_m_synthetic_host` | [`tests/test_use_case_claim_bound_installed.py`](../tests/test_use_case_claim_bound_installed.py), [`tests/test_use_case_claim_host.py`](../tests/test_use_case_claim_host.py) |
+| `rollback` | `qualified_offline_m_synthetic_host` | [`tests/test_use_case_claim_bound_installed.py`](../tests/test_use_case_claim_bound_installed.py), [`tests/test_use_case_claim_host.py`](../tests/test_use_case_claim_host.py) |
+| `connected_shadow` | `qualified_offline_m_installed_shadow_protocol` | [`tests/test_use_case_claim_connected.py`](../tests/test_use_case_claim_connected.py) |
+| `connected_upgrade` | `pending` | none |
+| `provider` | `pending` | none |
+| `benefit` | `unknown` | none |
+
+**H retention.**
+
+| Cell | State | Evidence |
+| --- | --- | --- |
+| `materialize` | `qualified_offline_h_synthetic_host` | [`tests/test_use_case_retention_host.py`](../tests/test_use_case_retention_host.py) |
+| `bind` | `qualified_offline_h_synthetic_host` | [`tests/test_use_case_retention_bind.py`](../tests/test_use_case_retention_bind.py) |
+| `apply` | `qualified_offline_h_synthetic_host` | [`tests/test_use_case_retention_host.py`](../tests/test_use_case_retention_host.py) |
+| `install` | `qualified_offline_h_synthetic_host` | [`tests/test_use_case_retention_bound_installed.py`](../tests/test_use_case_retention_bound_installed.py), [`tests/test_use_case_retention_host.py`](../tests/test_use_case_retention_host.py) |
+| `configure` | `qualified_offline_h_synthetic_host` | [`tests/test_use_case_retention_bound_installed.py`](../tests/test_use_case_retention_bound_installed.py), [`tests/test_use_case_retention_host.py`](../tests/test_use_case_retention_host.py) |
+| `normal_start` | `qualified_offline_h_synthetic_host` | [`tests/test_use_case_retention_bound_installed.py`](../tests/test_use_case_retention_bound_installed.py), [`tests/test_use_case_retention_host.py`](../tests/test_use_case_retention_host.py) |
+| `launch` | `qualified_offline_h_synthetic_host` | [`tests/test_use_case_retention_bound_installed.py`](../tests/test_use_case_retention_bound_installed.py), [`tests/test_use_case_retention_host.py`](../tests/test_use_case_retention_host.py) |
+| `verify` | `qualified_offline_h_synthetic_host` | [`tests/test_use_case_retention_host.py`](../tests/test_use_case_retention_host.py) |
+| `status` | `qualified_offline_h_synthetic_host` | [`tests/test_use_case_retention_bound_installed.py`](../tests/test_use_case_retention_bound_installed.py), [`tests/test_use_case_retention_host.py`](../tests/test_use_case_retention_host.py) |
+| `disable` | `qualified_offline_h_synthetic_host` | [`tests/test_use_case_retention_bound_installed.py`](../tests/test_use_case_retention_bound_installed.py), [`tests/test_use_case_retention_host.py`](../tests/test_use_case_retention_host.py) |
+| `upgrade` | `qualified_offline_h_synthetic_host` | [`tests/test_use_case_retention_bound_installed.py`](../tests/test_use_case_retention_bound_installed.py), [`tests/test_use_case_retention_host.py`](../tests/test_use_case_retention_host.py) |
+| `rollback` | `qualified_offline_h_synthetic_host` | [`tests/test_use_case_retention_bound_installed.py`](../tests/test_use_case_retention_bound_installed.py), [`tests/test_use_case_retention_host.py`](../tests/test_use_case_retention_host.py) |
+| `connected_shadow` | `qualified_offline_h_installed_shadow_protocol` | [`tests/test_use_case_retention_connected.py`](../tests/test_use_case_retention_connected.py) |
+| `connected_upgrade` | `pending` | none |
+| `provider` | `pending` | none |
+| `benefit` | `unknown` | none |
+
+The installed modules skip without Linux x86-64 CPython 3.13 and an explicit
+`JEV_TEMPLATE_WHEELHOUSE`; a skipped run is not evidence. M and H
+`connected_shadow` were promoted after a local Linux x86-64 CPython 3.13 run of
+`tests/test_use_case_claim_connected.py` and
+`tests/test_use_case_retention_connected.py` with no skipped case. That run is
+offline synthetic local TLS evidence only.
 
 ## Operator use and binding limits
 
@@ -279,16 +429,17 @@ refuses duplicate IDs, excess tasks, `/compact`, missing choice and occupied
 effect paths, and exercises reviewed 1.0.1 upgrade, retained-generation
 rollback and both matching owned-source rollbacks. It remains an offline
 synthetic fixture with one successful task ID. Interruption and
-connected/provider operation also remain pending. The
+provider operation also remain pending. The
 [H operator reference](retention-template-offline-v1.md) lists exact inputs and
 limits.
 
 The separate [H connected profile](retention-template-connected-v1.md) carries
 explicit `/prune`, private reference pins and two bounded task IDs. Its
-authored installed schedule is designed to assert raw retained bytes and provenance,
-actual timeout audit events and between-task reference revocation. Fresh
-installed qualification and connected upgrade remain pending; the schedule
-does not establish external provider operation or benefit.
+installed schedule asserts raw retained bytes and provenance, actual timeout
+audit events and between-task reference revocation, and is recorded as
+`qualified_offline_h_installed_shadow_protocol`. Connected upgrade remains
+pending; the schedule does not establish external provider operation or
+benefit.
 
 ## Whole-catalog support boundary
 
@@ -301,7 +452,9 @@ version 1.0 for the narrow `module-tail-call-v1` transform. For each of A, B,
 F, G, I, J and K, use-case-specific source contract, installed execution,
 connected mode and benefit are **not qualified by this checkpoint**. C points
 to its separate #57 qualification. L, D, E, M and H have the limited offline installed
-journeys above. All connected cells remain pending. The separate JavaScript/TypeScript
+journeys above. `connected_shadow` is qualified for L, D, E, M and H only as an
+offline synthetic local TLS protocol; `connected_upgrade`, provider, canary,
+active and benefit remain pending in every row. The separate JavaScript/TypeScript
 `javascript.C@1.0` flat async backend has its own source catalog; it has no
 L/D/E/M/H coverage and no installed Node journey from this checkpoint. All
 rows remain mode **off**. Shadow, canary and active require separate authenticated

@@ -12,7 +12,7 @@ Timeout diagnostics use `EvaluationTimeoutError`, a subtype of the existing
 over the elapsed budget receive this type; other transport failures retain
 the generic error. The host audit writes only the fixed type and error-class
 metadata when the actual router reports this timeout. Provider exception text
-is suppressed. Fresh installed verification of this correction remains pending.
+is suppressed. The installed timeout schedule below exercises this correction.
 
 The finite `retention-h-v1` profile binds the reviewed
 `retention_host/host_retention_consumer.py`, normal `retention-host` console and
@@ -60,8 +60,13 @@ Revocation must retain the first effect
 and its original ledger charge while refusing the second task. Authentic
 stop and matching source rollback complete the journey.
 
-This new connected component remains pending installed qualification,
-independent review and CI. Existing off-mode generation/rollback evidence is
+A local Linux x86-64 CPython 3.13 run with an explicit offline wheelhouse
+executed `tests/test_use_case_retention_connected.py` without a skip, and the
+hosted 3.13 leg lists the module in `.github/required-installed-journeys.txt`;
+the use-case matrix therefore records
+`qualified_offline_h_installed_shadow_protocol`. This is an offline synthetic
+protocol result only; independent review is separate and is not claimed here.
+Existing off-mode generation/rollback evidence is
 separate. Connected upgrade, external provider connectivity, authentic
 canary/active receipts and raw holdouts, measured recall benefit, arbitrary
 hosts and other platforms remain pending. Keep every scheduled failure and

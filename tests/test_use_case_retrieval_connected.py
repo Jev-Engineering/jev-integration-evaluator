@@ -10,6 +10,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import sqlite3
 import ssl
 import subprocess
 import sys
@@ -106,6 +107,22 @@ def _wait(path: Path, expected: bytes, seconds: float = 20) -> None:
     raise AssertionError('independent D effect missing')
 
 
+def _ledger(path: Path) -> dict | None:
+    database = Path(str(path) + '.sqlite')
+    if not database.is_file():
+        return None
+    with sqlite3.connect(database.as_uri() + '?mode=ro', uri=True, timeout=1) as db:
+        row = db.execute('SELECT payload FROM state WHERE id=1').fetchone()
+    return json.loads(row[0]) if row else None
+
+
+def _failure_events(folder: Path) -> list[dict]:
+    path = folder / 'failure-events.jsonl'
+    if not path.is_file():
+        return []
+    return [json.loads(line) for line in path.read_text().splitlines()]
+
+
 def test_d_source_bound_installed_connected_shadow_raw_retrieval(tmp_path, monkeypatch):
     wheelhouse_name = os.environ.get('JEV_TEMPLATE_WHEELHOUSE')
     if not wheelhouse_name:
@@ -151,6 +168,9 @@ def test_d_source_bound_installed_connected_shadow_raw_retrieval(tmp_path, monke
             raw = self.rfile.read(int(self.headers['Content-Length']))
             request = json.loads(raw)
             calls.append({'path': self.path, 'sha256': hashlib.sha256(raw).hexdigest()})
+            if response_mode['value'] == 'timeout':
+                # Longer than the adapter's fixed 2000 ms transport budget.
+                time.sleep(3)
             answers = {}
             for name, question in request['questions'].items():
                 if question['type'] == 'noul':
@@ -162,14 +182,19 @@ def test_d_source_bound_installed_connected_shadow_raw_retrieval(tmp_path, monke
                                      'confidence': 1.0,
                                      'probabilities': {label: float(label == choice)
                                                        for label in labels}}
-            model = request['model'] if response_mode['value'] == 'valid' else request['model'] + '-wrong'
-            result = json.dumps({'model': model, 'answers': answers,
-                                 'usage': {'input_tokens': 1, 'output_tokens': 1}}).encode()
+            model = (request['model'] if response_mode['value'] != 'wrong_model'
+                     else request['model'] + '-wrong')
+            result = (b'{not-json' if response_mode['value'] == 'malformed' else
+                      json.dumps({'model': model, 'answers': answers,
+                                  'usage': {'input_tokens': 1, 'output_tokens': 1}}).encode())
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.send_header('Content-Length', str(len(result)))
             self.end_headers()
-            self.wfile.write(result)
+            try:
+                self.wfile.write(result)
+            except (OSError, ssl.SSLError):
+                pass
 
     cert, cert_key = tmp_path / 'loopback.crt', tmp_path / 'loopback.key'
     generated = subprocess.run(['openssl', 'req', '-x509', '-newkey', 'rsa:2048',
@@ -198,7 +223,14 @@ def test_d_source_bound_installed_connected_shadow_raw_retrieval(tmp_path, monke
             'cert_sha256': file_hash(cert), 'credential_present': True})
         grant['environment_digest'] = config['environment_digest']
 
-        def one_run(label: str, expected_calls: int) -> tuple[dict, Path]:
+        def one_run(label: str, expected_calls: int, *,
+                    mode: str = 'valid') -> tuple[dict, Path]:
+            assert mode in ('valid', 'wrong_model', 'malformed', 'timeout', 'revoke_ref')
+            # The three fault schedules hold after the first committed effect
+            # and before the second task routes, so each provider attempt and
+            # its ledger reservation can be read back exactly.
+            between_tasks = mode in ('malformed', 'timeout', 'revoke_ref')
+            response_mode['value'] = 'valid' if mode == 'revoke_ref' else mode
             previous_calls = len(calls)
             folder = tmp_path / ('effects-' + label)
             folder.mkdir(mode=0o700)
@@ -223,12 +255,33 @@ def test_d_source_bound_installed_connected_shadow_raw_retrieval(tmp_path, monke
                           'D_TASKS': 'two', 'D_HOLD': '1',
                           'D_RELEASE_PATH': str(folder / 'release.txt'),
                           'SSL_CERT_FILE': str(cert)}
+            if between_tasks:
+                launch_env['D_HOLD_POINT'] = 'between-tasks'
             if label == 'valid':
                 common = dict(
                     trusted_install_receipt_sha256=receipt['receipt_sha256'],
                     trusted_package_receipt_sha256=package_receipt['receipt_sha256'],
                     installed_binding=report, trusted_binding_sha256=report['binding_sha256'],
                     observation=observation)
+                # The hold point is a finite selector, and a between-task hold
+                # without an explicit hold and release path is refused.
+                for wrong in ({**launch_env, 'D_HOLD_POINT': 'model-decides'},
+                              {**launch_env, 'D_HOLD_POINT': 'between-tasks', 'D_HOLD': '0'},
+                              {k: v for k, v in {**launch_env,
+                                                 'D_HOLD_POINT': 'between-tasks'}.items()
+                               if k != 'D_HOLD'},
+                              {k: v for k, v in {**launch_env,
+                                                 'D_HOLD_POINT': 'between-tasks'}.items()
+                               if k != 'D_RELEASE_PATH'},
+                              {**launch_env, 'D_TASKS': 'unbounded'},
+                              {**launch_env, 'D_HOLD': 'yes'}):
+                    with pytest.raises(ConnectedDeliveryError,
+                                       match='connected_host_references_required'):
+                        plan_connected_delivery(install_plan, **common,
+                            launch_environment=wrong, host_profile='retrieval-d-v1')
+                assert plan_connected_delivery(install_plan, **common,
+                    launch_environment={**launch_env, 'D_HOLD_POINT': 'pre-commit'},
+                    host_profile='retrieval-d-v1')['host_profile'] == 'retrieval-d-v1'
                 with pytest.raises(ConnectedDeliveryError, match='connected_host_references_required'):
                     plan_connected_delivery(install_plan, **common,
                         launch_environment={**launch_env,
@@ -278,6 +331,97 @@ def test_d_source_bound_installed_connected_shadow_raw_retrieval(tmp_path, monke
             launched = launch_connected_session(session, scope=launch,
                 approved_scope_sha256=launch['scope_sha256'])
             assert launched['launch_attempts'] == 1
+            if between_tasks:
+                _wait(folder / 'retrieval-one.json', raw)
+                held = connected_session_status(session)
+                assert held['process_alive']
+                assert held['independent_checks']['integration_reachable']
+                assert not held['independent_checks']['ready']
+                assert not held['independent_checks']['outcome_verified']
+                # Exactly one provider attempt, settled in the durable ledger,
+                # before the second task is released.
+                deadline = time.monotonic() + 10
+                snapshot = None
+                while time.monotonic() < deadline:
+                    snapshot = _ledger(ledger)
+                    if (len(calls) == previous_calls + 1 and snapshot is not None
+                            and snapshot['calls'] == 1 and not snapshot['inflight']):
+                        break
+                    time.sleep(0.02)
+                else:
+                    raise AssertionError('first D shadow reservation did not settle')
+                assert len(calls) == previous_calls + 1
+                assert calls[-1]['path'] == '/v1/systemone'
+                expected_event = None
+                if mode in ('malformed', 'timeout'):
+                    expected_event = {'type': 'assessment_error', 'error_class': (
+                        'JSONDecodeError' if mode == 'malformed' else 'EvaluationTimeoutError')}
+                    deadline = time.monotonic() + 5
+                    while not _failure_events(folder) and time.monotonic() < deadline:
+                        time.sleep(0.02)
+                    assert _failure_events(folder) == [expected_event]
+                else:
+                    assert _failure_events(folder) == []
+                # The failed assessment did not change the committed effect and
+                # nothing of the second task exists while it is held.
+                assert (folder / 'retrieval-one.json').read_bytes() == raw
+                assert not (folder / 'ready.txt').exists()
+                assert not (folder / 'retrieval-two.json').exists()
+                if mode == 'revoke_ref':
+                    reference.write_bytes(original_reference + b'\n')
+                    assert not connected_session_status(session)['private_references_current']
+                (folder / 'release.txt').write_bytes(b'go\n')
+                if mode != 'revoke_ref':
+                    _wait(folder / 'ready.txt', b'ready\n')
+                    _wait(folder / 'retrieval-two.json', raw)
+                    assert connected_session_status(session)['independent_checks']['outcome_verified']
+                deadline = time.monotonic() + 20
+                while connected_session_status(session)['process_alive'] and time.monotonic() < deadline:
+                    time.sleep(0.05)
+                finished = connected_session_status(session)
+                assert not finished['process_alive']
+                snapshot = _ledger(ledger)
+                assert snapshot is not None and not snapshot['inflight']
+                if mode == 'revoke_ref':
+                    # The second task fails closed before its route: no second
+                    # effect, no readiness marker and no further provider call.
+                    assert not (folder / 'ready.txt').exists()
+                    assert not (folder / 'retrieval-two.json').exists()
+                    assert not finished['independent_checks']['outcome_verified']
+                    assert len(calls) == previous_calls + 1
+                    assert snapshot['calls'] == 1
+                    assert _failure_events(folder) == []
+                    reference.write_bytes(original_reference)
+                    assert connected_session_status(session)['private_references_current']
+                else:
+                    assert len(calls) == previous_calls + 2
+                    assert calls[-1]['path'] == '/v1/systemone'
+                    assert snapshot['calls'] == 2
+                    assert len(snapshot['tasks']) == 2
+                    assert _failure_events(folder) == [expected_event] * 2
+                    assert (folder / 'retrieval-two.json').read_bytes() == raw
+                # The deterministic host effect is the unassisted baseline in
+                # every schedule: the conflict is withheld with all passages.
+                assert (folder / 'retrieval-one.json').read_bytes() == raw
+                assert (folder / 'owner.txt').read_bytes() == b'one-runtime-startup\n'
+                for task in (('retrieval-one',) if mode == 'revoke_ref'
+                             else ('retrieval-one', 'retrieval-two')):
+                    effect = json.loads((folder / (task + '.json')).read_bytes())
+                    assert effect['answer']['disposition'] == 'withheld_conflict'
+                    assert effect['answer']['answer'] is None
+                    assert effect['selected_ids'] == ['hit', 'counter', 'maybe']
+                    assert [item['source_id'] for item in effect['answer']['passages']] == [
+                        'registry-one', 'registry-two', 'registry-three']
+                    validate_contract(effect['answer'], 'retrieval-answer-handoff-v1')
+                assert sorted(path.name for path in folder.iterdir()) == sorted(
+                    ['owner.txt', 'release.txt', 'retrieval-one.json']
+                    + ([] if mode == 'revoke_ref' else ['ready.txt', 'retrieval-two.json'])
+                    + (['failure-events.jsonl'] if expected_event else []))
+                stop_scope = _scope(connected_session_status(session), plan, 'stop')
+                stopped = stop_connected_session(session, scope=stop_scope,
+                    approved_scope_sha256=stop_scope['scope_sha256'])
+                assert stopped['stage'] == 'stopped'
+                return plan, folder
             _wait(folder / 'ready.txt', b'ready\n')
             _wait(folder / 'retrieval-one.json', raw)
             before_release = connected_session_status(session)
@@ -311,14 +455,25 @@ def test_d_source_bound_installed_connected_shadow_raw_retrieval(tmp_path, monke
             return plan, folder
 
         first_plan, first_folder = one_run('valid', 2)
-        response_mode['value'] = 'wrong_model'
-        second_plan, second_folder = one_run('wrong-model', 1)
+        second_plan, second_folder = one_run('wrong-model', 1, mode='wrong_model')
         assert first_plan['plan_sha256'] != second_plan['plan_sha256']
         assert (first_folder / 'retrieval-one.json').read_bytes() == \
                (second_folder / 'retrieval-one.json').read_bytes()
         # The second shadow future can already be sent when a malformed first
         # response suspends routing.  Both schedules retain the baseline effect.
         assert len(calls) in (3, 4)
+        calls_before_faults = len(calls)
+        _, malformed = one_run('malformed-response', 2, mode='malformed')
+        _, timed_out = one_run('actual-timeout', 2, mode='timeout')
+        _, revoked = one_run('revoked-reference', 1, mode='revoke_ref')
+        assert len(calls) == calls_before_faults + 5
+        baseline = (first_folder / 'retrieval-one.json').read_bytes()
+        assert baseline == (first_folder / 'retrieval-two.json').read_bytes()
+        for fault in (malformed, timed_out):
+            assert (fault / 'retrieval-one.json').read_bytes() == baseline
+            assert (fault / 'retrieval-two.json').read_bytes() == baseline
+        assert (revoked / 'retrieval-one.json').read_bytes() == baseline
+        assert not (revoked / 'retrieval-two.json').exists()
     finally:
         for session, plan in active_sessions:
             if session.exists():

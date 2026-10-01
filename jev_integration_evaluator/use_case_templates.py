@@ -14,6 +14,18 @@ from .io import InputError, file_hash, read_json
 
 
 RESOURCE = "use-case-template-matrix-v1.json"
+# Every lifecycle cell a row states explicitly. A cell is evidence-bound: a
+# qualified cell names the test modules that exercise it and any other cell
+# names none.
+EVIDENCE_CELLS = ("materialize", "bind", "apply", "install", "configure", "normal_start",
+                  "launch", "verify", "status", "disable", "upgrade", "rollback",
+                  "connected_shadow", "connected_upgrade", "provider", "benefit")
+# These need observed evidence that an offline synthetic test cannot supply.
+NEVER_OFFLINE_QUALIFIED = ("connected_upgrade", "provider", "benefit")
+
+
+def _qualified(row: dict, cell: str) -> bool:
+    return str(row.get(cell, "pending")).startswith("qualified_offline_")
 
 
 def use_case_matrix() -> dict:
@@ -23,6 +35,16 @@ def use_case_matrix() -> dict:
         "C", "L", "D", "E", "M", "H"
     ):
         raise InputError("Unsupported use-case matrix version or rows")
+    for row in matrix["rows"]:
+        if tuple(row["evidence"]) != EVIDENCE_CELLS:
+            raise InputError("Use-case matrix row omits or reorders an evidence cell")
+        if any(_qualified(row, cell) != bool(row["evidence"][cell]) for cell in EVIDENCE_CELLS):
+            raise InputError("Use-case matrix cell and its evidence disagree")
+        if any(_qualified(row, cell) for cell in NEVER_OFFLINE_QUALIFIED):
+            raise InputError("Use-case matrix qualifies an observed-only cell")
+        pinned = {row["source"], row.get("consumer_adapter")}
+        if any(interface["file"] not in pinned for interface in row["host_interfaces"]):
+            raise InputError("Use-case host interface is outside the pinned source contract")
     return copy.deepcopy(matrix)
 
 

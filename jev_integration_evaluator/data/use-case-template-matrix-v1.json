@@ -86,7 +86,31 @@
       "status": "pending",
       "disable": "pending",
       "upgrade": "pending",
-      "rollback": "pending"
+      "rollback": "pending",
+      "configure": "pending",
+      "normal_start": "pending",
+      "host_interfaces": [
+        {"file": "examples/coding-agent/agent.py", "symbol": "admissible"},
+        {"file": "examples/coding-agent/agent.py", "symbol": "dispatch_once"}
+      ],
+      "evidence": {
+        "materialize": [],
+        "bind": [],
+        "apply": [],
+        "install": [],
+        "configure": [],
+        "normal_start": [],
+        "launch": [],
+        "verify": [],
+        "status": [],
+        "disable": [],
+        "upgrade": [],
+        "rollback": [],
+        "connected_shadow": [],
+        "connected_upgrade": [],
+        "provider": [],
+        "benefit": []
+      }
     },
     {
       "id": "L",
@@ -121,7 +145,32 @@
       "status": "qualified_offline_l_synthetic_host",
       "disable": "qualified_offline_l_synthetic_host",
       "upgrade": "qualified_offline_l_synthetic_host",
-      "rollback": "qualified_offline_l_synthetic_host"
+      "rollback": "qualified_offline_l_synthetic_host",
+      "configure": "qualified_offline_l_synthetic_host",
+      "normal_start": "qualified_offline_l_synthetic_host",
+      "host_interfaces": [
+        {"file": "examples/graph-system/entities.py", "symbol": "InMemoryGraph.merge_if_current"},
+        {"file": "examples/graph-system/entities.py", "symbol": "reconcile"},
+        {"file": "examples/use-case-host/graph_runtime.py", "symbol": "merge"}
+      ],
+      "evidence": {
+        "materialize": ["tests/test_use_case_graph_bound_installed.py", "tests/test_use_case_graph_installed.py"],
+        "bind": ["tests/test_use_case_graph_bind.py"],
+        "apply": ["tests/test_use_case_graph_host.py"],
+        "install": ["tests/test_use_case_graph_bound_installed.py", "tests/test_use_case_graph_installed.py"],
+        "configure": ["tests/test_use_case_graph_bound_installed.py", "tests/test_use_case_graph_installed.py"],
+        "normal_start": ["tests/test_use_case_graph_bound_installed.py", "tests/test_use_case_graph_installed.py"],
+        "launch": ["tests/test_use_case_graph_bound_installed.py", "tests/test_use_case_graph_installed.py"],
+        "verify": ["tests/test_use_case_graph_host.py"],
+        "status": ["tests/test_use_case_graph_bound_installed.py", "tests/test_use_case_graph_installed.py"],
+        "disable": ["tests/test_use_case_graph_bound_installed.py", "tests/test_use_case_graph_installed.py"],
+        "upgrade": ["tests/test_use_case_graph_bound_installed.py", "tests/test_use_case_graph_installed.py"],
+        "rollback": ["tests/test_use_case_graph_bound_installed.py", "tests/test_use_case_graph_installed.py"],
+        "connected_shadow": ["tests/test_use_case_graph_connected.py"],
+        "connected_upgrade": [],
+        "provider": [],
+        "benefit": []
+      }
     },
     {
       "id": "D",
@@ -158,7 +207,33 @@
       "status": "qualified_offline_d_synthetic_host",
       "disable": "qualified_offline_d_synthetic_host",
       "upgrade": "qualified_offline_d_synthetic_host",
-      "rollback": "qualified_offline_d_synthetic_host"
+      "rollback": "qualified_offline_d_synthetic_host",
+      "configure": "qualified_offline_d_synthetic_host",
+      "normal_start": "qualified_offline_d_synthetic_host",
+      "host_interfaces": [
+        {"file": "examples/rag-system/pipeline.py", "symbol": "select_evidence"},
+        {"file": "examples/rag-system/pipeline.py", "symbol": "answer_with_evidence"},
+        {"file": "examples/use-case-host/retrieval_consumer.py", "symbol": "answer_handoff"},
+        {"file": "examples/use-case-host/retrieval_consumer.py", "symbol": "commit"}
+      ],
+      "evidence": {
+        "materialize": ["tests/test_use_case_retrieval_host.py"],
+        "bind": ["tests/test_use_case_retrieval_bind.py"],
+        "apply": ["tests/test_use_case_retrieval_host.py"],
+        "install": ["tests/test_use_case_retrieval_bound_installed.py", "tests/test_use_case_retrieval_host.py"],
+        "configure": ["tests/test_use_case_retrieval_bound_installed.py", "tests/test_use_case_retrieval_host.py"],
+        "normal_start": ["tests/test_use_case_retrieval_bound_installed.py", "tests/test_use_case_retrieval_host.py"],
+        "launch": ["tests/test_use_case_retrieval_bound_installed.py", "tests/test_use_case_retrieval_host.py"],
+        "verify": ["tests/test_use_case_retrieval_host.py"],
+        "status": ["tests/test_use_case_retrieval_bound_installed.py", "tests/test_use_case_retrieval_host.py"],
+        "disable": ["tests/test_use_case_retrieval_bound_installed.py", "tests/test_use_case_retrieval_host.py"],
+        "upgrade": ["tests/test_use_case_retrieval_bound_installed.py", "tests/test_use_case_retrieval_host.py"],
+        "rollback": ["tests/test_use_case_retrieval_bound_installed.py", "tests/test_use_case_retrieval_host.py"],
+        "connected_shadow": ["tests/test_use_case_retrieval_connected.py"],
+        "connected_upgrade": [],
+        "provider": [],
+        "benefit": []
+      }
     },
     {
       "id": "E",
@@ -193,12 +268,37 @@
       "status": "qualified_offline_e_synthetic_host",
       "disable": "qualified_offline_e_synthetic_host",
       "upgrade": "qualified_offline_e_synthetic_host",
-      "rollback": "qualified_offline_e_synthetic_host"
+      "rollback": "qualified_offline_e_synthetic_host",
+      "configure": "qualified_offline_e_synthetic_host",
+      "normal_start": "qualified_offline_e_synthetic_host",
+      "host_interfaces": [
+        {"file": "examples/coding-agent/completion_oracle.py", "symbol": "exact_goal"},
+        {"file": "examples/coding-agent/completion_oracle.py", "symbol": "score_trace"},
+        {"file": "examples/use-case-host/completion_consumer.py", "symbol": "commit"}
+      ],
+      "evidence": {
+        "materialize": ["tests/test_use_case_completion_host.py"],
+        "bind": ["tests/test_use_case_completion_host.py"],
+        "apply": ["tests/test_use_case_completion_host.py"],
+        "install": ["tests/test_use_case_completion_host.py"],
+        "configure": ["tests/test_use_case_completion_host.py"],
+        "normal_start": ["tests/test_use_case_completion_host.py"],
+        "launch": ["tests/test_use_case_completion_host.py"],
+        "verify": ["tests/test_use_case_completion_host.py"],
+        "status": ["tests/test_use_case_completion_host.py"],
+        "disable": ["tests/test_use_case_completion_host.py"],
+        "upgrade": ["tests/test_use_case_completion_host.py"],
+        "rollback": ["tests/test_use_case_completion_host.py"],
+        "connected_shadow": ["tests/test_use_case_completion_connected.py"],
+        "connected_upgrade": [],
+        "provider": [],
+        "benefit": []
+      }
     },
     {
       "id": "M",
       "use_case": "claim_support",
-      "connected_shadow": "pending",
+      "connected_shadow": "qualified_offline_m_installed_shadow_protocol",
       "connected_upgrade": "pending",
       "issue": 47,
       "template_id": "python.bounded-tail-call",
@@ -228,7 +328,32 @@
       "status": "qualified_offline_m_synthetic_host",
       "disable": "qualified_offline_m_synthetic_host",
       "upgrade": "qualified_offline_m_synthetic_host",
-      "rollback": "qualified_offline_m_synthetic_host"
+      "rollback": "qualified_offline_m_synthetic_host",
+      "configure": "qualified_offline_m_synthetic_host",
+      "normal_start": "qualified_offline_m_synthetic_host",
+      "host_interfaces": [
+        {"file": "examples/rag-system/pipeline.py", "symbol": "select_evidence"},
+        {"file": "examples/rag-system/pipeline.py", "symbol": "review_claims"},
+        {"file": "examples/use-case-host/claim_consumer.py", "symbol": "commit"}
+      ],
+      "evidence": {
+        "materialize": ["tests/test_use_case_claim_host.py"],
+        "bind": ["tests/test_use_case_claim_bind.py"],
+        "apply": ["tests/test_use_case_claim_host.py"],
+        "install": ["tests/test_use_case_claim_bound_installed.py", "tests/test_use_case_claim_host.py"],
+        "configure": ["tests/test_use_case_claim_bound_installed.py", "tests/test_use_case_claim_host.py"],
+        "normal_start": ["tests/test_use_case_claim_bound_installed.py", "tests/test_use_case_claim_host.py"],
+        "launch": ["tests/test_use_case_claim_bound_installed.py", "tests/test_use_case_claim_host.py"],
+        "verify": ["tests/test_use_case_claim_host.py"],
+        "status": ["tests/test_use_case_claim_bound_installed.py", "tests/test_use_case_claim_host.py"],
+        "disable": ["tests/test_use_case_claim_bound_installed.py", "tests/test_use_case_claim_host.py"],
+        "upgrade": ["tests/test_use_case_claim_bound_installed.py", "tests/test_use_case_claim_host.py"],
+        "rollback": ["tests/test_use_case_claim_bound_installed.py", "tests/test_use_case_claim_host.py"],
+        "connected_shadow": ["tests/test_use_case_claim_connected.py"],
+        "connected_upgrade": [],
+        "provider": [],
+        "benefit": []
+      }
     },
     {
       "id": "H",
@@ -255,7 +380,7 @@
       "mode": "off",
       "benefit": "unknown",
       "contract_id": "use-case.H@1.0.0",
-      "connected_shadow": "pending",
+      "connected_shadow": "qualified_offline_h_installed_shadow_protocol",
       "connected_upgrade": "pending",
       "materialize": "qualified_offline_h_synthetic_host",
       "bind": "qualified_offline_h_synthetic_host",
@@ -263,7 +388,32 @@
       "status": "qualified_offline_h_synthetic_host",
       "disable": "qualified_offline_h_synthetic_host",
       "upgrade": "qualified_offline_h_synthetic_host",
-      "rollback": "qualified_offline_h_synthetic_host"
+      "rollback": "qualified_offline_h_synthetic_host",
+      "configure": "qualified_offline_h_synthetic_host",
+      "normal_start": "qualified_offline_h_synthetic_host",
+      "host_interfaces": [
+        {"file": "examples/coding-agent/retention_oracle.py", "symbol": "raw_postconditions"},
+        {"file": "examples/coding-agent/retention_oracle.py", "symbol": "score_recall"},
+        {"file": "examples/use-case-host/retention_consumer.py", "symbol": "commit"}
+      ],
+      "evidence": {
+        "materialize": ["tests/test_use_case_retention_host.py"],
+        "bind": ["tests/test_use_case_retention_bind.py"],
+        "apply": ["tests/test_use_case_retention_host.py"],
+        "install": ["tests/test_use_case_retention_bound_installed.py", "tests/test_use_case_retention_host.py"],
+        "configure": ["tests/test_use_case_retention_bound_installed.py", "tests/test_use_case_retention_host.py"],
+        "normal_start": ["tests/test_use_case_retention_bound_installed.py", "tests/test_use_case_retention_host.py"],
+        "launch": ["tests/test_use_case_retention_bound_installed.py", "tests/test_use_case_retention_host.py"],
+        "verify": ["tests/test_use_case_retention_host.py"],
+        "status": ["tests/test_use_case_retention_bound_installed.py", "tests/test_use_case_retention_host.py"],
+        "disable": ["tests/test_use_case_retention_bound_installed.py", "tests/test_use_case_retention_host.py"],
+        "upgrade": ["tests/test_use_case_retention_bound_installed.py", "tests/test_use_case_retention_host.py"],
+        "rollback": ["tests/test_use_case_retention_bound_installed.py", "tests/test_use_case_retention_host.py"],
+        "connected_shadow": ["tests/test_use_case_retention_connected.py"],
+        "connected_upgrade": [],
+        "provider": [],
+        "benefit": []
+      }
     }
   ]
 }
