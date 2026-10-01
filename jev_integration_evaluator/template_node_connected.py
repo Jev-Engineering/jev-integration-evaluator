@@ -5,13 +5,14 @@ connect. The installed host must authenticate every grant independently.
 """
 from __future__ import annotations
 
+from datetime import datetime, timezone
 import os
 import hashlib
 from pathlib import Path
 import stat
 
 from .io import InputError, digest, file_hash, loads, read_json
-from .contracts import validate_contract
+from .contracts import parse_utc, validate_contract
 from .study import evaluate_study
 from .template_node_installation import installation_status
 
@@ -43,7 +44,18 @@ def _private_reference(row: dict, root: Path) -> object:
     return loads(raw.decode('utf-8'))
 
 
-def _activation(request: dict, spec: dict, root: Path) -> dict | None:
+def _current(grant: dict, now: datetime | None) -> bool:
+    """Planning-time validity window; the installed host rechecks every grant."""
+    if now is None:
+        return True
+    try:
+        return parse_utc(grant.get('issued_at')) <= now < parse_utc(grant.get('expires_at'))
+    except InputError:
+        return False
+
+
+def _activation(request: dict, spec: dict, root: Path,
+                now: datetime | None = None) -> dict | None:
     if request['mode'] == 'shadow':
         if request.get('activation') is not None:
             raise InputError('Shadow must not carry activation evidence')
@@ -80,6 +92,8 @@ def _activation(request: dict, spec: dict, root: Path) -> dict | None:
             receipt.get('runtime_contract_sha256') !=
             digest({'spec': spec, 'budget_limits': request['budget_limits']})):
         raise InputError('Connected deployment or receipt binding differs from raw gates')
+    if not _current(grant, now) or not _current(receipt, now):
+        raise InputError('Unexpired connected deployment grant and receipt required')
     summary = {'recommendation': 'keep', 'holdout_evidence_verified': True,
                'evidence_type': 'observed', 'mode': request['mode'],
                'spec_sha256': digest(spec),
@@ -178,8 +192,7 @@ def inspect_connected_core(request: dict) -> tuple[dict, dict, Path]:
     return core, spec, root
 
 
-def plan_node_connected(request: dict) -> dict:
-    """Bind an authenticated grant and independently recomputed raw gates."""
+def _descriptor(request: dict, now: datetime | None) -> dict:
     core, spec, root = inspect_connected_core(request)
     grant = request['egress_grant']
     if (type(grant) is not dict or grant.get('core_sha256') != digest(core) or
@@ -189,18 +202,32 @@ def plan_node_connected(request: dict) -> dict:
             grant.get('credential_ref') != request['credential_ref'] or
             grant.get('environment_digest') != request['environment_digest']):
         raise InputError('Exact connected egress grant binding required')
+    if not _current(grant, now):
+        raise InputError('Unexpired connected egress grant required')
     descriptor = {**core, 'core_sha256': digest(core), 'egress_grant': grant,
-                  'activation': _activation(request, spec, root)}
+                  'activation': _activation(request, spec, root, now)}
     descriptor['descriptor_sha256'] = digest(descriptor)
     validate_contract(descriptor, 'node-connected-owner-v1')
     return descriptor
 
 
+def plan_node_connected(request: dict) -> dict:
+    """Bind an authenticated grant and independently recomputed raw gates.
+
+    A new descriptor is refused for an egress grant, deployment grant or
+    activation receipt outside its validity window.
+    """
+    return _descriptor(request, datetime.now(timezone.utc))
+
+
 def connected_status(request: dict, descriptor: dict, *, trusted_descriptor_sha256: str) -> dict:
-    """Recompute source/gate binding; never launch, adopt or renew authority."""
+    """Recompute source/gate binding; never launch, adopt or renew authority.
+
+    The binding stays inspectable after expiry; the host enforces grant time.
+    """
     validate_contract(descriptor, 'node-connected-owner-v1')
     if descriptor.get('descriptor_sha256') != trusted_descriptor_sha256 or \
-            descriptor != plan_node_connected(request):
+            descriptor != _descriptor(request, None):
         raise InputError('Connected descriptor or referenced evidence changed')
     return {'status': 'bound_unlaunched', 'descriptor_sha256': trusted_descriptor_sha256,
             'mode': descriptor['mode'], 'provider_requests': 0}
