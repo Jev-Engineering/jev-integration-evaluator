@@ -83,7 +83,7 @@ jobs:
               return int(match.group(1)) if match else -1
           print(f'installed: {tests} tests, {skipped} skipped, {failed} failed; '
                 f'native: {count("tests")} tests, {count("skipped")} skipped, {count("fail")} failed')
-          if tests != 23 or skipped or failed or count('tests') != 16 or count('skipped') or count('fail'):
+          if tests != 23 or skipped or failed or count('tests') != 19 or count('skipped') or count('fail'):
               raise SystemExit('required installed/native Node 24 qualification incomplete')
           PY
   native-runner-qualification:
@@ -216,7 +216,7 @@ jobs:
     # Native delivery runs on a disposable Server 2022 VM with no secrets.
     # These synthetic off-mode fixtures do not grant provider authority.
     runs-on: windows-2022
-    timeout-minutes: 60
+    timeout-minutes: 90
     permissions:
       contents: read
     strategy:

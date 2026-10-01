@@ -53,6 +53,11 @@ explicit host gates, fixed fallback and timeout behavior, audit before effects,
 and an exactly-once effect ledger are required before the `C` path can be
 called supported. A synthetic pass is neither provider connectivity nor
 observed benefit or activation authority.
+When the client does not answer within `timeout_ms`, an active router runs the
+permitted baseline exactly once with reason `assessment_unavailable`; the call
+and cost upper bound stay charged, the reservation is not finished, and a
+later provider result selects no action. `tests/native_js_runtime.test.cjs`
+exercises this with a synthetic client only.
 
 ## Qualification sequence
 

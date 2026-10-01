@@ -26,6 +26,18 @@
   change from `InputError` to `EvaluationTimeoutError` for those cases.
 - Connected E shadow observes the completed executor result once and never
   retries or replaces it; interrupts propagate unchanged.
+- Node connected planning (`template node-connected-plan`,
+  `plan_node_connected`) now refuses an egress grant, deployment grant or
+  activation receipt outside its `issued_at`/`expires_at` window instead of
+  binding it; `node-connected-status` still compares the binding only and the
+  installed host keeps enforcing grant time. Add always-on fixture tests for
+  the Node canary/active gate planner and post-install configuration drift,
+  and native tests for the JS router provider timeout (19 native tests). Live
+  provider operation and observed canary/active outcomes remain pending.
+- Add a packaged, schema-validated recipe lifecycle matrix with explicit
+  per-stage and per-platform cells for Python recipes A–M and the separate
+  JS/TS recipe C entry. Qualified cells cite the test module that exercises
+  them; provider, canary/active and benefit cells stay pending in every row.
 
 ## Unreleased — JavaScript recipe C template catalog
 

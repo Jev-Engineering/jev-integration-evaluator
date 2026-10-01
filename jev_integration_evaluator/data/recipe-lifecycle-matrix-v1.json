@@ -1,0 +1,372 @@
+{
+  "schema_version": "1.0",
+  "scope": "offline_synthetic_recipe_lifecycle_inventory",
+  "stages": ["source_transform", "template_materialize", "entrypoint_bind", "package_install", "supervised_launch_off", "disable", "upgrade", "rollback", "connected_shadow", "connected_upgrade", "canary_active", "provider_operation", "measured_benefit"],
+  "platforms": ["linux", "windows_native", "node"],
+  "rows": [
+    {
+      "id": "python.A",
+      "language": "python",
+      "recipe": "python.A@1.0",
+      "title": "Before tool execution",
+      "stages": {
+        "source_transform": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py"], "note": "Only the generated module-tail-call-v1 fixture is planned, verified, applied and rolled back. No installed host exists for this recipe."},
+        "template_materialize": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_template_catalog.py"], "note": "The archived examples/implementation/a host is rendered to planner inputs; nothing is applied or installed."},
+        "entrypoint_bind": {"status": "pending", "evidence": []},
+        "package_install": {"status": "pending", "evidence": []},
+        "supervised_launch_off": {"status": "pending", "evidence": []},
+        "disable": {"status": "pending", "evidence": []},
+        "upgrade": {"status": "pending", "evidence": []},
+        "rollback": {"status": "pending", "evidence": []},
+        "connected_shadow": {"status": "pending", "evidence": []},
+        "connected_upgrade": {"status": "pending", "evidence": []},
+        "canary_active": {"status": "pending", "evidence": []},
+        "provider_operation": {"status": "pending", "evidence": []},
+        "measured_benefit": {"status": "pending", "evidence": []}
+      },
+      "platforms": {
+        "linux": {"status": "qualified_offline_synthetic", "stages": ["source_transform", "template_materialize"], "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py", "tests/test_template_catalog.py"], "note": "Ungated fixture tests; the hosted full suite runs on Linux."},
+        "windows_native": {"status": "pending", "stages": [], "evidence": [], "note": "The transform tests are not platform gated, but the hosted native Windows jobs run only the named Windows modules, whose fixture is recipe C. No native Windows run is recorded for this recipe."},
+        "node": {"status": "not_applicable", "stages": [], "evidence": [], "note": "Python recipe; the Node backend has its own row."}
+      }
+    },
+    {
+      "id": "python.B",
+      "language": "python",
+      "recipe": "python.B@1.0",
+      "title": "Expensive or irreversible action",
+      "stages": {
+        "source_transform": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py"], "note": "Only the generated module-tail-call-v1 fixture is planned, verified, applied and rolled back. No installed host exists for this recipe."},
+        "template_materialize": {"status": "pending", "evidence": []},
+        "entrypoint_bind": {"status": "pending", "evidence": []},
+        "package_install": {"status": "pending", "evidence": []},
+        "supervised_launch_off": {"status": "pending", "evidence": []},
+        "disable": {"status": "pending", "evidence": []},
+        "upgrade": {"status": "pending", "evidence": []},
+        "rollback": {"status": "pending", "evidence": []},
+        "connected_shadow": {"status": "pending", "evidence": []},
+        "connected_upgrade": {"status": "pending", "evidence": []},
+        "canary_active": {"status": "pending", "evidence": []},
+        "provider_operation": {"status": "pending", "evidence": []},
+        "measured_benefit": {"status": "pending", "evidence": []}
+      },
+      "platforms": {
+        "linux": {"status": "qualified_offline_synthetic", "stages": ["source_transform"], "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py"], "note": "Ungated fixture tests; the hosted full suite runs on Linux."},
+        "windows_native": {"status": "pending", "stages": [], "evidence": [], "note": "The transform tests are not platform gated, but the hosted native Windows jobs run only the named Windows modules, whose fixture is recipe C. No native Windows run is recorded for this recipe."},
+        "node": {"status": "not_applicable", "stages": [], "evidence": [], "note": "Python recipe; the Node backend has its own row."}
+      }
+    },
+    {
+      "id": "python.C",
+      "language": "python",
+      "recipe": "python.C@1.0",
+      "title": "Registered tool routing",
+      "stages": {
+        "source_transform": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py", "tests/test_template_python_entrypoint.py"]},
+        "template_materialize": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_template_catalog.py"]},
+        "entrypoint_bind": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_template_python_entrypoint.py"]},
+        "package_install": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_template_installation.py"]},
+        "supervised_launch_off": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_template_delivery_installed.py"]},
+        "disable": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_template_delivery_installed.py"]},
+        "upgrade": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_template_delivery_installed.py"]},
+        "rollback": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_template_delivery_installed.py"]},
+        "connected_shadow": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_connected_installed_binding.py"], "note": "Independent Alpha 1.0.2 host with a local synthetic TLS protocol. The use-case C source contract (examples/coding-agent/agent.py) is a different host and stays pending in the use-case matrix."},
+        "connected_upgrade": {"status": "implemented_unqualified", "evidence": ["tests/test_connected_generation_installed.py"], "note": "A stopped generation transfer driver exists for the Alpha host. The changelog and use-case matrix keep connected upgrade pending, so no qualification is claimed here."},
+        "canary_active": {"status": "pending", "evidence": []},
+        "provider_operation": {"status": "pending", "evidence": []},
+        "measured_benefit": {"status": "pending", "evidence": []}
+      },
+      "platforms": {
+        "linux": {"status": "qualified_offline_synthetic", "stages": ["source_transform", "template_materialize", "entrypoint_bind", "package_install", "supervised_launch_off", "disable", "upgrade", "rollback", "connected_shadow"], "evidence": ["tests/test_connected_installed_binding.py", "tests/test_executable_recipes.py", "tests/test_package_lifecycle.py", "tests/test_template_catalog.py", "tests/test_template_delivery_installed.py", "tests/test_template_installation.py", "tests/test_template_python_entrypoint.py"], "note": "Installed stages require Linux x86-64 CPython 3.13 and an explicit offline wheelhouse; without that input the cited installed cases skip."},
+        "windows_native": {"status": "qualified_offline_synthetic", "stages": ["source_transform", "template_materialize", "entrypoint_bind", "package_install", "supervised_launch_off", "upgrade", "rollback"], "evidence": ["tests/test_windows_source_mutation.py", "tests/test_windows_template_delivery.py", "tests/test_windows_template_run.py"], "note": "Separate native NTFS off-mode API checkpoint with its own package, install, Job Object session and retained-generation selection. Durable disable and the #55/#56 Linux contracts are not covered; native connected shadow (tests/test_windows_template_connected.py) remains pending qualification."},
+        "node": {"status": "not_applicable", "stages": [], "evidence": [], "note": "Python recipe; the Node backend has its own row."}
+      }
+    },
+    {
+      "id": "python.D",
+      "language": "python",
+      "recipe": "python.D@1.0",
+      "title": "Retrieval to generation",
+      "stages": {
+        "source_transform": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py", "tests/test_use_case_retrieval_host.py"]},
+        "template_materialize": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_retrieval_host.py"]},
+        "entrypoint_bind": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_retrieval_bind.py"]},
+        "package_install": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_retrieval_bound_installed.py", "tests/test_use_case_retrieval_host.py"]},
+        "supervised_launch_off": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_retrieval_bound_installed.py", "tests/test_use_case_retrieval_host.py"]},
+        "disable": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_retrieval_bound_installed.py", "tests/test_use_case_retrieval_host.py"]},
+        "upgrade": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_retrieval_bound_installed.py", "tests/test_use_case_retrieval_host.py"]},
+        "rollback": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_retrieval_bound_installed.py", "tests/test_use_case_retrieval_host.py"]},
+        "connected_shadow": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_retrieval_connected.py"]},
+        "connected_upgrade": {"status": "implemented_unqualified", "evidence": ["tests/test_connected_generation_retrieval_installed.py"], "note": "A stopped generation transfer driver exists for the bound D host. The changelog and use-case matrix keep connected upgrade pending, so no qualification is claimed here."},
+        "canary_active": {"status": "pending", "evidence": []},
+        "provider_operation": {"status": "pending", "evidence": []},
+        "measured_benefit": {"status": "pending", "evidence": []}
+      },
+      "platforms": {
+        "linux": {"status": "qualified_offline_synthetic", "stages": ["source_transform", "template_materialize", "entrypoint_bind", "package_install", "supervised_launch_off", "disable", "upgrade", "rollback", "connected_shadow"], "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py", "tests/test_use_case_retrieval_bind.py", "tests/test_use_case_retrieval_bound_installed.py", "tests/test_use_case_retrieval_connected.py", "tests/test_use_case_retrieval_host.py"], "note": "Installed stages require Linux x86-64 CPython 3.13 and an explicit offline wheelhouse; without that input the cited installed cases skip."},
+        "windows_native": {"status": "pending", "stages": [], "evidence": [], "note": "The transform tests are not platform gated, but the hosted native Windows jobs run only the named Windows modules, whose fixture is recipe C. No native Windows run is recorded for this recipe."},
+        "node": {"status": "not_applicable", "stages": [], "evidence": [], "note": "Python recipe; the Node backend has its own row."}
+      }
+    },
+    {
+      "id": "python.E",
+      "language": "python",
+      "recipe": "python.E@1.0",
+      "title": "Post-action verification",
+      "stages": {
+        "source_transform": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py", "tests/test_use_case_completion_host.py"]},
+        "template_materialize": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_completion_host.py"]},
+        "entrypoint_bind": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_completion_host.py"]},
+        "package_install": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_completion_host.py"]},
+        "supervised_launch_off": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_completion_host.py"]},
+        "disable": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_completion_host.py"]},
+        "upgrade": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_completion_host.py"]},
+        "rollback": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_completion_host.py"]},
+        "connected_shadow": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_completion_connected.py"]},
+        "connected_upgrade": {"status": "pending", "evidence": []},
+        "canary_active": {"status": "pending", "evidence": []},
+        "provider_operation": {"status": "pending", "evidence": []},
+        "measured_benefit": {"status": "pending", "evidence": []}
+      },
+      "platforms": {
+        "linux": {"status": "qualified_offline_synthetic", "stages": ["source_transform", "template_materialize", "entrypoint_bind", "package_install", "supervised_launch_off", "disable", "upgrade", "rollback", "connected_shadow"], "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py", "tests/test_use_case_completion_connected.py", "tests/test_use_case_completion_host.py"], "note": "Installed stages require Linux x86-64 CPython 3.13 and an explicit offline wheelhouse; without that input the cited installed cases skip."},
+        "windows_native": {"status": "pending", "stages": [], "evidence": [], "note": "The transform tests are not platform gated, but the hosted native Windows jobs run only the named Windows modules, whose fixture is recipe C. No native Windows run is recorded for this recipe."},
+        "node": {"status": "not_applicable", "stages": [], "evidence": [], "note": "Python recipe; the Node backend has its own row."}
+      }
+    },
+    {
+      "id": "python.F",
+      "language": "python",
+      "recipe": "python.F@1.0",
+      "title": "Agent-loop transition",
+      "stages": {
+        "source_transform": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py"], "note": "Only the generated module-tail-call-v1 fixture is planned, verified, applied and rolled back. No installed host exists for this recipe."},
+        "template_materialize": {"status": "pending", "evidence": []},
+        "entrypoint_bind": {"status": "pending", "evidence": []},
+        "package_install": {"status": "pending", "evidence": []},
+        "supervised_launch_off": {"status": "pending", "evidence": []},
+        "disable": {"status": "pending", "evidence": []},
+        "upgrade": {"status": "pending", "evidence": []},
+        "rollback": {"status": "pending", "evidence": []},
+        "connected_shadow": {"status": "pending", "evidence": []},
+        "connected_upgrade": {"status": "pending", "evidence": []},
+        "canary_active": {"status": "pending", "evidence": []},
+        "provider_operation": {"status": "pending", "evidence": []},
+        "measured_benefit": {"status": "pending", "evidence": []}
+      },
+      "platforms": {
+        "linux": {"status": "qualified_offline_synthetic", "stages": ["source_transform"], "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py"], "note": "Ungated fixture tests; the hosted full suite runs on Linux."},
+        "windows_native": {"status": "pending", "stages": [], "evidence": [], "note": "The transform tests are not platform gated, but the hosted native Windows jobs run only the named Windows modules, whose fixture is recipe C. No native Windows run is recorded for this recipe."},
+        "node": {"status": "not_applicable", "stages": [], "evidence": [], "note": "Python recipe; the Node backend has its own row."}
+      }
+    },
+    {
+      "id": "python.G",
+      "language": "python",
+      "recipe": "python.G@1.0",
+      "title": "Planner/executor boundary",
+      "stages": {
+        "source_transform": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py"], "note": "Only the generated module-tail-call-v1 fixture is planned, verified, applied and rolled back. No installed host exists for this recipe."},
+        "template_materialize": {"status": "pending", "evidence": []},
+        "entrypoint_bind": {"status": "pending", "evidence": []},
+        "package_install": {"status": "pending", "evidence": []},
+        "supervised_launch_off": {"status": "pending", "evidence": []},
+        "disable": {"status": "pending", "evidence": []},
+        "upgrade": {"status": "pending", "evidence": []},
+        "rollback": {"status": "pending", "evidence": []},
+        "connected_shadow": {"status": "pending", "evidence": []},
+        "connected_upgrade": {"status": "pending", "evidence": []},
+        "canary_active": {"status": "pending", "evidence": []},
+        "provider_operation": {"status": "pending", "evidence": []},
+        "measured_benefit": {"status": "pending", "evidence": []}
+      },
+      "platforms": {
+        "linux": {"status": "qualified_offline_synthetic", "stages": ["source_transform"], "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py"], "note": "Ungated fixture tests; the hosted full suite runs on Linux."},
+        "windows_native": {"status": "pending", "stages": [], "evidence": [], "note": "The transform tests are not platform gated, but the hosted native Windows jobs run only the named Windows modules, whose fixture is recipe C. No native Windows run is recorded for this recipe."},
+        "node": {"status": "not_applicable", "stages": [], "evidence": [], "note": "Python recipe; the Node backend has its own row."}
+      }
+    },
+    {
+      "id": "python.H",
+      "language": "python",
+      "recipe": "python.H@1.0",
+      "title": "Context retention",
+      "stages": {
+        "source_transform": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py", "tests/test_use_case_retention_host.py"]},
+        "template_materialize": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_retention_host.py"]},
+        "entrypoint_bind": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_retention_bind.py"]},
+        "package_install": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_retention_bound_installed.py", "tests/test_use_case_retention_host.py"]},
+        "supervised_launch_off": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_retention_bound_installed.py", "tests/test_use_case_retention_host.py"]},
+        "disable": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_retention_bound_installed.py", "tests/test_use_case_retention_host.py"]},
+        "upgrade": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_retention_bound_installed.py", "tests/test_use_case_retention_host.py"]},
+        "rollback": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_retention_bound_installed.py", "tests/test_use_case_retention_host.py"]},
+        "connected_shadow": {"status": "implemented_unqualified", "evidence": ["tests/test_use_case_retention_connected.py"], "note": "The connected driver is authored; its reference states fresh installed qualification is pending. Explicit /prune only; /compact is never performed."},
+        "connected_upgrade": {"status": "implemented_unqualified", "evidence": ["tests/test_connected_generation_retention_installed.py"], "note": "Two-version transfer candidate only; its reference states executed upgrade and rollback qualification is not yet established."},
+        "canary_active": {"status": "pending", "evidence": []},
+        "provider_operation": {"status": "pending", "evidence": []},
+        "measured_benefit": {"status": "pending", "evidence": []}
+      },
+      "platforms": {
+        "linux": {"status": "qualified_offline_synthetic", "stages": ["source_transform", "template_materialize", "entrypoint_bind", "package_install", "supervised_launch_off", "disable", "upgrade", "rollback"], "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py", "tests/test_use_case_retention_bind.py", "tests/test_use_case_retention_bound_installed.py", "tests/test_use_case_retention_host.py"], "note": "Installed stages require Linux x86-64 CPython 3.13 and an explicit offline wheelhouse; without that input the cited installed cases skip."},
+        "windows_native": {"status": "pending", "stages": [], "evidence": [], "note": "The transform tests are not platform gated, but the hosted native Windows jobs run only the named Windows modules, whose fixture is recipe C. No native Windows run is recorded for this recipe."},
+        "node": {"status": "not_applicable", "stages": [], "evidence": [], "note": "Python recipe; the Node backend has its own row."}
+      }
+    },
+    {
+      "id": "python.I",
+      "language": "python",
+      "recipe": "python.I@1.0",
+      "title": "Retry and recovery",
+      "stages": {
+        "source_transform": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py"], "note": "Only the generated module-tail-call-v1 fixture is planned, verified, applied and rolled back. No installed host exists for this recipe."},
+        "template_materialize": {"status": "pending", "evidence": []},
+        "entrypoint_bind": {"status": "pending", "evidence": []},
+        "package_install": {"status": "pending", "evidence": []},
+        "supervised_launch_off": {"status": "pending", "evidence": []},
+        "disable": {"status": "pending", "evidence": []},
+        "upgrade": {"status": "pending", "evidence": []},
+        "rollback": {"status": "pending", "evidence": []},
+        "connected_shadow": {"status": "pending", "evidence": []},
+        "connected_upgrade": {"status": "pending", "evidence": []},
+        "canary_active": {"status": "pending", "evidence": []},
+        "provider_operation": {"status": "pending", "evidence": []},
+        "measured_benefit": {"status": "pending", "evidence": []}
+      },
+      "platforms": {
+        "linux": {"status": "qualified_offline_synthetic", "stages": ["source_transform"], "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py"], "note": "Ungated fixture tests; the hosted full suite runs on Linux."},
+        "windows_native": {"status": "pending", "stages": [], "evidence": [], "note": "The transform tests are not platform gated, but the hosted native Windows jobs run only the named Windows modules, whose fixture is recipe C. No native Windows run is recorded for this recipe."},
+        "node": {"status": "not_applicable", "stages": [], "evidence": [], "note": "Python recipe; the Node backend has its own row."}
+      }
+    },
+    {
+      "id": "python.J",
+      "language": "python",
+      "recipe": "python.J@1.0",
+      "title": "Specialist delegation",
+      "stages": {
+        "source_transform": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py"], "note": "Only the generated module-tail-call-v1 fixture is planned, verified, applied and rolled back. No installed host exists for this recipe."},
+        "template_materialize": {"status": "pending", "evidence": []},
+        "entrypoint_bind": {"status": "pending", "evidence": []},
+        "package_install": {"status": "pending", "evidence": []},
+        "supervised_launch_off": {"status": "pending", "evidence": []},
+        "disable": {"status": "pending", "evidence": []},
+        "upgrade": {"status": "pending", "evidence": []},
+        "rollback": {"status": "pending", "evidence": []},
+        "connected_shadow": {"status": "pending", "evidence": []},
+        "connected_upgrade": {"status": "pending", "evidence": []},
+        "canary_active": {"status": "pending", "evidence": []},
+        "provider_operation": {"status": "pending", "evidence": []},
+        "measured_benefit": {"status": "pending", "evidence": []}
+      },
+      "platforms": {
+        "linux": {"status": "qualified_offline_synthetic", "stages": ["source_transform"], "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py"], "note": "Ungated fixture tests; the hosted full suite runs on Linux."},
+        "windows_native": {"status": "pending", "stages": [], "evidence": [], "note": "The transform tests are not platform gated, but the hosted native Windows jobs run only the named Windows modules, whose fixture is recipe C. No native Windows run is recorded for this recipe."},
+        "node": {"status": "not_applicable", "stages": [], "evidence": [], "note": "Python recipe; the Node backend has its own row."}
+      }
+    },
+    {
+      "id": "python.K",
+      "language": "python",
+      "recipe": "python.K@1.0",
+      "title": "Code review disposition",
+      "stages": {
+        "source_transform": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py"], "note": "Only the generated module-tail-call-v1 fixture is planned, verified, applied and rolled back. No installed host exists for this recipe."},
+        "template_materialize": {"status": "pending", "evidence": []},
+        "entrypoint_bind": {"status": "pending", "evidence": []},
+        "package_install": {"status": "pending", "evidence": []},
+        "supervised_launch_off": {"status": "pending", "evidence": []},
+        "disable": {"status": "pending", "evidence": []},
+        "upgrade": {"status": "pending", "evidence": []},
+        "rollback": {"status": "pending", "evidence": []},
+        "connected_shadow": {"status": "pending", "evidence": []},
+        "connected_upgrade": {"status": "pending", "evidence": []},
+        "canary_active": {"status": "pending", "evidence": []},
+        "provider_operation": {"status": "pending", "evidence": []},
+        "measured_benefit": {"status": "pending", "evidence": []}
+      },
+      "platforms": {
+        "linux": {"status": "qualified_offline_synthetic", "stages": ["source_transform"], "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py"], "note": "Ungated fixture tests; the hosted full suite runs on Linux."},
+        "windows_native": {"status": "pending", "stages": [], "evidence": [], "note": "The transform tests are not platform gated, but the hosted native Windows jobs run only the named Windows modules, whose fixture is recipe C. No native Windows run is recorded for this recipe."},
+        "node": {"status": "not_applicable", "stages": [], "evidence": [], "note": "Python recipe; the Node backend has its own row."}
+      }
+    },
+    {
+      "id": "python.L",
+      "language": "python",
+      "recipe": "python.L@1.0",
+      "title": "Graph identity and mutation",
+      "stages": {
+        "source_transform": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py", "tests/test_use_case_graph_host.py"]},
+        "template_materialize": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_graph_bound_installed.py", "tests/test_use_case_graph_installed.py"]},
+        "entrypoint_bind": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_graph_bind.py"]},
+        "package_install": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_graph_bound_installed.py", "tests/test_use_case_graph_installed.py"]},
+        "supervised_launch_off": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_graph_bound_installed.py", "tests/test_use_case_graph_installed.py"]},
+        "disable": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_graph_bound_installed.py", "tests/test_use_case_graph_installed.py"]},
+        "upgrade": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_graph_bound_installed.py", "tests/test_use_case_graph_installed.py"]},
+        "rollback": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_graph_bound_installed.py", "tests/test_use_case_graph_installed.py"]},
+        "connected_shadow": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_graph_connected.py"], "note": "Later fault rows added to this driver need a fresh installed Linux run before they count."},
+        "connected_upgrade": {"status": "pending", "evidence": []},
+        "canary_active": {"status": "pending", "evidence": []},
+        "provider_operation": {"status": "pending", "evidence": []},
+        "measured_benefit": {"status": "pending", "evidence": []}
+      },
+      "platforms": {
+        "linux": {"status": "qualified_offline_synthetic", "stages": ["source_transform", "template_materialize", "entrypoint_bind", "package_install", "supervised_launch_off", "disable", "upgrade", "rollback", "connected_shadow"], "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py", "tests/test_use_case_graph_bind.py", "tests/test_use_case_graph_bound_installed.py", "tests/test_use_case_graph_connected.py", "tests/test_use_case_graph_host.py", "tests/test_use_case_graph_installed.py"], "note": "Installed stages require Linux x86-64 CPython 3.13 and an explicit offline wheelhouse; without that input the cited installed cases skip."},
+        "windows_native": {"status": "pending", "stages": [], "evidence": [], "note": "The transform tests are not platform gated, but the hosted native Windows jobs run only the named Windows modules, whose fixture is recipe C. No native Windows run is recorded for this recipe."},
+        "node": {"status": "not_applicable", "stages": [], "evidence": [], "note": "Python recipe; the Node backend has its own row."}
+      }
+    },
+    {
+      "id": "python.M",
+      "language": "python",
+      "recipe": "python.M@1.0",
+      "title": "Final answer validation",
+      "stages": {
+        "source_transform": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py", "tests/test_use_case_claim_host.py"]},
+        "template_materialize": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_claim_host.py"]},
+        "entrypoint_bind": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_claim_bind.py"]},
+        "package_install": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_claim_bound_installed.py", "tests/test_use_case_claim_host.py"]},
+        "supervised_launch_off": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_claim_bound_installed.py", "tests/test_use_case_claim_host.py"]},
+        "disable": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_claim_bound_installed.py", "tests/test_use_case_claim_host.py"]},
+        "upgrade": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_claim_bound_installed.py", "tests/test_use_case_claim_host.py"]},
+        "rollback": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_use_case_claim_bound_installed.py", "tests/test_use_case_claim_host.py"]},
+        "connected_shadow": {"status": "implemented_unqualified", "evidence": ["tests/test_use_case_claim_connected.py"], "note": "The connected driver is authored; its reference states the rows remain pending until the fresh installed qualification completes."},
+        "connected_upgrade": {"status": "pending", "evidence": []},
+        "canary_active": {"status": "pending", "evidence": []},
+        "provider_operation": {"status": "pending", "evidence": []},
+        "measured_benefit": {"status": "pending", "evidence": []}
+      },
+      "platforms": {
+        "linux": {"status": "qualified_offline_synthetic", "stages": ["source_transform", "template_materialize", "entrypoint_bind", "package_install", "supervised_launch_off", "disable", "upgrade", "rollback"], "evidence": ["tests/test_executable_recipes.py", "tests/test_package_lifecycle.py", "tests/test_use_case_claim_bind.py", "tests/test_use_case_claim_bound_installed.py", "tests/test_use_case_claim_host.py"], "note": "Installed stages require Linux x86-64 CPython 3.13 and an explicit offline wheelhouse; without that input the cited installed cases skip."},
+        "windows_native": {"status": "pending", "stages": [], "evidence": [], "note": "The transform tests are not platform gated, but the hosted native Windows jobs run only the named Windows modules, whose fixture is recipe C. No native Windows run is recorded for this recipe."},
+        "node": {"status": "not_applicable", "stages": [], "evidence": [], "note": "Python recipe; the Node backend has its own row."}
+      }
+    },
+    {
+      "id": "javascript.recipe-c@1.0.0",
+      "language": "javascript_typescript",
+      "recipe": "javascript.C@1.0",
+      "title": "Registered tool routing (flat async ESM, CommonJS and TypeScript)",
+      "stages": {
+        "source_transform": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_js_lifecycle.py"]},
+        "template_materialize": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_js_template_delivery.py"]},
+        "entrypoint_bind": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_js_entrypoint.py"], "note": "The owned edit of a finite start.mjs/start.cjs entrypoint; there is no separate JS console binder."},
+        "package_install": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_node_template_installation.py"]},
+        "supervised_launch_off": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_node_template_installation.py", "tests/test_node_template_installed_cli_formats.py"]},
+        "disable": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_node_template_installed_commonjs.py", "tests/test_node_template_installed_esm.py", "tests/test_node_template_installed_upgrade.py"]},
+        "upgrade": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_node_template_installed_commonjs.py", "tests/test_node_template_installed_esm.py", "tests/test_node_template_installed_upgrade.py"]},
+        "rollback": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_node_template_installed_commonjs.py", "tests/test_node_template_installed_esm.py", "tests/test_node_template_installed_upgrade.py"]},
+        "connected_shadow": {"status": "qualified_offline_synthetic", "evidence": ["tests/test_node_template_connected.py"], "note": "Fake typed transport in shadow only, labeled synthetic_protocol."},
+        "connected_upgrade": {"status": "pending", "evidence": []},
+        "canary_active": {"status": "pending", "evidence": []},
+        "provider_operation": {"status": "pending", "evidence": []},
+        "measured_benefit": {"status": "pending", "evidence": []}
+      },
+      "platforms": {
+        "linux": {"status": "qualified_offline_synthetic", "stages": ["source_transform", "template_materialize", "entrypoint_bind", "package_install", "supervised_launch_off", "disable", "upgrade", "rollback", "connected_shadow"], "evidence": ["tests/test_js_entrypoint.py", "tests/test_js_lifecycle.py", "tests/test_js_template_delivery.py", "tests/test_node_template_connected.py", "tests/test_node_template_installation.py", "tests/test_node_template_installed_cli_formats.py", "tests/test_node_template_installed_commonjs.py", "tests/test_node_template_installed_esm.py", "tests/test_node_template_installed_upgrade.py"], "note": "Requires native Linux x86-64 with the pinned external Node/npm and trusted TypeScript 5.8.3; the cited cases skip without them."},
+        "windows_native": {"status": "unsupported", "stages": [], "evidence": [], "note": "The catalog manifest declares Linux x86-64 only; Windows Node interop does not qualify native execution."},
+        "node": {"status": "qualified_offline_synthetic", "stages": ["source_transform", "template_materialize", "entrypoint_bind", "package_install", "supervised_launch_off", "disable", "upgrade", "rollback", "connected_shadow"], "evidence": ["tests/test_js_entrypoint.py", "tests/test_js_lifecycle.py", "tests/test_js_template_delivery.py", "tests/test_node_template_connected.py", "tests/test_node_template_installation.py", "tests/test_node_template_installed_cli_formats.py", "tests/test_node_template_installed_commonjs.py", "tests/test_node_template_installed_esm.py", "tests/test_node_template_installed_upgrade.py"], "note": "Single-process Node with npm lockfile version 3 only. yarn, pnpm, Bun, browsers, workers and bundlers are unsupported."}
+      }
+    }
+  ]
+}
