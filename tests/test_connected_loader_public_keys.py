@@ -19,6 +19,7 @@ LOADERS = (
     ('alpha-103', 'tests/independent_hosts/registered_alpha_connected_103/src/registered_alpha/connected_authority.py', 'REGISTERED_ALPHA'),
     ('retrieval', 'tests/independent_hosts/retrieval_connected/connected_authority.py', 'D'),
     ('dual', 'tests/independent_hosts/registered_dual_connected/src/registered_dual/connected_authority.py', 'REGISTERED_DUAL'),
+    ('claim', 'tests/independent_hosts/claim_connected/connected_authority.py', 'M'),
     ('graph', 'tests/independent_hosts/graph_connected/connected_authority.py', 'L'),
 )
 pytestmark = pytest.mark.skipif(sys.platform != 'linux', reason='Fixed Linux OpenSSL fixture loader')

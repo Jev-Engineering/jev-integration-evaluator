@@ -69,6 +69,18 @@ _PROFILES = {
         'binary': ('D_HOLD',),
         'injected': ('D_CONNECTED_REF_SHA256', 'D_AUTH_PUBKEY_SHA256'),
     },
+    'claim-m-v1': {
+        'source': 'claim_host/host_claim_support.py',
+        'members': {'host': 'claim_host/host_claim_support.py',
+                    'console': 'claim_host/console.py',
+                    'loader': 'claim_host/connected_authority.py'},
+        'references': ('M_CONNECTED_REF', 'M_AUTH_PUBKEY_FILE'),
+        'allowed': frozenset({'M_EFFECT_DIRECTORY', 'M_READY_PATH',
+                              'M_RELEASE_PATH', 'M_TASKS', 'M_HOLD',
+                              'M_APPROVAL', 'M_CLAIM_SCENARIO'}),
+        'binary': ('M_HOLD', 'M_APPROVAL'),
+        'injected': ('M_CONNECTED_REF_SHA256', 'M_AUTH_PUBKEY_SHA256'),
+    },
     'graph-l-v1': {
         'source': 'graph_host/host_graph_consumer.py',
         'members': {'host': 'graph_host/host_graph_consumer.py',
@@ -169,6 +181,12 @@ def plan_connected_delivery(install_plan: dict, *, trusted_install_receipt_sha25
                    for name in profile['binary'])
             or (host_profile == 'retrieval-d-v1'
                 and launch_environment.get('D_TASKS', 'two') not in ('two', 'duplicate'))
+            or (host_profile == 'claim-m-v1' and (
+                not {'M_EFFECT_DIRECTORY', 'M_READY_PATH'} <= set(launch_environment)
+                or (launch_environment.get('M_HOLD') == '1' and 'M_RELEASE_PATH' not in launch_environment)
+                or launch_environment.get('M_TASKS', 'two') not in ('two', 'duplicate')
+                or launch_environment.get('M_CLAIM_SCENARIO', 'accept') not in (
+                    'accept', 'revise', 'request_evidence', 'fabricated', 'partial')))
             or (host_profile == 'graph-l-v1' and (
                 launch_environment.get('L_TASKS', 'two') not in ('two', 'duplicate')
                 or launch_environment.get('L_EXPECTED_REVISION', '0') not in ('0', '1')))):

@@ -196,6 +196,8 @@
     {
       "id": "M",
       "use_case": "claim_support",
+      "connected_shadow": "pending",
+      "connected_upgrade": "pending",
       "issue": 47,
       "template_id": "python.bounded-tail-call",
       "template_version": "1.0.0",
@@ -206,7 +208,7 @@
       "source": "examples/rag-system/pipeline.py",
       "source_sha256": "2c02318aa6ee76a1c085f8a11cbac5a7bda60ce8040cac58bfa34da6d52504a1",
       "consumer_adapter": "examples/use-case-host/claim_consumer.py",
-      "consumer_adapter_sha256": "fb0390e6e9864f39dd29c36daca8e3d2ca1dc595c269d953e9c8ade633490092",
+      "consumer_adapter_sha256": "646c39f01e0fbb4c7021a6d5039fb6f4fb0cef1125c78662e9c118cd01c3612f",
       "host_consumer": "review_claims / answer_with_claim_review",
       "host_oracle": "exact citation spans, critical-claim block and audit before release",
       "offline_contract": "tested_fixture",

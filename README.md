@@ -122,6 +122,10 @@ their documented installed normal-command journeys. These are synthetic
 off-mode results for the declared host shapes; other recipe profiles,
 provider modes and benefit remain pending.
 
+The separate [M connected shadow profile](references/template-claim-connected-v1.md)
+uses the same deterministic citation consumer with two stable tasks and one
+durable ledger. Its installed qualification and review are pending.
+
 The separate [L installed synthetic graph shadow protocol](references/graph-template-connected-v1.md)
 checks two host-owned SQLite task effects through the same reviewed L source
 binding. Its added malformed-response and actual-timeout schedule awaits fresh

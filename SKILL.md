@@ -110,8 +110,10 @@ bounded task-loop console bind and owned edit. H retention has a bounded-loop
 bind with an explicit `/prune` choice carried through a separate offline
 installed normal console, supervised upgrade and retained generation rollback.
 M claim support has a source-bound bounded-loop bind and owned console edit
-carried through a separate offline installed claim effect journey. D retrieval
-carries its source-bound bounded-loop bind and owned console edit through a
+carried through a separate offline installed claim effect journey. Its separate
+pending [M connected shadow profile](references/template-claim-connected-v1.md)
+retains exact citation policy, two stable tasks and a shared durable ledger.
+D retrieval carries its source-bound bounded-loop bind and owned console edit through a
 separate offline installed two-task retrieval journey. L graph identity has a source-bound bounded-loop
 bind and owned console edit carried through a separate offline installed normal
 console journey with independent graph effect and conflict readback.
