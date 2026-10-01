@@ -15,6 +15,10 @@
   change from `InputError` to `EvaluationTimeoutError` for those cases.
 - Connected E shadow observes the completed executor result once and never
   retries or replaces it; interrupts propagate unchanged.
+- Add a packaged, schema-validated recipe lifecycle matrix with explicit
+  per-stage and per-platform cells for Python recipes A–M and the separate
+  JS/TS recipe C entry. Qualified cells cite the test module that exercises
+  them; provider, canary/active and benefit cells stay pending in every row.
 
 ## Unreleased — JavaScript recipe C template catalog
 

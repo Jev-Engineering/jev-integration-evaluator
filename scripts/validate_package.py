@@ -251,6 +251,12 @@ def validate(check_manifest=False):
                  'jev_integration_evaluator/data/use-case-template-matrix-v1.schema.json',
                  'schemas/retrieval-answer-handoff-v1.schema.json',
                  'jev_integration_evaluator/data/retrieval-answer-handoff-v1.schema.json']
+    required += ['jev_integration_evaluator/recipe_lifecycle.py',
+                 'jev_integration_evaluator/data/recipe-lifecycle-matrix-v1.json',
+                 'references/recipe-lifecycle-matrix-v1.md',
+                 'tests/test_recipe_lifecycle_matrix.py',
+                 'schemas/recipe-lifecycle-matrix-v1.schema.json',
+                 'jev_integration_evaluator/data/recipe-lifecycle-matrix-v1.schema.json']
     required += ['jev_integration_evaluator/template_node_installation.py',
                  'jev_integration_evaluator/template_node_connected.py',
                  'jev_integration_evaluator/template_node_delivery.py',
@@ -454,6 +460,14 @@ def validate(check_manifest=False):
     jsonschema.validate(use_cases,schemas['use-case-template-matrix-v1'])
     for row in use_cases['rows']:
         inspect_use_case_source(ROOT,row['id'])
+    from jev_integration_evaluator.recipe_lifecycle import recipe_lifecycle_matrix
+    recipe_lifecycle=recipe_lifecycle_matrix()
+    jsonschema.validate(recipe_lifecycle,schemas['recipe-lifecycle-matrix-v1'])
+    for row in recipe_lifecycle['rows']:
+        for cell in (*row['stages'].values(),*row['platforms'].values()):
+            for evidence in cell['evidence']:
+                if not (ROOT/evidence).is_file():
+                    raise InputError('Recipe lifecycle evidence missing: '+evidence)
     jsonschema.validate(read_json(ROOT/'examples/implementation/composite-selection.example.json'),
                         schemas['composite-selection-v1'])
     jsonschema.validate(read_json(ROOT/'examples/repository-session/context.example.json'),

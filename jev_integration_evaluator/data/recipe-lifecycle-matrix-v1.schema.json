@@ -1,0 +1,547 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Read-only recipe lifecycle coverage matrix v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "scope",
+    "stages",
+    "platforms",
+    "rows"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "scope": {
+      "const": "offline_synthetic_recipe_lifecycle_inventory"
+    },
+    "stages": {
+      "const": [
+        "source_transform",
+        "template_materialize",
+        "entrypoint_bind",
+        "package_install",
+        "supervised_launch_off",
+        "disable",
+        "upgrade",
+        "rollback",
+        "connected_shadow",
+        "connected_upgrade",
+        "canary_active",
+        "provider_operation",
+        "measured_benefit"
+      ]
+    },
+    "platforms": {
+      "const": [
+        "linux",
+        "windows_native",
+        "node"
+      ]
+    },
+    "rows": {
+      "type": "array",
+      "minItems": 14,
+      "maxItems": 14,
+      "prefixItems": [
+        {
+          "$ref": "#/$defs/row",
+          "properties": {
+            "id": {
+              "const": "python.A"
+            }
+          }
+        },
+        {
+          "$ref": "#/$defs/row",
+          "properties": {
+            "id": {
+              "const": "python.B"
+            }
+          }
+        },
+        {
+          "$ref": "#/$defs/row",
+          "properties": {
+            "id": {
+              "const": "python.C"
+            }
+          }
+        },
+        {
+          "$ref": "#/$defs/row",
+          "properties": {
+            "id": {
+              "const": "python.D"
+            }
+          }
+        },
+        {
+          "$ref": "#/$defs/row",
+          "properties": {
+            "id": {
+              "const": "python.E"
+            }
+          }
+        },
+        {
+          "$ref": "#/$defs/row",
+          "properties": {
+            "id": {
+              "const": "python.F"
+            }
+          }
+        },
+        {
+          "$ref": "#/$defs/row",
+          "properties": {
+            "id": {
+              "const": "python.G"
+            }
+          }
+        },
+        {
+          "$ref": "#/$defs/row",
+          "properties": {
+            "id": {
+              "const": "python.H"
+            }
+          }
+        },
+        {
+          "$ref": "#/$defs/row",
+          "properties": {
+            "id": {
+              "const": "python.I"
+            }
+          }
+        },
+        {
+          "$ref": "#/$defs/row",
+          "properties": {
+            "id": {
+              "const": "python.J"
+            }
+          }
+        },
+        {
+          "$ref": "#/$defs/row",
+          "properties": {
+            "id": {
+              "const": "python.K"
+            }
+          }
+        },
+        {
+          "$ref": "#/$defs/row",
+          "properties": {
+            "id": {
+              "const": "python.L"
+            }
+          }
+        },
+        {
+          "$ref": "#/$defs/row",
+          "properties": {
+            "id": {
+              "const": "python.M"
+            }
+          }
+        },
+        {
+          "$ref": "#/$defs/row",
+          "properties": {
+            "id": {
+              "const": "javascript.recipe-c@1.0.0"
+            }
+          }
+        }
+      ],
+      "items": false
+    }
+  },
+  "$defs": {
+    "test_path": {
+      "type": "string",
+      "pattern": "^tests/test_[a-z0-9_]+\\.py$"
+    },
+    "note": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 400
+    },
+    "cell": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "evidence"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "qualified_offline_synthetic"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "evidence": {
+                "minItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "pending",
+                  "unsupported",
+                  "not_applicable"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "evidence": {
+                "maxItems": 0
+              }
+            }
+          }
+        }
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "implemented_unqualified",
+            "qualified_offline_synthetic",
+            "unsupported",
+            "pending",
+            "not_applicable"
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 8,
+          "items": {
+            "$ref": "#/$defs/test_path"
+          }
+        },
+        "note": {
+          "$ref": "#/$defs/note"
+        }
+      }
+    },
+    "unqualified_cell": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "evidence"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "pending",
+            "unsupported"
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "maxItems": 0
+        },
+        "note": {
+          "$ref": "#/$defs/note"
+        }
+      }
+    },
+    "platform_cell": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "stages",
+        "evidence"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "qualified_offline_synthetic"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "evidence": {
+                "minItems": 1
+              },
+              "stages": {
+                "minItems": 1
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "stages": {
+                "maxItems": 0
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "pending",
+                  "unsupported",
+                  "not_applicable"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "evidence": {
+                "maxItems": 0
+              }
+            }
+          }
+        }
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "implemented_unqualified",
+            "qualified_offline_synthetic",
+            "unsupported",
+            "pending",
+            "not_applicable"
+          ]
+        },
+        "stages": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "source_transform",
+              "template_materialize",
+              "entrypoint_bind",
+              "package_install",
+              "supervised_launch_off",
+              "disable",
+              "upgrade",
+              "rollback",
+              "connected_shadow",
+              "connected_upgrade"
+            ]
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 16,
+          "items": {
+            "$ref": "#/$defs/test_path"
+          }
+        },
+        "note": {
+          "$ref": "#/$defs/note"
+        }
+      }
+    },
+    "row": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "language",
+        "recipe",
+        "title",
+        "stages",
+        "platforms"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "language": {
+                "const": "python"
+              }
+            },
+            "required": [
+              "language"
+            ]
+          },
+          "then": {
+            "properties": {
+              "id": {
+                "pattern": "^python\\.[A-M]$"
+              },
+              "recipe": {
+                "pattern": "^python\\.[A-M]@1\\.0$"
+              },
+              "platforms": {
+                "properties": {
+                  "node": {
+                    "properties": {
+                      "status": {
+                        "const": "not_applicable"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "id": {
+                "const": "javascript.recipe-c@1.0.0"
+              },
+              "recipe": {
+                "const": "javascript.C@1.0"
+              }
+            }
+          }
+        }
+      ],
+      "properties": {
+        "id": {
+          "enum": [
+            "python.A",
+            "python.B",
+            "python.C",
+            "python.D",
+            "python.E",
+            "python.F",
+            "python.G",
+            "python.H",
+            "python.I",
+            "python.J",
+            "python.K",
+            "python.L",
+            "python.M",
+            "javascript.recipe-c@1.0.0"
+          ]
+        },
+        "language": {
+          "enum": [
+            "python",
+            "javascript_typescript"
+          ]
+        },
+        "recipe": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stages": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "source_transform",
+            "template_materialize",
+            "entrypoint_bind",
+            "package_install",
+            "supervised_launch_off",
+            "disable",
+            "upgrade",
+            "rollback",
+            "connected_shadow",
+            "connected_upgrade",
+            "canary_active",
+            "provider_operation",
+            "measured_benefit"
+          ],
+          "properties": {
+            "source_transform": {
+              "$ref": "#/$defs/cell"
+            },
+            "template_materialize": {
+              "$ref": "#/$defs/cell"
+            },
+            "entrypoint_bind": {
+              "$ref": "#/$defs/cell"
+            },
+            "package_install": {
+              "$ref": "#/$defs/cell"
+            },
+            "supervised_launch_off": {
+              "$ref": "#/$defs/cell"
+            },
+            "disable": {
+              "$ref": "#/$defs/cell"
+            },
+            "upgrade": {
+              "$ref": "#/$defs/cell"
+            },
+            "rollback": {
+              "$ref": "#/$defs/cell"
+            },
+            "connected_shadow": {
+              "$ref": "#/$defs/cell"
+            },
+            "connected_upgrade": {
+              "$ref": "#/$defs/cell"
+            },
+            "canary_active": {
+              "$ref": "#/$defs/unqualified_cell"
+            },
+            "provider_operation": {
+              "$ref": "#/$defs/unqualified_cell"
+            },
+            "measured_benefit": {
+              "$ref": "#/$defs/unqualified_cell"
+            }
+          }
+        },
+        "platforms": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "linux",
+            "windows_native",
+            "node"
+          ],
+          "properties": {
+            "linux": {
+              "$ref": "#/$defs/platform_cell"
+            },
+            "windows_native": {
+              "$ref": "#/$defs/platform_cell"
+            },
+            "node": {
+              "$ref": "#/$defs/platform_cell"
+            }
+          }
+        }
+      }
+    }
+  }
+}
