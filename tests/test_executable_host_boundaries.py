@@ -4,6 +4,7 @@ from contextlib import contextmanager
 import pytest
 
 from integration_helpers import bound_host
+from jev_integration_evaluator.integrations import host as bound_runtime
 from jev_integration_evaluator.integrations.host import PolicyBlock, UseFallback
 from jev_integration_evaluator.integrations.probe import _fixture_receipt
 
@@ -17,6 +18,80 @@ def test_e_synthetic_shadow_keeps_original_result_without_assessment(tmp_path):
         assert module.STATE['effects'] == ['first']
         assert client.calls == 0
         assert module.STATE['blocked'] == 0
+
+
+@contextmanager
+def _connected_e_shadow(tmp_path, monkeypatch):
+    """Drive the connected E observation path without a durable lifecycle.
+
+    Owner recognition is qualified by the installed connected test. Here it is
+    forced so the post-effect observation boundary can be exercised in process.
+    """
+    with bound_host(tmp_path, 'E') as (module, adapter, router, spec, client, call):
+        router.config['mode'] = 'shadow'
+        router.activation = _fixture_receipt(router, spec)
+        monkeypatch.setattr(bound_runtime, '_connected_e_owner', lambda router, candidate: True)
+        yield module, router, spec, client, call
+
+
+def test_connected_e_shadow_assesses_only_after_one_completed_effect(tmp_path, monkeypatch):
+    with _connected_e_shadow(tmp_path, monkeypatch) as (module, router, spec, client, call):
+        assert call() == {'reported': 'ok'}
+        assert module.STATE['effects'] == ['first']
+        assert module.STATE['blocked'] == 0
+        assert client.calls == 1
+
+
+@pytest.mark.parametrize('failing_observation', [1, 2])
+def test_connected_e_observation_failure_keeps_original_result(tmp_path, monkeypatch,
+                                                               failing_observation):
+    with _connected_e_shadow(tmp_path, monkeypatch) as (module, router, spec, client, call):
+        name = spec['bindings']['observe']
+        real, seen = module.__dict__[name], []
+
+        def observe(request):
+            seen.append(True)
+            if len(seen) == failing_observation:
+                raise RuntimeError('synthetic observation failure')
+            return real(request)
+
+        module.__dict__[name] = observe
+        assert call() == {'reported': 'ok'}
+        assert module.STATE['effects'] == ['first']
+        assert client.calls == 0
+
+
+def test_connected_e_assessment_failure_keeps_original_result(tmp_path, monkeypatch):
+    with _connected_e_shadow(tmp_path, monkeypatch) as (module, router, spec, client, call):
+        def refuse(**kwargs):
+            raise RuntimeError('synthetic assessment failure')
+
+        monkeypatch.setattr(router, 'route', refuse)
+        assert call() == {'reported': 'ok'}
+        assert module.STATE['effects'] == ['first']
+        assert module.STATE['blocked'] == 0
+
+
+@pytest.mark.parametrize('interrupted_observation', [1, 2])
+def test_connected_e_observation_interrupt_propagates(tmp_path, monkeypatch,
+                                                      interrupted_observation):
+    with _connected_e_shadow(tmp_path, monkeypatch) as (module, router, spec, client, call):
+        name = spec['bindings']['observe']
+        real, seen = module.__dict__[name], []
+
+        def observe(request):
+            seen.append(True)
+            if len(seen) == interrupted_observation:
+                raise KeyboardInterrupt
+            return real(request)
+
+        module.__dict__[name] = observe
+        with pytest.raises(KeyboardInterrupt):
+            call()
+        # An interrupt before the executor prevents the effect; one after the
+        # completed effect leaves exactly that one effect and no retry.
+        assert module.STATE['effects'] == ([] if interrupted_observation == 1 else ['first'])
+        assert client.calls == 0
 
 
 @pytest.mark.parametrize('error_type', [PolicyBlock, UseFallback])

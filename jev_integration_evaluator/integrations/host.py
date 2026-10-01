@@ -636,7 +636,7 @@ def invoke_bound(spec, original, request, bindings):
                     # original call stays below, outside router signal handlers.
                     connected_e_shadow = True
                     try: e_before = copy.deepcopy(bindings['observe'](request))
-                    except BaseException: e_before = None
+                    except Exception: e_before = None
             except (PolicyBlock, UseFallback, InputError): pass
         else:
             _register_owner(spec, router)
@@ -684,9 +684,11 @@ def invoke_bound(spec, original, request, bindings):
                             'source_location': {'file': spec['source']['file'],
                                                 'symbol': spec['source']['symbol'],
                                                 'source_sha256': spec['source']['source_sha256']}})
-        except BaseException:
+        except Exception:
             # An observational assessment cannot change a completed effect,
             # return value or error, and cannot invoke a fallback executor.
+            # Interrupts and interpreter exit are host control flow, not
+            # observation failures, and propagate unchanged.
             pass
         try:
             # E's console closes each task immediately after the return. Give
@@ -697,6 +699,6 @@ def invoke_bound(spec, original, request, bindings):
                 pending = set(c.router.futures) - pending_before
             if pending:
                 wait(pending, timeout=min(5.0, c.router.config['timeout_ms'] / 1000 + 1.0))
-        except BaseException:
+        except Exception:
             pass
     return outcome

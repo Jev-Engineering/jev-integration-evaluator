@@ -33,7 +33,9 @@ exactly once. Only after it completes does a read-only assessment receive
 the actual outcome and host-observed before/after state. A bounded wait lets
 that assessment settle in the shared ledger before the task closes. It cannot
 approve, retry or replace the executor; an observation or model failure
-cannot change the original return or exception. Synthetic E shadow without
+cannot change the original return or exception. An interrupt or interpreter
+exit raised during observation is host control flow, not an observation
+failure, and propagates unchanged. Synthetic E shadow without
 a connected lifecycle retains its prior behavior.
 
 The independent observation schedule reads first-task state and receipt,
