@@ -27,6 +27,9 @@ host. No key value belongs in the request, descriptor, receipt, or audit.
    `evaluate_study` on those exact inputs and requires observed keep evidence.
    The host independently authenticates the recomputation, deployment grant,
    and activation receipt. Synthetic studies cannot activate these modes.
+   A new plan is also refused when the egress grant, deployment grant, or
+   activation receipt is outside its `issued_at`/`expires_at` window; the
+   later status recheck compares the binding only and leaves time to the host.
 4. `template node-connected-status --request REQUEST --descriptor DESCRIPTOR
    --trusted-descriptor-sha256 SHA256` rechecks source and evidence without
    running the host.
@@ -82,8 +85,17 @@ The offline fixture uses a fake transport **only in shadow** and is labeled
 ledger replay, hardlink refusal, and installed supervised execution. The
 dedicated `connected-node24-qualification` CI job pins Linux CPython 3.13.5,
 Node 24.18.0, npm 11.16.0, and trusted TypeScript 5.8.3; it requires all 23
-installed tests and 16 native tests with zero skips. This job is a configured
-gate until its exact revision has actually run. It is not a JEV live measurement. Real
+installed tests and 19 native tests with zero skips. This job is a configured
+gate until its exact revision has actually run. It is not a JEV live measurement.
+The always-on `tests/test_node_template_connected_gates.py` drives the planner
+with in-test fixture rows over a byte fixture of an installed generation (the
+pinned install check is replaced there). It covers refusal of synthetic
+studies, failing or insufficient raw holdouts, success-shaped summaries,
+omitted or promoted missing outcomes, wrong-mode, differently bound, or
+out-of-window grants and receipts, and configuration or source drift after
+install; shadow reads no gate evidence. The native tests cover a provider
+timeout: one baseline effect, no selected effect, a retained reservation, and
+a discarded late result. None of these fixtures is observed evidence. Real
 provider qualification, externally authenticated grants, observed canary and
 active gate receipts, and production host monitoring remain pending. The
 legacy `NativeRouter` and its receipt format remain supported.

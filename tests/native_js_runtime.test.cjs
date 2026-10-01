@@ -194,6 +194,84 @@ test('host permission change after assessment blocks both proposed and fallback 
   assert.deepEqual(f.counts(), {baselineCalls: 0, summaryCalls: 0});
 });
 
+test('provider that never resolves times out within the bound to exactly one baseline effect', async () => {
+  let evaluations = 0, requestedTimeout = null;
+  const client = {evidence_type: 'synthetic', evaluate: (_state, _questions, _model, timeoutMs) => {
+    evaluations++; requestedTimeout = timeoutMs; return new Promise(() => {});
+  }};
+  const f = fixture('active', {client});
+  const request = {task_id: 'task', invocation_id: 'one'};
+  const bound = f.spec.runtime.timeout_ms;
+  const started = process.hrtime.bigint();
+  assert.equal(await f.router.invoke(f.original, request, f.bindings), 'baseline');
+  const elapsedMs = Number(process.hrtime.bigint() - started) / 1e6;
+  assert.equal(requestedTimeout, bound);
+  assert.ok(elapsedMs >= bound - 5 && elapsedMs < bound + 2000, `timeout after ${elapsedMs}ms`);
+  assert.deepEqual(f.counts(), {baselineCalls: 1, summaryCalls: 0});
+  assert.deepEqual(f.events.map(x => x.kind), ['assessment_intent', 'baseline_intent', 'baseline_effect']);
+  assert.equal(f.events[1].reason, 'assessment_unavailable');
+  // The call and its cost upper bound are reserved before egress and never refunded.
+  assert.equal(f.budget.calls, 1);
+  assert.equal(f.budget.cost, f.spec.runtime.cost_upper_bound);
+  await assert.rejects(f.router.invoke(f.original, request, f.bindings), /effect_replay_denied/);
+  assert.equal(evaluations, 1);
+  assert.deepEqual(f.counts(), {baselineCalls: 1, summaryCalls: 0});
+});
+
+test('late provider result after timeout is discarded and leaves its reservation unresolved', async () => {
+  class RecordingBudget extends SharedBudget {
+    constructor(limits) { super(limits); this.finished = []; }
+    finishReservation(reservation) { this.finished.push(reservation); }
+  }
+  const run = async delayMs => {
+    let late;
+    const client = {evidence_type: 'synthetic', evaluate: () => {
+      late = new Promise(resolve => setTimeout(
+        () => resolve({choice: {label: 'summary', confidence: 1}}), delayMs));
+      return late;
+    }};
+    const f = fixture('active', {client, budget: new RecordingBudget({max_calls: 2, max_cost: 2})});
+    const result = await f.router.invoke(f.original, {task_id: 'task', invocation_id: 'one'}, f.bindings);
+    await late;
+    await new Promise(resolve => setImmediate(resolve));
+    return {f, result};
+  };
+  const timedOut = await run(120);
+  assert.equal(timedOut.result, 'baseline');
+  assert.deepEqual(timedOut.f.counts(), {baselineCalls: 1, summaryCalls: 0});
+  assert.deepEqual(timedOut.f.events.map(x => x.kind),
+    ['assessment_intent', 'baseline_intent', 'baseline_effect']);
+  assert.equal(timedOut.f.budget.calls, 1);
+  assert.equal(timedOut.f.budget.cost, 1);
+  assert.deepEqual(timedOut.f.budget.finished, []);
+  // Control: the same provider answering inside the bound selects the action and settles.
+  const prompt = await run(1);
+  assert.equal(prompt.result, 'summary');
+  assert.deepEqual(prompt.f.counts(), {baselineCalls: 0, summaryCalls: 1});
+  assert.equal(prompt.f.budget.finished.length, 1);
+  assert.equal(prompt.f.budget.calls, 1);
+});
+
+test('shadow provider timeout keeps one baseline effect and audits only a failed assessment', async () => {
+  const client = {evidence_type: 'synthetic', evaluate: () => new Promise(() => {})};
+  const f = fixture('shadow', {client});
+  const bound = f.spec.runtime.timeout_ms;
+  const started = process.hrtime.bigint();
+  assert.equal(await f.router.invoke(f.original, {task_id: 'task', invocation_id: 'one'}, f.bindings), 'baseline');
+  assert.deepEqual(f.counts(), {baselineCalls: 1, summaryCalls: 0});
+  assert.ok(!f.events.some(x => x.kind === 'shadow_failed'));
+  while (!f.events.some(x => x.kind === 'shadow_failed') &&
+         Number(process.hrtime.bigint() - started) / 1e6 < bound + 2000)
+    await new Promise(resolve => setTimeout(resolve, 5));
+  const elapsedMs = Number(process.hrtime.bigint() - started) / 1e6;
+  assert.ok(elapsedMs >= bound - 5 && elapsedMs < bound + 2000, `shadow timeout after ${elapsedMs}ms`);
+  assert.deepEqual(f.events.map(x => x.kind).sort(),
+    ['assessment_intent', 'baseline_effect', 'baseline_intent', 'shadow_failed']);
+  assert.deepEqual(f.counts(), {baselineCalls: 1, summaryCalls: 0});
+  assert.equal(f.budget.calls, 1);
+  assert.equal(f.budget.cost, f.spec.runtime.cost_upper_bound);
+});
+
 test('typed TypeSafe client validates exact model, answer and key rotation without network', async () => {
   const environment = {TYPESAFE_API_KEY: 'fixture-only-key'};
   const questions = {choice: {type: 'choice', criteria: {read: 'Read', uncertain: 'Unclear'}}};

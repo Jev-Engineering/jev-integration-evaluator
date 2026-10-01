@@ -261,6 +261,7 @@ def validate(check_manifest=False):
                  'tests/test_node_template_installed_upgrade.py',
                  'tests/test_node_template_installed_esm.py',
                  'tests/test_node_template_connected.py',
+                 'tests/test_node_template_connected_gates.py',
                  'tests/test_node_template_session.py']
     required += [f'{directory}/independent-esm-recipe-c-review-v1.schema.json'
                  for directory in ('schemas', 'jev_integration_evaluator/data')]
