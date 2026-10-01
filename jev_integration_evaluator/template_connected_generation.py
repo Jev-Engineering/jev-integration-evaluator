@@ -120,7 +120,7 @@ def _installed(plan: dict, dependency_plan: dict, limits: dict) -> dict:
     # bytes here; the prospective child gets the full fresh-plan check below.
     validate_contract(plan, 'connected-delivery-plan-v1')
     host_profile = plan.get('host_profile')
-    if host_profile not in (None, 'retention-h-v1'):
+    if host_profile not in (None, 'retrieval-d-v1', 'retention-h-v1'):
         raise ConnectedGenerationError('connected_generation_profile_not_supported')
     profile = delivery._profile(host_profile)
     if digest({key: value for key, value in plan.items() if key != 'plan_sha256'}) != plan['plan_sha256']:
@@ -258,6 +258,12 @@ def plan_connected_generation_transfer(old_session: str | Path, new_plan: dict,
             or parse_utc(expires_at) > min(parse_utc(cutoff),
                                            parse_utc(new['egress_expires_at']))):
         raise ConnectedGenerationError('connected_generation_scope_invalid')
+    # Opening a ledger creates one when both files are absent. A transfer
+    # plan must derive from the stopped session's existing durable history;
+    # a fresh empty ledger would silently reset spend, tasks and effects.
+    if (not old['ledger'].is_file()
+            or not Path(str(old['ledger']) + '.sqlite').is_file()):
+        raise ConnectedGenerationError('connected_generation_existing_ledger_required')
     ledger = RuntimeLedger(old['ledger'], identity=old['identity'], **limits)
     try:
         history = digest(ledger.generation_snapshot())
@@ -280,7 +286,7 @@ def plan_connected_generation_transfer(old_session: str | Path, new_plan: dict,
 
 
 def _authority(plan: dict, grant: dict, signature_file: str | Path):
-    if plan.get('host_profile') not in (None, 'retention-h-v1'):
+    if plan.get('host_profile') not in (None, 'retrieval-d-v1', 'retention-h-v1'):
         raise ConnectedGenerationError('connected_generation_profile_not_supported')
     binding = plan['installed_binding']
     public_name = delivery._profile(plan.get('host_profile'))['references'][1]

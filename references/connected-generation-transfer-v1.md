@@ -1,14 +1,20 @@
 # Stopped connected generation transfer v1
 
 This Linux x86-64 CPython 3.13 path transfers one **stopped** reviewed Alpha
-connected console between separately installed 1.0.2 and 1.0.3 source
-generations. The package and install steps remain off mode. Transfer never
+connected console between separately installed source generations. The Alpha
+fixture uses 1.0.2 and 1.0.3. The finite `retrieval-d-v1` fixture uses freshly
+reviewed and bound 1.0.0 and 1.0.1 hosts under the same local synthetic TLS
+protocol. Package and install steps
+remain off mode. Transfer never
 launches a console, creates provider authority, resets spend or changes the
 run ID. A retained environment can be selected by a separately signed reverse
-transfer. The qualified Alpha component accepts the legacy Alpha profile.
-This branch adds a finite `retention-h-v1` candidate; its actual installed
-Linux qualification remains pending. D retrieval, composite placement, and
-Windows generation transfer have no qualified path in this branch.
+transfer. Planning requires the stopped session's existing ledger marker and
+database; a missing ledger fails closed as
+`connected_generation_existing_ledger_required` instead of being recreated
+empty. This controller accepts the legacy Alpha profile and the finite
+`retrieval-d-v1` and `retention-h-v1` profiles only, and refuses a transfer
+between different profiles. Composite placement and Windows generation
+transfer have no path here.
 
 Signature verification compares the exact public PEM snapshot to the
 externally anchored public-key hash before inspecting P-256 or checking the
@@ -65,6 +71,20 @@ are stored in its fsynced host files; the ledger effect table covers explicit
 `claim_effect` users. Core tests separately prove preservation of those
 claims, pending-effect refusal, authority loss, external history drift and
 lost commit acknowledgement.
+
+The D fixture authors one of its two existing pinned retrieval task IDs in each
+host console before the fresh scan and binder review. Its normal installed
+command reads the same independently anchored corpus and writes a raw
+conflict-withheld answer with ordered passage provenance. The next version
+uses the second pinned task under the same two-task ledger. A signed reverse
+transfer restores the retained generation identity without resetting calls or
+closed-task tombstones. A normal retained console attempt writes a fixed
+source-authored attempt marker before startup, then its exclusive owner marker
+refuses reuse of the original effect directory. It produces no new retrieval
+effect or protocol call. The ledger separately refuses a reservation for the
+closed task; shadow fallback alone does not suppress the host baseline. The
+profile selector, private reference names and
+installed console and loader wheel origins are checked at each boundary.
 
 The H candidate uses separately reviewed and bound 1.0.0 and 1.0.1 normal
 `retention-host` commands. Each authors one of the existing two stable task IDs

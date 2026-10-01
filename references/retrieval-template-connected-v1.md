@@ -28,7 +28,13 @@ These fixture requests are not a live provider call, and their token counts
 are not a spending or benefit measurement.
 
 The separate D off-mode test establishes version 1.0.1 package upgrade,
-retained-generation rollback and owned source rollback. Connected session
-upgrade, external endpoint/model grant, actual credential authority, observed
-canary/active gates and live benefit remain pending. The finite fixture does
-not qualify arbitrary retrievers, queries or a generative answer model.
+retained-generation rollback and owned source rollback. The
+[stopped connected generation path](connected-generation-transfer-v1.md)
+adds a finite two-version synthetic shadow transfer under one ledger and
+original cutoff; it requires independently signed installed and egress
+references for both versions and an exact signed transfer grant. The Linux
+installed fixture runs normal commands for both versions and the retained
+owner-refused replay. External
+endpoint/model grant, actual credential authority, observed canary/active gates
+and live benefit remain pending. The finite fixture does not qualify arbitrary
+retrievers, queries or a generative answer model.
