@@ -24,6 +24,31 @@ separate external files, checks the pinned corpus revision and passage/source/
 span provenance, and verifies that conflicting status evidence withholds the
 answer. A wrong-model response leaves the same baseline consumer effects.
 The test also checks reference drift, wrong-key scope and exact owned stop.
+
+Three further schedules use the finite `D_HOLD_POINT` launch selector. Its
+values are `pre-commit` (the default: hold inside the second task before its
+commit) and `between-tasks` (hold after the first committed effect and before
+the second task routes). `between-tasks` requires `D_HOLD` `1` and
+`D_RELEASE_PATH`; any other value or combination is refused at planning with
+`connected_host_references_required`. With the between-task hold the test
+reads back exactly one provider attempt and one settled ledger reservation
+before it releases the second task:
+
+- **Malformed response.** The local endpoint returns bytes that are not JSON.
+  Both tasks still write the same withheld-conflict effect bytes as the valid
+  run, the host audit records one `JSONDecodeError` assessment error per task,
+  and the ledger holds exactly two calls.
+- **Actual timeout.** The endpoint answers after the adapter's 2000 ms
+  transport budget. Both effects are again byte-identical to the valid run,
+  the audit records one `EvaluationTimeoutError` per task, and the ledger
+  holds exactly two calls. A timed-out reservation is not refunded.
+- **Between-task revocation.** The owner-private reference is changed while
+  the host is held. The first effect and its single ledger charge remain; the
+  second task stops before its route, so there is no second effect, no ready
+  marker and no second provider attempt.
+
+An assessment failure never changes the host effect: the D host keeps its
+deterministic baseline selection and the answer stays withheld.
 These fixture requests are not a live provider call, and their token counts
 are not a spending or benefit measurement.
 

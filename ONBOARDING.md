@@ -32,7 +32,8 @@ these journeys do not establish provider or benefit qualification.
 For the separately scoped `claim-m-v1` installed shadow profile, read
 [claim connected delivery](references/template-claim-connected-v1.md).
 Collect exact installed origins, private signed reference/public-key files and
-independent raw support/audit/claim observations. Its qualification is pending;
+independent raw support/audit/claim observations. Its qualification is an
+offline synthetic installed protocol result only;
 it grants no live provider or activation authority.
 
 For offline Node recipe C packaging, collect the independently retained JS modified verification receipt, exact applied source and render lock, native pinned Node/npm, trusted TypeScript 5.8.3, private offline npm cache, off configuration and secret references. The separate `node-package-request-v1` stages an owned generation only after two exact approvals; see `references/template-node-installation-v1.md`. Missing tooling or a changed source fails closed. A separate Node session may launch only that installed off-mode command under an exact scope and independently checked ready/effect paths; it does not grant connected mode. The independently pinned ESM fixture in `tests/independent_hosts/esm_recipe_c` exercises installed off-mode launch, versioned upgrade and retained rollback with raw host effects.

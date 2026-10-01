@@ -116,6 +116,8 @@
   },
   "$defs": {
     "sha": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "evidence": {"type": "array", "maxItems": 8, "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^tests/test_[a-z0-9_]+\\.py$"}},
     "dual_queue": {"type": "object", "additionalProperties": false,
       "required": ["file", "sha256"], "properties": {
         "file": {"const": "src/registered_dual/work_queue.py"},
@@ -135,7 +137,8 @@
            "launch": {"const": "pending"}, "materialize": {"const": "pending"},
            "bind": {"const": "pending"}, "verify": {"const": "pending"},
            "status": {"const": "pending"}, "disable": {"const": "pending"},
-           "upgrade": {"const": "pending"}, "rollback": {"const": "pending"}}}},
+           "upgrade": {"const": "pending"}, "rollback": {"const": "pending"},
+           "configure": {"const": "pending"}, "normal_start": {"const": "pending"}}}},
         {"if": {"properties": {"id": {"const": "L"}}},
          "then": {"required": ["connected_shadow", "connected_upgrade"],
            "properties": {
@@ -152,7 +155,9 @@
            "status": {"const": "qualified_offline_l_synthetic_host"},
            "disable": {"const": "qualified_offline_l_synthetic_host"},
            "upgrade": {"const": "qualified_offline_l_synthetic_host"},
-           "rollback": {"const": "qualified_offline_l_synthetic_host"}}}},
+           "rollback": {"const": "qualified_offline_l_synthetic_host"},
+           "configure": {"const": "qualified_offline_l_synthetic_host"},
+           "normal_start": {"const": "qualified_offline_l_synthetic_host"}}}},
         {"if": {"properties": {"id": {"const": "D"}}},
          "then": {"required": ["consumer_corpus", "consumer_corpus_sha256", "connected_shadow", "connected_upgrade"],
            "properties": {
@@ -170,7 +175,9 @@
            "status": {"const": "qualified_offline_d_synthetic_host"},
            "disable": {"const": "qualified_offline_d_synthetic_host"},
            "upgrade": {"const": "qualified_offline_d_synthetic_host"},
-           "rollback": {"const": "qualified_offline_d_synthetic_host"}}}},
+           "rollback": {"const": "qualified_offline_d_synthetic_host"},
+           "configure": {"const": "qualified_offline_d_synthetic_host"},
+           "normal_start": {"const": "qualified_offline_d_synthetic_host"}}}},
         {"if": {"properties": {"id": {"const": "E"}}},
          "then": {"required": ["connected_shadow", "connected_upgrade"],
            "properties": {
@@ -187,7 +194,9 @@
            "status": {"const": "qualified_offline_e_synthetic_host"},
            "disable": {"const": "qualified_offline_e_synthetic_host"},
            "upgrade": {"const": "qualified_offline_e_synthetic_host"},
-           "rollback": {"const": "qualified_offline_e_synthetic_host"}}}},
+           "rollback": {"const": "qualified_offline_e_synthetic_host"},
+           "configure": {"const": "qualified_offline_e_synthetic_host"},
+           "normal_start": {"const": "qualified_offline_e_synthetic_host"}}}},
         {"if": {"properties": {"id": {"const": "M"}}},
          "then": {"required": ["connected_shadow", "connected_upgrade"], "properties": {
            "consumer_adapter": {"const": "examples/use-case-host/claim_consumer.py"},
@@ -203,10 +212,12 @@
            "status": {"const": "qualified_offline_m_synthetic_host"},
            "disable": {"const": "qualified_offline_m_synthetic_host"},
            "upgrade": {"const": "qualified_offline_m_synthetic_host"},
-           "rollback": {"const": "qualified_offline_m_synthetic_host"}}}},
+           "rollback": {"const": "qualified_offline_m_synthetic_host"},
+           "configure": {"const": "qualified_offline_m_synthetic_host"},
+           "normal_start": {"const": "qualified_offline_m_synthetic_host"}}}},
         {"if": {"properties": {"id": {"const": "H"}}},
          "then": {"required": ["connected_shadow", "connected_upgrade"], "properties": {
-           "connected_shadow": {"const": "pending"},
+           "connected_shadow": {"enum": ["pending", "qualified_offline_h_installed_shadow_protocol"]},
            "connected_upgrade": {"const": "pending"},
            "consumer_adapter": {"const": "examples/use-case-host/retention_consumer.py"},
            "installed_execution": {"const": "qualified_offline_h_synthetic_host"},
@@ -219,9 +230,11 @@
            "status": {"const": "qualified_offline_h_synthetic_host"},
            "disable": {"const": "qualified_offline_h_synthetic_host"},
            "upgrade": {"const": "qualified_offline_h_synthetic_host"},
-           "rollback": {"const": "qualified_offline_h_synthetic_host"}}}}
+           "rollback": {"const": "qualified_offline_h_synthetic_host"},
+           "configure": {"const": "qualified_offline_h_synthetic_host"},
+           "normal_start": {"const": "qualified_offline_h_synthetic_host"}}}}
       ],
-      "required": ["id", "contract_id", "use_case", "issue", "template_id", "template_version", "recipe", "backend", "shape", "platform", "source", "source_sha256", "host_consumer", "host_oracle", "offline_contract", "installed_execution", "materialize", "bind", "apply", "install", "launch", "verify", "status", "disable", "upgrade", "rollback", "provider", "mode", "benefit"],
+      "required": ["id", "contract_id", "use_case", "issue", "template_id", "template_version", "recipe", "backend", "shape", "platform", "source", "source_sha256", "host_consumer", "host_oracle", "offline_contract", "installed_execution", "materialize", "bind", "apply", "install", "launch", "verify", "status", "disable", "upgrade", "rollback", "provider", "mode", "benefit", "configure", "normal_start", "host_interfaces", "evidence"],
       "properties": {
         "id": {"enum": ["C", "L", "D", "E", "M", "H"]},
         "contract_id": {"type": "string", "pattern": "^use-case\\.[CDEHLM]@1\\.0\\.0$"},
@@ -236,7 +249,7 @@
         "consumer_adapter_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
         "consumer_corpus": {"const": "examples/use-case-host/retrieval_corpus_v1.json"},
         "consumer_corpus_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
-        "connected_shadow": {"enum": ["qualified_offline_l_installed_shadow_protocol", "qualified_offline_d_installed_shadow_protocol", "qualified_offline_e_installed_shadow_protocol", "qualified_offline_m_installed_shadow_protocol", "pending"]},
+        "connected_shadow": {"enum": ["qualified_offline_l_installed_shadow_protocol", "qualified_offline_d_installed_shadow_protocol", "qualified_offline_e_installed_shadow_protocol", "qualified_offline_m_installed_shadow_protocol", "qualified_offline_h_installed_shadow_protocol", "pending"]},
         "connected_upgrade": {"const": "pending"},
         "host_consumer": {"type": "string", "minLength": 1}, "host_oracle": {"type": "string", "minLength": 1},
         "offline_contract": {"enum": ["source_review_required", "tested_fixture"]},
@@ -251,7 +264,17 @@
         "disable": {"enum": ["pending", "qualified_offline_l_synthetic_host", "qualified_offline_d_synthetic_host", "qualified_offline_e_synthetic_host", "qualified_offline_m_synthetic_host", "qualified_offline_h_synthetic_host"]},
         "upgrade": {"enum": ["pending", "qualified_offline_l_synthetic_host", "qualified_offline_d_synthetic_host", "qualified_offline_e_synthetic_host", "qualified_offline_m_synthetic_host", "qualified_offline_h_synthetic_host"]},
         "rollback": {"enum": ["pending", "qualified_offline_l_synthetic_host", "qualified_offline_d_synthetic_host", "qualified_offline_e_synthetic_host", "qualified_offline_m_synthetic_host", "qualified_offline_h_synthetic_host"]},
-        "provider": {"const": "pending"}, "mode": {"const": "off"}, "benefit": {"const": "unknown"}
+        "provider": {"const": "pending"}, "mode": {"const": "off"}, "benefit": {"const": "unknown"},
+        "configure": {"enum": ["pending", "qualified_offline_l_synthetic_host", "qualified_offline_d_synthetic_host", "qualified_offline_e_synthetic_host", "qualified_offline_m_synthetic_host", "qualified_offline_h_synthetic_host"]},
+        "normal_start": {"enum": ["pending", "qualified_offline_l_synthetic_host", "qualified_offline_d_synthetic_host", "qualified_offline_e_synthetic_host", "qualified_offline_m_synthetic_host", "qualified_offline_h_synthetic_host"]},
+        "host_interfaces": {"type": "array", "minItems": 1, "maxItems": 8, "uniqueItems": true,
+          "items": {"type": "object", "additionalProperties": false, "required": ["file", "symbol"],
+            "properties": {
+              "file": {"type": "string", "pattern": "^examples/[a-z-]+/[a-z_]+\\.py$"},
+              "symbol": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)?$"}}}},
+        "evidence": {"type": "object", "additionalProperties": false,
+          "required": ["materialize", "bind", "apply", "install", "configure", "normal_start", "launch", "verify", "status", "disable", "upgrade", "rollback", "connected_shadow", "connected_upgrade", "provider", "benefit"],
+          "properties": {"materialize": {"$ref": "#/$defs/evidence"}, "bind": {"$ref": "#/$defs/evidence"}, "apply": {"$ref": "#/$defs/evidence"}, "install": {"$ref": "#/$defs/evidence"}, "configure": {"$ref": "#/$defs/evidence"}, "normal_start": {"$ref": "#/$defs/evidence"}, "launch": {"$ref": "#/$defs/evidence"}, "verify": {"$ref": "#/$defs/evidence"}, "status": {"$ref": "#/$defs/evidence"}, "disable": {"$ref": "#/$defs/evidence"}, "upgrade": {"$ref": "#/$defs/evidence"}, "rollback": {"$ref": "#/$defs/evidence"}, "connected_shadow": {"$ref": "#/$defs/evidence"}, "connected_upgrade": {"$ref": "#/$defs/evidence"}, "provider": {"$ref": "#/$defs/evidence"}, "benefit": {"$ref": "#/$defs/evidence"}}}
       }
     }
   }

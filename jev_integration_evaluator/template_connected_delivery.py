@@ -65,7 +65,8 @@ _PROFILES = {
                     'loader': 'retrieval_host/connected_authority.py'},
         'references': ('D_CONNECTED_REF', 'D_AUTH_PUBKEY_FILE', 'D_CORPUS_PATH'),
         'allowed': frozenset({'D_EFFECT_DIRECTORY', 'D_AUDIT_PATH', 'D_TASKS',
-                              'D_READY_PATH', 'D_RELEASE_PATH', 'D_HOLD'}),
+                              'D_READY_PATH', 'D_RELEASE_PATH', 'D_HOLD',
+                              'D_HOLD_POINT'}),
         'binary': ('D_HOLD',),
         'injected': ('D_CONNECTED_REF_SHA256', 'D_AUTH_PUBKEY_SHA256'),
     },
@@ -190,8 +191,15 @@ def plan_connected_delivery(install_plan: dict, *, trusted_install_receipt_sha25
             or not set(launch_environment) <= allowed
             or any(launch_environment.get(name, '0') not in ('0', '1')
                    for name in profile['binary'])
-            or (host_profile == 'retrieval-d-v1'
-                and launch_environment.get('D_TASKS', 'two') not in ('two', 'duplicate'))
+            or (host_profile == 'retrieval-d-v1' and (
+                launch_environment.get('D_TASKS', 'two') not in ('two', 'duplicate')
+                # The hold point is a finite host schedule selector.  A hold
+                # between tasks is only meaningful with an explicit release.
+                or launch_environment.get('D_HOLD_POINT', 'pre-commit') not in (
+                    'pre-commit', 'between-tasks')
+                or (launch_environment.get('D_HOLD_POINT') == 'between-tasks'
+                    and (launch_environment.get('D_HOLD') != '1'
+                         or 'D_RELEASE_PATH' not in launch_environment))))
             or (host_profile == 'completion-e-v1'
                 and launch_environment.get('E_TASKS', 'two') not in ('two', 'duplicate'))
             or (host_profile == 'claim-m-v1' and (

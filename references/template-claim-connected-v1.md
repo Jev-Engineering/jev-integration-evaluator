@@ -5,7 +5,7 @@ Timeout diagnostics use `EvaluationTimeoutError`, a subtype of the existing
 over the elapsed budget receive this type; other transport failures retain
 the generic error. The host audit writes only the fixed type and error-class
 metadata when the actual router reports this timeout. Provider exception text
-is suppressed. Fresh installed verification of this correction remains pending.
+is suppressed. The installed timeout schedule below exercises this correction.
 
 The finite `claim-m-v1` profile binds `claim_host/host_claim_support.py`,
 `claim_host/console.py` and `claim_host/connected_authority.py` to exact source,
@@ -57,15 +57,18 @@ must leave support, audit and claim files absent. A between-task revoked
 reference must preserve the first effect and its settled ledger charge,
 refuse all second-task effects and preserve the shared task limit. Public-key signatures use
 the exact hashed PEM snapshot through an owned file descriptor, including a
-foreign-key path-replacement negative. These rows remain pending until the
-fresh installed qualification completes. A separate missing-credential session
+foreign-key path-replacement negative. A local Linux x86-64 CPython 3.13 run
+with an explicit offline wheelhouse executed both parametrized cases of this
+driver without a skip, and the hosted 3.13 leg lists the module in
+`.github/required-installed-journeys.txt`; the use-case matrix therefore
+records `qualified_offline_m_installed_shadow_protocol`. A separate missing-credential session
 must refuse launch before HTTP or any claim effect. The final installed-source
 drift check must refuse another plan; restoring bytes is fixture cleanup and
 is followed by no further launch.
 Source matching,
 installed-host execution, external provider connectivity and measured benefit
-are distinct evidence levels. This new component is pending final installed
-qualification, independent review and CI until those actual runs complete.
+are distinct evidence levels. The qualification above is an offline synthetic
+protocol result only; independent review is separate and is not claimed here.
 
 Existing off-mode upgrade/retained rollback stays qualified separately.
 Connected generation transitions require the separate authenticated generation

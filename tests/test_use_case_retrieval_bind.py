@@ -72,7 +72,20 @@ def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False
             "                time.sleep(0.02)\n"
             "            if not Path(release).exists(): raise TimeoutError('retrieval_release_timeout')\n"
             if connected_authority_source is not None else '')
-        old_source = old_source.replace(old_commit, addition + gate + old_commit)
+        # Finite, opt-in hold after the first committed effect and before the
+        # second task routes; the default pre-commit hold above is unchanged.
+        between = (
+            "    if (directory and task == 'retrieval-one' and os.environ.get('D_HOLD') == '1'\n"
+            "            and os.environ.get('D_HOLD_POINT') == 'between-tasks'):\n"
+            "        import time\n"
+            "        release = os.environ.get('D_RELEASE_PATH')\n"
+            "        if not release: raise ValueError('retrieval_release_required')\n"
+            "        deadline = time.monotonic() + 15\n"
+            "        while not Path(release).exists() and time.monotonic() < deadline:\n"
+            "            time.sleep(0.02)\n"
+            "        if not Path(release).exists(): raise TimeoutError('retrieval_release_timeout')\n"
+            if connected_authority_source is not None and generation_task is None else '')
+        old_source = old_source.replace(old_commit, addition + gate + old_commit + between)
         if connected_authority_source is None:
             old_source = old_source.replace(needle,
             "    if directory and task == 'retrieval-two':\n"
@@ -114,10 +127,31 @@ def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False
     console.write_text(
         f'from .{Path(spec["source"]["file"]).stem} import {entry}\n'
         'from pathlib import Path\nimport hashlib\n'
+        + (
+        # The connected fixture persists only the fixed class of a provider
+        # assessment failure beside the independently read effects.
+        'import json\nimport os\nimport threading\n'
+        'class Audit:\n'
+        '    def __init__(self):\n'
+        '        self.records = []\n'
+        '        self.lock = threading.Lock()\n'
+        '    def append(self, record):\n'
+        '        self.records.append(record)\n'
+        "        folder = os.environ.get('D_EFFECT_DIRECTORY')\n"
+        "        if folder and record.get('type') == 'assessment_error' and record.get('error_class') in ('EvaluationTimeoutError', 'JSONDecodeError'):\n"
+        "            path = Path(folder) / 'failure-events.jsonl'\n"
+        "            raw = (json.dumps({'type': 'assessment_error', 'error_class': record['error_class']}, sort_keys=True) + '\\n').encode()\n"
+        '            with self.lock:\n'
+        '                descriptor = os.open(path, os.O_WRONLY | os.O_APPEND | os.O_CREAT | os.O_NOFOLLOW, 0o600)\n'
+        "                with os.fdopen(descriptor, 'ab') as stream:\n"
+        '                    stream.write(raw)\n'
+        '                    stream.flush()\n'
+        '                    os.fsync(stream.fileno())\n'
+        if connected_authority_source is not None and generation_task is None else
         'class Audit:\n'
         '    def __init__(self): self.records = []\n'
-        '    def append(self, record): self.records.append(record)\n'
-        'def limits():\n'
+        '    def append(self, record): self.records.append(record)\n')
+        + 'def limits():\n'
         + limits
         +
         'def audit():\n    return Audit()\n'

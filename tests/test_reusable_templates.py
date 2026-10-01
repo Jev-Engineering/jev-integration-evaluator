@@ -1,12 +1,17 @@
 """Source-faithful contracts and precise partial installed status for issue 59."""
+import ast
 import importlib.util
 import json
 from pathlib import Path
 
+import jsonschema
 import pytest
 
-from jev_integration_evaluator.io import InputError
-from jev_integration_evaluator.use_case_templates import inspect_use_case_source, use_case_matrix
+from jev_integration_evaluator import use_case_templates
+from jev_integration_evaluator.io import InputError, read_json
+from jev_integration_evaluator.use_case_templates import (
+    EVIDENCE_CELLS, NEVER_OFFLINE_QUALIFIED, inspect_use_case_source, use_case_matrix,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -50,6 +55,119 @@ def test_six_rows_are_source_bound_and_limit_installed_claims_to_l_d_e_m_and_h()
                                      "disable", "upgrade", "rollback")} == {"pending"}
         assert row["recipe"] == f'python.{row["id"]}@1.0'
         assert row["contract_id"] == f'use-case.{row["id"]}@1.0.0'
+
+
+def _defined_symbols(path: Path) -> set[str]:
+    """Top-level functions and Class.method names, read without importing the fixture."""
+    names = set()
+    for node in ast.parse(path.read_text(encoding="utf-8")).body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            names.add(node.name)
+        elif isinstance(node, ast.ClassDef):
+            names.update(node.name + "." + item.name for item in node.body
+                         if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)))
+    return names
+
+
+def test_host_interfaces_name_real_functions_in_the_pinned_source_contract():
+    for row in use_case_matrix()["rows"]:
+        pinned = {row["source"]} | ({row["consumer_adapter"]} if row["id"] != "C" else set())
+        files = {interface["file"] for interface in row["host_interfaces"]}
+        # Every pinned file contributes at least one bound host function.
+        assert files == pinned, row["id"]
+        for interface in row["host_interfaces"]:
+            assert interface["symbol"] in _defined_symbols(ROOT / interface["file"]), (
+                row["id"], interface)
+        if row["id"] != "C":
+            assert {"file": row["consumer_adapter"],
+                    "symbol": "merge" if row["id"] == "L" else "commit"} in row["host_interfaces"]
+
+
+def test_every_lifecycle_cell_is_explicit_and_every_qualified_cell_has_existing_evidence():
+    required = [line.strip() for line in
+                (ROOT / ".github/required-installed-journeys.txt").read_text().splitlines()
+                if line.strip() and not line.startswith("#")]
+    rows = {row["id"]: row for row in use_case_matrix()["rows"]}
+    for letter, row in rows.items():
+        assert tuple(row["evidence"]) == EVIDENCE_CELLS
+        state = "pending" if letter == "C" else f"qualified_offline_{letter.lower()}_synthetic_host"
+        assert row["configure"] == row["normal_start"] == state
+        for cell in EVIDENCE_CELLS:
+            paths = row["evidence"][cell]
+            qualified = str(row.get(cell, "pending")).startswith("qualified_offline_")
+            assert qualified == bool(paths), (letter, cell)
+            assert len(paths) == len(set(paths))
+            for path in paths:
+                assert path.startswith("tests/test_use_case_") and path.endswith(".py")
+                assert (ROOT / path).is_file(), (letter, cell, path)
+                source = (ROOT / path).read_text(encoding="utf-8")
+                # A cited module must itself drive the stage it is cited for.
+                if cell == "configure":
+                    assert "reviewed_configuration_sha256" in source, (letter, path)
+                if cell in ("normal_start", "launch"):
+                    assert "launch_session(" in source, (letter, path)
+                if cell == "connected_shadow":
+                    assert "launch_connected_session(" in source, (letter, path)
+                    # The hosted Linux 3.13 leg fails if this module skips.
+                    assert path[:-3].replace("/", ".") in required, (letter, path)
+        for cell in NEVER_OFFLINE_QUALIFIED:
+            assert row["evidence"][cell] == []
+        # No row borrows another use case's installed evidence.
+        for other, other_row in rows.items():
+            if other != letter:
+                assert not ({path for paths in row["evidence"].values() for path in paths}
+                            & {path for paths in other_row["evidence"].values() for path in paths})
+    assert all(rows["C"]["evidence"][cell] == [] for cell in EVIDENCE_CELLS)
+    for letter in ("L", "D", "E"):
+        assert rows[letter]["connected_shadow"] == (
+            f"qualified_offline_{letter.lower()}_installed_shadow_protocol")
+
+    for letter in ("M", "H"):
+        assert rows[letter]["connected_shadow"] == (
+            f"qualified_offline_{letter.lower()}_installed_shadow_protocol")
+    for letter in ("L", "D", "E", "M", "H"):
+        assert rows[letter]["connected_upgrade"] == "pending"
+
+
+@pytest.mark.parametrize("mutation", ["unevidenced", "overclaimed", "pending_with_evidence",
+                                      "missing_cell", "foreign_interface"])
+def test_loader_and_schema_reject_evidence_and_interface_mismatches(monkeypatch, mutation):
+    matrix = use_case_matrix()
+    row = matrix["rows"][2]
+    assert row["id"] == "D"
+    if mutation == "unevidenced":
+        row["evidence"]["install"] = []
+    elif mutation == "overclaimed":
+        row["provider"] = "qualified_offline_d_synthetic_host"
+        row["evidence"]["provider"] = ["tests/test_use_case_retrieval_connected.py"]
+    elif mutation == "pending_with_evidence":
+        row["evidence"]["connected_upgrade"] = ["tests/test_use_case_retrieval_connected.py"]
+    elif mutation == "missing_cell":
+        del row["evidence"]["configure"]
+    else:
+        row["host_interfaces"].append({"file": "examples/coding-agent/agent.py",
+                                       "symbol": "dispatch_once"})
+    schema = read_json(ROOT / "schemas/use-case-template-matrix-v1.schema.json")
+    valid = jsonschema.Draft202012Validator(schema).is_valid(matrix)
+    assert valid == (mutation in ("unevidenced", "pending_with_evidence", "foreign_interface"))
+    monkeypatch.setattr(use_case_templates, "read_json", lambda path: matrix)
+    with pytest.raises(InputError):
+        use_case_matrix()
+
+
+def test_matrix_schema_copies_are_identical_and_reference_names_new_cells():
+    root = ROOT / "schemas/use-case-template-matrix-v1.schema.json"
+    packaged = ROOT / "jev_integration_evaluator/data/use-case-template-matrix-v1.schema.json"
+    assert root.read_bytes() == packaged.read_bytes()
+    text = (ROOT / "references/use-case-template-matrix-v1.md").read_text(encoding="utf-8")
+    for name in ("host_interfaces", "configure", "normal_start", "evidence"):
+        assert "`" + name + "`" in text
+    for row in use_case_matrix()["rows"]:
+        for interface in row["host_interfaces"]:
+            assert "`" + interface["symbol"] + "`" in text, (row["id"], interface)
+        for paths in row["evidence"].values():
+            for path in paths:
+                assert path in text, (row["id"], path)
 
 
 def test_source_drift_fails_closed(tmp_path):

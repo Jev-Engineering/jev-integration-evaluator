@@ -151,6 +151,15 @@ def test_recipe_rows_do_not_claim_more_than_the_use_case_matrix():
             if row["stages"][stage]["status"] == QUALIFIED:
                 for field in fields:
                     assert use_case[field].startswith("qualified_offline_"), (row_id, stage, field)
+            # The use-case row cites only modules this row's stage already cites.
+            for field in fields:
+                assert set(use_case["evidence"][field]) <= set(row["stages"][stage]["evidence"]), (
+                    row_id, stage, field)
+        # Connected shadow is promoted in both matrices together or in neither.
+        assert (row["stages"]["connected_shadow"]["status"] == QUALIFIED) == (
+            use_case["connected_shadow"].startswith("qualified_offline_")), row_id
+        assert ("connected_shadow" in row["platforms"]["linux"]["stages"]) == (
+            row["stages"]["connected_shadow"]["status"] == QUALIFIED), row_id
         assert use_case["provider"] == "pending" and use_case["benefit"] == "unknown"
 
 
