@@ -8,6 +8,7 @@ from __future__ import annotations
 import ast
 import base64
 import copy
+import hashlib
 from datetime import datetime, timezone
 import json
 import os
@@ -36,7 +37,8 @@ _OPENSSL_ENV = {'LANG': 'C', 'OPENSSL_CONF': os.devnull,
                 'OPENSSL_MODULES': '/nonexistent', 'OPENSSL_ENGINES': '/nonexistent'}
 
 
-def _verify(public: Path, kind: str, exact: str, signature: str) -> bool:
+def _verify(public: Path, kind: str, exact: str, signature: str,
+            *, expected_public_sha256: str) -> bool:
     """Verify a detached P-256 signature with the fixed host verifier."""
     try:
         info = _OPENSSL.stat()
@@ -49,7 +51,8 @@ def _verify(public: Path, kind: str, exact: str, signature: str) -> bool:
         if version.returncode or not version.stdout.startswith(b'OpenSSL 3.'):
             return False
         pem = public.read_bytes()
-        if (len(pem) > 4096 or not pem.startswith(b'-----BEGIN PUBLIC KEY-----\n')
+        if (hashlib.sha256(pem).hexdigest() != expected_public_sha256
+                or len(pem) > 4096 or not pem.startswith(b'-----BEGIN PUBLIC KEY-----\n')
                 or b'PRIVATE KEY' in pem):
             return False
         key_info = subprocess.run([str(_OPENSSL), 'pkey', '-pubin', '-text', '-noout'],
@@ -116,8 +119,10 @@ def _installed(plan: dict, dependency_plan: dict, limits: dict) -> dict:
     # Recompute immutable installed provenance and current source/reference
     # bytes here; the prospective child gets the full fresh-plan check below.
     validate_contract(plan, 'connected-delivery-plan-v1')
-    if plan.get('host_profile') is not None:
+    host_profile = plan.get('host_profile')
+    if host_profile not in (None, 'retrieval-d-v1'):
         raise ConnectedGenerationError('connected_generation_profile_not_supported')
+    profile = delivery._profile(host_profile)
     if digest({key: value for key, value in plan.items() if key != 'plan_sha256'}) != plan['plan_sha256']:
         raise ConnectedGenerationError('connected_generation_plan_changed')
     binding = plan['installed_binding']
@@ -131,6 +136,7 @@ def _installed(plan: dict, dependency_plan: dict, limits: dict) -> dict:
     if (actual != binding or actual['binding_sha256'] != plan['trusted_binding_sha256']
             or 'loader' not in actual['origins']):
         raise ConnectedGenerationError('connected_generation_installed_binding_changed')
+    delivery._check_profile_binding(actual, profile)
     for row in binding['source_plan']['files']:
         if file_hash(Path(row['path'])) != row['sha256']:
             raise ConnectedGenerationError('connected_generation_installed_source_changed')
@@ -139,11 +145,12 @@ def _installed(plan: dict, dependency_plan: dict, limits: dict) -> dict:
         delivery._check_reference(str(path))
         if file_hash(path) != expected:
             raise ConnectedGenerationError('connected_generation_reference_changed')
-    config_path = Path(plan['off_provenance']['launch_environment']['REGISTERED_ALPHA_CONNECTED_REF'])
-    public = Path(plan['off_provenance']['launch_environment']['REGISTERED_ALPHA_AUTH_PUBKEY_FILE'])
+    reference_name, public_name = profile['references'][:2]
+    config_path = Path(plan['off_provenance']['launch_environment'][reference_name])
+    public = Path(plan['off_provenance']['launch_environment'][public_name])
     delivery._check_reference(str(config_path))
     delivery._check_reference(str(public))
-    if file_hash(public) != plan['reference_sha256']['REGISTERED_ALPHA_AUTH_PUBKEY_FILE']:
+    if file_hash(public) != plan['reference_sha256'][public_name]:
         raise ConnectedGenerationError('connected_generation_public_key_changed')
     manifest = read_json(config_path)
     if (type(manifest) is not dict or set(manifest) !=
@@ -180,9 +187,11 @@ def _installed(plan: dict, dependency_plan: dict, limits: dict) -> dict:
     if (digest(dependency_plan) != authority['egress_grant'].get('dependency_digest')
             or digest(limits) != authority['egress_grant'].get('budget_digest')
             or not _verify(public, 'installed_binding', binding['binding_sha256'],
-                           manifest['signatures'].get('installed_binding', ''))
+                           manifest['signatures'].get('installed_binding', ''),
+                           expected_public_sha256=plan['reference_sha256'][public_name])
             or not _verify(public, 'egress_grant', digest(authority['egress_grant']),
-                           manifest['signatures'].get('egress_grant', ''))):
+                           manifest['signatures'].get('egress_grant', ''),
+                           expected_public_sha256=plan['reference_sha256'][public_name])):
         raise ConnectedGenerationError('connected_generation_runtime_authority_unverified')
     spec = _literal_spec(Path(binding['origins']['adapter']['path']))
     candidate = binding['candidate_id']
@@ -240,7 +249,9 @@ def plan_connected_generation_transfer(old_session: str | Path, new_plan: dict,
     cutoff = old_state.get('generation_parent', {}).get('original_expires_at',
                                                          old['egress_expires_at'])
     now = datetime.now(timezone.utc)
-    if (action not in ('upgrade', 'rollback') or old['identity'] == new['identity']
+    if (action not in ('upgrade', 'rollback')
+            or old_plan.get('host_profile') != new_plan.get('host_profile')
+            or old['identity'] == new['identity']
             or old['ledger'] != new['ledger'] or old['public'] != new['public']
             or parse_utc(new['egress_expires_at']) > parse_utc(cutoff)
             or not parse_utc(issued_at) <= now < parse_utc(expires_at)
@@ -275,10 +286,13 @@ def plan_connected_generation_transfer(old_session: str | Path, new_plan: dict,
 
 
 def _authority(plan: dict, grant: dict, signature_file: str | Path):
+    if plan.get('host_profile') not in (None, 'retrieval-d-v1'):
+        raise ConnectedGenerationError('connected_generation_profile_not_supported')
     binding = plan['installed_binding']
-    public = Path(plan['off_provenance']['launch_environment']['REGISTERED_ALPHA_AUTH_PUBKEY_FILE'])
+    public_name = delivery._profile(plan.get('host_profile'))['references'][1]
+    public = Path(plan['off_provenance']['launch_environment'][public_name])
     delivery._check_reference(str(public))
-    if file_hash(public) != plan['reference_sha256']['REGISTERED_ALPHA_AUTH_PUBKEY_FILE']:
+    if file_hash(public) != plan['reference_sha256'][public_name]:
         raise ConnectedGenerationError('connected_generation_public_key_changed')
     signature_file = Path(signature_file)
     delivery._check_reference(str(signature_file))
@@ -287,7 +301,8 @@ def _authority(plan: dict, grant: dict, signature_file: str | Path):
     except (OSError, UnicodeError):
         raise ConnectedGenerationError('connected_generation_signature_invalid') from None
     if (binding['binding_sha256'] != grant['old_binding_sha256']
-            or not _verify(public, 'generation_transfer', digest(grant), signature)):
+            or not _verify(public, 'generation_transfer', digest(grant), signature,
+                           expected_public_sha256=plan['reference_sha256'][public_name])):
         raise ConnectedGenerationError('connected_generation_transfer_unverified')
     signature_sha256 = file_hash(signature_file)
     verifier_sha256 = file_hash(_OPENSSL)
@@ -296,10 +311,11 @@ def _authority(plan: dict, grant: dict, signature_file: str | Path):
             delivery._check_reference(str(public))
             delivery._check_reference(str(signature_file))
             return (kind == 'generation_transfer' and exact == digest(grant)
-                    and file_hash(public) == plan['reference_sha256']['REGISTERED_ALPHA_AUTH_PUBKEY_FILE']
+                    and file_hash(public) == plan['reference_sha256'][public_name]
                     and file_hash(signature_file) == signature_sha256
                     and file_hash(_OPENSSL) == verifier_sha256
-                    and _verify(public, kind, exact, signature_file.read_text(encoding='ascii')))
+                    and _verify(public, kind, exact, signature_file.read_text(encoding='ascii'),
+                                expected_public_sha256=plan['reference_sha256'][public_name]))
         except (OSError, UnicodeError, InputError):
             return False
     return verify
@@ -358,8 +374,9 @@ def connected_generation_status(old_session: str | Path, new_session: str | Path
             or parent['action'] != grant['action']
             or new_plan['installed_binding']['binding_sha256'] != grant['new_binding_sha256']):
         raise ConnectedGenerationError('connected_generation_child_changed')
+    reference_name = delivery._profile(old_plan.get('host_profile'))['references'][0]
     old_reference = read_json(Path(old_plan['off_provenance']['launch_environment'][
-        'REGISTERED_ALPHA_CONNECTED_REF']))
+        reference_name]))
     status = RuntimeLedger.generation_transfer_status(old_reference['ledger_path'],
         grant=grant, verify_authority=verify)
     result = {'kind': 'connected-generation-status-v1', 'run_id': old_state['run_id'],
@@ -378,8 +395,9 @@ def reconcile_connected_generation(old_session: str | Path, new_session: str | P
         return status
     _, old_plan = _stopped(old_session, trusted_old_head)
     verify = _authority(old_plan, grant, signature_file)
+    reference_name = delivery._profile(old_plan.get('host_profile'))['references'][0]
     old_reference = read_json(Path(old_plan['off_provenance']['launch_environment'][
-        'REGISTERED_ALPHA_CONNECTED_REF']))
+        reference_name]))
     def activate(ledger_status: dict) -> None:
         if (ledger_status['current_identity'] != grant['new_identity']
                 or ledger_status['current_generation_grant_sha256'] != digest(grant)

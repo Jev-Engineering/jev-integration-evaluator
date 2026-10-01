@@ -31,7 +31,11 @@ pytestmark = pytest.mark.skipif(not PROFILE, reason='D source-bound bind fixture
 
 
 def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False,
-                connected_authority_source: Path | None = None) -> tuple[dict, dict]:
+                connected_authority_source: Path | None = None,
+                generation_task: str | None = None) -> tuple[dict, dict]:
+    if generation_task is not None:
+        assert generation_task in ('retrieval-one', 'retrieval-two')
+        assert installed and connected_authority_source is not None
     _, spec, request = _host(target, version)
     if connected_authority_source is not None:
         assert installed
@@ -56,7 +60,7 @@ def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False
         old_commit = "    STATE['kept'] = retrieval_consumer.commit(request, action, host_approved=STATE['approval'])\n"
         assert old_source.count(old_commit) == 1
         gate = (
-            "    if directory and task == 'retrieval-two':\n"
+            f"    if directory and task == '{generation_task or 'retrieval-two'}':\n"
             "        with (Path(directory) / 'ready.txt').open('x', encoding='utf-8') as stream:\n"
             "            stream.write('ready\\n')\n"
             "        import time\n"
@@ -77,6 +81,15 @@ def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False
             "        import time\n        time.sleep(15)\n" + needle)
         source.write_text(old_source, encoding='utf-8')
     schedule = (
+        "    import os\n"
+        "    from pathlib import Path\n"
+        "    release = os.environ.get('D_RELEASE_PATH')\n"
+        "    if release:\n"
+        "        with Path(release).with_suffix('.attempt').open('x', encoding='utf-8') as stream:\n"
+        "            stream.write('attempt\\n')\n"
+        "    return [{'task_id': '" + generation_task +
+        "', 'query': 'approved', 'expected_revision': 7}]\n"
+        if generation_task is not None else
         "    import os\n"
         "    mode = os.environ.get('D_TASKS', 'two')\n"
         "    ids = (['retrieval-one', 'retrieval-one'] if mode == 'duplicate' else "
