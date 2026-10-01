@@ -91,6 +91,22 @@ def _register_owner(spec, router):
         _routers[placement] = weakref.ref(router)
 
 
+def _connected_e_owner(router, candidate_id):
+    """Recognize the actual code-owned connected lifecycle and its ledger."""
+    from .runtime_ledger import RuntimeLedger
+    from .runtime_lifecycle import HostRuntimeLifecycle
+    source = getattr(router, 'host_source_check', None)
+    egress = getattr(router, 'host_egress_check', None)
+    owner = getattr(egress, '__self__', None)
+    return (isinstance(owner, HostRuntimeLifecycle)
+            and getattr(source, '__self__', None) is owner
+            and getattr(source, '__func__', None) is HostRuntimeLifecycle._check_host_integrity
+            and getattr(egress, '__func__', None) is HostRuntimeLifecycle._check_live_files
+            and owner._routers.get(candidate_id) is router
+            and isinstance(owner.coordinator, RuntimeLedger)
+            and owner.coordinator is router.budget_coordinator)
+
+
 class Context:
     def __init__(self, spec, original, request, bindings, router):
         self.spec, self.original, self.request, self.b = spec, original, request, bindings
@@ -601,6 +617,8 @@ HANDLERS = dict(zip('ABCDEFGHIJKLM', (_action_a, _action_b, _action_c, _action_d
 def invoke_bound(spec, original, request, bindings):
     """Called only from generated host edits. Never accepts executable source text."""
     c = None
+    connected_e_shadow = False
+    e_before = None
     try:
         router = _read(bindings['runtime'], request)
         if isinstance(router, SafeRouter) and router.config['mode'] == 'off':
@@ -611,7 +629,14 @@ def invoke_bound(spec, original, request, bindings):
             try:
                 _register_owner(spec, router)
                 c = Context(spec, original, request, bindings, router)
-                if spec['recipe']['id'] != 'python.E': c.select()
+                if spec['recipe']['id'] != 'python.E':
+                    c.select()
+                elif _connected_e_owner(router, spec['candidate_id']):
+                    # Connected E observes the real completed host effect. The
+                    # original call stays below, outside router signal handlers.
+                    connected_e_shadow = True
+                    try: e_before = copy.deepcopy(bindings['observe'](request))
+                    except Exception: e_before = None
             except (PolicyBlock, UseFallback, InputError): pass
         else:
             _register_owner(spec, router)
@@ -634,4 +659,46 @@ def invoke_bound(spec, original, request, bindings):
         return bindings['blocked'](request, str(exc))
     # A host is allowed to raise the same exception classes used internally by
     # the router. Off/shadow must propagate those exceptions without fallback.
-    return original(request)
+    outcome = original(request)
+    if connected_e_shadow and e_before is not None:
+        try:
+            after = copy.deepcopy(bindings['observe'](request))
+            with c.router.lock:
+                pending_before = set(c.router.futures)
+            evidence = {'host': c.evidence(copy.deepcopy(outcome)),
+                        'before': e_before, 'after': after,
+                        'outcome': copy.deepcopy(outcome)}
+            c.stable()
+            c.router.route(
+                task_id=c.task_id, state=evidence, questions=spec['questions'],
+                primary_question=spec['primary_question'],
+                evidence_question=spec['evidence_question'],
+                baseline_action=c.baseline,
+                gate=HostGate(tuple(c.options), hard_block=False,
+                              approval_required=False, approval_granted=False),
+                label_actions=spec['label_actions'],
+                estimated_cost_upper_bound=spec['runtime']['cost_upper_bound'],
+                immutable_state=False, cache_scope=None,
+                provenance={'candidate_id': spec['candidate_id'],
+                            'experiment_id': spec['experiment_id'],
+                            'source_location': {'file': spec['source']['file'],
+                                                'symbol': spec['source']['symbol'],
+                                                'source_sha256': spec['source']['source_sha256']}})
+        except Exception:
+            # An observational assessment cannot change a completed effect,
+            # return value or error, and cannot invoke a fallback executor.
+            # Interrupts and interpreter exit are host control flow, not
+            # observation failures, and propagate unchanged.
+            pass
+        try:
+            # E's console closes each task immediately after the return. Give
+            # this one post-effect observation a finite chance to settle and
+            # charge the shared ledger before that host-owned close.
+            from concurrent.futures import wait
+            with c.router.lock:
+                pending = set(c.router.futures) - pending_before
+            if pending:
+                wait(pending, timeout=min(5.0, c.router.config['timeout_ms'] / 1000 + 1.0))
+        except Exception:
+            pass
+    return outcome

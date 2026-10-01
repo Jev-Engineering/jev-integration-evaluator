@@ -42,7 +42,8 @@ pytestmark = pytest.mark.skipif(not PROFILE, reason="E installed fixture require
 
 
 def _source_host(target: Path, version: str = "1.0.0",
-                 task_ids: tuple[str, ...] = ("completion-task",)) -> tuple[dict, dict, dict]:
+                 task_ids: tuple[str, ...] = ("completion-task",),
+                 connected_authority_source: Path | None = None) -> tuple[dict, dict, dict]:
     assert version in ("1.0.0", "1.0.1")
     assert task_ids and all(type(value) is str for value in task_ids)
     inventory, spec = fixture(target, "E", tag="raw_completion", layout="package",
@@ -57,6 +58,8 @@ def _source_host(target: Path, version: str = "1.0.0",
         assert file_hash(source) == expected
         shutil.copyfile(source, destination)
         assert file_hash(destination) == expected
+    if connected_authority_source is not None:
+        shutil.copyfile(connected_authority_source, package / "connected_authority.py")
     host_source = target / spec["source"]["file"]
     text = host_source.read_text(encoding="utf-8")
     old = ("STATE['effects'].append('first')\n"
@@ -76,14 +79,34 @@ def _source_host(target: Path, version: str = "1.0.0",
            "        completion_consumer.commit(request, host_approved=STATE['approval'])\n"
            "        STATE['records'] += 1\n"
            "        ready = __import__('os').environ.get('E_READY_PATH')\n"
-           "        if ready:\n"
+           "        if ready and not __import__('os').path.exists(ready):\n"
            "            from pathlib import Path\n"
            "            with Path(ready).open('x', encoding='utf-8') as stream:\n"
            "                stream.write('ready\\n')\n"
-           "            __import__('time').sleep(15)\n"
+           "            if 'E_CONNECTED_REF' not in __import__('os').environ: __import__('time').sleep(15)\n"
            "    return {'reported': 'ok'}")
     assert text.count(old) == 1
-    host_source.write_text(text.replace(old, new), encoding="utf-8")
+    text = text.replace(old, new)
+    if connected_authority_source is not None:
+        gate_old = ("def bound_gate_raw_completion(request, action):\n"
+                    "    return HostGate(tuple(OPTIONS) + ('first','second'), hard_block=STATE['hard_block'], approval_required=action in ('alt','merge'), approval_granted=STATE['approval'])")
+        gate_new = ("def bound_gate_raw_completion(request, action):\n"
+                    "    if __import__('os').environ.get('E_CONNECTED_REF'): raise RuntimeError('completion_shadow_gate_must_not_run')\n"
+                    "    return HostGate(tuple(OPTIONS) + ('first','second'), hard_block=STATE['hard_block'], approval_required=action in ('alt','merge'), approval_granted=STATE['approval'])")
+        assert text.count(gate_old) == 1
+        text = text.replace(gate_old, gate_new)
+        observe_old = ("def bound_observe_raw_completion(request):\n"
+                       "    return {'records': STATE['records']}")
+        observe_new = ("def bound_observe_raw_completion(request):\n"
+                       "    import json, os\n"
+                       "    from pathlib import Path\n"
+                       "    template = os.environ.get('E_RAW_STATE_TEMPLATE')\n"
+                       "    path = Path(template.replace('{task_id}', request['task_id'])) if template else None\n"
+                       "    raw = json.loads(path.read_text()) if path and path.is_file() else None\n"
+                       "    return {'records': STATE['records'], 'raw_state': raw}")
+        assert text.count(observe_old) == 1
+        text = text.replace(observe_old, observe_new)
+    host_source.write_text(text, encoding="utf-8")
     for case in spec["verification"]["cases"]:
         case["request"].update({"operation": "close_and_label"})
     entry = spec["verification"]["entry_point"]
@@ -98,10 +121,16 @@ def _source_host(target: Path, version: str = "1.0.0",
         "def audit():\n    return Audit()\n"
         "def dependencies():\n"
         "    base = Path(__file__).resolve().parent\n"
-        "    return {'files': [{'path': str(base / name), 'sha256': hashlib.sha256((base / name).read_bytes()).hexdigest()} for name in ('requirements.lock', 'runtime.json')]}\n"
-        "def options():\n    return {}\n"
-        "def make_requests():\n"
-        f"    return {[{'task_id': task_id, 'operation': 'close_and_label'} for task_id in task_ids]!r}\n"
+        "    return {'files': [{'path': str(base / name), 'sha256': hashlib.sha256((base / name).read_bytes()).hexdigest()} for name in ('requirements.lock', 'runtime.json')]}\n" +
+        ("def options():\n    from .connected_authority import options as connected_options\n"
+         "    return connected_options()\n" if connected_authority_source is not None else
+         "def options():\n    return {}\n") +
+        "def make_requests():\n" +
+        ("    import os\n"
+         "    names = ('completion-one', 'completion-two') if os.environ.get('E_TASKS', 'two') == 'two' else ('completion-one', 'completion-one')\n"
+         "    return [{'task_id': name, 'operation': 'close_and_label'} for name in names]\n"
+         if connected_authority_source is not None else
+         f"    return {[{'task_id': task_id, 'operation': 'close_and_label'} for task_id in task_ids]!r}\n") +
         "def main():\n"
         "    requests = make_requests()\n"
         "    for request in requests:\n"
@@ -227,9 +256,11 @@ def test_completion_bind_refuses_single_request_exit_shape(tmp_path):
 
 
 def _applied(tmp_path: Path, name: str, version: str,
-             task_ids: tuple[str, ...] = ("completion-task",)) -> dict:
+             task_ids: tuple[str, ...] = ("completion-task",),
+             connected_authority_source: Path | None = None) -> dict:
     target = tmp_path / name
-    inventory, spec, request = _source_host(target, version, task_ids)
+    inventory, spec, request = _source_host(target, version, task_ids,
+                                            connected_authority_source)
     prepared = prepare_template_binding(target, request, _binding())
     request = prepared["request"]
     spec = request["implementation_spec"]

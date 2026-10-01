@@ -34,6 +34,9 @@ def test_six_rows_are_source_bound_and_limit_installed_claims_to_l_d_e_m_and_h()
             assert receipt["consumer_adapter_sha256"] == row["consumer_adapter_sha256"]
             if row["id"] == "D":
                 assert receipt["consumer_corpus_sha256"] == row["consumer_corpus_sha256"]
+            if row["id"] == "E":
+                assert row["connected_shadow"] == "qualified_offline_e_installed_shadow_protocol"
+                assert row["connected_upgrade"] == "pending"
             state = f"qualified_offline_{row['id'].lower()}_synthetic_host"
             assert {row[k] for k in ("apply", "install", "launch")} == {state}
             assert {row[k] for k in ("materialize", "verify", "status", "disable",

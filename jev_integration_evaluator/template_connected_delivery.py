@@ -69,6 +69,17 @@ _PROFILES = {
         'binary': ('D_HOLD',),
         'injected': ('D_CONNECTED_REF_SHA256', 'D_AUTH_PUBKEY_SHA256'),
     },
+    'completion-e-v1': {
+        'source': 'completion_host/host_raw_completion.py',
+        'members': {'host': 'completion_host/host_raw_completion.py',
+                    'console': 'completion_host/console.py',
+                    'loader': 'completion_host/connected_authority.py'},
+        'references': ('E_CONNECTED_REF', 'E_AUTH_PUBKEY_FILE'),
+        'allowed': frozenset({'E_RAW_STATE_TEMPLATE', 'E_EFFECT_RECEIPT_TEMPLATE',
+                              'E_READY_PATH', 'E_TASKS'}),
+        'binary': (),
+        'injected': ('E_CONNECTED_REF_SHA256', 'E_AUTH_PUBKEY_SHA256'),
+    },
     'claim-m-v1': {
         'source': 'claim_host/host_claim_support.py',
         'members': {'host': 'claim_host/host_claim_support.py',
@@ -181,6 +192,8 @@ def plan_connected_delivery(install_plan: dict, *, trusted_install_receipt_sha25
                    for name in profile['binary'])
             or (host_profile == 'retrieval-d-v1'
                 and launch_environment.get('D_TASKS', 'two') not in ('two', 'duplicate'))
+            or (host_profile == 'completion-e-v1'
+                and launch_environment.get('E_TASKS', 'two') not in ('two', 'duplicate'))
             or (host_profile == 'claim-m-v1' and (
                 not {'M_EFFECT_DIRECTORY', 'M_READY_PATH'} <= set(launch_environment)
                 or (launch_environment.get('M_HOLD') == '1' and 'M_RELEASE_PATH' not in launch_environment)
