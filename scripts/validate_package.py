@@ -270,6 +270,8 @@ def validate(check_manifest=False):
                  'tests/test_node_template_installation.py',
                  'tests/test_node_template_installed_upgrade.py',
                  'tests/test_node_template_installed_esm.py',
+                 'tests/test_node_template_recovery.py',
+                 'tests/test_node_template_installed_recovery.py',
                  'tests/test_node_template_connected.py',
                  'tests/test_node_template_connected_faults.py',
                  'tests/test_node_template_connected_gates.py',
@@ -286,7 +288,8 @@ def validate(check_manifest=False):
                  for directory in ('schemas', 'jev_integration_evaluator/data')
                  for name in ('node-package-request-v1', 'node-package-plan-v1',
                               'node-package-receipt-v1', 'node-install-plan-v1',
-                              'node-install-receipt-v1', 'node-connected-owner-v1',
+                              'node-install-receipt-v1', 'node-recovery-plan-v1',
+                              'node-recovery-receipt-v1', 'node-connected-owner-v1',
                               'node-connected-session-v1',
                               'node-delivery-descriptor-v1',
                               'node-delivery-session-v1',

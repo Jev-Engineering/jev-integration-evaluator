@@ -87,7 +87,11 @@ normal off-mode Node command with external effect files. The read-only Node
 delivery descriptor binds exact install and observation inputs. The installed
 evaluator CLI exposes separate `template node-package-plan`,
 `node-package-build`, `node-install-plan` and `node-install` steps with exact
-plan approvals and externally retained receipt digests. The Node session
+plan approvals and externally retained receipt digests. An interrupted build
+or install is only classified by status; its owned partial root is removed
+solely by a reviewed `node-package-recovery-plan`/`node-install-recovery-plan`
+and the separately approved `node-package-recover`/`node-install-recover`,
+which keep the interrupted attempt in a retained recovery journal. The Node session
 supervisor runs only the installed off-mode command under exact
 scope, observes independent files and preserves same-run recovery state.
 Independent installed ESM, TypeScript and CommonJS fixtures test two exact versions

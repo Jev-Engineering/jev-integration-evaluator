@@ -2,6 +2,35 @@
 
 ## Unreleased — native Windows delivery gap qualification
 
+- Issue #60 follow-up: explicit owned recovery of an interrupted Node package
+  build or install. New read-only `plan_node_package_recovery` and
+  `plan_node_install_recovery` (CLI `template node-package-recovery-plan` and
+  `node-install-recovery-plan`) write a strict `node-recovery-plan-v1` that
+  binds the step plan digest, ownership intent, interruption stage, root
+  device and inode, interrupted journal rows, recovery journal head and a
+  digest of every owned entry. `recover_node_package` and
+  `recover_node_installation` (CLI `node-package-recover` and
+  `node-install-recover`) need the same step plan and its approval digest plus
+  the separate recovery digest, take the step's lock without waiting,
+  recompute the plan and then remove only that owned root and its intent,
+  returning a strict `node-recovery-receipt-v1`. The interrupted journal and
+  both recovery events stay in a hash-chained parent-side recovery journal.
+  Recovery is refused without a recorded interruption, for a completed step,
+  on any journal, plan, identity or content mismatch, for symlinks and path
+  escapes, and while another owner holds the lock. After recovery
+  `node-package-status` and `node-install-status` report `absent` with the
+  added `recovered_attempts` and `recovery_journal_head` fields; those fields
+  appear only when a recovery journal exists, and no other existing command,
+  receipt or status output changes. Always-on tests cover the journal,
+  snapshot and approval binding on every platform and the full recovery and
+  refusal matrix on native Linux without the Node toolchain;
+  `tests/test_node_template_installed_recovery.py` interrupts a real pinned
+  install, recovers it through the installed CLI and runs the reinstalled
+  off-mode host. The `connected-node24-qualification` job requires 27
+  installed tests (was 26) and 19 native tests. Offline synthetic off-mode
+  evidence only: power-loss durability, an interrupted real `npm ci` child,
+  drifted inputs and torn journal rows are not covered and stay refused for
+  operator review.
 - Issue #59 follow-up: the stopped connected generation transfer controller
   also accepts the finite `graph-l-v1`, `claim-m-v1` and `completion-e-v1`
   profiles. The production change is the profile allowlist in
