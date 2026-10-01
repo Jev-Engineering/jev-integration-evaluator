@@ -59,7 +59,7 @@ For the separately reviewed Alpha 1.0.2 fixture, an additive [installed binding]
 
 For the independent dual 1.0.2 host, [composite installed binding](references/connected-composite-binding-v1.md) maps two reviewed placements plus a shared console and public-only loader to exact installed origins. Its opt-in connected shadow profile retains one durable task owner and budget across both normal-console decisions. The installed local TLS and effect tests are offline synthetic evidence; real provider reachability, combined observed canary/active gates, connected upgrade/rollback and benefit are pending.
 
-A separate [stopped connected generation transfer](references/connected-generation-transfer-v1.md) links two reviewed installed Alpha or finite D retrieval versions under one run ID and durable ledger. Transfer requires an issuer-signed exact grant, stopped source-bound session, unchanged limits and original cutoff, and an inert child reconciled from the durable transfer receipt before launch. Local synthetic protocol qualification does not grant live egress or activation.
+A separate [stopped connected generation transfer](references/connected-generation-transfer-v1.md) links two reviewed installed Alpha versions, or two versions of one finite D, H, L, M or E use-case host, under one run ID and durable ledger. Transfer requires an issuer-signed exact grant, stopped source-bound session, unchanged limits and original cutoff, and an inert child reconciled from the durable transfer receipt before launch. Local synthetic protocol qualification does not grant live egress or activation.
 
 For two to four compatible reviewed placements in one unchanged source snapshot,
 use the separate `implement-composite-*` transaction described in
@@ -87,7 +87,11 @@ normal off-mode Node command with external effect files. The read-only Node
 delivery descriptor binds exact install and observation inputs. The installed
 evaluator CLI exposes separate `template node-package-plan`,
 `node-package-build`, `node-install-plan` and `node-install` steps with exact
-plan approvals and externally retained receipt digests. The Node session
+plan approvals and externally retained receipt digests. An interrupted build
+or install is only classified by status; its owned partial root is removed
+solely by a reviewed `node-package-recovery-plan`/`node-install-recovery-plan`
+and the separately approved `node-package-recover`/`node-install-recover`,
+which keep the interrupted attempt in a retained recovery journal. The Node session
 supervisor runs only the installed off-mode command under exact
 scope, observes independent files and preserves same-run recovery state.
 Independent installed ESM, TypeScript and CommonJS fixtures test two exact versions

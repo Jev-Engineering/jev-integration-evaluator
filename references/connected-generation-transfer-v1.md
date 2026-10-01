@@ -15,9 +15,10 @@ empty. Status and reconcile recompute the complete parent link from the
 stopped session, including the original cutoff and failure history, and
 refuse a child whose recorded link differs in any field.
 This controller accepts the legacy Alpha profile and the finite
-`retrieval-d-v1` and `retention-h-v1` profiles only, and refuses a transfer
-between different profiles. Composite placement and Windows generation
-transfer have no path here.
+`retrieval-d-v1`, `retention-h-v1`, `graph-l-v1`, `claim-m-v1` and
+`completion-e-v1` profiles only, and refuses a transfer between different
+profiles. Composite placement and Windows generation transfer have no path
+here.
 
 Signature verification compares the exact public PEM snapshot to the
 externally anchored public-key hash before inspecting P-256 or checking the
@@ -100,6 +101,52 @@ private effect directory; an exclusive host owner marker refuses a second
 startup before shadow fallback can run the baseline again. A separate fixed,
 source-authored attempt marker establishes command reachability. This candidate
 does not yet establish executed upgrade or rollback qualification.
+
+The L, M and E candidates
+([graph](../tests/test_connected_generation_graph_installed.py),
+[claim](../tests/test_connected_generation_claim_installed.py) and
+[completion](../tests/test_connected_generation_completion_installed.py))
+share one journey helper, `tests/connected_generation_journey.py`. Each
+installs separately reviewed and bound 1.0.0 and 1.0.1 hosts of its own use
+case, whose source authors one of the two existing pinned task IDs before the
+scan and bind, and runs the normal installed console under the local
+synthetic TLS shadow protocol. The controller change is the profile allowlist
+only; the existing-ledger precondition, the profile binding check and the
+complete parent-link comparison are unchanged. Each journey reads back, as
+the only ledger owner after the console has exited:
+
+- calls, cost, limits and closed-task tombstones are equal before and after
+  the upgrade and after the signed reverse transfer, and the transfer receipt
+  hashes match those snapshots;
+- a test-authored, synthetic completed effect claim made with the real
+  installed placement before planning is still present afterwards, cannot be
+  claimed again through the new placement or the retained one, and an
+  unmapped placement is refused. The fixture consoles record their raw
+  effects in host files, so this claim is what makes the ledger effect table
+  non-empty; it is not a console effect;
+- a separately signed later egress grant for the new generation, a launch
+  scope past the original cutoff and a clock past that cutoff are refused;
+- a garbage signature, a foreign P-256 key, the issuer's signature over
+  another grant digest, a correctly signed grant that is not the derived
+  one, and the upgrade signature presented for the rollback are refused
+  with no child and no protocol call;
+- the same installed bytes relabelled to any other finite profile fail the
+  plan contract, and a separately installed, valid host of another finite
+  profile sharing the ledger, key, limits and cutoff is refused as
+  `connected_generation_scope_invalid`;
+- a child whose parent link carries a later cutoff or an added failure is
+  refused by status and reconcile and cannot launch;
+- the retained console attempt writes its attempt marker, is refused by the
+  exclusive owner marker of the original effect directory, and produces no
+  new effect and no protocol call; and
+- changed installed source is refused last, after every launch.
+
+The L raw effect is the merge receipt plus a read-only check of the
+host-owned SQLite graph; M checks support, audit and released-claim bytes and
+their hashes; E checks the raw state with the pinned oracle and the effect
+receipt. The recipe lifecycle matrix records these three cells as
+`implemented_unqualified`; the use-case matrix keeps connected upgrade
+pending for every use case.
 
 This is synthetic shadow qualification. It does not establish real provider
 connectivity, observed benefit, canary/active eligibility, power-loss

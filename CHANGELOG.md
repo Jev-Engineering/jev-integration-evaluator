@@ -2,6 +2,55 @@
 
 ## Unreleased — native Windows delivery gap qualification
 
+- Issue #60 follow-up: explicit owned recovery of an interrupted Node package
+  build or install. New read-only `plan_node_package_recovery` and
+  `plan_node_install_recovery` (CLI `template node-package-recovery-plan` and
+  `node-install-recovery-plan`) write a strict `node-recovery-plan-v1` that
+  binds the step plan digest, ownership intent, interruption stage, root
+  device and inode, interrupted journal rows, recovery journal head and a
+  digest of every owned entry. `recover_node_package` and
+  `recover_node_installation` (CLI `node-package-recover` and
+  `node-install-recover`) need the same step plan and its approval digest plus
+  the separate recovery digest, take the step's lock without waiting,
+  recompute the plan and then remove only that owned root and its intent,
+  returning a strict `node-recovery-receipt-v1`. The interrupted journal and
+  both recovery events stay in a hash-chained parent-side recovery journal.
+  Recovery is refused without a recorded interruption, for a completed step,
+  on any journal, plan, identity or content mismatch, for symlinks and path
+  escapes, and while another owner holds the lock. After recovery
+  `node-package-status` and `node-install-status` report `absent` with the
+  added `recovered_attempts` and `recovery_journal_head` fields; those fields
+  appear only when a recovery journal exists, and no other existing command,
+  receipt or status output changes. Always-on tests cover the journal,
+  snapshot and approval binding on every platform and the full recovery and
+  refusal matrix on native Linux without the Node toolchain;
+  `tests/test_node_template_installed_recovery.py` interrupts a real pinned
+  install, recovers it through the installed CLI and runs the reinstalled
+  off-mode host. The `connected-node24-qualification` job requires 27
+  installed tests (was 26) and 19 native tests. Offline synthetic off-mode
+  evidence only: power-loss durability, an interrupted real `npm ci` child,
+  drifted inputs and torn journal rows are not covered and stay refused for
+  operator review.
+- Issue #59 follow-up: the stopped connected generation transfer controller
+  also accepts the finite `graph-l-v1`, `claim-m-v1` and `completion-e-v1`
+  profiles. The production change is the profile allowlist in
+  `template_connected_generation.py`; the composite selector and unlisted
+  names stay refused, and the existing-ledger precondition and complete
+  parent-link comparison are unchanged. Three installed two-version tests
+  (`tests/test_connected_generation_graph_installed.py`,
+  `tests/test_connected_generation_claim_installed.py`,
+  `tests/test_connected_generation_completion_installed.py`) share
+  `tests/connected_generation_journey.py`, and the L, M and E host fixtures
+  gain an opt-in single pinned generation task. Each journey reads back
+  retained spend, closed-task tombstones and a test-authored synthetic effect
+  claim through a signed upgrade and reverse transfer under one run ID and
+  ledger, and refuses a later egress cutoff, wrong signatures and grant
+  digests, another profile, an altered parent link, a closed-task replay and
+  changed installed source. They are required on the hosted Linux 3.13 leg.
+  The recipe lifecycle matrix records L, M and E connected upgrade as
+  `implemented_unqualified`; the use-case matrix keeps connected upgrade
+  pending. This is offline synthetic local-TLS evidence only: real provider
+  operation, canary/active and benefit remain pending.
 - Issue #60 follow-up: add an installed connected-shadow fault matrix for
   CommonJS, ESM and TypeScript recipe C hosts
   (`tests/test_node_template_connected_faults.py`). It covers configuration

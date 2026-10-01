@@ -11,6 +11,10 @@ from . import __version__
 from .io import InputError, atomic_text, digest, read_json, read_jsonl, write_json
 
 
+_NODE_RECOVERY_ACTIONS = ('node-package-recovery-plan', 'node-package-recover',
+                          'node-install-recovery-plan', 'node-install-recover')
+
+
 def _records(path):
     return read_jsonl(path) if str(path).endswith(".jsonl") else read_json(path)
 
@@ -285,6 +289,14 @@ def parser():
     s.add_argument('--plan',required=True); s.add_argument('--approve-plan-sha256',required=True)
     s=template_sub.add_parser('node-install-status',help='Inspect a Node generation without installing or launching')
     s.add_argument('--plan',required=True); s.add_argument('--trusted-receipt-sha256')
+    for action in ('node-package-recovery-plan','node-install-recovery-plan'):
+        s=template_sub.add_parser(action,help='Plan removal of one interrupted owned Node output without changing it')
+        s.add_argument('--plan',required=True); s.add_argument('--out',required=True)
+    for action in ('node-package-recover','node-install-recover'):
+        s=template_sub.add_parser(action,help='Remove one exactly approved interrupted owned Node output')
+        s.add_argument('--plan',required=True); s.add_argument('--recovery-plan',required=True)
+        s.add_argument('--approve-plan-sha256',required=True)
+        s.add_argument('--approve-recovery-sha256',required=True)
     s=template_sub.add_parser('node-connected-core',help='Prepare private exact installed scope for separate connected authority')
     s.add_argument('--request',required=True); s.add_argument('--out',required=True)
     s=template_sub.add_parser('node-connected-plan',help='Bind exact connected grants and raw observed gates without launch')
@@ -489,6 +501,21 @@ def execute(args):
                 return install_node_package(read_json(args.plan),approved_plan_sha256=args.approve_plan_sha256)
             if action=='node-install-status':
                 return node_install_status(read_json(args.plan),trusted_receipt_sha256=args.trusted_receipt_sha256)
+            if action in _NODE_RECOVERY_ACTIONS:
+                from .template_node_installation import (
+                    plan_node_package_recovery, recover_node_package,
+                    plan_node_install_recovery, recover_node_installation)
+                plan=read_json(args.plan)
+                package=action.startswith('node-package-')
+                if action.endswith('-recovery-plan'):
+                    result=(plan_node_package_recovery if package else plan_node_install_recovery)(plan)
+                    write_plan_exclusive(args.out,result,host_root=(
+                        plan if package else plan['package_plan'])['request']['host_root'])
+                    return result
+                return (recover_node_package if package else recover_node_installation)(
+                    plan,read_json(args.recovery_plan),
+                    approved_plan_sha256=args.approve_plan_sha256,
+                    approved_recovery_sha256=args.approve_recovery_sha256)
             if action in ('node-connected-core', 'node-connected-plan', 'node-connected-status'):
                 from .template_node_connected import (inspect_connected_core,
                     plan_node_connected, connected_status)
@@ -976,15 +1003,18 @@ def main(argv=None):
                  'install','install-status','install-recover', 'node-package-plan',
                  'node-package-build','node-package-status','node-install-plan',
                  'node-install','node-install-status', 'node-connected-core',
-                 'node-connected-plan','node-connected-status'):
+                 'node-connected-plan','node-connected-status',*_NODE_RECOVERY_ACTIONS):
             display={'schema_version':'1.0','status': result.get('status') or {
                 'package':'planned','package-build':'built','install-plan':'planned',
                 'install':'installed', 'node-package-plan':'planned',
                 'node-package-build':'packaged','node-install-plan':'planned',
-                'node-install':'installed', 'node-connected-core':'scope_prepared',
+                'node-install':'installed', 'node-package-recovery-plan':'recovery_planned',
+                'node-install-recovery-plan':'recovery_planned',
+                'node-connected-core':'scope_prepared',
                 'node-connected-plan':'connected_bound_unlaunched'}.get(args.template_action,'recorded')}
             for field in ('plan_sha256','receipt_sha256','generation_sha256','journal_head_sha256',
-                          'core_sha256','descriptor_sha256','mode','provider_requests'):
+                          'core_sha256','descriptor_sha256','mode','provider_requests',
+                          'recovery_sha256','recovery_journal_head','recovered_attempts'):
                 if field in result: display[field]=result[field]
         elif getattr(args,"out",None) and args.command not in ("scan","architecture","report","scaffold","implement-plan","implement-verify","implement-composite-plan","template"):
             display={"status":"written","output":args.out}
@@ -1012,7 +1042,7 @@ def main(argv=None):
                     'install-recover','node-package-plan','node-package-build',
                     'node-package-status','node-install-plan','node-install',
                     'node-install-status','node-connected-core','node-connected-plan',
-                    'node-connected-status') and isinstance(exc,OSError):
+                    'node-connected-status',*_NODE_RECOVERY_ACTIONS) and isinstance(exc,OSError):
                 exc=InputError('template_installation_io_unavailable')
             print(json.dumps(template_error(exc)),file=sys.stderr)
             return 2

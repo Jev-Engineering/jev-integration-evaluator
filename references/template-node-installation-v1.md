@@ -150,7 +150,9 @@ The installed evaluator CLI exposes the same separate package and install stages
 `node-install --plan INSTALL_PLAN --approve-plan-sha256 APPROVED_DIGEST`, and
 `node-install-status --plan INSTALL_PLAN --trusted-receipt-sha256 RETAINED_DIGEST`.
 The plan commands write new private files exclusively; `node-package-build`
-and `node-install` are the only package/install effect commands. Keep each
+and `node-install` are the only package/install effect commands, and the
+separately approved `node-package-recover` and `node-install-recover`
+described below are the only commands that remove an interrupted owned root. Keep each
 approval and receipt digest in a separately owned channel, and pass the
 current digest back explicitly. Installed CLI tests exercise these exact
 commands before creating delivery descriptors and launching separate ESM,
@@ -301,10 +303,108 @@ owned bytes. They distinguish recorded content from an externally anchored
 receipt. A drifted owned file, changed toolchain or altered receipt fails
 closed. Build or install interruption leaves an owned root and journal with
 `*_interrupted_review_required`; no automatic npm replay or recursive cleanup
-occurs. Retain the root for review and choose a new, separately approved output
-plan. Removing a completed or partial generation, or adopting it as a launch
-target, needs a separate bounded owner-aware recovery contract. This
-installation stage itself does not clean up interrupted build/install roots.
+occurs. Status never removes anything, and a retried `node-package-build` or
+`node-install` over an interrupted root is refused. Removing a completed
+generation, or adopting a partial one as a launch target, is not supported.
+
+## Owned recovery of an interrupted build or install
+
+Removing an interrupted, never completed owned root is a separate effect with
+its own review plan and approval digest:
+
+```python
+from jev_integration_evaluator.template_node_installation import (
+    plan_node_package_recovery, recover_node_package,
+    plan_node_install_recovery, recover_node_installation,
+)
+
+recovery_plan = plan_node_install_recovery(install_plan)  # read-only
+# Review recovery_plan and retain its exact recovery_sha256 independently.
+recovery_receipt = recover_node_installation(
+    install_plan, recovery_plan,
+    approved_plan_sha256=approved_install_plan_sha256,
+    approved_recovery_sha256=approved_recovery_sha256)
+```
+
+The CLI forms are `template node-package-recovery-plan --plan PACKAGE_PLAN
+--out RECOVERY_PLAN`, `node-package-recover --plan PACKAGE_PLAN --recovery-plan
+RECOVERY_PLAN --approve-plan-sha256 APPROVED_PLAN_DIGEST
+--approve-recovery-sha256 APPROVED_RECOVERY_DIGEST`, and the same pair as
+`node-install-recovery-plan` and `node-install-recover` with the install plan.
+The plan command writes one new private file and changes nothing else.
+
+The strict [`node-recovery-plan-v1`](../schemas/node-recovery-plan-v1.schema.json)
+binds the interrupted step's plan digest, the owned root path derived from
+that plan, the parent-side ownership intent digest, the interruption stage
+(`intent_recorded`, `directory_created`, `owner_marked` or `journal_recorded`),
+the root directory's device and inode, the interrupted journal rows, the
+current head of the recovery journal, and a digest over every entry under the
+root: each file's SHA-256, each directory's mode and each link's text. The
+recovery digest differs from the step's plan digest, so neither approval can
+stand in for the other.
+
+`node-*-recover` requires the same exact step plan and its approval digest,
+revalidates that plan as the interrupted step did (source, cache, toolchain
+and, for an install, the externally retained package receipt), takes the
+step's own lock without waiting, and recomputes the recovery plan. It refuses
+when:
+
+- no ownership intent is recorded for this plan and root (nothing was
+  interrupted, or the root was never created by this plan);
+- a package or install receipt is present (the step completed);
+- the journal, owner marker, intent or step plan digest differs, a journal row
+  is torn or unknown, or the recovery journal changed since review;
+- the root's device, inode, owner, `0700` mode, any file byte, entry name,
+  directory mode or link text differs from the reviewed plan;
+- the root, a top-level entry, the intent or the recovery journal is a
+  symlink, the recovery plan names another root, or the root holds an
+  unrelated top-level name, a mount, a special file or a hard-linked file;
+- another build, install or recovery holds the lock.
+
+Every refusal leaves all bytes in place. On approval it appends
+`recovery_started` to the parent-side `.jev-node-recovery-<root digest>.jsonl`
+with a copy of the interrupted journal rows, stage, intent digest and entry
+digest; removes the content of that one root with the owner marker and journal
+last; appends `recovery_complete`; and finally removes the ownership intent. No
+path outside the root, its intent and that recovery journal is written, and
+npm is not run. In an install generation, which is a plain copy, any link is
+refused. In a build stage a link below a top-level entry (npm may create
+`node_modules/.bin` links) is reviewed as link text and unlinked; its target
+is never read, followed or removed. Other generations in the same parent,
+their receipts and any session that selects them are not opened for writing.
+
+The strict [`node-recovery-receipt-v1`](../schemas/node-recovery-receipt-v1.schema.json)
+reports `owned_incomplete_package_removed` or
+`owned_incomplete_generation_removed`, the recovery digest, the interrupted
+journal head and the recovery journal head. Afterwards status reports
+`absent` with `recovered_attempts` and `recovery_journal_head`. The recovery
+journal is hash-chained and is never truncated; a missing, reordered, edited
+or torn row fails status and further recovery closed. The same step plan may
+then be approved and run again as a fresh attempt; a consumed recovery plan
+cannot be replayed because the recovery journal head it reviewed has moved.
+
+An interruption of the recovery itself leaves a state that status still
+classifies as interrupted (content partly removed with marker and journal
+present, an empty owned directory, or only the intent). The earlier recovery
+plan no longer matches; a newly reviewed recovery plan finishes it, and the
+unfinished `recovery_started` row stays in the history.
+
+Still not covered: recovery is not automatic and is never chosen by status or
+by a retry. A completed step, a root with no intent, an intent interrupted
+before its atomic rename (`ownership intent precommit incomplete`), a torn
+journal row, drifted source, cache, toolchain or package bytes (the step plan
+no longer revalidates), content that changes after review, and hard links,
+mounts or special files all stay refused for operator review. Durability
+across machine power loss or filesystem failure has not been exercised: the
+intent and each journal row are flushed with `fsync`, but copied owned content
+is not, and a state that does not validate afterwards is refused, not
+repaired. Removal assumes no other process
+of the same user modifies the root while the lock is held. No interrupted
+real `npm ci` child process was produced in tests: the always-on cases
+interrupt the real build immediately before npm starts and the real install
+before its completion record, and the installed case interrupts a real install
+with the pinned toolchain. Interrupted starts are handled by the separate
+session resume described above, not by this recovery.
 
 The original ESM and CommonJS component tests stub the upstream source verifier
 and prove only the offline npm and owned-generation boundary. A separate native

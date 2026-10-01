@@ -367,7 +367,7 @@ def _top_level(root: Path, allowed: set[str]) -> None:
 
 
 @contextmanager
-def _lock(parent: Path, key: str):
+def _lock(parent: Path, key: str, *, wait: bool = True):
     import fcntl
     locks = parent / '.jev-node-locks'
     if not locks.exists():
@@ -381,7 +381,14 @@ def _lock(parent: Path, key: str):
         info = os.fstat(fd)
         if info.st_uid != os.getuid() or info.st_nlink != 1 or stat.S_IMODE(info.st_mode) != 0o600:
             raise InputError('Node lock has wrong owner')
-        fcntl.flock(fd, fcntl.LOCK_EX)
+        if wait:
+            fcntl.flock(fd, fcntl.LOCK_EX)
+        else:
+            # Recovery never queues behind a live build, install or recovery.
+            try:
+                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except OSError:
+                raise InputError('Node owned root is busy with another owner') from None
         yield
     finally:
         fcntl.flock(fd, fcntl.LOCK_UN)
@@ -498,8 +505,9 @@ def package_status(plan: dict, *, trusted_receipt_sha256: str | None = None) -> 
     if root.is_symlink():
         raise InputError('Node package root is a symlink')
     if not root.exists():
-        return {'status': 'build_interrupted_review_required' if has_intent else 'absent',
-                'stage': 'intent_recorded' if has_intent else 'none'}
+        if not has_intent:
+            return {'status': 'absent', 'stage': 'none', **_recovery_summary(root)}
+        return {'status': 'build_interrupted_review_required', 'stage': 'intent_recorded'}
     if not has_intent:
         raise InputError('Node package root has no prior ownership intent')
     _top_level(root, {'owner.json', 'journal.jsonl', 'app', 'cache', 'npm_tool', 'home', 'tmp',
@@ -642,8 +650,9 @@ def installation_status(plan: dict, *, trusted_receipt_sha256: str | None = None
     if root.is_symlink():
         raise InputError('Node generation root is a symlink')
     if not root.exists():
-        return {'status': 'install_interrupted_review_required' if has_intent else 'absent',
-                'stage': 'intent_recorded' if has_intent else 'none'}
+        if not has_intent:
+            return {'status': 'absent', 'stage': 'none', **_recovery_summary(root)}
+        return {'status': 'install_interrupted_review_required', 'stage': 'intent_recorded'}
     if not has_intent:
         raise InputError('Node generation root has no prior ownership intent')
     _top_level(root, {'owner.json', 'journal.jsonl', 'app', 'install-receipt.json'})
@@ -689,3 +698,316 @@ def installation_status(plan: dict, *, trusted_receipt_sha256: str | None = None
     return {'status': 'installed_recorded' if trusted_receipt_sha256 == receipt['receipt_sha256']
             else 'installed_unanchored', 'generation_id': expected_id,
             'receipt_sha256': receipt['receipt_sha256'], 'launch_status': 'not_started'}
+
+
+# Explicit owned recovery of an interrupted build or install.
+#
+# Status only classifies an interruption. Removal is a separate effect with its
+# own reviewed plan and digest. The interrupted journal is copied into a
+# parent-side recovery journal before any owned byte is removed, so the history
+# of the attempt outlives its directory.
+
+_RECOVERY_ENTRIES = 50_000
+_RECOVERY_ROWS = 256
+_RECOVERY_BYTES = 4_000_000
+_RECOVERY_TARGETS = {
+    'package': {
+        'intent': 'node-package-intent-v1', 'owner': 'node-package-owner-v1',
+        'allowed': {'owner.json', 'journal.jsonl', 'app', 'cache', 'npm_tool', 'home', 'tmp',
+                    'package-receipt.json'},
+        'events': ('build_started', 'build_complete'), 'receipt': 'package-receipt.json',
+        # npm may leave links below its own work directories; they are recorded
+        # as link text and unlinked, never followed.
+        'nested_links': True, 'status': 'owned_incomplete_package_removed'},
+    'generation': {
+        'intent': 'node-generation-intent-v1', 'owner': 'node-generation-owner-v1',
+        'allowed': {'owner.json', 'journal.jsonl', 'app', 'install-receipt.json'},
+        'events': ('install_started', 'install_complete'), 'receipt': 'install-receipt.json',
+        'nested_links': False, 'status': 'owned_incomplete_generation_removed'},
+}
+_RECOVERY_ROW_KEYS = {'sequence', 'previous', 'target', 'root', 'plan_sha256',
+                      'recovery_sha256', 'event', 'detail', 'record_sha256'}
+
+
+def _recovery_path(root: Path) -> Path:
+    return root.parent / ('.jev-node-recovery-' + digest(str(root))[:24] + '.jsonl')
+
+
+def _recovery_rows(root: Path) -> list[dict]:
+    """Read the retained parent-side recovery history; any break fails closed."""
+    path = _recovery_path(root)
+    if not path.exists() and not path.is_symlink():
+        return []
+    if path.is_symlink() or not path.is_file() or path.stat().st_nlink != 1:
+        raise InputError('Node recovery journal replaced')
+    raw = path.read_bytes()
+    if len(raw) > _RECOVERY_BYTES or (raw and not raw.endswith(b'\n')):
+        raise InputError('Node recovery journal torn or oversized')
+    rows: list[dict] = []
+    previous = None
+    for line in raw.splitlines():
+        try:
+            row = json.loads(line)
+        except ValueError:
+            raise InputError('Node recovery journal changed') from None
+        if (type(row) is not dict or set(row) != _RECOVERY_ROW_KEYS
+                or row['sequence'] != len(rows) or row['previous'] != previous
+                or row['root'] != str(root) or row['target'] not in _RECOVERY_TARGETS
+                or row['event'] not in ('recovery_started', 'recovery_complete')
+                or type(row['detail']) is not dict
+                or row['record_sha256'] != digest({k: v for k, v in row.items()
+                                                 if k != 'record_sha256'})):
+            raise InputError('Node recovery journal changed')
+        if row['event'] == 'recovery_complete' and (
+                not rows or rows[-1]['event'] != 'recovery_started'
+                or rows[-1]['recovery_sha256'] != row['recovery_sha256']
+                or row['detail'].get('started_sha256') != previous):
+            raise InputError('Node recovery journal changed')
+        previous = row['record_sha256']
+        rows.append(row)
+        if len(rows) > _RECOVERY_ROWS:
+            raise InputError('Node recovery journal limit reached')
+    return rows
+
+
+def _recovery_record(root: Path, target: str, plan_sha256: str, recovery_sha256: str,
+                     event: str, detail: dict) -> str:
+    rows = _recovery_rows(root)
+    if len(rows) >= _RECOVERY_ROWS:
+        raise InputError('Node recovery journal limit reached')
+    row = {'sequence': len(rows), 'previous': rows[-1]['record_sha256'] if rows else None,
+           'target': target, 'root': str(root), 'plan_sha256': plan_sha256,
+           'recovery_sha256': recovery_sha256, 'event': event, 'detail': detail}
+    row['record_sha256'] = digest(row)
+    path = _recovery_path(root)
+    with path.open('ab') as stream:
+        stream.write((json.dumps(row, sort_keys=True, separators=(',', ':')) + '\n').encode())
+        stream.flush()
+        os.fsync(stream.fileno())
+    os.chmod(path, 0o600)
+    return row['record_sha256']
+
+
+def _recovery_summary(root: Path) -> dict:
+    """Fields added to an `absent` status only when recoveries were recorded."""
+    rows = _recovery_rows(root)
+    if not rows:
+        return {}
+    if rows[-1]['event'] != 'recovery_complete':
+        raise InputError('Node recovery journal incomplete without ownership intent')
+    return {'recovered_attempts': sum(row['event'] == 'recovery_complete' for row in rows),
+            'recovery_journal_head': rows[-1]['record_sha256']}
+
+
+def _walk_error(error: OSError) -> None:
+    raise InputError('Node owned root is not fully readable')
+
+
+def _owned_snapshot(root: Path, *, nested_links: bool) -> tuple[str, int]:
+    """Digest every entry of an owned partial root without following a link.
+
+    Mounts, other devices, special files, hard-linked files and top-level links
+    are refused: removal could reach or leave bytes this run cannot prove it owns.
+    """
+    info = root.lstat()
+    if not stat.S_ISDIR(info.st_mode):
+        raise InputError('Node owned root is not a directory')
+    records = []
+    for base, directories, names in os.walk(root, followlinks=False, onerror=_walk_error):
+        for name in sorted(directories + names):
+            path = Path(base) / name
+            relative = path.relative_to(root).as_posix()
+            item = path.lstat()
+            if item.st_dev != info.st_dev or os.path.ismount(path):
+                raise InputError('Node owned root contains a mount or foreign device')
+            if stat.S_ISLNK(item.st_mode):
+                if not nested_links or '/' not in relative:
+                    raise InputError('Node owned root contains an unrelated or linked path')
+                records.append([relative, 'link', os.readlink(path)])
+            elif stat.S_ISDIR(item.st_mode):
+                records.append([relative, 'directory', stat.S_IMODE(item.st_mode)])
+            elif stat.S_ISREG(item.st_mode) and item.st_nlink == 1:
+                records.append([relative, 'file', file_hash(path)])
+            else:
+                raise InputError('Node owned root contains an unsupported file')
+            if len(records) > _RECOVERY_ENTRIES:
+                raise InputError('Node owned root exceeds recovery bounds')
+    return digest(sorted(records)), len(records)
+
+
+def _interrupted(target: str, plan_sha256: str, root: Path) -> dict:
+    """Facts that prove an interrupted, never completed, owned attempt."""
+    spec = _RECOVERY_TARGETS[target]
+    has_intent = _intent(root, plan_sha256, spec['intent'])
+    if root.is_symlink():
+        raise InputError('Node owned root is a symlink')
+    if not has_intent:
+        # Without the parent-side intent nothing proves this run created the root.
+        raise InputError('Node recovery requires a recorded interruption')
+    facts = {'stage': 'intent_recorded',
+             'intent_sha256': read_json(_intent_path(root))['intent_sha256'],
+             'root_identity': None, 'journal': [], 'generation_sha256': None, 'entries': 0}
+    if not root.exists():
+        return facts
+    _top_level(root, spec['allowed'])
+    info = root.lstat()
+    facts['root_identity'] = {'device': info.st_dev, 'inode': info.st_ino}
+    receipt = root / spec['receipt']
+    if receipt.exists() or receipt.is_symlink():
+        raise InputError('Node step has a receipt; recovery refused')
+    if not (root / 'owner.json').is_file():
+        if any(root.iterdir()):
+            raise InputError('Node markerless root contains unknown content')
+        facts['stage'] = 'directory_created'
+    else:
+        _owner(root, plan_sha256, spec['owner'])
+        try:
+            rows = _journal(root, plan_sha256)
+        except ValueError as error:
+            if isinstance(error, InputError):
+                raise
+            raise InputError('Node ownership journal changed') from None
+        events = [row['event'] for row in rows]
+        if events != list(spec['events'][:len(events)]):
+            raise InputError('Node ownership journal has unknown events')
+        facts['stage'] = 'journal_recorded' if rows else 'owner_marked'
+        facts['journal'] = rows
+    facts['generation_sha256'], facts['entries'] = _owned_snapshot(
+        root, nested_links=spec['nested_links'])
+    return facts
+
+
+def _recovery_plan(target: str, plan_sha256: str, root: Path) -> dict:
+    facts = _interrupted(target, plan_sha256, root)
+    history = _recovery_rows(root)
+    operations = ['record_recovery_start']
+    if facts['stage'] != 'intent_recorded':
+        operations.append('remove_owned_root')
+    operations += ['record_recovery_complete', 'remove_ownership_intent']
+    plan = {'schema_version': '1.0', 'kind': 'node-recovery-plan-v1', 'target': target,
+            'step_plan_sha256': plan_sha256, 'root': str(root), **facts,
+            'recovery_journal_head': history[-1]['record_sha256'] if history else None,
+            'operations': operations, 'mode': 'off', 'runtime_activation_authorized': False}
+    plan['recovery_sha256'] = digest(plan)
+    validate_contract(plan, 'node-recovery-plan-v1')
+    return plan
+
+
+def _sync_directory(path: Path) -> None:
+    fd = os.open(path, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+
+
+def _remove_owned(root: Path, stage: str) -> None:
+    """Remove verified owned content; the owner marker and journal go last.
+
+    An interruption here therefore leaves a state that status still classifies
+    and that a newly reviewed recovery plan can finish.
+    """
+    if stage == 'intent_recorded':
+        return
+    if stage != 'directory_created':
+        for name in sorted(os.listdir(root)):
+            if name in ('owner.json', 'journal.jsonl'):
+                continue
+            path = root / name
+            if stat.S_ISDIR(path.lstat().st_mode):
+                shutil.rmtree(path)
+            else:
+                path.unlink()
+        for name in ('journal.jsonl', 'owner.json'):
+            if (root / name).exists():
+                (root / name).unlink()
+    os.rmdir(root)
+    _sync_directory(root.parent)
+
+
+def _recover(target: str, plan_sha256: str, root: Path, recovery_plan: dict,
+             approved_recovery_sha256: str, recheck) -> dict:
+    validate_contract(recovery_plan, 'node-recovery-plan-v1')
+    if (recovery_plan['recovery_sha256'] != digest({k: v for k, v in recovery_plan.items()
+                                                    if k != 'recovery_sha256'})
+            or approved_recovery_sha256 != recovery_plan['recovery_sha256']):
+        raise InputError('Exact Node recovery approval required')
+    if (recovery_plan['target'] != target or recovery_plan['step_plan_sha256'] != plan_sha256
+            or recovery_plan['root'] != str(root)):
+        raise InputError('Node recovery plan is bound to another step or root')
+    if not shutil.rmtree.avoids_symlink_attacks:
+        raise InputError('Node recovery requires symlink-safe removal')
+    spec = _RECOVERY_TARGETS[target]
+    parent = _path(str(root.parent), directory=True)
+    info = parent.stat()
+    if info.st_uid != os.getuid() or stat.S_IMODE(info.st_mode) & 0o022:
+        raise InputError('Node output parent is not privately owned')
+    with _lock(parent, digest(str(root)), wait=False):
+        recheck()
+        if _recovery_plan(target, plan_sha256, root) != recovery_plan:
+            raise InputError('Node owned root, journal or recovery history changed since review')
+        recovery_sha256 = recovery_plan['recovery_sha256']
+        started = _recovery_record(
+            root, target, plan_sha256, recovery_sha256, 'recovery_started',
+            {key: recovery_plan[key] for key in ('stage', 'intent_sha256', 'root_identity',
+                                                 'journal', 'generation_sha256', 'entries')})
+        _remove_owned(root, recovery_plan['stage'])
+        head = _recovery_record(root, target, plan_sha256, recovery_sha256,
+                                'recovery_complete', {'started_sha256': started,
+                                                      'removed_entries': recovery_plan['entries']})
+        # The intent goes last: until here status still reports the interruption.
+        _intent_path(root).unlink()
+        _sync_directory(parent)
+        journal = recovery_plan['journal']
+        receipt = {'schema_version': '1.0', 'kind': 'node-recovery-receipt-v1',
+                   'target': target, 'status': spec['status'],
+                   'step_plan_sha256': plan_sha256, 'recovery_sha256': recovery_sha256,
+                   'root': str(root), 'stage': recovery_plan['stage'],
+                   'intent_sha256': recovery_plan['intent_sha256'],
+                   'interrupted_journal_head': journal[-1]['record_sha256'] if journal else None,
+                   'generation_sha256': recovery_plan['generation_sha256'],
+                   'removed_entries': recovery_plan['entries'],
+                   'recovery_started_sha256': started, 'recovery_journal_head': head,
+                   'retry': 'new_plan_approval_required', 'mode': 'off',
+                   'runtime_activation_authorized': False}
+        receipt['receipt_sha256'] = digest(receipt)
+        validate_contract(receipt, 'node-recovery-receipt-v1')
+        return receipt
+
+
+def plan_node_package_recovery(plan: dict) -> dict:
+    """Read-only review plan for one interrupted, never completed package build."""
+    _linux()
+    _check_plan(plan)
+    return _recovery_plan('package', plan['plan_sha256'],
+                          _path(plan['request']['package_directory'], exists=False))
+
+
+def recover_node_package(plan: dict, recovery_plan: dict, *, approved_plan_sha256: str,
+                         approved_recovery_sha256: str) -> dict:
+    """Remove exactly the reviewed owned partial build; never replays npm."""
+    _linux()
+    if approved_plan_sha256 != plan.get('plan_sha256'):
+        raise InputError('Exact Node package plan approval required for recovery')
+    _check_plan(plan)
+    root = _path(plan['request']['package_directory'], exists=False)
+    return _recover('package', plan['plan_sha256'], root, recovery_plan,
+                    approved_recovery_sha256, lambda: _check_plan(plan))
+
+
+def plan_node_install_recovery(plan: dict) -> dict:
+    """Read-only review plan for one interrupted, never completed generation install."""
+    _linux()
+    root = _check_install(plan)
+    return _recovery_plan('generation', plan['plan_sha256'], root)
+
+
+def recover_node_installation(plan: dict, recovery_plan: dict, *, approved_plan_sha256: str,
+                              approved_recovery_sha256: str) -> dict:
+    """Remove exactly the reviewed owned partial generation; no other generation is read for writing."""
+    _linux()
+    if approved_plan_sha256 != plan.get('plan_sha256'):
+        raise InputError('Exact Node install plan approval required for recovery')
+    root = _check_install(plan)
+    return _recover('generation', plan['plan_sha256'], root, recovery_plan,
+                    approved_recovery_sha256, lambda: _check_install(plan))

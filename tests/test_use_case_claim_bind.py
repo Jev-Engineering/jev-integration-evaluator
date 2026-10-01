@@ -29,7 +29,11 @@ pytestmark = pytest.mark.skipif(not PROFILE, reason='M source-bound bind fixture
 
 
 def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False,
-                connected_authority_source: Path | None = None) -> tuple[dict, dict]:
+                connected_authority_source: Path | None = None,
+                generation_task: str | None = None) -> tuple[dict, dict]:
+    if generation_task is not None:
+        assert generation_task in ('claim-one', 'claim-two')
+        assert installed and connected_authority_source is not None
     _, spec, request = _source_host(target, version)
     entry = spec['verification']['entry_point']
     console = target / 'claim_host/console.py'
@@ -66,7 +70,7 @@ def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False
             start = original.index('def legacy_dispatch_claim_support(request):\n')
             end = original.find('\ndef ', start + 1)
             assert end != -1
-            original = original[:start] + _connected_baseline() + original[end:]
+            original = original[:start] + _connected_baseline(generation_task) + original[end:]
             source.write_text(original, encoding='utf-8')
     console.write_text(
         _installed_console(entry, version, Path(spec['source']['file']).stem) if installed else
@@ -93,7 +97,9 @@ def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False
         "if __name__ == '__main__':\n    raise SystemExit(main())\n",
         encoding='utf-8')
     if connected_authority_source is not None:
-        console.write_text(_connected_console(entry, Path(spec['source']['file']).stem),
+        stem = Path(spec['source']['file']).stem
+        console.write_text(_connected_console(entry, stem) if generation_task is None
+                           else _generation_console(entry, stem, generation_task),
                            encoding='utf-8')
     runtime_files = {
         'requirements.lock': ('dependency_lock', 'jev-integration-evaluator==1.3.0.dev1\n',
@@ -145,8 +151,17 @@ def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False
     return inventory, request
 
 
-def _connected_baseline() -> str:
-    return '''def legacy_dispatch_claim_support(request):
+def _connected_baseline(generation_task: str | None = None) -> str:
+    baseline = _CONNECTED_BASELINE
+    if generation_task is not None:
+        # The generation host holds on its own single pinned task.
+        gate = "    if task == 'claim-one':\n"
+        assert baseline.count(gate) == 1
+        baseline = baseline.replace(gate, f"    if task == '{generation_task}':\n")
+    return baseline
+
+
+_CONNECTED_BASELINE = '''def legacy_dispatch_claim_support(request):
     if not os.environ.get('M_EFFECT_DIRECTORY'):
         return 'inspect'
     task = request['task_id']
@@ -173,6 +188,28 @@ def _connected_baseline() -> str:
                 raise TimeoutError('claim_release_timeout')
     return 'inspect'
 '''
+
+
+def _generation_console(entry: str, source_stem: str, generation_task: str) -> str:
+    console = _connected_console(entry, source_stem)
+    # The retained generation reuses the original effect directory. A second
+    # normal console must refuse ownership before shadow fallback can call
+    # the original claim consumer again.
+    limits = 'def limits():\n'
+    assert console.count(limits) == 1
+    console = console.replace(limits, limits +
+        "    directory = os.environ.get('M_EFFECT_DIRECTORY')\n"
+        "    if directory:\n"
+        "        with (Path(directory) / 'owner.txt').open('x', encoding='utf-8') as stream:\n"
+        "            stream.write('one-runtime-startup\\n')\n")
+    schedule = ("    ids = ('claim-one', 'claim-one') if mode == 'duplicate' else ('claim-one', 'claim-two')\n")
+    assert console.count(schedule) == 1
+    return console.replace(schedule,
+        "    release = os.environ.get('M_RELEASE_PATH')\n"
+        "    if release:\n"
+        "        with Path(release).with_suffix('.attempt').open('x', encoding='utf-8') as stream:\n"
+        "            stream.write('attempt\\n')\n"
+        f"    ids = ('{generation_task}',)\n")
 
 
 def _connected_console(entry: str, source_stem: str) -> str:

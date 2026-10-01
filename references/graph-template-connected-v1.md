@@ -51,6 +51,10 @@ issuer is synthetic; no external JEV provider, spend or benefit is observed.
 Omitting `--host-profile` retains the original Alpha plan bytes. D and dual
 profiles have separate names and source origins. Canary and active modes remain
 closed without independently authenticated observed gates. Existing off-mode
-upgrade and rollback are separate from connected generation transfer, which is
-pending for this L fixture. Arbitrary graphs, approval policies, task loops and
+upgrade and rollback are separate from connected generation transfer. The
+[stopped generation controller](connected-generation-transfer-v1.md) accepts
+the `graph-l-v1` profile, with a two-version installed candidate in
+[test_connected_generation_graph_installed.py](../tests/test_connected_generation_graph_installed.py);
+that is offline synthetic local-TLS evidence and connected upgrade stays
+pending in the use-case matrix. Arbitrary graphs, approval policies, task loops and
 unreviewed retrievers are outside this finite qualification.

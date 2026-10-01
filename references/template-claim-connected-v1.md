@@ -71,7 +71,11 @@ are distinct evidence levels. The qualification above is an offline synthetic
 protocol result only; independent review is separate and is not claimed here.
 
 Existing off-mode upgrade/retained rollback stays qualified separately.
-Connected generation transitions require the separate authenticated generation
-controller and have not been advertised for M. Canary/active, live provider
+Connected generation transitions require the separate authenticated
+[generation controller](connected-generation-transfer-v1.md), which accepts
+the `claim-m-v1` profile and has a two-version installed candidate in
+[test_connected_generation_claim_installed.py](../tests/test_connected_generation_claim_installed.py).
+That is offline synthetic local-TLS evidence; connected upgrade stays pending
+in the use-case matrix. Canary/active, live provider
 connectivity, observed benefit, arbitrary claim hosts and other platforms stay
 pending. Missing credentials or authentic grants fail closed.
