@@ -37,7 +37,11 @@ BINDING = {'version': '1.0', 'script': 'graph-host',
 
 
 def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False,
-                connected_authority_source: Path | None = None) -> tuple[dict, dict]:
+                connected_authority_source: Path | None = None,
+                generation_task: str | None = None) -> tuple[dict, dict]:
+    if generation_task is not None:
+        assert generation_task in ('graph-one', 'graph-two')
+        assert installed and connected_authority_source is not None
     _, spec = _graph_host(target, version)
     if connected_authority_source is not None:
         assert installed
@@ -55,9 +59,13 @@ def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False
             "    if request['task_id'] == 'graph-two':\n"
             "        os.environ['GRAPH_EFFECT_PATH'] = os.environ['GRAPH_SECOND_EFFECT_PATH']\n"
             "        STATE['expected_revision'] = 1\n"
+        ) if generation_task is None else (
+            # A generation host owns one pinned task, one effect path and its
+            # own SQLite graph at the initial revision.
+            "    import os\n"
         )
         post = (
-            "    if request['task_id'] == 'graph-one':\n"
+            f"    if request['task_id'] == '{generation_task or 'graph-one'}':\n"
             "        from pathlib import Path\n"
             "        ready = Path(os.environ['GRAPH_READY_PATH'])\n"
             "        with ready.open('x', encoding='utf-8') as stream:\n"
@@ -90,6 +98,22 @@ def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False
         )
         source.write_text(original.replace(merge, merge + ready), encoding='utf-8')
     if connected_authority_source is not None:
+        owner = '' if generation_task is None else (
+            # The retained generation reuses the original effect directory. A
+            # second normal console must refuse ownership before shadow
+            # fallback can call the original graph consumer again.
+            "    if os.environ.get('L_CONNECTED_REF'):\n"
+            "        with (Path(os.environ['GRAPH_EFFECT_PATH']).parent / 'owner.txt').open('x', encoding='utf-8') as stream:\n"
+            "            stream.write('one-runtime-startup\\n')\n")
+        schedule = (
+            "    return [{'task_id': 'graph-one', 'graph_action': 'reconcile_same'},\n"
+            "            {'task_id': 'graph-two' if os.environ.get('L_TASKS', 'two') == 'two' else 'graph-one', 'graph_action': 'reconcile_same'}]\n"
+        ) if generation_task is None else (
+            "    release = os.environ.get('L_RELEASE_PATH')\n"
+            "    if release:\n"
+            "        with Path(release).with_suffix('.attempt').open('x', encoding='utf-8') as stream:\n"
+            "            stream.write('attempt\\n')\n"
+            f"    return [{{'task_id': '{generation_task}', 'graph_action': 'reconcile_same'}}]\n")
         console.write_text(
             f'from .{Path(spec["source"]["file"]).stem} import {entry}\n'
             f'from . import {Path(spec["source"]["file"]).stem} as observed_host\n'
@@ -112,6 +136,7 @@ def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False
             '                    stream.flush()\n'
             '                    os.fsync(stream.fileno())\n'
             'def limits():\n'
+            + owner +
             '    return dict(max_calls_per_task=2, max_cost_per_task=2, '
             'max_total_calls=2, max_total_cost=2, max_in_flight=1, max_tasks=2)\n'
             'def audit():\n    return Audit()\n'
@@ -123,8 +148,7 @@ def _bound_host(target: Path, *, version: str = '1.0.0', installed: bool = False
             "    if os.environ.get('L_APPROVAL', '1') == '0':\n"
             "        observed_host.STATE['approval'] = False\n"
             "    observed_host.STATE['expected_revision'] = int(os.environ.get('L_EXPECTED_REVISION', '0'))\n"
-            "    return [{'task_id': 'graph-one', 'graph_action': 'reconcile_same'},\n"
-            "            {'task_id': 'graph-two' if os.environ.get('L_TASKS', 'two') == 'two' else 'graph-one', 'graph_action': 'reconcile_same'}]\n"
+            + schedule +
             'def main():\n'
             '    requests = make_requests()\n'
             '    for request in requests:\n'

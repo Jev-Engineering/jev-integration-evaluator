@@ -2,6 +2,26 @@
 
 ## Unreleased — native Windows delivery gap qualification
 
+- Issue #59 follow-up: the stopped connected generation transfer controller
+  also accepts the finite `graph-l-v1`, `claim-m-v1` and `completion-e-v1`
+  profiles. The production change is the profile allowlist in
+  `template_connected_generation.py`; the composite selector and unlisted
+  names stay refused, and the existing-ledger precondition and complete
+  parent-link comparison are unchanged. Three installed two-version tests
+  (`tests/test_connected_generation_graph_installed.py`,
+  `tests/test_connected_generation_claim_installed.py`,
+  `tests/test_connected_generation_completion_installed.py`) share
+  `tests/connected_generation_journey.py`, and the L, M and E host fixtures
+  gain an opt-in single pinned generation task. Each journey reads back
+  retained spend, closed-task tombstones and a test-authored synthetic effect
+  claim through a signed upgrade and reverse transfer under one run ID and
+  ledger, and refuses a later egress cutoff, wrong signatures and grant
+  digests, another profile, an altered parent link, a closed-task replay and
+  changed installed source. They are required on the hosted Linux 3.13 leg.
+  The recipe lifecycle matrix records L, M and E connected upgrade as
+  `implemented_unqualified`; the use-case matrix keeps connected upgrade
+  pending. This is offline synthetic local-TLS evidence only: real provider
+  operation, canary/active and benefit remain pending.
 - Issue #60 follow-up: add an installed connected-shadow fault matrix for
   CommonJS, ESM and TypeScript recipe C hosts
   (`tests/test_node_template_connected_faults.py`). It covers configuration

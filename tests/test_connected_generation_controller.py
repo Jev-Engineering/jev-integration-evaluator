@@ -146,6 +146,57 @@ def test_transfer_plan_refuses_mixed_profile_generations(tmp_path, monkeypatch):
             **arguments)
 
 
+NEW_PROFILES = ('graph-l-v1', 'claim-m-v1', 'completion-e-v1')
+
+
+def test_transfer_profiles_are_finite_single_placement_shapes(tmp_path):
+    assert generation._TRANSFER_PROFILES == (
+        None, 'retrieval-d-v1', 'retention-h-v1', *NEW_PROFILES)
+    for name in generation._TRANSFER_PROFILES:
+        profile = generation.delivery._profile(name)
+        # One reviewed source file and one loader: never a composite placement map.
+        assert type(profile['source']) is str and 'loader' in profile['members']
+    for refused in ('registered-dual-connected-v1', 'unregistered-host', 'GRAPH-L-V1', ''):
+        assert refused not in generation._TRANSFER_PROFILES
+        with pytest.raises(generation.ConnectedGenerationError,
+                           match='^connected_generation_profile_not_supported$'):
+            generation._authority({'host_profile': refused}, {}, tmp_path / 'absent-signature')
+
+
+@pytest.mark.parametrize('old_profile,new_profile', [
+    ('graph-l-v1', 'claim-m-v1'), ('claim-m-v1', 'completion-e-v1'),
+    ('completion-e-v1', 'graph-l-v1'), ('graph-l-v1', 'retrieval-d-v1'),
+    ('retention-h-v1', 'claim-m-v1'), ('completion-e-v1', None), (None, 'graph-l-v1')])
+def test_transfer_plan_refuses_mixed_new_finite_profiles(tmp_path, monkeypatch,
+                                                         old_profile, new_profile):
+    ledger, arguments = _planned(monkeypatch, tmp_path)
+    old_plan = {'plan_sha256': 'a' * 64}
+    if old_profile is not None:
+        old_plan['host_profile'] = old_profile
+    monkeypatch.setattr(generation, '_stopped', lambda directory, trusted_head: ({}, old_plan))
+    RuntimeLedger(ledger, identity=digest('old reviewed runtime'), **LIMITS).release()
+    new_plan = {'plan_sha256': 'f' * 64}
+    if new_profile is not None:
+        new_plan['host_profile'] = new_profile
+    with pytest.raises(generation.ConnectedGenerationError,
+                       match='^connected_generation_scope_invalid$'):
+        generation.plan_connected_generation_transfer(tmp_path / 'old', new_plan, **arguments)
+
+
+@pytest.mark.parametrize('profile', NEW_PROFILES)
+def test_transfer_plan_keeps_one_new_finite_profile_on_both_sides(tmp_path, monkeypatch,
+                                                                  profile):
+    ledger, arguments = _planned(monkeypatch, tmp_path)
+    monkeypatch.setattr(generation, '_stopped', lambda directory, trusted_head: (
+        {}, {'plan_sha256': 'a' * 64, 'host_profile': profile}))
+    # The existing-ledger precondition applies to the new profiles unchanged.
+    with pytest.raises(generation.ConnectedGenerationError,
+                       match='^connected_generation_existing_ledger_required$'):
+        generation.plan_connected_generation_transfer(
+            tmp_path / 'old', {'plan_sha256': 'f' * 64, 'host_profile': profile}, **arguments)
+    assert not ledger.exists() and not Path(str(ledger) + '.sqlite').exists()
+
+
 def _status_inputs(monkeypatch, tmp_path, parent_change=None):
     """Isolate the parent-link comparison from installed-source and ledger reads."""
     grant = {'action': 'upgrade', 'old_plan_sha256': 'a' * 64, 'new_plan_sha256': 'b' * 64,
