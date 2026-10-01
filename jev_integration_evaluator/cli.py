@@ -208,7 +208,7 @@ def parser():
     s.add_argument('--trusted-package-receipt-sha256',required=True)
     s.add_argument('--installed-binding',required=True); s.add_argument('--trusted-binding-sha256',required=True)
     s.add_argument('--observation',required=True); s.add_argument('--launch-environment',required=True)
-    s.add_argument('--host-profile',choices=['retrieval-d-v1','registered-dual-connected-v1'],
+    s.add_argument('--host-profile',choices=['retrieval-d-v1','completion-e-v1','registered-dual-connected-v1'],
                    help='Omit for the legacy registered Alpha profile')
     s.add_argument('--out',required=True)
     s=template_sub.add_parser('connected-configure',help='Create one private connected shadow session from an exact plan')

@@ -8,6 +8,17 @@ from jev_integration_evaluator.integrations.host import PolicyBlock, UseFallback
 from jev_integration_evaluator.integrations.probe import _fixture_receipt
 
 
+def test_e_synthetic_shadow_keeps_original_result_without_assessment(tmp_path):
+    with bound_host(tmp_path, 'E') as (module, adapter, router, spec, client, call):
+        router.config['mode'] = 'shadow'
+        router.activation = _fixture_receipt(router, spec)
+        result = call()
+        assert result == {'reported': 'ok'}
+        assert module.STATE['effects'] == ['first']
+        assert client.calls == 0
+        assert module.STATE['blocked'] == 0
+
+
 @pytest.mark.parametrize('error_type', [PolicyBlock, UseFallback])
 @pytest.mark.parametrize('mode', ['flag_off', 'runtime_off', 'shadow', 'active', 'fallback'])
 def test_host_control_exceptions_propagate_once(tmp_path, error_type, mode):

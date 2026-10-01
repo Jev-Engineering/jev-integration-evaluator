@@ -181,6 +181,8 @@
       "launch": "qualified_offline_e_synthetic_host",
       "provider": "pending",
       "mode": "off",
+      "connected_shadow": "qualified_offline_e_installed_shadow_protocol",
+      "connected_upgrade": "pending",
       "benefit": "unknown",
       "contract_id": "use-case.E@1.0.0",
       "materialize": "qualified_offline_e_synthetic_host",
