@@ -915,3 +915,167 @@ def test_native_install_config_byte_drift_blocks_status_session_and_launch(tmp_p
     assert windows_install_status(
         install_plan, trusted_receipt_sha256=installed['receipt_sha256']) == recorded
     assert windows_session_status(session) == created
+
+
+def _supervised_off_console_run(directory: Path, install_plan: dict, installed: dict,
+                                marker: str) -> None:
+    """Launch one recorded off-mode console, observe its effect and stop it."""
+    record = directory.with_name(directory.name + '-effect.json')
+    session = create_windows_template_session(
+        directory, install_plan, installed,
+        trusted_install_receipt_sha256=installed['receipt_sha256'],
+        launch_environment={'JEV_FIXTURE_RECORD': str(record),
+                            'JEV_FIXTURE_MARKER': marker})
+    identity = launch_windows_template_session(
+        session, install_plan, approved_session_sha256=session['session_sha256'])
+    try:
+        assert _wait_until(record.is_file, 60)
+    finally:
+        stopped = stop_windows_template_session(
+            session, approved_identity_sha256=identity['identity_sha256'])
+    assert stopped['status'] == 'stopped' and not stopped['process_alive']
+
+
+def test_native_locked_package_inputs_block_build_and_install_fail_closed(
+        tmp_path, monkeypatch):
+    """A handle that shares nothing on a wheel, source file or built wheel."""
+    from contextlib import ExitStack
+    import shutil
+    from jev_integration_evaluator import windows_template_plan as planning
+
+    request, _, target, _, spec = _request(tmp_path)
+    # A private copy of the reviewed wheels: the held handles never touch the
+    # wheelhouse other tests read.
+    wheelhouse = tmp_path / 'private-wheelhouse'
+    wheelhouse.mkdir()
+    for name in request['reviewed_wheels']:
+        shutil.copyfile(Path(request['wheelhouse']) / name, wheelhouse / name)
+    request = {**request, 'wheelhouse': str(wheelhouse)}
+    output, environments = Path(request['output_parent']), Path(request['environment_parent'])
+    names = sorted(request['reviewed_wheels'])
+    evaluator = wheelhouse / next(n for n in names if n.startswith('jev_integration_evaluator-'))
+    build_tool = wheelhouse / next(n for n in names if n.startswith('setuptools-'))
+    dependency = wheelhouse / next(
+        n for n in names if not n.startswith(('jev_integration_evaluator-', 'pip-',
+                                              'setuptools-', 'wheel-')))
+    source_hashes = dict(request['reviewed_source_files'])
+    wheel_hashes = dict(request['reviewed_wheels'])
+    unrelated = tmp_path / 'unrelated.txt'
+    unrelated.write_bytes(b'preserve unrelated bytes\n')
+
+    def unchanged() -> None:
+        assert {name: _hash(target.joinpath(*name.split('/')))
+                for name in source_hashes} == source_hashes
+        assert {name: _hash(wheelhouse / name) for name in wheel_hashes} == wheel_hashes
+        assert unrelated.read_bytes() == b'preserve unrelated bytes\n'
+
+    # 1. Package planning: a locked wheel or a locked reviewed source file.
+    for locked in (evaluator, dependency, target / 'pyproject.toml',
+                   target / 'atlas_pkg' / 'console.py'):
+        with _deny_sharing(locked):
+            with pytest.raises(PermissionError):
+                locked.read_bytes()
+            with pytest.raises(InputError, match='^windows_package_access_denied$'):
+                plan_windows_template_package(request)
+        assert not list(output.iterdir()) and not list(environments.iterdir())
+    plan = plan_windows_template_package(request)
+    assert windows_package_status(plan) == {'status': 'absent', 'receipt_trust': 'absent'}
+
+    # 2. Build with the wheel already locked: refused before any generation.
+    with _deny_sharing(dependency):
+        with pytest.raises(InputError, match='^windows_package_access_denied$'):
+            build_windows_template_package(plan, approved_plan_sha256=plan['plan_sha256'])
+        assert windows_package_status(plan) == {'status': 'absent', 'receipt_trust': 'absent'}
+    assert not list(output.iterdir())
+
+    # 3. The lock arrives after the build intent, before the offline tool
+    #    install reads the wheel. The partial generation is retained and no
+    #    later status or replay accepts it, also after the handle is closed.
+    package_root = _package_generation(plan)
+    original_write = planning.write_private_bytes_exclusive
+    with ExitStack() as held:
+        def lock_then_write(owned, name, raw):
+            if name == 'build-tools.lock':
+                held.enter_context(_deny_sharing(build_tool))
+            return original_write(owned, name, raw)
+
+        monkeypatch.setattr(planning, 'write_private_bytes_exclusive', lock_then_write)
+        try:
+            with pytest.raises(InputError, match='^windows_package_offline_command_failed$'):
+                build_windows_template_package(plan, approved_plan_sha256=plan['plan_sha256'])
+        finally:
+            monkeypatch.setattr(planning, 'write_private_bytes_exclusive', original_write)
+        with pytest.raises(PermissionError):
+            build_tool.read_bytes()
+        assert (package_root / 'build-tools.lock').is_file()
+        assert not (package_root / 'package-receipt.json').exists()
+        assert not (package_root / 'dist').exists()
+        assert windows_package_status(plan) == {
+            'status': 'blocked_recovery', 'receipt_trust': 'absent'}
+    partial = sorted(entry.name for entry in package_root.iterdir())
+    for _ in (1, 2):
+        assert windows_package_status(plan) == {
+            'status': 'blocked_recovery', 'receipt_trust': 'absent'}
+        with pytest.raises(InputError,
+                           match='^windows_package_existing_generation_requires_status_review$'):
+            build_windows_template_package(plan, approved_plan_sha256=plan['plan_sha256'])
+    assert sorted(entry.name for entry in package_root.iterdir()) == partial
+    assert [entry.name for entry in output.iterdir()] == [package_root.name]
+    assert not list(environments.iterdir())
+    unchanged()
+
+    # 4. A separately reviewed output parent builds once nothing is locked.
+    retry_output = tmp_path / 'packages-after-lock'
+    retry_output.mkdir()
+    request = {**request, 'output_parent': str(retry_output)}
+    plan = plan_windows_template_package(request)
+    package = build_windows_template_package(plan, approved_plan_sha256=plan['plan_sha256'])
+    built = {'status': 'built_recorded', 'receipt_trust': 'externally_anchored',
+             'receipt_sha256': package['receipt_sha256']}
+    assert windows_package_status(
+        plan, trusted_receipt_sha256=package['receipt_sha256']) == built
+
+    # 5. Install planning: a locked wheelhouse wheel, then the locked built wheel.
+    host_wheel = Path(package['package_directory']) / 'dist' / package['wheel_filename']
+    for locked, reason in ((dependency, 'windows_package_access_denied'),
+                           (host_wheel, 'windows_package_status_unavailable')):
+        with _deny_sharing(locked):
+            with pytest.raises(InputError, match='^' + reason + '$'):
+                plan_windows_template_install(
+                    plan, package, trusted_package_receipt_sha256=package['receipt_sha256'])
+        assert not list(environments.iterdir())
+    install_plan = plan_windows_template_install(
+        plan, package, trusted_package_receipt_sha256=package['receipt_sha256'])
+
+    # 6. Install with either input locked: refused before any generation.
+    for locked, reason in ((evaluator, 'windows_package_access_denied'),
+                           (host_wheel, 'windows_package_status_unavailable')):
+        with _deny_sharing(locked):
+            with pytest.raises(InputError, match='^' + reason + '$'):
+                install_windows_template_package(
+                    install_plan, approved_plan_sha256=install_plan['plan_sha256'])
+            assert windows_install_status(install_plan) == {
+                'status': 'absent', 'receipt_trust': 'absent'}
+        assert not list(environments.iterdir())
+    assert windows_package_status(
+        plan, trusted_receipt_sha256=package['receipt_sha256']) == built
+    unchanged()
+
+    # 7. With every handle closed the same plan installs, and the installed
+    #    console runs once under the off-mode supervisor.
+    installed = install_windows_template_package(
+        install_plan, approved_plan_sha256=install_plan['plan_sha256'])
+    assert windows_install_status(
+        install_plan, trusted_receipt_sha256=installed['receipt_sha256']) == {
+            'status': 'installed_recorded', 'receipt_trust': 'externally_anchored',
+            'receipt_sha256': installed['receipt_sha256']}
+    assert [entry.name for entry in environments.iterdir()] == [
+        _install_generation(install_plan).name]
+    from jev_integration_evaluator.integrations.recipes import host_lifecycle_marker
+    _supervised_off_console_run(
+        tmp_path / 'session-after-lock', install_plan, installed,
+        host_lifecycle_marker(spec['host_lifecycle'], spec['bindings']['runtime'],
+                              spec['candidate_id']))
+    # The earlier partial generation is still not accepted.
+    assert sorted(entry.name for entry in package_root.iterdir()) == partial
+    unchanged()

@@ -62,8 +62,20 @@ read failure of a target is `windows_source_read_unavailable`. Both are
 `InputError` reasons without the path or the operating-system message, and
 no stage, backup or external intent is created
 (`test_native_read_denied_source_refuses_apply_with_private_reason`). On
-other platforms the original exception is unchanged, and `make_patch_plan`
-does not use these reasons.
+other platforms the original exception is unchanged.
+
+`make_patch_plan` reads each target through the same helper, so on native
+Windows a deny ACE for file data reads, or a handle that shares nothing
+(a sharing violation), refuses plan creation with
+`windows_source_read_access_denied`, and another read failure with
+`windows_source_read_unavailable`. No plan is returned and nothing is
+written (`test_native_read_denied_source_refuses_plan_with_private_reason`,
+`test_native_exclusively_locked_source_refuses_plan_with_private_reason`).
+The bundle lifecycle readers are not covered: with a read-denied selected
+source, `prepare_template_binding`, `plan_implementation`,
+`implementation_status`, `verify_implementation`, `apply_implementation` and
+`rollback_implementation` stop before any write but still raise the raw
+`PermissionError`, whose text contains the path.
 
 Before the first check of each change and again before each write, every
 component of the selected relative path is compared with the entries of its
@@ -75,7 +87,12 @@ entry in such a directory, refuse the apply with
 is the one the package-input inventory uses and folds case with Python's
 `str.casefold`, not the volume's NTFS upcase table. It is a read-only listing
 check, not a lock: an alias created after it is not detected.
-`make_patch_plan` does not perform it.
+`make_patch_plan` performs the same check for every change before it reads
+the target and refuses with the same reason, so a plan cannot be created for
+an aliased spelling (`test_native_real_case_alias_refuses_plan_without_effect`).
+Because the check resolves the root through the native path helper, planning
+against a UNC, mapped or non-NTFS root is refused with the helper's
+`windows_source_` reason; no native test exercises those roots at planning.
 
 After `icacls` (or another tool using the automatic-inheritance API) adds and
 removes an ACE on a file or its parent, the file's descriptor carries

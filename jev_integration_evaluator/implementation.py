@@ -27,10 +27,15 @@ def make_patch_plan(root: str | Path, changes: list[dict], candidate_ids: list[s
         if set(change)-{"file","new_content"}: raise InputError("Changes only allow file and new_content")
         new=change.get("new_content")
         if not isinstance(new,str) or len(new.encode())>2_000_000: raise InputError("New content must be bounded text")
+        if os.name == 'nt':
+            # Same read-only listing check and fixed reasons as the apply.
+            from .windows_template_preflight import refuse_case_alias
+            refuse_case_alias(root, rel, 'windows_source_')
         if p.exists() and not p.is_file(): raise InputError("Patch target is not a regular file")
-        old=p.read_bytes().decode("utf-8") if p.exists() else ""
+        raw=_read_target(p, Path.read_bytes)
+        old=raw.decode("utf-8") if raw is not None else ""
         entries.append({"file":rel,"operation":"update" if p.exists() else "create",
-                        "old_sha256":file_hash(p) if p.exists() else None,
+                        "old_sha256":_read_target(p, file_hash),
                         "new_sha256":hashlib.sha256(new.encode()).hexdigest(),"new_content":new,
                         "diff":"".join(difflib.unified_diff(old.splitlines(keepends=True),new.splitlines(keepends=True),fromfile="a/"+rel,tofile="b/"+rel))})
     body={"schema_version":"1.0","repository_identity":digest(str(root)),"candidate_ids":candidate_ids,"changes":entries,

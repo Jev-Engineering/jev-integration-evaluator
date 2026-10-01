@@ -712,22 +712,26 @@ def test_native_real_case_alias_refuses_apply_without_effect(tmp_path):
     _case_sensitive(package, 'enable')
     lower, upper = package / 'module.py', package / 'MODULE.py'
     try:
+        # Planning refuses an alias too, so each plan is made while its target
+        # has no differently cased sibling; the alias appears afterwards.
+        upper.write_bytes(b'value = 2\n')
+        other = make_patch_plan(root, [{'file': 'pkg/MODULE.py',
+                                        'new_content': 'value = 5\n'}], ['native-source'])
+        assert other['changes'][0]['operation'] == 'update'
+        upper.unlink()
+        create = make_patch_plan(root, [{'file': 'pkg/MODULE.py',
+                                         'new_content': 'value = 4\n'}], ['native-source'])
+        assert create['changes'][0]['operation'] == 'create'
         lower.write_bytes(b'value = 1\n')
         update = make_patch_plan(root, [{'file': 'pkg/module.py',
                                          'new_content': 'value = 3\n'}], ['native-source'])
         # Creating the other spelling beside the existing entry would make the alias.
-        create = make_patch_plan(root, [{'file': 'pkg/MODULE.py',
-                                         'new_content': 'value = 4\n'}], ['native-source'])
-        assert create['changes'][0]['operation'] == 'create'
         with pytest.raises(InputError, match='^windows_source_case_alias_refused$'):
             apply_patch_plan(root, create, create['plan_digest'])
         assert os.listdir(package) == ['module.py'] and lower.read_bytes() == b'value = 1\n'
 
         upper.write_bytes(b'value = 2\n')
         assert sorted(os.listdir(package)) == ['MODULE.py', 'module.py']
-        other = make_patch_plan(root, [{'file': 'pkg/MODULE.py',
-                                        'new_content': 'value = 5\n'}], ['native-source'])
-        assert other['changes'][0]['operation'] == 'update'
         identities = {path: cap._windows_file_identity(path.stat()) for path in (lower, upper)}
         intents = [mutation._intent_path(root / plan['changes'][0]['file'],
                                          plan['changes'][0]['old_sha256'],
@@ -747,6 +751,129 @@ def test_native_real_case_alias_refuses_apply_without_effect(tmp_path):
         upper.unlink()
         # With the alias gone the same approved update applies in that directory.
         assert apply_patch_plan(root, update, update['plan_digest'])['status'] == 'applied'
+        assert lower.read_bytes() == b'value = 3\n' and os.listdir(package) == ['module.py']
+    finally:
+        for path in (upper, lower):
+            if os.path.lexists(path):
+                path.unlink()
+        _case_sensitive(package, 'disable')
+
+
+def _private_refusal(refused, reason: str, tmp_path, *private: str) -> None:
+    assert str(refused.value) == reason and refused.value.args == (reason,)
+    # No chained operating-system exception is reachable from the refusal.
+    assert refused.value.__cause__ is None
+    assert refused.value.__context__ is None or refused.value.__suppress_context__
+    assert not isinstance(refused.value, OSError)
+    for text in (str(tmp_path), tmp_path.name, *private):
+        assert text not in str(refused.value)
+
+
+def test_native_read_denied_source_refuses_plan_with_private_reason(tmp_path):
+    """Planning reads the target; a denied read is a fixed path-free reason."""
+    import hashlib
+
+    root = tmp_path / 'host'
+    root.mkdir()
+    first, denied = root / 'first.py', root / 'owned.py'
+    first.write_bytes(b'first old\n')
+    denied.write_bytes(b'old\n')
+    changes = [{'file': 'first.py', 'new_content': 'first new\n'},
+               {'file': 'owned.py', 'new_content': 'new\n'}]
+    identities = {path: cap._windows_file_identity(path.stat()) for path in (first, denied)}
+    # Deny file data reads only; WRITE_DAC stays available for the cleanup.
+    account = _deny(denied, '(RD)')
+    try:
+        with pytest.raises(PermissionError):
+            denied.read_bytes()
+        with pytest.raises(InputError) as refused:
+            make_patch_plan(root, changes, ['native-source'])
+        _private_refusal(refused, 'windows_source_read_access_denied', tmp_path,
+                         'owned.py', 'host')
+        assert sorted(entry.name for entry in root.iterdir()) == ['first.py', 'owned.py']
+        assert first.read_bytes() == b'first old\n'
+    finally:
+        _allow(denied, account)
+    assert denied.read_bytes() == b'old\n'
+    assert {path: cap._windows_file_identity(path.stat())
+            for path in (first, denied)} == identities
+    # The same request plans once the read is allowed again.
+    plan = make_patch_plan(root, changes, ['native-source'])
+    assert [(change['file'], change['operation']) for change in plan['changes']] == [
+        ('first.py', 'update'), ('owned.py', 'update')]
+    assert plan['changes'][1]['old_sha256'] == hashlib.sha256(b'old\n').hexdigest()
+
+
+def test_native_exclusively_locked_source_refuses_plan_with_private_reason(tmp_path):
+    """A handle that shares nothing makes the planning read a sharing violation."""
+    from ctypes import wintypes
+
+    root = tmp_path / 'host'
+    root.mkdir()
+    source = root / 'locked.py'
+    source.write_bytes(b'old\n')
+    changes = [{'file': 'locked.py', 'new_content': 'new\n'}]
+    _, io_path = cap._windows_absolute_path(source)
+    kernel = cap._windows_api()[2]
+    handle = kernel.CreateFileW(io_path, 0x80000000, 0, None, 3, 0, None)
+    assert handle != wintypes.HANDLE(-1).value
+    try:
+        with pytest.raises(PermissionError):
+            source.read_bytes()
+        with pytest.raises(InputError) as refused:
+            make_patch_plan(root, changes, ['native-source'])
+        _private_refusal(refused, 'windows_source_read_access_denied', tmp_path,
+                         'locked.py', 'host')
+        assert [entry.name for entry in root.iterdir()] == ['locked.py']
+    finally:
+        assert kernel.CloseHandle(handle)
+    assert source.read_bytes() == b'old\n'
+    plan = make_patch_plan(root, changes, ['native-source'])
+    assert plan['changes'][0]['operation'] == 'update'
+    assert apply_patch_plan(root, plan, plan['plan_digest'])['status'] == 'applied'
+    assert source.read_bytes() == b'new\n'
+
+
+def test_native_real_case_alias_refuses_plan_without_effect(tmp_path):
+    """Planning refuses a target with an on-disk sibling differing only by case."""
+    root = tmp_path / 'host'
+    package = root / 'pkg'
+    package.mkdir(parents=True)
+    _case_sensitive(package, 'enable')
+    lower, upper = package / 'module.py', package / 'MODULE.py'
+
+    def planned(relative: str) -> dict:
+        return make_patch_plan(root, [{'file': relative, 'new_content': 'value = 3\n'}],
+                               ['native-source'])
+
+    try:
+        lower.write_bytes(b'value = 1\n')
+        # A new spelling beside the existing entry would create the alias.
+        with pytest.raises(InputError) as refused:
+            planned('pkg/MODULE.py')
+        _private_refusal(refused, 'windows_source_case_alias_refused', tmp_path,
+                         'MODULE.py', 'pkg')
+        assert os.listdir(package) == ['module.py']
+        upper.write_bytes(b'value = 2\n')
+        identities = {path: cap._windows_file_identity(path.stat()) for path in (lower, upper)}
+        for relative in ('pkg/module.py', 'pkg/MODULE.py'):
+            with pytest.raises(InputError, match='^windows_source_case_alias_refused$'):
+                planned(relative)
+        # A clean first change does not hide the aliased one.
+        with pytest.raises(InputError, match='^windows_source_case_alias_refused$'):
+            make_patch_plan(root, [{'file': 'clean.py', 'new_content': 'clean\n'},
+                                   {'file': 'pkg/module.py', 'new_content': 'value = 3\n'}],
+                            ['native-source'])
+        assert sorted(os.listdir(package)) == ['MODULE.py', 'module.py']
+        assert sorted(entry.name for entry in root.iterdir()) == ['pkg']
+        assert lower.read_bytes() == b'value = 1\n' and upper.read_bytes() == b'value = 2\n'
+        assert {path: cap._windows_file_identity(path.stat())
+                for path in (lower, upper)} == identities
+        upper.unlink()
+        # With the alias gone the same request plans and applies.
+        plan = planned('pkg/module.py')
+        assert plan['changes'][0]['operation'] == 'update'
+        assert apply_patch_plan(root, plan, plan['plan_digest'])['status'] == 'applied'
         assert lower.read_bytes() == b'value = 3\n' and os.listdir(package) == ['module.py']
     finally:
         for path in (upper, lower):

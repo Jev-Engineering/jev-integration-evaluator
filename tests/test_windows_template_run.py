@@ -21,7 +21,10 @@ from jev_integration_evaluator.windows_template_session import (
     stop_windows_template_session,
 )
 from jev_integration_evaluator import windows_template_run as run
-from test_windows_template_delivery import _request
+from jev_integration_evaluator.windows_template_install import windows_install_status
+from test_windows_template_delivery import (
+    _deny_sharing, _request, _supervised_off_console_run,
+)
 
 
 pytestmark = pytest.mark.skipif(os.name != 'nt', reason='native Windows NTFS only')
@@ -176,3 +179,119 @@ def test_owned_upgrade_rollback_and_same_run_recovery(tmp_path, monkeypatch):
             tmp_path / 'run', old_plan, new_plan, new_receipt,
             approved_selection_sha256=second['selection_sha256'],
             trusted_new_receipt_sha256=new_receipt['receipt_sha256'])
+
+
+def test_native_locked_generation_file_blocks_upgrade_and_rollback_selection(tmp_path):
+    """A handle that shares nothing inside the selected or retained install."""
+    old_plan, old_receipt, marker = _installed(tmp_path / 'old', '1.0.0')
+    root = tmp_path / 'run'
+
+    def environment(label: str) -> dict:
+        return {'JEV_FIXTURE_RECORD': str(tmp_path / (label + '-effect.json')),
+                'JEV_FIXTURE_MARKER': marker}
+
+    def recorded(plan: dict, receipt: dict) -> None:
+        assert windows_install_status(
+            plan, trusted_receipt_sha256=receipt['receipt_sha256']) == {
+                'status': 'installed_recorded', 'receipt_trust': 'externally_anchored',
+                'receipt_sha256': receipt['receipt_sha256']}
+
+    def still_selected(selection: dict, version: str, sequence: int) -> None:
+        status = run.windows_template_run_status(
+            root, trusted_selection_sha256=selection['selection_sha256'])
+        assert status == {**selection, 'selected_session_status': 'stopped'}
+        assert (status['status'], status['sequence'], status['selected_version'],
+                status['pending_intent_sha256'], status['selection_trust']) == (
+                    'selected', sequence, version, None, 'externally_anchored')
+
+    first = run.create_windows_template_run(
+        root, old_plan, old_receipt,
+        trusted_install_receipt_sha256=old_receipt['receipt_sha256'],
+        launch_environment=environment('old'))
+    assert first['status'] == 'selected' and first['selected_version'] == '1.0.0'
+    _invoke(first, old_plan, tmp_path / 'old-effect.json')
+    new_plan, new_receipt, new_marker = _installed(tmp_path / 'new', '1.0.1')
+    assert new_marker == marker
+    old_root = Path(old_receipt['environment'])
+    new_root = Path(new_receipt['environment'])
+    assert old_root == Path(first['selected_environment']) and old_root != new_root
+    unrelated = tmp_path / 'unrelated.txt'
+    unrelated.write_bytes(b'preserve unrelated bytes\n')
+
+    def upgrade() -> dict:
+        return run.upgrade_windows_template_run(
+            root, old_plan, new_plan, new_receipt,
+            approved_selection_sha256=first['selection_sha256'],
+            trusted_new_receipt_sha256=new_receipt['receipt_sha256'],
+            launch_environment=environment('new'))
+
+    # Upgrade: a locked file in the currently selected generation, then in the
+    # generation the upgrade would select. Neither records a stage.
+    entries = sorted(entry.name for entry in root.iterdir())
+    assert 'selection-000.json' in entries and not any('001' in name for name in entries)
+    for locked in (old_root / 'venv' / 'Lib' / 'site-packages' / 'atlas_pkg' / 'console.py',
+                   old_root / 'config.json',
+                   new_root / 'venv' / 'Lib' / 'site-packages' / 'atlas_pkg' / 'console.py'):
+        original = locked.read_bytes()
+        with _deny_sharing(locked):
+            with pytest.raises(PermissionError):
+                locked.read_bytes()
+            with pytest.raises(InputError, match='^windows_install_status_unavailable$'):
+                upgrade()
+            assert sorted(entry.name for entry in root.iterdir()) == entries
+            still_selected(first, '1.0.0', 0)
+        assert locked.read_bytes() == original
+    assert sorted(entry.name for entry in root.iterdir()) == entries
+    still_selected(first, '1.0.0', 0)
+    recorded(old_plan, old_receipt)
+    recorded(new_plan, new_receipt)
+    # The generation that stayed selected still runs under the off-mode supervisor.
+    _supervised_off_console_run(tmp_path / 'old-after-lock', old_plan, old_receipt, marker)
+    assert unrelated.read_bytes() == b'preserve unrelated bytes\n'
+
+    second = upgrade()
+    assert (second['status'], second['sequence'], second['selected_version']) == (
+        'selected', 1, '1.0.1')
+    assert second['run_id'] == first['run_id']
+    assert second['selected_environment'] == str(new_root) and old_root.is_dir()
+    _invoke(second, new_plan, tmp_path / 'new-effect.json')
+
+    def rollback() -> dict:
+        return run.rollback_windows_template_run(
+            root, old_plan, old_receipt,
+            approved_selection_sha256=second['selection_sha256'],
+            trusted_retained_receipt_sha256=old_receipt['receipt_sha256'],
+            launch_environment=environment('rollback'))
+
+    # Rollback: a locked file in the retained generation it would select.
+    entries = sorted(entry.name for entry in root.iterdir())
+    assert 'selection-001.json' in entries and not any('002' in name for name in entries)
+    for locked, reason in (
+            (old_root / 'venv' / 'Scripts' / 'python.exe',
+             'windows_install_status_unavailable'),
+            (old_root / 'install-receipt.json', 'windows_owned_record_unavailable')):
+        original = locked.read_bytes()
+        with _deny_sharing(locked):
+            with pytest.raises(PermissionError):
+                locked.read_bytes()
+            with pytest.raises(InputError, match='^' + reason + '$'):
+                rollback()
+            assert sorted(entry.name for entry in root.iterdir()) == entries
+            still_selected(second, '1.0.1', 1)
+        assert locked.read_bytes() == original
+    assert sorted(entry.name for entry in root.iterdir()) == entries
+    still_selected(second, '1.0.1', 1)
+    recorded(old_plan, old_receipt)
+    recorded(new_plan, new_receipt)
+    _supervised_off_console_run(tmp_path / 'new-after-lock', new_plan, new_receipt, marker)
+    assert unrelated.read_bytes() == b'preserve unrelated bytes\n'
+
+    third = rollback()
+    assert (third['status'], third['sequence'], third['selected_version']) == (
+        'selected', 2, '1.0.0')
+    assert third['run_id'] == first['run_id']
+    assert third['selected_environment'] == first['selected_environment']
+    assert third['selected_session_sha256'] != first['selected_session_sha256']
+    assert new_root.is_dir()
+    _invoke(third, old_plan, tmp_path / 'rollback-effect.json')
+    assert unrelated.read_bytes() == b'preserve unrelated bytes\n'
