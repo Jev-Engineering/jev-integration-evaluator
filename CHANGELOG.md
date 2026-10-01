@@ -16,6 +16,15 @@
   references gains a parser-checked quickstart, a parameter and binding
   table and an unsupported-case list. Connected upgrade, provider operation,
   canary/active and benefit remain pending.
+- Add the registered-tool template quickstart for issue #57
+  (`references/registered-tool-template-quickstart-v1.md`): the ordered Linux
+  x86-64 CPython 3.13 recipe C journey with parser-checked commands, expected
+  receipts and statuses, run identity, pins and a support matrix. Add the
+  opt-in `scripts/run_registered_tool_qualification.py` report
+  (`registered-tool-qualification-report-v1`), which recomputes gate statuses
+  only from a supplied pytest JUnit file and lists failed and unrun gates. No
+  runtime behavior changes. Provider operation, authorized canary and active,
+  and measured benefit remain pending and cannot be promoted by the report.
 - Add nine native offline tests for issue #61: unchanged Job members after a
   refused launch replay, installed configuration content drift, unsupported
   UNC, mapped and non-NTFS roots at preparation, package and install stages,

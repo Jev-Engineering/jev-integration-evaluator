@@ -48,7 +48,9 @@ environment parent. `template package` and `template install-plan` are
 read-only plans; build/install/recovery effects need their own exact scope.
 Retain each plan/receipt digest outside its directory. Never infer launch,
 connected mode, or measured benefit from an install receipt. See
-`references/template-installation-v1.md`.
+`references/template-installation-v1.md`. The ordered registered-tool journey,
+including the Alpha connected shadow steps and every pending gate, is in
+`references/registered-tool-template-quickstart-v1.md`.
 
 For one source-to-runtime run, create a private `template journey-create`
 record after the reviewed implementation plan and before apply. Pin each
