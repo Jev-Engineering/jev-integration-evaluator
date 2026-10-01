@@ -1,0 +1,25 @@
+# Installed and connected independent-host journeys that must execute, with
+# no skipped, failed or missing case, on the Linux CPython 3.13 leg.
+# One test module per line. Checked by scripts/check_required_cases.py.
+tests.test_registered_alpha_installed_faults
+tests.test_registered_alpha_installed_upgrade
+tests.test_work_queue_installed
+tests.test_registered_dual_composite
+tests.test_template_delivery_installed
+tests.test_composite_console_delivery
+tests.test_connected_installed_binding
+tests.test_connected_composite_binding
+tests.test_connected_generation_installed
+tests.test_connected_generation_retrieval_installed
+tests.test_connected_generation_retention_installed
+tests.test_use_case_installed_console
+tests.test_use_case_graph_installed
+tests.test_use_case_graph_bound_installed
+tests.test_use_case_retrieval_bound_installed
+tests.test_use_case_claim_bound_installed
+tests.test_use_case_retention_bound_installed
+tests.test_use_case_graph_connected
+tests.test_use_case_retrieval_connected
+tests.test_use_case_claim_connected
+tests.test_use_case_retention_connected
+tests.test_use_case_completion_connected

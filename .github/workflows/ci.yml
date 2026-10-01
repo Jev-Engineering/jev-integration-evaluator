@@ -146,8 +146,23 @@ jobs:
           python -m pip install wheel
           python scripts/prepare_template_wheelhouse.py --out "$RUNNER_TEMP/jev-template-wheelhouse"
           echo "JEV_TEMPLATE_WHEELHOUSE=$RUNNER_TEMP/jev-template-wheelhouse" >> "$GITHUB_ENV"
+          # The independent Alpha, work-queue and dual installed journeys need an
+          # explicit interpreter and wheelhouse. Without these they skip silently.
+          interpreter="$(python -c 'import sys; print(sys.executable)')"
+          for host in REGISTERED_ALPHA WORK_QUEUE DUAL; do
+            echo "JEV_${host}_INSTALLED_PYTHON=$interpreter" >> "$GITHUB_ENV"
+            echo "JEV_${host}_WHEELHOUSE=$RUNNER_TEMP/jev-template-wheelhouse" >> "$GITHUB_ENV"
+          done
       - run: npm install --ignore-scripts --no-audit --no-fund --package-lock=false
-      - run: python -m pytest -q
+      - run: python -m pytest -q --junitxml="$RUNNER_TEMP/jev-tests.xml"
+      - name: Reject skipped, missing or failed installed independent-host journeys
+        if: matrix.python == '3.13'
+        run: >-
+          python scripts/check_required_cases.py
+          --junit "$RUNNER_TEMP/jev-tests.xml"
+          --modules-file .github/required-installed-journeys.txt
+      - run: node --test tests/js_transform.test.cjs
+      - run: python scripts/validate_package.py
       - run: python scripts/validate_package.py --check-manifest
       - run: python scripts/run_v11_demo.py --out "$RUNNER_TEMP/jev-v11-demo"
       - run: python scripts/run_v12_demo.py --out "$RUNNER_TEMP/jev-v12-demo"
