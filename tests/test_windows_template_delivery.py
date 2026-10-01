@@ -832,3 +832,86 @@ def test_native_console_break_cancellation_leaves_no_owned_process(tmp_path):
             if unrelated.poll() is None:
                 unrelated.terminate()
             unrelated.wait(timeout=10)
+
+
+def test_native_install_config_byte_drift_blocks_status_session_and_launch(tmp_path):
+    """Bytes that parse to the reviewed configuration are still not the installed file."""
+    import json
+    from jev_integration_evaluator.windows_template_owned import acl_sha256
+
+    request, _, _, _, _ = _request(tmp_path)
+    package_plan = plan_windows_template_package(request)
+    package = build_windows_template_package(
+        package_plan, approved_plan_sha256=package_plan['plan_sha256'])
+    install_plan = plan_windows_template_install(
+        package_plan, package, trusted_package_receipt_sha256=package['receipt_sha256'])
+    installed = install_windows_template_package(
+        install_plan, approved_plan_sha256=install_plan['plan_sha256'])
+    recorded = {'status': 'installed_recorded', 'receipt_trust': 'externally_anchored',
+                'receipt_sha256': installed['receipt_sha256']}
+    assert windows_install_status(
+        install_plan, trusted_receipt_sha256=installed['receipt_sha256']) == recorded
+    config = _install_generation(install_plan) / 'config.json'
+    original = config.read_bytes()
+    reviewed = request['configuration']
+    assert original == b'{"jev_runtime":{"credential_ref":null,"mode":"off"}}\n'
+    config_acl = acl_sha256(config)
+    config_identity = (config.stat().st_dev, config.stat().st_ino)
+    session = create_windows_template_session(
+        tmp_path / 'created-before-drift', install_plan, installed,
+        trusted_install_receipt_sha256=installed['receipt_sha256'])
+    session_root = Path(session['owned_directory']['path'])
+    created = {'status': 'created', 'process_alive': False, 'receipt_trust': 'absent'}
+    assert windows_session_status(session) == created
+    variants = {
+        'no-trailing-newline': original[:-1],
+        'extra-trailing-newline': original + b'\n',
+        'crlf-line-ending': original[:-1] + b'\r\n',
+        'whitespace': (json.dumps(reviewed, sort_keys=True) + '\n').encode('utf-8'),
+        'key-order': b'{"jev_runtime":{"mode":"off","credential_ref":null}}\n',
+        'duplicate-key': b'{"jev_runtime":{"credential_ref":null,"mode":"shadow","mode":"off"}}\n',
+    }
+    complete = ('no-trailing-newline', 'whitespace')
+    assert set(complete) <= set(variants)
+    try:
+        for label, drifted in variants.items():
+            # Every variant is a different file that a JSON parser reads as
+            # the same reviewed configuration.
+            assert drifted != original and json.loads(drifted) == reviewed, label
+            with open(config, 'r+b') as stream:
+                stream.write(drifted)
+                stream.truncate()
+            assert config.read_bytes() == drifted
+            assert acl_sha256(config) == config_acl
+            assert (config.stat().st_dev, config.stat().st_ino) == config_identity
+            with pytest.raises(InputError, match='^windows_install_configuration_drift$'):
+                windows_install_status(
+                    install_plan, trusted_receipt_sha256=installed['receipt_sha256'])
+            if label in complete:
+                # Each further entry repeats the full installed-byte review,
+                # so two representative variants bound this case's duration.
+                with pytest.raises(InputError, match='^windows_install_configuration_drift$'):
+                    windows_install_status(install_plan)
+                blocked = tmp_path / ('blocked-' + label)
+                with pytest.raises(InputError, match='^windows_install_configuration_drift$'):
+                    create_windows_template_session(
+                        blocked, install_plan, installed,
+                        trusted_install_receipt_sha256=installed['receipt_sha256'])
+                assert not blocked.exists()
+                with pytest.raises(InputError, match='^windows_install_configuration_drift$'):
+                    launch_windows_template_session(
+                        session, install_plan,
+                        approved_session_sha256=session['session_sha256'])
+                assert sorted(entry.name for entry in session_root.iterdir()) == [
+                    'delivery.lock', 'session.json']
+                assert windows_session_status(session) == created
+            # Refusal is read-only: the drifted bytes are not repaired.
+            assert config.read_bytes() == drifted
+    finally:
+        with open(config, 'r+b') as stream:
+            stream.write(original)
+            stream.truncate()
+    assert config.read_bytes() == original and acl_sha256(config) == config_acl
+    assert windows_install_status(
+        install_plan, trusted_receipt_sha256=installed['receipt_sha256']) == recorded
+    assert windows_session_status(session) == created

@@ -33,6 +33,21 @@
   behavior changes. The `windows-template-delivery` job now requires 80
   cases. Hosted Server 2022 execution of the additions and live provider
   operation remain pending.
+- Fix the four native findings those tests recorded (issue #61). Installed
+  `config.json` is now compared as the exact canonical bytes written at
+  install, so a whitespace, key-order, duplicate-key or newline change that
+  parses identically returns `windows_install_configuration_drift` for
+  status, session creation and launch; no receipt or schema changed. A
+  read-denied target makes `apply_patch_plan` raise the path-free
+  `windows_source_read_access_denied` instead of a raw `PermissionError`.
+  Selected-source preparation and `apply_patch_plan` refuse an on-disk case
+  alias (`windows_preflight_case_alias_refused`,
+  `windows_source_case_alias_refused`) with the package inventory's
+  comparison. The DACL restore keeps a recorded `SE_DACL_AUTO_INHERITED` bit,
+  so a file touched by an `icacls` add and remove is no longer refused as
+  `windows_source_acl_not_reproducible`; the exact owner/DACL check is
+  unchanged. The `windows-template-delivery` job now requires 86 cases;
+  hosted execution of the six new cases is pending.
 
 ## Unreleased — connected shadow profiles and generation transfer
 
