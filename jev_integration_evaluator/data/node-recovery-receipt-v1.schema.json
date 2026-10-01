@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Offline Node recipe C owned interruption recovery receipt v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "kind", "target", "status", "step_plan_sha256", "recovery_sha256", "root", "stage", "intent_sha256", "interrupted_journal_head", "generation_sha256", "removed_entries", "recovery_started_sha256", "recovery_journal_head", "retry", "mode", "runtime_activation_authorized", "receipt_sha256"],
+  "properties": {
+    "schema_version": {"const": "1.0"}, "kind": {"const": "node-recovery-receipt-v1"},
+    "target": {"enum": ["package", "generation"]},
+    "status": {"enum": ["owned_incomplete_package_removed", "owned_incomplete_generation_removed"]},
+    "step_plan_sha256": {"$ref": "#/$defs/sha"}, "recovery_sha256": {"$ref": "#/$defs/sha"},
+    "root": {"type": "string", "pattern": "^/"},
+    "stage": {"enum": ["intent_recorded", "directory_created", "owner_marked", "journal_recorded"]},
+    "intent_sha256": {"$ref": "#/$defs/sha"},
+    "interrupted_journal_head": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha"}]},
+    "generation_sha256": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha"}]},
+    "removed_entries": {"type": "integer", "minimum": 0, "maximum": 50000},
+    "recovery_started_sha256": {"$ref": "#/$defs/sha"},
+    "recovery_journal_head": {"$ref": "#/$defs/sha"},
+    "retry": {"const": "new_plan_approval_required"},
+    "mode": {"const": "off"}, "runtime_activation_authorized": {"const": false},
+    "receipt_sha256": {"$ref": "#/$defs/sha"}
+  },
+  "$defs": {"sha": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+}

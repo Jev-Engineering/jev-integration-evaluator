@@ -136,9 +136,15 @@ names to the child (`JEV_FAKE_TRANSPORT_*`, `JEV_TRUSTED_GRANT_FILE`,
 `JEV_INVOCATION_ID`, `JEV_FIXTURE_FAULT`); only the fixture entrypoint reads
 them and they carry no authority. Cross-process budget contention is not
 exercised because the ledger has one exclusive owner. An interrupted build or
-install is still only classified (`*_interrupted_review_required`) and needs
-operator review and a new approved output plan; no automated owned recovery or
-rollback of a partial build or install root exists.
+install is classified (`*_interrupted_review_required`) and is never recovered
+by status or by a retry. Its owned partial root can be removed only by the
+separately planned and approved `node-package-recover` or
+`node-install-recover` of the
+[install adapter](template-node-installation-v1.md), which retains the
+interrupted attempt in a recovery journal and leaves other generations
+untouched. That recovery is off-mode installation evidence only; it has not
+been exercised under a connected session, and power-loss durability is not
+covered.
 The always-on `tests/test_node_template_connected_gates.py` drives the planner
 with in-test fixture rows over a byte fixture of an installed generation (the
 pinned install check is replaced there). It covers refusal of synthetic
