@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased — native Windows delivery gap qualification
+
+- Add nine native offline tests for issue #61: unchanged Job members after a
+  refused launch replay, installed configuration content drift, unsupported
+  UNC, mapped and non-NTFS roots at preparation, package and install stages,
+  write-path deny ACEs during source apply, build and install, an external
+  console break, and a real per-directory case collision. No production
+  behavior changes. The `windows-template-delivery` job now requires 80
+  cases. Hosted Server 2022 execution of the additions and live provider
+  operation remain pending.
+
 ## Unreleased — connected shadow profiles and generation transfer
 
 - Add finite installed connected shadow profiles for D retrieval, L graph,

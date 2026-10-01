@@ -122,6 +122,26 @@ lock and checks that no session directory is created and unrelated bytes remain
 intact. The unchanged `94d355b` implementation passes that same test. This
 qualifies one locked-file refusal, not the broader locked-root, ACL and
 interrupted-install matrix.
+A separate installed-host test rewrites the installed `config.json` content in
+place, keeping its file identity, owner and DACL, to a different runtime mode.
+Trusted and untrusted status then return `windows_install_configuration_drift`,
+same-generation replay is refused, a new session is not created, and a session
+recorded before the drift cannot launch: it keeps no launch intent and stays
+`created`. Restoring the exact bytes restores receipt validation. The comparison
+is of parsed configuration, so a byte change that parses to the same reviewed
+configuration is not covered by this case.
+Deny ACEs for new subdirectories on the package output parent or environment
+parent fail the build or install with `windows_owned_directory_create_failed`
+before any generation exists. A deny ACE added to the exclusively created
+install generation before its first owner record fails with
+`windows_owned_directory_changed`; that directory is retained, status is
+unavailable and replay is refused even after the ACE is removed. These tests
+use `icacls` on disposable test-owned directories without elevation.
+UNC and extended UNC spellings of every package request root, and mapped or
+non-NTFS volume answers at package planning, build, package status, install
+planning, install and install status, are refused without creating an
+environment generation. The mapped and non-NTFS cases replace only the Win32
+drive-type and filesystem-name answers; no live share or volume was used.
 The complete Python 3.10 venv inventory produced a 1,276,216-byte install
 receipt. This one named owner record has a finite 4 MB read/write limit;
 other owner records retain the 1 MB limit. Larger installs fail closed.
@@ -148,6 +168,10 @@ session binds the trusted base CPython interpreter path and file hash used by
 the guardian; launch rechecks both before spawning it. Earlier session records
 without this binding remain readable for status and owned stop, but cannot
 authorize a fresh launch. A repeated attempt is refused.
+The refused attempt starts nothing: an installed-host test snapshots the
+exact named Job before and after three refused replays of a running session
+and requires the same assigned count, PIDs, creation times and images, and
+byte-identical session, intent, identity and release records.
 `windows_session_status` reads the private
 records and checks the exact live process and job membership without importing
 target code. An exited console is `exited_unverified` until an independent host
@@ -156,6 +180,13 @@ proof of integration or provider reachability. Unknown process access, a
 missing or inaccessible Job while the exact process is live, and uncertain
 membership block status, effect observation and owned stop. Only a confirmed
 signaled process handle or a known absent PID counts as exit.
+The supervisor has no cancellation API. When `CTRL_BREAK_EVENT` is raised on
+the owned hidden console by a helper attached to it, the gate, launcher and
+console processes exit, the guardian closes the Job, and status reports
+`exited_unverified` with no effect record. Replay stays refused, a later
+owned stop records `stopped`, and a separate process on its own console is
+not signaled. This is one observed external-cancellation case on a local
+host, not a graceful shutdown contract.
 
 `observe_windows_template_session(session,
 approved_identity_sha256=..., phase='ready'|'effect', path=...,
