@@ -21,6 +21,11 @@ from ..io import InputError, digest
 from ..contracts import parse_utc, validate_contract
 
 
+# Upper bound, in seconds, that the owning connection waits for a competing
+# SQLite lock before a durable write fails closed.
+OWNER_BUSY_SECONDS = 2.0
+
+
 class RuntimeLedger(BudgetCoordinator):
     def __init__(self, path: str | Path, *, identity: str, **limits):
         path = Path(path)
@@ -42,7 +47,11 @@ class RuntimeLedger(BudgetCoordinator):
         try:
             self._file = path.open('a+b')
             self._lock_file()
-            self._db = sqlite3.connect(database, timeout=0,
+            # Single ownership is the marker-file lock above, not this
+            # timeout. A bounded wait lets a durable commit outlast a
+            # transient read-only inspection instead of latching the owner
+            # off; a lock held past the bound still fails closed.
+            self._db = sqlite3.connect(database, timeout=OWNER_BUSY_SECONDS,
                                        check_same_thread=False, isolation_level=None)
             if os.name != 'nt':
                 os.chmod(database, 0o600)

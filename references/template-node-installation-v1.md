@@ -206,8 +206,14 @@ zero raw output; same-run resume records an unreleased attempt, and a fresh
 scope permits one normal installed invocation. If the child identity is
 journaled but release fails, resume preserves `blocked_recovery`, refuses a
 retry, and no effect or readiness file appears. These are controlled offline
-faults before child release. CommonJS and TypeScript have installed normal
-command checks, but these two start faults have not run on those formats.
+faults before child release. The installed TypeScript upgrade journey injects
+the first of them: its first launch is interrupted before the child identity
+is journaled, no observation file appears, the stale scope and a wrong head
+are refused, same-run resume returns to `created` with the installed `host.ts`
+and compiled `host.mjs` bytes unchanged, and a fresh scope starts the second
+attempt once. The journaled-identity release fault has not run on TypeScript,
+and neither start fault has run on CommonJS, whose installed fault is the
+interrupted upgrade selection.
 
 The independent [installed CommonJS journey](../tests/test_node_template_installed_commonjs.py)
 uses a separate named package and two reviewed `host.cjs` versions. Each

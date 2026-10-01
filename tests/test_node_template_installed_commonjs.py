@@ -27,7 +27,7 @@ from test_node_template_installed_upgrade import (
 
 def _installed(tmp_path: Path, name: str, version: str, item: str,
                tooling: Path, node: Path, npm: Path, *, prepare_only: bool = False,
-               connected_model: bool = False) -> dict:
+               connected_model: bool = False, entry_text: str | None = None) -> dict:
     work = tmp_path / name
     work.mkdir(mode=0o700)
     source, request = request_for(work, 'commonjs')
@@ -107,6 +107,8 @@ def _installed(tmp_path: Path, name: str, version: str, item: str,
         '  fs.writeFileSync(process.env.NODE_INTEGRATION_PATH,"integration\\n",{flag:"wx"});\n'
         + settle +
         '}\nmain().catch(() => {process.exitCode = 1;});\n', encoding='utf-8')
+    if entry_text is not None:
+        entry.write_text(entry_text, encoding='utf-8')
     request['entrypoint'] = 'start.cjs'
     request['entrypoint_sha256'] = file_hash(entry)
     request['package_json_sha256'] = file_hash(package_path)

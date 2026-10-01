@@ -77,8 +77,9 @@ _PROFILES = {
                     'loader': 'completion_host/connected_authority.py'},
         'references': ('E_CONNECTED_REF', 'E_AUTH_PUBKEY_FILE'),
         'allowed': frozenset({'E_RAW_STATE_TEMPLATE', 'E_EFFECT_RECEIPT_TEMPLATE',
-                              'E_READY_PATH', 'E_TASKS'}),
-        'binary': (),
+                              'E_READY_PATH', 'E_TASKS', 'E_HOLD',
+                              'E_RELEASE_PATH'}),
+        'binary': ('E_HOLD',),
         'injected': ('E_CONNECTED_REF_SHA256', 'E_AUTH_PUBKEY_SHA256'),
     },
     'claim-m-v1': {
@@ -200,8 +201,12 @@ def plan_connected_delivery(install_plan: dict, *, trusted_install_receipt_sha25
                 or (launch_environment.get('D_HOLD_POINT') == 'between-tasks'
                     and (launch_environment.get('D_HOLD') != '1'
                          or 'D_RELEASE_PATH' not in launch_environment))))
-            or (host_profile == 'completion-e-v1'
-                and launch_environment.get('E_TASKS', 'two') not in ('two', 'duplicate'))
+            or (host_profile == 'completion-e-v1' and (
+                launch_environment.get('E_TASKS', 'two') not in ('two', 'duplicate')
+                # The hold follows the ready marker of the first effect and
+                # is only meaningful with an explicit release path.
+                or (launch_environment.get('E_HOLD') == '1'
+                    and not {'E_READY_PATH', 'E_RELEASE_PATH'} <= set(launch_environment))))
             or (host_profile == 'claim-m-v1' and (
                 not {'M_EFFECT_DIRECTORY', 'M_READY_PATH'} <= set(launch_environment)
                 or (launch_environment.get('M_HOLD') == '1' and 'M_RELEASE_PATH' not in launch_environment)

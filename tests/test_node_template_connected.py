@@ -69,7 +69,8 @@ def _wait_session_child_exit(session: Path) -> None:
     raise AssertionError('owned connected child did not exit within the fault bound')
 
 
-def _installed_module(tmp_path, fmt, tooling, node, npm):
+def _installed_module(tmp_path, fmt, tooling, node, npm, *, entry_text=None,
+                      timeout_ms=None):
     work = tmp_path / ('connected-' + fmt)
     work.mkdir(mode=0o700)
     if fmt == 'esm':
@@ -83,6 +84,8 @@ def _installed_module(tmp_path, fmt, tooling, node, npm):
                   'result': 'read:alpha', 'events': [['read', 'alpha']],
                   'effects': [['read', 'alpha']]}]
     request['implementation_spec']['runtime']['runtime']['model'] = 'jev-1.13.0'
+    if timeout_ms is not None:
+        request['implementation_spec']['runtime']['runtime']['timeout_ms'] = timeout_ms
     request['implementation_spec']['verification_sha256'] = digest(cases)
     request['implementation_spec']['verification_cases_count'] = len(cases)
     entry = source / 'start.mjs'
@@ -115,6 +118,8 @@ def _installed_module(tmp_path, fmt, tooling, node, npm):
         '  fs.writeFileSync(process.env.NODE_READY_PATH,"ready\\n",{flag:"wx"});\n'
         '  fs.writeFileSync(process.env.NODE_INTEGRATION_PATH,"integration\\n",{flag:"wx"});\n'
         '}\nmain().catch(() => {process.exitCode = 1;});\n', encoding='utf-8')
+    if entry_text is not None:
+        entry.write_text(entry_text, encoding='utf-8')
     request['entrypoint_sha256'] = file_hash(entry)
     request['reviewed_package_source_sha256'] = digest(template_js_catalog._source_tree(source))
     rendered = tmp_path / (fmt + '-render')
