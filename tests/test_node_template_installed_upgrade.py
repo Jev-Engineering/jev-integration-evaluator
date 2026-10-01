@@ -188,7 +188,7 @@ def _observe(path: Path, status: dict) -> dict:
     raise AssertionError('installed Node integration effect not observed')
 
 
-def test_real_installed_typescript_upgrade_and_retained_rollback(tmp_path):
+def test_real_installed_typescript_upgrade_and_retained_rollback(tmp_path, monkeypatch):
     tools = native_tools()
     compiler_name = os.environ.get('JEV_TRUSTED_TYPESCRIPT_PACKAGE')
     compiler = Path(compiler_name) if compiler_name else Path('/nonexistent-typescript-package')
@@ -238,8 +238,43 @@ def test_real_installed_typescript_upgrade_and_retained_rollback(tmp_path):
     path = tmp_path / 'node-session'
     created = session.create_node_session(path, old_plan)
     launch = _scope(created, 'launch', old_plan)
+    original_append = session._append
+
+    def interrupt_before_release(directory, rows, event, state):
+        if event == 'launched':
+            raise RuntimeError('typescript-before-release')
+        return original_append(directory, rows, event, state)
+
+    # Interrupted start: intent is journaled, the child is never released.
+    monkeypatch.setattr(session, '_append', interrupt_before_release)
+    with pytest.raises(RuntimeError, match='typescript-before-release'):
+        session.launch_node_session(path, scope=launch,
+            approved_scope_sha256=launch['scope_sha256'])
+    monkeypatch.setattr(session, '_append', original_append)
+    pending = session.node_session_status(path)
+    assert pending['pending'] == 'launch' and pending['run_id'] == created['run_id']
+    assert pending['attempts']['launch'] == 1
+    assert not any(Path(value).exists() for value in old_env.values())
+    with pytest.raises(InputError):
+        session.launch_node_session(path, scope=launch,
+            approved_scope_sha256=launch['scope_sha256'])
+    with pytest.raises(InputError):
+        session.resume_node_session(path, trusted_session_head='0' * 64)
+    recovered = session.resume_node_session(path,
+        trusted_session_head=pending['session_head_sha256'])
+    assert recovered['stage'] == 'created' and recovered['run_id'] == created['run_id']
+    assert recovered['generation_id'] == old['installed']['generation_id']
+    assert not any(Path(value).exists() for value in old_env.values())
+    app = Path(old['installed']['generation_path']) / 'app'
+    assert file_hash(app / 'host.ts') == old['host_ts_sha256']
+    assert file_hash(app / 'host.mjs') == old['compiled_sha256']
+    with pytest.raises(InputError):
+        session.launch_node_session(path, scope=launch,
+            approved_scope_sha256=launch['scope_sha256'])
+    launch = _scope(recovered, 'launch', old_plan)
     running = session.launch_node_session(path, scope=launch,
         approved_scope_sha256=launch['scope_sha256'])
+    assert running['attempts']['launch'] == 2
     observed = _observe(path, running)
     assert Path(old_env['NODE_EFFECT_PATH']).read_bytes() == old_effect
     assert all(file_hash(Path(row['path'])) == row['expected_sha256']

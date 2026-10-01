@@ -84,9 +84,61 @@ The offline fixture uses a fake transport **only in shadow** and is labeled
 `synthetic_protocol`. It verifies typed parsing, grant refusal, source drift,
 ledger replay, hardlink refusal, and installed supervised execution. The
 dedicated `connected-node24-qualification` CI job pins Linux CPython 3.13.5,
-Node 24.18.0, npm 11.16.0, and trusted TypeScript 5.8.3; it requires all 23
+Node 24.18.0, npm 11.16.0, and trusted TypeScript 5.8.3; it requires all 26
 installed tests and 19 native tests with zero skips. This job is a configured
 gate until its exact revision has actually run. It is not a JEV live measurement.
+
+The [installed fault matrix](../tests/test_node_template_connected_faults.py)
+runs once each for installed CommonJS, ESM and TypeScript hosts through the
+installed evaluator CLI and the normal Node command, in shadow with the fake
+transport. It reads every outcome back from the host's append-only effect
+file, the host audit sink, the fake transport's request log, the durable
+ledger and the session journal. Per format it exercises:
+
+- reviewed configuration changed after install (a promoted `mode`, and a
+  byte-only change): `node-connected-session-launch` is refused before a
+  launch is journaled, a child exists or a ledger is created; restoring the
+  exact bytes lets the same unchanged scope launch once;
+- a settled invocation identity replayed by a second process: refused with
+  `effect_replay_denied`, no provider request, no effect, ledger unchanged;
+- an egress grant revoked between two seam calls of one process: the first
+  baseline effect stays, the second call is refused with no provider request
+  and no effect, the ledger is suspended, and a later session started after
+  the grant is restored performs nothing;
+- a provider response held past the reviewed `timeout_ms` and then delivered,
+  truncated duplicate-key bytes, a well-formed answer whose probabilities do
+  not sum to one, and an asynchronously rejected transport call: each leaves
+  exactly one baseline effect and a `shadow_failed` audit record, and never a
+  `shadow_result`;
+- the host executor rejecting asynchronously after its effect: the normal
+  command fails, the effect is not retried, the invocation stays unsettled,
+  and a later process with the same invocation identity performs nothing;
+- `node-connected-session-stop` while the fake transport still holds its
+  response: the stop is journaled, no response is adopted, and the effect file
+  still holds one effect.
+
+Ledger accounting in these cases is conservative. Each provider request is
+charged its reviewed `cost_upper_bound` when it is reserved. A reservation is
+resolved only when a valid typed answer arrives inside the timeout; a late,
+malformed, mistyped, rejected or abandoned response keeps both the charge and
+the unresolved reservation. A later owner on a ledger with an unresolved
+provider reservation, an unsettled effect or a suspension is refused at
+startup, before the host's baseline runs; the operator must review that
+ledger and bind a new one. There is no automatic resolution.
+
+Limits of this matrix: the fake transport is refused outside shadow, so no
+installed case reaches a selected (treatment) effect or the active fallback
+path; those stay covered only by `tests/native_js_runtime.test.cjs`. The
+generated seam passes no `AbortSignal`, so installed cancellation is the
+supervisor's stop of the owned process, and `AbortSignal` cancellation stays a
+native unit test. The supervisor forwards a fixed list of fixture environment
+names to the child (`JEV_FAKE_TRANSPORT_*`, `JEV_TRUSTED_GRANT_FILE`,
+`JEV_INVOCATION_ID`, `JEV_FIXTURE_FAULT`); only the fixture entrypoint reads
+them and they carry no authority. Cross-process budget contention is not
+exercised because the ledger has one exclusive owner. An interrupted build or
+install is still only classified (`*_interrupted_review_required`) and needs
+operator review and a new approved output plan; no automated owned recovery or
+rollback of a partial build or install root exists.
 The always-on `tests/test_node_template_connected_gates.py` drives the planner
 with in-test fixture rows over a byte fixture of an installed generation (the
 pinned install check is replaced there). It covers refusal of synthetic

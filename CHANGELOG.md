@@ -2,6 +2,22 @@
 
 ## Unreleased — native Windows delivery gap qualification
 
+- Issue #60 follow-up: add an installed connected-shadow fault matrix for
+  CommonJS, ESM and TypeScript recipe C hosts
+  (`tests/test_node_template_connected_faults.py`). It covers configuration
+  drift after install refused at session launch, duplicate invocation replay,
+  grant revocation between two seam calls, a late response after timeout,
+  malformed and mistyped responses, asynchronous transport and executor
+  rejection, and a supervisor stop during an open provider call, each read
+  back from effect files, the durable ledger, the host audit sink, the
+  transport request log and the session journal. The TypeScript upgrade
+  journey now recovers an interrupted first start. The connected supervisor
+  forwards one more fixture-only environment name, `JEV_FIXTURE_FAULT`, to the
+  child. The `connected-node24-qualification` job requires 26 installed tests
+  (was 23) and 19 native tests. All of this is offline synthetic protocol
+  evidence in shadow; selected-effect faults stay native unit tests, and an
+  interrupted build or install still has no automated owned rollback. Live
+  provider operation and observed canary/active outcomes remain pending.
 - Issue #59 follow-up: the installed D retrieval connected test adds
   malformed-response, actual-timeout and between-task revocation schedules
   with exact call and ledger counts. The `retrieval-d-v1` profile accepts a

@@ -60,6 +60,7 @@ jobs:
           env -u TYPESAFE_API_KEY python -m pytest -q \
             tests/test_node_template_installed_cli_formats.py \
             tests/test_node_template_connected.py \
+            tests/test_node_template_connected_faults.py \
             tests/test_node_template_installation.py \
             tests/test_node_template_installed_commonjs.py \
             tests/test_node_template_installed_esm.py \
@@ -83,7 +84,7 @@ jobs:
               return int(match.group(1)) if match else -1
           print(f'installed: {tests} tests, {skipped} skipped, {failed} failed; '
                 f'native: {count("tests")} tests, {count("skipped")} skipped, {count("fail")} failed')
-          if tests != 23 or skipped or failed or count('tests') != 19 or count('skipped') or count('fail'):
+          if tests != 26 or skipped or failed or count('tests') != 19 or count('skipped') or count('fail'):
               raise SystemExit('required installed/native Node 24 qualification incomplete')
           PY
   native-runner-qualification:
