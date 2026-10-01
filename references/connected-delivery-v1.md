@@ -87,3 +87,8 @@ or canary/active eligibility. Real egress requires separately provisioned
 host credentials, endpoint approval, budget and spend limits, and external
 grant signatures. Canary/active additionally require raw observed holdouts and
 exact runtime receipts validated by `HostRuntimeLifecycle`.
+
+A separate [stopped generation transfer](connected-generation-transfer-v1.md)
+carries the same ledger and run ID between two reviewed installed Alpha
+versions under a new issuer-signed grant. It retains the original cutoff and
+leaves the child inert until the durable transfer status is reconciled.

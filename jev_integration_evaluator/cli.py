@@ -208,7 +208,7 @@ def parser():
     s.add_argument('--trusted-package-receipt-sha256',required=True)
     s.add_argument('--installed-binding',required=True); s.add_argument('--trusted-binding-sha256',required=True)
     s.add_argument('--observation',required=True); s.add_argument('--launch-environment',required=True)
-    s.add_argument('--host-profile',choices=['retrieval-d-v1','graph-l-v1','registered-dual-connected-v1'],
+    s.add_argument('--host-profile',choices=['retrieval-d-v1','graph-l-v1','registered-dual-connected-v1','retention-h-v1'],
                    help='Omit for the legacy registered Alpha profile')
     s.add_argument('--out',required=True)
     s=template_sub.add_parser('connected-configure',help='Create one private connected shadow session from an exact plan')
@@ -222,6 +222,21 @@ def parser():
         s=template_sub.add_parser(action,help='Reconcile or inspect the exact connected session without replay')
         s.add_argument('--session',required=True)
         s.add_argument('--trusted-session-head',required=action=='connected-resume')
+    s=template_sub.add_parser('connected-generation-plan',help='Derive an unsigned stopped generation transfer grant')
+    s.add_argument('--old-session',required=True); s.add_argument('--new-plan',required=True)
+    s.add_argument('--trusted-old-head',required=True)
+    s.add_argument('--old-dependencies',required=True); s.add_argument('--new-dependencies',required=True)
+    s.add_argument('--limits',required=True); s.add_argument('--action',choices=['upgrade','rollback'],required=True)
+    s.add_argument('--issued-at',required=True); s.add_argument('--expires-at',required=True)
+    s.add_argument('--out',required=True)
+    for action in ('connected-generation-transfer','connected-generation-status','connected-generation-reconcile'):
+        s=template_sub.add_parser(action,help='Transfer or inspect one authenticated stopped connected generation')
+        s.add_argument('--old-session',required=True); s.add_argument('--new-session',required=True)
+        s.add_argument('--trusted-old-head',required=True); s.add_argument('--grant',required=True)
+        s.add_argument('--signature-file',required=True)
+        if action=='connected-generation-transfer':
+            s.add_argument('--new-plan',required=True); s.add_argument('--approve-new-plan-sha256',required=True)
+            s.add_argument('--old-dependencies',required=True); s.add_argument('--new-dependencies',required=True)
     s=template_sub.add_parser('journey-create',help='Start one source-to-runtime delivery run before source application')
     s.add_argument('--session',required=True); s.add_argument('--source-root',required=True)
     s.add_argument('--bundle',required=True); s.add_argument('--source-kind',choices=['single','composite'],default='single')
@@ -395,6 +410,32 @@ def execute(args):
             write_plan_exclusive(args.out,report,host_root=package_plan['request']['host_root'])
             return report
         if args.template_action.startswith('connected-'):
+            if args.template_action.startswith('connected-generation-'):
+                from .template_connected_generation import (
+                    plan_connected_generation_transfer, transfer_connected_generation,
+                    connected_generation_status, reconcile_connected_generation)
+                action=args.template_action
+                if action=='connected-generation-plan':
+                    result=plan_connected_generation_transfer(args.old_session,read_json(args.new_plan),
+                        trusted_old_head=args.trusted_old_head,
+                        old_dependency_plan=read_json(args.old_dependencies),
+                        new_dependency_plan=read_json(args.new_dependencies),
+                        limits=read_json(args.limits),action=args.action,
+                        issued_at=args.issued_at,expires_at=args.expires_at)
+                    from .template_installation import write_plan_exclusive
+                    write_plan_exclusive(args.out,result,
+                        host_root=read_json(args.new_plan)['off_provenance']['install_plan']['package_plan']['request']['host_root'])
+                    return result
+                common=dict(grant=read_json(args.grant),signature_file=args.signature_file,
+                            trusted_old_head=args.trusted_old_head)
+                if action=='connected-generation-transfer':
+                    return transfer_connected_generation(args.old_session,args.new_session,
+                        read_json(args.new_plan),approved_new_plan_sha256=args.approve_new_plan_sha256,
+                        old_dependency_plan=read_json(args.old_dependencies),
+                        new_dependency_plan=read_json(args.new_dependencies),**common)
+                if action=='connected-generation-reconcile':
+                    return reconcile_connected_generation(args.old_session,args.new_session,**common)
+                return connected_generation_status(args.old_session,args.new_session,**common)
             from .template_connected_delivery import (
                 plan_connected_delivery, create_connected_session, launch_connected_session,
                 resume_connected_session, connected_session_status, stop_connected_session)

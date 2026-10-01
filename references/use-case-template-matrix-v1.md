@@ -283,6 +283,13 @@ connected/provider operation also remain pending. The
 [H operator reference](retention-template-offline-v1.md) lists exact inputs and
 limits.
 
+The separate [H connected profile](retention-template-connected-v1.md) carries
+explicit `/prune`, private reference pins and two bounded task IDs. Its
+authored installed schedule is designed to assert raw retained bytes and provenance,
+actual timeout audit events and between-task reference revocation. Fresh
+installed qualification and connected upgrade remain pending; the schedule
+does not establish external provider operation or benefit.
+
 ## Whole-catalog support boundary
 
 Python recipes A, B, C, D, E, F, G, H, I, J, K, L and M remain catalogued at

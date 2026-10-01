@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object", "additionalProperties": false,
+  "required": ["kind", "grant_sha256", "before_sha256", "after_sha256", "sequence"],
+  "properties": {
+    "kind": {"const": "connected-generation-transfer-receipt-v1"},
+    "grant_sha256": {"$ref": "#/$defs/sha"},
+    "before_sha256": {"$ref": "#/$defs/sha"},
+    "after_sha256": {"$ref": "#/$defs/sha"},
+    "sequence": {"type": "integer", "minimum": 1}
+  },
+  "$defs": {"sha": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+}

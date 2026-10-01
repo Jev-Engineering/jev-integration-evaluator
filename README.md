@@ -130,6 +130,13 @@ installed qualification. The separate
 checks an offline local TLS fixture through the same reviewed D source binding.
 External provider operation, connected upgrade and measured benefit remain pending.
 
+The finite [H connected retention profile](references/retention-template-connected-v1.md)
+requires an explicit `/prune` choice and private authority references. Its
+candidate verification schedule checks independent retained bytes, pinned
+provenance, timeout events and between-task revocation. Fresh installed
+qualification, external provider operation, connected upgrade and benefit
+remain pending.
+
 Want to see everything working first? Run the bundled offline demo:
 
 ```bash
@@ -202,6 +209,13 @@ receipts; the component recomputes those gates before startup. See the
 `HostRuntimeLifecycle.qualification_inputs()` for the redacted inputs needed
 by an independent live qualification. Offline fixture tests do not establish
 real provider connectivity, operational safety, or measured benefit.
+
+For the separately reviewed installed Alpha or finite D retrieval console, a
+[stopped generation transfer](references/connected-generation-transfer-v1.md)
+can carry one durable ledger and run ID between two versions and back
+under distinct issuer-signed grants. A pending child needs explicit receipt
+reconciliation before launch, and the original run cutoff remains binding.
+The installed two-version tests use only local synthetic TLS protocols.
 
 ## ⚠️ Honest limits
 
