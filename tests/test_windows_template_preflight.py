@@ -189,6 +189,83 @@ def test_native_powershell_friendly_command_omits_source_names(tmp_path):
     assert json.loads(blocked.stdout)['reason'] == 'windows_source_manifest_must_be_external'
 
 
+def _administrative_share(path: Path) -> str:
+    """Spell a local drive path as a UNC root; delivery must refuse it unopened."""
+    drive, tail = os.path.splitdrive(str(path))
+    return '\\\\localhost\\' + drive[0] + '$' + tail
+
+
+class _VolumeAnswer:
+    """The real kernel32 with only the drive-type and filesystem answers replaced."""
+
+    def __init__(self, kernel, drive_type: int, filesystem: str):
+        self._kernel = kernel
+        self._drive_type = drive_type
+        self._filesystem = filesystem
+
+    def __getattr__(self, name):
+        return getattr(self._kernel, name)
+
+    def GetDriveTypeW(self, _root):
+        return self._drive_type
+
+    def GetVolumeInformationW(self, _root, _name, _name_len, _serial, _component,
+                              _flags, filesystem, _filesystem_len):
+        filesystem.value = self._filesystem
+        return 1
+
+
+def _tree(root: Path) -> dict:
+    return {p.relative_to(root).as_posix(): p.read_bytes() if p.is_file() else None
+            for p in sorted(root.rglob('*'))}
+
+
+_UNSUPPORTED_VOLUMES = (
+    (4, 'NTFS', 'unsupported_unc_path'),             # mapped network drive
+    (3, 'ReFS', 'unsupported_windows_filesystem'),
+    (2, 'exFAT', 'unsupported_windows_filesystem'),
+    (5, 'NTFS', 'unsupported_windows_filesystem'),   # optical drive type
+)
+
+
+@pytest.mark.skipif(os.name != 'nt', reason='native Windows NTFS only')
+def test_native_unc_mapped_and_non_ntfs_roots_are_refused_without_effect(tmp_path, monkeypatch):
+    from jev_integration_evaluator import capabilities as cap
+
+    root, external, files = _fixture(tmp_path)
+    before = _tree(tmp_path)
+    assert inspect_windows_template_source(root, files, external)['status'] == 'preparation_only'
+    extended = '\\\\?\\UNC\\' + _administrative_share(root)[2:]
+    for source, output in ((_administrative_share(root), external),
+                           (extended, external),
+                           (root, _administrative_share(external))):
+        with pytest.raises(InputError, match='^windows_preflight_unsupported_unc_path$'):
+            inspect_windows_template_source(source, files, output)
+    ctypes_module, wintypes, kernel = cap._windows_api()
+    for drive_type, filesystem, reason in _UNSUPPORTED_VOLUMES:
+        answer = _VolumeAnswer(kernel, drive_type, filesystem)
+        with monkeypatch.context() as patch:
+            patch.setattr(cap, '_windows_api', lambda: (ctypes_module, wintypes, answer))
+            with pytest.raises(InputError, match='^windows_preflight_' + reason + '$'):
+                inspect_windows_template_source(root, files, external)
+    assert _tree(tmp_path) == before
+    assert not list(external.iterdir())
+    # The same local NTFS inputs remain acceptable once the volume answer is real.
+    assert inspect_windows_template_source(root, files, external)['file_count'] == len(files)
+
+    manifest = tmp_path / 'reviewed.json'
+    manifest.write_text(json.dumps({'schema_version': '1.0', 'files': files}), encoding='utf-8')
+    script = Path(__file__).resolve().parents[1] / 'scripts/windows_template_preflight.py'
+    blocked = subprocess.run(
+        [sys.executable, str(script), '--repo', _administrative_share(root),
+         '--manifest', str(manifest), '--output-parent', str(external)],
+        capture_output=True, text=True, timeout=15)
+    assert blocked.returncode == 2
+    assert json.loads(blocked.stdout) == {
+        'status': 'blocked', 'reason': 'windows_preflight_unsupported_unc_path'}
+    assert 'localhost' not in blocked.stdout and not list(external.iterdir())
+
+
 def test_non_windows_has_no_delivery_claim(tmp_path):
     if os.name == 'nt':
         pytest.skip('non-Windows rejection applies on POSIX')

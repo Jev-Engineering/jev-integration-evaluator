@@ -259,6 +259,85 @@ def test_native_output_overlap_and_reparse_refusal(tmp_path):
                                                 'synthetic-host')
 
 
+@pytest.mark.skipif(os.name != 'nt', reason='native Windows NTFS only')
+def test_native_unsupported_roots_are_refused_for_every_package_input(tmp_path, monkeypatch):
+    from jev_integration_evaluator import capabilities as cap
+    from test_windows_template_preflight import (
+        _UNSUPPORTED_VOLUMES, _VolumeAnswer, _administrative_share, _tree,
+    )
+
+    values = _fixture(tmp_path)
+    before = _tree(tmp_path)
+    assert _inspect(values)['status'] == 'package_inputs_reviewed_only'
+    # Positions: host root, wheelhouse, package output parent, environment parent.
+    for position in (0, 2, 4, 5):
+        for unc in (_administrative_share(values[position]),
+                    '\\\\?\\UNC\\' + _administrative_share(values[position])[2:]):
+            changed = list(values)
+            changed[position] = unc
+            with pytest.raises(InputError, match='^windows_package_unsupported_unc_path$'):
+                _inspect(changed)
+    ctypes_module, wintypes, kernel = cap._windows_api()
+    for drive_type, filesystem, reason in _UNSUPPORTED_VOLUMES:
+        answer = _VolumeAnswer(kernel, drive_type, filesystem)
+        with monkeypatch.context() as patch:
+            patch.setattr(cap, '_windows_api', lambda: (ctypes_module, wintypes, answer))
+            with pytest.raises(InputError, match='^windows_package_' + reason + '$'):
+                _inspect(values)
+    assert _tree(tmp_path) == before
+    assert not list(values[4].iterdir()) and not list(values[5].iterdir())
+    assert _inspect(values)['status'] == 'package_inputs_reviewed_only'
+
+
+@pytest.mark.skipif(os.name != 'nt', reason='native Windows NTFS only')
+def test_native_real_case_colliding_source_names_are_refused(tmp_path):
+    """Two NTFS entries that differ only by case, in a per-directory case-sensitive tree."""
+    from jev_integration_evaluator.windows_template_tree import installed_tree_snapshot
+    from test_windows_template_preflight import _tree
+
+    values = _fixture(tmp_path)
+    host = values[0]
+    package = host / 'pkg'
+    package.mkdir()
+    enabled = subprocess.run(
+        ['fsutil', 'file', 'setCaseSensitiveInfo', str(package), 'enable'],
+        capture_output=True, text=True, timeout=15)
+    assert enabled.returncode == 0, 'Per-directory NTFS case sensitivity is unavailable'
+    lower, upper = package / 'module.py', package / 'MODULE.py'
+    try:
+        lower.write_bytes(b'value = 1\n')
+        upper.write_bytes(b'value = 2\n')
+        assert sorted(os.listdir(package)) == ['MODULE.py', 'module.py']
+        assert lower.read_bytes() == b'value = 1\n' and upper.read_bytes() == b'value = 2\n'
+        before = _tree(tmp_path)
+        one = {**values[1], 'pkg/module.py': _sha(lower)}
+        other = {**values[1], 'pkg/MODULE.py': _sha(upper)}
+        both = {**one, 'pkg/MODULE.py': _sha(upper)}
+        # Reviewing either spelling alone leaves an unreviewed or ambiguous
+        # sibling in the traversal; reviewing both is an ambiguous manifest.
+        for files in (one, other):
+            with pytest.raises(InputError, match='^windows_package_source_'
+                               '(manifest_incomplete|name_ambiguous)$'):
+                _inspect((host, files, *values[2:]))
+        with pytest.raises(InputError, match='^case_ambiguous_windows_package_input_manifest$'):
+            _inspect((host, both, *values[2:]))
+        with pytest.raises(InputError, match='^windows_install_tree_ambiguous$'):
+            installed_tree_snapshot(host)
+        assert _tree(tmp_path) == before
+        assert not list(values[4].iterdir()) and not list(values[5].iterdir())
+        upper.unlink()
+        # With the collision gone the same reviewed map is a complete inventory.
+        assert _inspect((host, one, *values[2:]))['source_files'] == dict(sorted(one.items()))
+    finally:
+        for path in (upper, lower):
+            if os.path.lexists(path):
+                path.unlink()
+        restored = subprocess.run(
+            ['fsutil', 'file', 'setCaseSensitiveInfo', str(package), 'disable'],
+            capture_output=True, text=True, timeout=15)
+        assert restored.returncode == 0, 'Disposable case-sensitive directory was not restored'
+
+
 def test_non_windows_package_inputs_rejected(tmp_path):
     if os.name == 'nt':
         pytest.skip('non-Windows rejection applies on POSIX')

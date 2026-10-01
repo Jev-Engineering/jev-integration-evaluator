@@ -427,3 +427,408 @@ def test_native_interrupted_launch_retains_identity_and_refuses_replay(tmp_path,
         if unrelated.poll() is None:
             unrelated.terminate()
         unrelated.wait(timeout=10)
+
+
+def _wait_until(condition, seconds: float) -> bool:
+    """Bounded poll; the caller asserts the returned final observation."""
+    import time
+    deadline = time.monotonic() + seconds
+    while time.monotonic() < deadline:
+        if condition():
+            return True
+        time.sleep(.05)
+    return bool(condition())
+
+
+def _installed_ready_session(tmp_path):
+    """Install the entry-gated fixture and record one off-mode session."""
+    from jev_integration_evaluator.integrations.recipes import host_lifecycle_marker
+
+    request, _, _, _, spec = _request(tmp_path, ready=True)
+    package_plan = plan_windows_template_package(request)
+    package = build_windows_template_package(
+        package_plan, approved_plan_sha256=package_plan['plan_sha256'])
+    install_plan = plan_windows_template_install(
+        package_plan, package, trusted_package_receipt_sha256=package['receipt_sha256'])
+    installed = install_windows_template_package(
+        install_plan, approved_plan_sha256=install_plan['plan_sha256'])
+    marker = host_lifecycle_marker(
+        spec['host_lifecycle'], spec['bindings']['runtime'], spec['candidate_id'])
+    ready = tmp_path / 'entry-ready.txt'
+    effect = tmp_path / 'effect.json'
+    release = tmp_path / 'host-release.txt'
+    session = create_windows_template_session(
+        tmp_path / 'session', install_plan, installed,
+        trusted_install_receipt_sha256=installed['receipt_sha256'],
+        launch_environment={'JEV_FIXTURE_RECORD': str(effect),
+                            'JEV_FIXTURE_MARKER': marker,
+                            'JEV_FIXTURE_READY': str(ready),
+                            'JEV_FIXTURE_RELEASE': str(release)})
+    return install_plan, installed, session, ready, effect, release
+
+
+def _process_present(row: dict) -> bool:
+    """True while the exact recorded process (PID and creation time) still runs."""
+    import ctypes
+    from jev_integration_evaluator import windows_template_session as native
+
+    kernel = native._kernel()
+    handle = kernel.OpenProcess(0x101000, False, row['pid'])
+    if not handle:
+        # Only "no such process" proves absence; any other failure is uncertain.
+        return ctypes.get_last_error() not in (87, 1168)
+    try:
+        if kernel.WaitForSingleObject(handle, 0) == 0:
+            return False
+        try:
+            return native._identity(handle, kernel)[0] == row['created_filetime']
+        except InputError:
+            return True
+    finally:
+        kernel.CloseHandle(handle)
+
+
+def test_native_refused_replay_leaves_owned_job_members_unchanged(tmp_path):
+    from jev_integration_evaluator.windows_template_session import _job_members
+
+    install_plan, _, session, ready, effect, release = _installed_ready_session(tmp_path)
+    root = Path(session['owned_directory']['path'])
+    identity = launch_windows_template_session(
+        session, install_plan, approved_session_sha256=session['session_sha256'])
+    try:
+        assert _wait_until(ready.is_file, 30)
+        count, members = _job_members(identity)
+        assert count == len(members) >= 2
+        assert any(row['pid'] == identity['pid'] for row in members)
+        assert any(row['pid'] != identity['pid'] for row in members)
+        records = {name: (root / name).read_bytes() for name in (
+            'session.json', 'launch-intent.json', 'launch-identity.json',
+            'launch-released.json')}
+        running = {'status': 'running', 'process_alive': True,
+                   'receipt_trust': 'externally_anchored',
+                   'identity_sha256': identity['identity_sha256']}
+        assert windows_session_status(
+            session, trusted_identity_sha256=identity['identity_sha256']) == running
+        for _ in range(3):
+            with pytest.raises(InputError, match='^windows_session_launch_already_attempted$'):
+                launch_windows_template_session(
+                    session, install_plan, approved_session_sha256=session['session_sha256'])
+            # The exact named Job holds the same processes: no duplicate gate,
+            # guardian-assigned member or console was started by the refusal.
+            assert _job_members(identity) == (count, members)
+            assert all(_process_present(row) for row in members)
+        assert {name: (root / name).read_bytes() for name in records} == records
+        assert not (root / 'stop-intent.json').exists()
+        assert windows_session_status(
+            session, trusted_identity_sha256=identity['identity_sha256']) == running
+        assert ready.read_bytes() == b'entry-ready\n'
+        assert not effect.exists() and not release.exists()
+    finally:
+        stopped = stop_windows_template_session(
+            session, approved_identity_sha256=identity['identity_sha256'])
+        assert not stopped['process_alive']
+    assert stopped['status'] == 'stopped'
+    assert _wait_until(lambda: not any(_process_present(row) for row in members), 15)
+    with pytest.raises(InputError, match='^windows_session_launch_already_attempted$'):
+        launch_windows_template_session(
+            session, install_plan, approved_session_sha256=session['session_sha256'])
+    assert not any(_process_present(row) for row in members)
+
+
+def test_native_install_config_content_drift_blocks_status_session_and_launch(tmp_path):
+    import json
+    from jev_integration_evaluator.windows_template_owned import acl_sha256
+
+    request, _, _, _, _ = _request(tmp_path)
+    package_plan = plan_windows_template_package(request)
+    package = build_windows_template_package(
+        package_plan, approved_plan_sha256=package_plan['plan_sha256'])
+    install_plan = plan_windows_template_install(
+        package_plan, package, trusted_package_receipt_sha256=package['receipt_sha256'])
+    installed = install_windows_template_package(
+        install_plan, approved_plan_sha256=install_plan['plan_sha256'])
+    recorded = {'status': 'installed_recorded', 'receipt_trust': 'externally_anchored',
+                'receipt_sha256': installed['receipt_sha256']}
+    assert windows_install_status(
+        install_plan, trusted_receipt_sha256=installed['receipt_sha256']) == recorded
+    config = _install_generation(install_plan) / 'config.json'
+    original = config.read_bytes()
+    config_acl = acl_sha256(config)
+    config_identity = (config.stat().st_dev, config.stat().st_ino)
+    unrelated = tmp_path / 'unrelated.txt'
+    unrelated.write_bytes(b'preserve unrelated bytes\n')
+    # This session is recorded while the installed configuration is exact.
+    session = create_windows_template_session(
+        tmp_path / 'created-before-drift', install_plan, installed,
+        trusted_install_receipt_sha256=installed['receipt_sha256'])
+    session_root = Path(session['owned_directory']['path'])
+    created = {'status': 'created', 'process_alive': False, 'receipt_trust': 'absent'}
+    assert windows_session_status(session) == created
+    drifted = (json.dumps({'jev_runtime': {'mode': 'shadow', 'credential_ref': None}},
+                          sort_keys=True, separators=(',', ':')) + '\n').encode('utf-8')
+    assert json.loads(original) == request['configuration'] != json.loads(drifted)
+    blocked = tmp_path / 'blocked-after-drift'
+    try:
+        # Rewrite the content in place: same file identity, owner and DACL.
+        with open(config, 'r+b') as stream:
+            stream.write(drifted)
+            stream.truncate()
+        assert config.read_bytes() == drifted
+        assert acl_sha256(config) == config_acl
+        assert (config.stat().st_dev, config.stat().st_ino) == config_identity
+        for trusted in (installed['receipt_sha256'], None):
+            with pytest.raises(InputError, match='^windows_install_configuration_drift$'):
+                windows_install_status(install_plan, trusted_receipt_sha256=trusted)
+        with pytest.raises(InputError, match='windows_install_existing_generation_requires_status_review'):
+            install_windows_template_package(
+                install_plan, approved_plan_sha256=install_plan['plan_sha256'])
+        with pytest.raises(InputError, match='^windows_install_configuration_drift$'):
+            create_windows_template_session(
+                blocked, install_plan, installed,
+                trusted_install_receipt_sha256=installed['receipt_sha256'])
+        assert not blocked.exists()
+        with pytest.raises(InputError, match='^windows_install_configuration_drift$'):
+            launch_windows_template_session(
+                session, install_plan, approved_session_sha256=session['session_sha256'])
+        assert not (session_root / 'launch-intent.json').exists()
+        assert sorted(entry.name for entry in session_root.iterdir()) == [
+            'delivery.lock', 'session.json']
+        assert windows_session_status(session) == created
+        # Refusal is read-only: the drifted bytes are neither repaired nor replaced.
+        assert config.read_bytes() == drifted
+        assert unrelated.read_bytes() == b'preserve unrelated bytes\n'
+    finally:
+        with open(config, 'r+b') as stream:
+            stream.write(original)
+            stream.truncate()
+    assert config.read_bytes() == original and acl_sha256(config) == config_acl
+    assert windows_install_status(
+        install_plan, trusted_receipt_sha256=installed['receipt_sha256']) == recorded
+    assert windows_session_status(session) == created
+    assert unrelated.read_bytes() == b'preserve unrelated bytes\n'
+
+
+def test_native_unsupported_roots_block_package_and_install_planning_without_effect(
+        tmp_path, monkeypatch):
+    from jev_integration_evaluator import capabilities as cap
+    from test_windows_template_preflight import (
+        _UNSUPPORTED_VOLUMES, _VolumeAnswer, _administrative_share,
+    )
+
+    request, _, _, _, _ = _request(tmp_path)
+    output = Path(request['output_parent'])
+    environments = Path(request['environment_parent'])
+    for key in ('host_root', 'wheelhouse', 'output_parent', 'environment_parent',
+                'implementation_bundle', 'template_directory'):
+        changed = dict(request)
+        changed[key] = _administrative_share(Path(request[key]))
+        with pytest.raises(InputError, match='^windows_package_unsupported_unc_path$'):
+            plan_windows_template_package(changed)
+    assert not list(output.iterdir()) and not list(environments.iterdir())
+
+    package_plan = plan_windows_template_package(request)
+    package = build_windows_template_package(
+        package_plan, approved_plan_sha256=package_plan['plan_sha256'])
+    install_plan = plan_windows_template_install(
+        package_plan, package, trusted_package_receipt_sha256=package['receipt_sha256'])
+    built = {'status': 'built_recorded', 'receipt_trust': 'externally_anchored',
+             'receipt_sha256': package['receipt_sha256']}
+    assert windows_package_status(
+        package_plan, trusted_receipt_sha256=package['receipt_sha256']) == built
+    package_root = _package_generation(package_plan)
+    package_entries = sorted(entry.name for entry in package_root.iterdir())
+    receipt_bytes = (package_root / 'package-receipt.json').read_bytes()
+    ctypes_module, wintypes, kernel = cap._windows_api()
+    for drive_type, filesystem, reason in _UNSUPPORTED_VOLUMES:
+        answer = _VolumeAnswer(kernel, drive_type, filesystem)
+        with monkeypatch.context() as patch:
+            # Every drive now reports as mapped or non-NTFS for each stage.
+            patch.setattr(cap, '_windows_api', lambda: (ctypes_module, wintypes, answer))
+            with pytest.raises(InputError, match='^windows_package_' + reason + '$'):
+                plan_windows_template_package(request)
+            with pytest.raises(InputError, match='^windows_package_' + reason + '$'):
+                build_windows_template_package(
+                    package_plan, approved_plan_sha256=package_plan['plan_sha256'])
+            with pytest.raises(InputError, match='^windows_owned_generation_parent_unavailable$'):
+                windows_package_status(
+                    package_plan, trusted_receipt_sha256=package['receipt_sha256'])
+            with pytest.raises(InputError, match='^windows_owned_generation_parent_unavailable$'):
+                plan_windows_template_install(
+                    package_plan, package,
+                    trusted_package_receipt_sha256=package['receipt_sha256'])
+            with pytest.raises(InputError, match='^windows_owned_generation_parent_unavailable$'):
+                install_windows_template_package(
+                    install_plan, approved_plan_sha256=install_plan['plan_sha256'])
+            with pytest.raises(InputError, match='^windows_owned_generation_parent_unavailable$'):
+                windows_install_status(install_plan)
+        assert not list(environments.iterdir())
+        assert sorted(entry.name for entry in package_root.iterdir()) == package_entries
+        assert (package_root / 'package-receipt.json').read_bytes() == receipt_bytes
+    assert windows_install_status(install_plan) == {'status': 'absent',
+                                                    'receipt_trust': 'absent'}
+    assert windows_package_status(
+        package_plan, trusted_receipt_sha256=package['receipt_sha256']) == built
+
+
+def test_native_generation_acl_denial_blocks_build_and_install_fail_closed(
+        tmp_path, monkeypatch):
+    from jev_integration_evaluator import windows_template_install as install
+    from test_windows_source_mutation import _allow, _deny
+
+    request, _, _, _, _ = _request(tmp_path)
+    output = Path(request['output_parent'])
+    environments = Path(request['environment_parent'])
+    package_plan = plan_windows_template_package(request)
+    absent = {'status': 'absent', 'receipt_trust': 'absent'}
+
+    # 1. The package output parent denies new subdirectories to this account.
+    account = _deny(output, '(AD)')
+    try:
+        with pytest.raises(InputError, match='^windows_owned_directory_create_failed$'):
+            build_windows_template_package(
+                package_plan, approved_plan_sha256=package_plan['plan_sha256'])
+        assert not list(output.iterdir())
+    finally:
+        _allow(output, account)
+    assert windows_package_status(package_plan) == absent
+    package = build_windows_template_package(
+        package_plan, approved_plan_sha256=package_plan['plan_sha256'])
+    install_plan = plan_windows_template_install(
+        package_plan, package, trusted_package_receipt_sha256=package['receipt_sha256'])
+
+    # 2. The environment parent denies the owned generation directory itself.
+    account = _deny(environments, '(AD)')
+    try:
+        with pytest.raises(InputError, match='^windows_owned_directory_create_failed$'):
+            install_windows_template_package(
+                install_plan, approved_plan_sha256=install_plan['plan_sha256'])
+        assert not list(environments.iterdir())
+    finally:
+        _allow(environments, account)
+    assert windows_install_status(install_plan) == absent
+
+    # 3. The exclusively created generation gains a deny-write ACE before its
+    #    first owner record. The owner DACL no longer matches, so nothing is
+    #    written and the retained directory blocks status and replay.
+    root = _install_generation(install_plan)
+    real_write = install.write_private_json_exclusive
+    denied = []
+
+    def deny_before_first_record(owned, name, value):
+        if not denied:
+            assert name == 'owner.json' and Path(owned['path']) == root
+            denied.append(_deny(root, '(WD,AD)'))
+        return real_write(owned, name, value)
+
+    try:
+        with monkeypatch.context() as patch:
+            patch.setattr(install, 'write_private_json_exclusive', deny_before_first_record)
+            with pytest.raises(InputError, match='^windows_owned_directory_changed$'):
+                install_windows_template_package(
+                    install_plan, approved_plan_sha256=install_plan['plan_sha256'])
+        assert len(denied) == 1
+        assert [entry.name for entry in root.iterdir()] == ['delivery.lock']
+        with pytest.raises(InputError, match='^windows_install_status_unavailable$'):
+            windows_install_status(install_plan)
+        with pytest.raises(InputError, match='windows_install_existing_generation_requires_status_review'):
+            install_windows_template_package(
+                install_plan, approved_plan_sha256=install_plan['plan_sha256'])
+    finally:
+        for account in denied:
+            _allow(root, account)
+    # Removing the ACE does not turn the incomplete generation into a replay.
+    assert [entry.name for entry in root.iterdir()] == ['delivery.lock']
+    assert [entry.name for entry in environments.iterdir()] == [root.name]
+    with pytest.raises(InputError, match='windows_install_existing_generation_requires_status_review'):
+        install_windows_template_package(
+            install_plan, approved_plan_sha256=install_plan['plan_sha256'])
+    assert windows_package_status(
+        package_plan, trusted_receipt_sha256=package['receipt_sha256'])['status'] == 'built_recorded'
+
+
+_CONSOLE_BREAK = """import ctypes,sys,time
+from ctypes import wintypes
+k=ctypes.WinDLL('kernel32',use_last_error=True)
+H=ctypes.WINFUNCTYPE(wintypes.BOOL,wintypes.DWORD)
+keep=H(lambda kind: True)
+k.SetConsoleCtrlHandler.argtypes=(H,wintypes.BOOL)
+k.FreeConsole()
+if not k.AttachConsole(int(sys.argv[1])): sys.exit(41)
+if not k.SetConsoleCtrlHandler(keep,True): sys.exit(43)
+if not k.GenerateConsoleCtrlEvent(1,0): sys.exit(42)
+time.sleep(.2)
+sys.exit(0)"""
+
+
+def test_native_console_break_cancellation_leaves_no_owned_process(tmp_path):
+    """CTRL_BREAK_EVENT reaches only the owned console's own process group."""
+    from jev_integration_evaluator.windows_template_session import _job_members
+
+    install_plan, installed, session, ready, effect, release = _installed_ready_session(tmp_path)
+    unrelated_file = tmp_path / 'unrelated.txt'
+    unrelated_file.write_bytes(b'preserve unrelated work\n')
+    unrelated = subprocess.Popen(
+        [sys.executable, '-I', '-c', 'import time; time.sleep(600)'],
+        stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        creationflags=subprocess.CREATE_NO_WINDOW)
+    identity = None
+    try:
+        identity = launch_windows_template_session(
+            session, install_plan, approved_session_sha256=session['session_sha256'])
+        assert _wait_until(ready.is_file, 30)
+        count, members = _job_members(identity)
+        assert count == len(members) >= 2
+        assert any(row['pid'] != identity['pid'] for row in members)
+        guardian = {'pid': identity['guardian_pid'],
+                    'created_filetime': identity['guardian_created_filetime']}
+        assert _process_present(guardian)
+        # The gate was started without a window on a private console that this
+        # test does not share. A helper joins that console, ignores the event
+        # itself and raises CTRL_BREAK_EVENT (1) for the console's process group.
+        sent = subprocess.run(
+            [sys._base_executable, '-I', '-S', '-c', _CONSOLE_BREAK, str(identity['pid'])],
+            stdin=subprocess.DEVNULL, capture_output=True, timeout=15,
+            creationflags=subprocess.CREATE_NO_WINDOW)
+        assert sent.returncode == 0
+        assert _wait_until(
+            lambda: not windows_session_status(session)['process_alive'], 15)
+        assert _wait_until(
+            lambda: not any(_process_present(row) for row in members), 15)
+        assert _wait_until(lambda: not _process_present(guardian), 15)
+        # With no member and no guardian handle the exact named Job is gone.
+        with pytest.raises(InputError, match='^windows_session_observation_job_unavailable$'):
+            _job_members(identity)
+        # Exit by cancellation is never reported as a verified or stopped run.
+        assert windows_session_status(
+            session, trusted_identity_sha256=identity['identity_sha256']) == {
+                'status': 'exited_unverified', 'process_alive': False,
+                'receipt_trust': 'externally_anchored',
+                'identity_sha256': identity['identity_sha256']}
+        assert ready.read_bytes() == b'entry-ready\n'
+        assert not effect.exists() and not release.exists()
+        root = Path(session['owned_directory']['path'])
+        assert not (root / 'stop-intent.json').exists()
+        with pytest.raises(InputError, match='^windows_session_launch_already_attempted$'):
+            launch_windows_template_session(
+                session, install_plan, approved_session_sha256=session['session_sha256'])
+        stopped = stop_windows_template_session(
+            session, approved_identity_sha256=identity['identity_sha256'])
+        assert stopped == {'status': 'stopped', 'process_alive': False,
+                           'receipt_trust': 'externally_anchored',
+                           'identity_sha256': identity['identity_sha256']}
+        assert not any(_process_present(row) for row in members)
+        assert not effect.exists() and not release.exists()
+        assert unrelated.poll() is None
+        assert unrelated_file.read_bytes() == b'preserve unrelated work\n'
+        assert windows_install_status(
+            install_plan, trusted_receipt_sha256=installed['receipt_sha256'])['status'] == 'installed_recorded'
+    finally:
+        try:
+            if identity is not None:
+                stopped = stop_windows_template_session(
+                    session, approved_identity_sha256=identity['identity_sha256'])
+                assert not stopped['process_alive']
+        finally:
+            if unrelated.poll() is None:
+                unrelated.terminate()
+            unrelated.wait(timeout=10)

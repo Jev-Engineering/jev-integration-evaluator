@@ -548,3 +548,87 @@ def test_native_real_implementation_rollback_uses_applied_identity(tmp_path, kin
     os.rename(saved, target)
     assert cap._windows_file_identity(target.stat()) == original_identity
     assert rollback_implementation(root, bundle, applied['rollback_digest'])['status'] == 'rolled_back'
+
+
+def _deny(path, rights: str) -> str:
+    """Add one disposable explicit deny ACE for this account; no elevation needed."""
+    principal = subprocess.run(['whoami'], capture_output=True, text=True, timeout=10)
+    assert principal.returncode == 0
+    identity = principal.stdout.strip()
+    denied = subprocess.run(['icacls', str(path), '/deny', identity + ':' + rights],
+                            capture_output=True, text=True, timeout=10)
+    assert denied.returncode == 0, 'Disposable deny ACE could not be set'
+    return identity
+
+
+def _allow(path, identity: str) -> None:
+    restored = subprocess.run(['icacls', str(path), '/remove:d', identity],
+                              capture_output=True, text=True, timeout=10)
+    assert restored.returncode == 0, 'Disposable test ACL could not be restored'
+
+
+def test_native_write_path_acl_denial_refuses_apply_without_effect(tmp_path):
+    from jev_integration_evaluator import windows_source_mutation as mutation
+
+    def fixture(name: str):
+        root = tmp_path / name
+        root.mkdir()
+        source = root / 'owned.py'
+        source.write_bytes(b'old\n')
+        update = make_patch_plan(root, [{'file': source.name,
+                                         'new_content': 'new\n'}], ['native-source'])
+        create = make_patch_plan(root, [{'file': 'created.py',
+                                         'new_content': 'created\n'}], ['native-source'])
+        intents = (mutation._intent_path(source, update['changes'][0]['old_sha256'],
+                                         update['changes'][0]['new_sha256'], root),
+                   mutation._intent_path(root / 'created.py', None,
+                                         create['changes'][0]['new_sha256'], root))
+        identity = cap._windows_file_identity(source.stat())
+
+        def unchanged() -> None:
+            assert source.read_bytes() == b'old\n'
+            assert cap._windows_file_identity(source.stat()) == identity
+            assert [entry.name for entry in root.iterdir()] == ['owned.py']
+            assert not any(os.path.lexists(intent) for intent in intents)
+
+        return root, source, update, create, intents, unchanged
+
+    # Control: without a deny ACE the same reviewed update and creation apply,
+    # so each refusal below is attributable to the denied write path alone.
+    root, source, update, create, intents, _ = fixture('control')
+    assert apply_patch_plan(root, update, update['plan_digest'])['status'] == 'applied'
+    assert apply_patch_plan(root, create, create['plan_digest'])['status'] == 'applied'
+    assert source.read_bytes() == b'new\n'
+    assert (root / 'created.py').read_bytes() == b'created\n'
+    assert sorted(entry.name for entry in root.iterdir()) == ['created.py', 'owned.py']
+    assert not any(os.path.lexists(intent) for intent in intents)
+
+    # 1. The directory refuses new files: neither the staged replacement nor
+    #    an exclusively created reviewed file can be written.
+    root, source, update, create, intents, unchanged = fixture('create-denied')
+    account = _deny(root, '(WD)')
+    try:
+        with pytest.raises(InputError, match='^windows_source_staging_copy_failed$'):
+            apply_patch_plan(root, update, update['plan_digest'])
+        with pytest.raises(InputError, match='^windows_source_'):
+            apply_patch_plan(root, create, create['plan_digest'])
+        unchanged()
+    finally:
+        _allow(root, account)
+    unchanged()
+
+    # 2. DELETE on the file and DELETE_CHILD on its parent are both denied, so
+    #    the pinned replace lease on the reviewed target is unavailable.
+    root, source, update, _, _, unchanged = fixture('replace-denied')
+    account = _deny(source, '(DE)')
+    try:
+        _deny(root, '(DC)')
+        try:
+            with pytest.raises(InputError, match='^windows_source_locked_or_access_denied$'):
+                apply_patch_plan(root, update, update['plan_digest'])
+            unchanged()
+        finally:
+            _allow(root, account)
+    finally:
+        _allow(source, account)
+    unchanged()

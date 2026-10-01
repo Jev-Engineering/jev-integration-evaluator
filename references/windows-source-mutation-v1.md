@@ -49,6 +49,14 @@ descriptor layout and group fields, which Windows can reserialize while the
 owner/DACL remains unchanged. The native tests cover ordinary inherited and
 protected ACLs separately, a hidden attribute, a named stream, peer atomic
 save, interrupted update and creation intents, and normal lifecycle rollback.
+A native test also adds explicit deny ACEs with `icacls`: denying new entries
+on the parent directory refuses both the staged replacement
+(`windows_source_staging_copy_failed`) and an exclusive creation, and denying
+`DELETE` on the file with `DELETE_CHILD` on its parent refuses the pinned
+lease (`windows_source_locked_or_access_denied`). Bytes, file identity,
+directory entries and the external intent location are unchanged. A source
+file whose DACL was rewritten by such a tool can afterwards be refused as
+`windows_source_acl_not_reproducible`; that outcome is not pinned by a test.
 Other metadata and access-control forms need their own native qualification.
 There is no provider call, target execution or
 activation in this source mutation step.
