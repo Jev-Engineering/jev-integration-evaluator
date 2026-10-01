@@ -50,7 +50,9 @@ def _verify(public: Path, kind: str, exact: str, signature: str,
                                  timeout=2, env=_OPENSSL_ENV, check=False)
         if version.returncode or not version.stdout.startswith(b'OpenSSL 3.'):
             return False
-        pem = public.read_bytes()
+        # Bound the read itself; a replaced oversized file is refused below.
+        with public.open('rb') as stream:
+            pem = stream.read(4097)
         if (hashlib.sha256(pem).hexdigest() != expected_public_sha256
                 or len(pem) > 4096 or not pem.startswith(b'-----BEGIN PUBLIC KEY-----\n')
                 or b'PRIVATE KEY' in pem):
@@ -365,18 +367,28 @@ def connected_generation_status(old_session: str | Path, new_session: str | Path
     verify = _authority(old_plan, grant, signature_file)
     _, rows, state, new_plan = delivery._open(new_session)
     parent = state.get('generation_parent')
-    if (parent is None or parent['run_id'] != old_state['run_id']
-            or parent['old_plan_sha256'] != old_plan['plan_sha256']
-            or grant['old_plan_sha256'] != old_plan['plan_sha256']
-            or grant['new_plan_sha256'] != new_plan['plan_sha256']
-            or parent['old_session_head_sha256'] != trusted_old_head
-            or parent['grant_sha256'] != digest(grant)
-            or parent['action'] != grant['action']
-            or new_plan['installed_binding']['binding_sha256'] != grant['new_binding_sha256']):
-        raise ConnectedGenerationError('connected_generation_child_changed')
     reference_name = delivery._profile(old_plan.get('host_profile'))['references'][0]
     old_reference = read_json(Path(old_plan['off_provenance']['launch_environment'][
         reference_name]))
+    try:
+        # The complete parent link is recomputed from the stopped session. A
+        # child carrying a later cutoff or a rewritten failure history is not
+        # the child this grant prepared and must never be activated.
+        expected_parent = {
+            'run_id': old_state['run_id'], 'old_plan_sha256': old_plan['plan_sha256'],
+            'old_session_head_sha256': trusted_old_head, 'grant_sha256': digest(grant),
+            'action': grant['action'],
+            'original_expires_at': old_state.get('generation_parent', {}).get(
+                'original_expires_at',
+                old_reference['authority']['egress_grant']['expires_at']),
+            'failure_history': list(old_state['failures'])}
+    except (KeyError, TypeError):
+        raise ConnectedGenerationError('connected_generation_child_changed') from None
+    if (parent != expected_parent
+            or grant['old_plan_sha256'] != old_plan['plan_sha256']
+            or grant['new_plan_sha256'] != new_plan['plan_sha256']
+            or new_plan['installed_binding']['binding_sha256'] != grant['new_binding_sha256']):
+        raise ConnectedGenerationError('connected_generation_child_changed')
     status = RuntimeLedger.generation_transfer_status(old_reference['ledger_path'],
         grant=grant, verify_authority=verify)
     result = {'kind': 'connected-generation-status-v1', 'run_id': old_state['run_id'],

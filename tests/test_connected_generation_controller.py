@@ -134,3 +134,67 @@ def test_transfer_plan_derives_from_existing_ledger_history(tmp_path, monkeypatc
     assert grant['kind'] == 'connected-generation-transfer-v1'
     assert grant['old_identity'] == digest('old reviewed runtime')
     assert grant['new_identity'] == digest('new reviewed runtime')
+
+
+def test_transfer_plan_refuses_mixed_profile_generations(tmp_path, monkeypatch):
+    ledger, arguments = _planned(monkeypatch, tmp_path)
+    RuntimeLedger(ledger, identity=digest('old reviewed runtime'), **LIMITS).release()
+    with pytest.raises(generation.ConnectedGenerationError,
+                       match='^connected_generation_scope_invalid$'):
+        generation.plan_connected_generation_transfer(
+            tmp_path / 'old', {'plan_sha256': 'f' * 64, 'host_profile': 'retrieval-d-v1'},
+            **arguments)
+
+
+def _status_inputs(monkeypatch, tmp_path, parent_change=None):
+    """Isolate the parent-link comparison from installed-source and ledger reads."""
+    grant = {'action': 'upgrade', 'old_plan_sha256': 'a' * 64, 'new_plan_sha256': 'b' * 64,
+             'new_binding_sha256': 'c' * 64}
+    old_state = {'run_id': 'run-1', 'failures': ['provider_timeout']}
+    old_plan = {'plan_sha256': 'a' * 64, 'off_provenance': {'launch_environment': {
+        'REGISTERED_ALPHA_CONNECTED_REF': str(tmp_path / 'reference.json')}}}
+    new_plan = {'plan_sha256': 'b' * 64, 'installed_binding': {'binding_sha256': 'c' * 64}}
+    parent = {'run_id': 'run-1', 'old_plan_sha256': 'a' * 64,
+              'old_session_head_sha256': 'e' * 64, 'grant_sha256': digest(grant),
+              'action': 'upgrade', 'original_expires_at': '2030-01-01T00:00:00Z',
+              'failure_history': ['provider_timeout']}
+    if parent_change:
+        parent_change(parent)
+    state = {'generation_parent': parent, 'stage': 'generation_pending'}
+    monkeypatch.setattr(generation, 'validate_contract', lambda value, name: None)
+    monkeypatch.setattr(generation, '_stopped', lambda directory, head: (old_state, old_plan))
+    monkeypatch.setattr(generation, '_authority',
+                        lambda plan, grant, signature: (lambda kind, exact: True))
+    monkeypatch.setattr(generation.delivery, '_open',
+                        lambda directory: (None, [{'record_sha256': 'd' * 64}], state, new_plan))
+    monkeypatch.setattr(generation, 'read_json', lambda path: {
+        'ledger_path': str(tmp_path / 'ledger'),
+        'authority': {'egress_grant': {'expires_at': '2030-01-01T00:00:00Z'}}})
+    monkeypatch.setattr(RuntimeLedger, 'generation_transfer_status',
+                        staticmethod(lambda path, **kwargs: {'status': 'committed'}))
+    return grant, dict(grant=grant, signature_file=tmp_path / 'grant.sig',
+                       trusted_old_head='e' * 64)
+
+
+def test_generation_status_accepts_the_exact_prepared_child(tmp_path, monkeypatch):
+    grant, arguments = _status_inputs(monkeypatch, tmp_path)
+    status = generation.connected_generation_status(tmp_path / 'old', tmp_path / 'new',
+                                                    **arguments)
+    assert status['grant_sha256'] == digest(grant)
+    assert status['child_stage'] == 'generation_pending'
+
+
+@pytest.mark.parametrize('change', [
+    lambda parent: parent.update(original_expires_at='2031-01-01T00:00:00Z'),
+    lambda parent: parent.update(failure_history=[]),
+    lambda parent: parent.update(failure_history=['provider_timeout', 'launch_effect_unknown']),
+    lambda parent: parent.pop('original_expires_at'),
+    lambda parent: parent.update(unreviewed='extra'),
+    lambda parent: parent.update(run_id='run-2'),
+], ids=['later-cutoff', 'erased-failures', 'added-failure', 'missing-cutoff',
+        'extra-field', 'other-run'])
+def test_generation_status_refuses_any_changed_parent_link(tmp_path, monkeypatch, change):
+    grant, arguments = _status_inputs(monkeypatch, tmp_path, change)
+    with pytest.raises(generation.ConnectedGenerationError,
+                       match='^connected_generation_child_changed$'):
+        generation.connected_generation_status(tmp_path / 'old', tmp_path / 'new', **arguments)
