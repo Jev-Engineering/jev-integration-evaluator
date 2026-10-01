@@ -222,6 +222,10 @@ can carry one durable ledger and run ID between two versions and back
 under distinct issuer-signed grants. A pending child needs explicit receipt
 reconciliation before launch, and the original run cutoff remains binding.
 The installed two-version tests use only local synthetic TLS protocols.
+The [registered-tool template quickstart](references/registered-tool-template-quickstart-v1.md)
+orders the whole recipe C journey with exact commands, expected receipts and a
+support matrix in which provider operation, canary, active and measured benefit
+stay pending.
 
 ## ⚠️ Honest limits
 

@@ -429,6 +429,13 @@ def validate(check_manifest=False):
                               'windows-connected-delivery-scope-v1',
                               'windows-connected-session-v1',
                               'windows-connected-observation-v1')]
+    required += ['jev_integration_evaluator/registered_tool_qualification.py',
+                 'scripts/run_registered_tool_qualification.py',
+                 'references/registered-tool-template-quickstart-v1.md',
+                 'tests/test_registered_tool_quickstart.py',
+                 'tests/test_template_delivery_e2e.py']
+    required += [f'{directory}/registered-tool-qualification-report-v1.schema.json'
+                 for directory in ('schemas', 'jev_integration_evaluator/data')]
     for item in required:
         if not (ROOT/item).is_file():raise InputError('Required package file missing: '+item)
     front=(ROOT/'SKILL.md').read_text(encoding='utf-8').split('---',2)
@@ -469,6 +476,11 @@ def validate(check_manifest=False):
             for evidence in cell['evidence']:
                 if not (ROOT/evidence).is_file():
                     raise InputError('Recipe lifecycle evidence missing: '+evidence)
+    from jev_integration_evaluator.registered_tool_qualification import GATES as registered_tool_gates
+    for gate in registered_tool_gates:
+        for evidence in gate['required_modules']:
+            if not (ROOT/evidence).is_file():
+                raise InputError('Registered-tool gate evidence missing: '+evidence)
     jsonschema.validate(read_json(ROOT/'examples/implementation/composite-selection.example.json'),
                         schemas['composite-selection-v1'])
     jsonschema.validate(read_json(ROOT/'examples/repository-session/context.example.json'),
