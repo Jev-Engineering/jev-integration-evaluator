@@ -18,7 +18,7 @@ from packaging.utils import canonicalize_name, parse_wheel_filename
 from . import capabilities as cap
 from .contracts import validate_contract
 from .io import InputError, digest
-from .windows_template_preflight import _profile
+from .windows_template_preflight import _case_colliding_names, _profile
 
 
 _HEX = re.compile(r'^[0-9a-f]{64}$')
@@ -82,12 +82,11 @@ def _source_pass(root: Path, reviewed: dict[str, str]) -> tuple[dict[str, str], 
                     raise InputError('windows_package_source_size_limit')
                 entries.append(entry)
         entries.sort(key=lambda entry: entry.name.casefold())
-        seen = set()
+        colliding = _case_colliding_names(entry.name for entry in entries)
         for entry in entries:
             name = entry.name
-            if not cap._windows_safe_component(name) or name.casefold() in seen:
+            if not cap._windows_safe_component(name) or name.casefold() in colliding:
                 raise InputError('windows_package_source_name_ambiguous')
-            seen.add(name.casefold())
             child = directory / name
             child_rel = name if not relative else relative + '/' + name
             child_info = os.lstat(child)

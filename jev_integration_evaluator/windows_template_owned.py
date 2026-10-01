@@ -194,14 +194,21 @@ def _record_limit(name: str) -> int:
     return 4_000_000 if name == 'install-receipt.json' else 1_000_000
 
 
+def private_json_bytes(value: dict) -> bytes:
+    """Return the one canonical byte form in which an owner record is written."""
+    if type(value) is not dict:
+        raise InputError('windows_owned_record_invalid')
+    return (json.dumps(value, sort_keys=True, ensure_ascii=False,
+                       separators=(',', ':')) + '\n').encode('utf-8')
+
+
 def write_private_json_exclusive(receipt: dict, name: str, value: dict) -> str:
     """Write one bounded canonical JSON event under the held owner directory lock."""
     _profile()
     if (type(name) is not str or not cap._windows_safe_component(name)
             or '/' in name or '\\' in name or type(value) is not dict):
         raise InputError('windows_owned_record_invalid')
-    raw = (json.dumps(value, sort_keys=True, ensure_ascii=False,
-                      separators=(',', ':')) + '\n').encode('utf-8')
+    raw = private_json_bytes(value)
     if len(raw) > _record_limit(name):
         raise InputError('windows_owned_record_size_limit')
     return write_private_bytes_exclusive(receipt, name, raw)

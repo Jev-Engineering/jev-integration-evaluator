@@ -127,9 +127,19 @@ place, keeping its file identity, owner and DACL, to a different runtime mode.
 Trusted and untrusted status then return `windows_install_configuration_drift`,
 same-generation replay is refused, a new session is not created, and a session
 recorded before the drift cannot launch: it keeps no launch intent and stays
-`created`. Restoring the exact bytes restores receipt validation. The comparison
-is of parsed configuration, so a byte change that parses to the same reviewed
-configuration is not covered by this case.
+`created`. Restoring the exact bytes restores receipt validation.
+The installed configuration's identity is its exact bytes. Installation writes
+the plan-bound configuration in one canonical form (sorted keys, compact
+separators, UTF-8, one trailing newline) and rechecks those bytes before the
+receipt exists, so the receipt's `plan_sha256` fixes them; install
+verification, status, session creation and launch now compare the installed
+bytes with that form instead of the parsed value. A missing, doubled or CRLF
+trailing newline, added whitespace, reordered keys and a duplicate key that
+parses to the reviewed value each return `windows_install_configuration_drift`
+(`test_native_install_config_byte_drift_blocks_status_session_and_launch`).
+No receipt field or schema changed: the receipt still records only
+`config_acl_sha256`, and a receipt written before this change validates
+unchanged because its configuration was written in the same form.
 Deny ACEs for new subdirectories on the package output parent or environment
 parent fail the build or install with `windows_owned_directory_create_failed`
 before any generation exists. A deny ACE added to the exclusively created

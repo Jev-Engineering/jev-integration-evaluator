@@ -54,9 +54,44 @@ on the parent directory refuses both the staged replacement
 (`windows_source_staging_copy_failed`) and an exclusive creation, and denying
 `DELETE` on the file with `DELETE_CHILD` on its parent refuses the pinned
 lease (`windows_source_locked_or_access_denied`). Bytes, file identity,
-directory entries and the external intent location are unchanged. A source
-file whose DACL was rewritten by such a tool can afterwards be refused as
-`windows_source_acl_not_reproducible`; that outcome is not pinned by a test.
+directory entries and the external intent location are unchanged.
+
+A deny ACE for file data reads on a reviewed target refuses the apply with
+`windows_source_read_access_denied` before any write starts; another native
+read failure of a target is `windows_source_read_unavailable`. Both are
+`InputError` reasons without the path or the operating-system message, and
+no stage, backup or external intent is created
+(`test_native_read_denied_source_refuses_apply_with_private_reason`). On
+other platforms the original exception is unchanged, and `make_patch_plan`
+does not use these reasons.
+
+Before the first check of each change and again before each write, every
+component of the selected relative path is compared with the entries of its
+directory. Two entries that differ only by case (possible in a per-directory
+case-sensitive NTFS directory), or a new name beside a differently cased
+entry in such a directory, refuse the apply with
+`windows_source_case_alias_refused` and no effect
+(`test_native_real_case_alias_refuses_apply_without_effect`). The comparison
+is the one the package-input inventory uses and folds case with Python's
+`str.casefold`, not the volume's NTFS upcase table. It is a read-only listing
+check, not a lock: an alias created after it is not detected.
+`make_patch_plan` does not perform it.
+
+After `icacls` (or another tool using the automatic-inheritance API) adds and
+removes an ACE on a file or its parent, the file's descriptor carries
+`SE_DACL_AUTO_INHERITED`. The restore now sets the inheritance-request bit
+when, and only when, the recorded descriptor carries that bit, so Windows
+keeps it; previously the bit was dropped and the unchanged reproducibility
+check refused such a file as `windows_source_acl_not_reproducible`. The
+check itself is not relaxed: the staged copy, the replacement and an owned
+rollback must still show the same owner SID, DACL bytes and policy bits
+(`test_native_icacls_touched_inherited_dacl_is_reproduced_exactly`, for an
+ACE toggled on the file and on its parent). Known limit: a descriptor that
+Windows still does not reproduce exactly remains refused with
+`windows_source_acl_not_reproducible` before the source is touched. The
+operator recovery step is to make the file's DACL reproducible outside this
+tool, for example by re-applying the intended inherited or explicit ACL with
+`icacls`, and then to run the same approved plan again; there is no override.
 Other metadata and access-control forms need their own native qualification.
 There is no provider call, target execution or
 activation in this source mutation step.
