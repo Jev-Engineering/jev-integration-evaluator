@@ -1,0 +1,392 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Registered-tool template qualification report v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "template",
+    "recipe",
+    "profile",
+    "evidence_type",
+    "junit",
+    "gates",
+    "summary",
+    "target_code_executed",
+    "network_requests",
+    "provider_qualification",
+    "observed_benefit",
+    "limits"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "registered-tool-qualification-report-v1"
+    },
+    "template": {
+      "const": "python.bounded-tail-call@1.0.0"
+    },
+    "recipe": {
+      "const": "python.C@1.0"
+    },
+    "profile": {
+      "const": "linux-x86_64-cpython-3.13-single-process-console"
+    },
+    "evidence_type": {
+      "const": "offline_synthetic_junit"
+    },
+    "junit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sha256",
+        "trust",
+        "testcases",
+        "passed",
+        "failed",
+        "skipped"
+      ],
+      "properties": {
+        "sha256": {
+          "$ref": "#/$defs/sha"
+        },
+        "trust": {
+          "const": "caller_supplied_unauthenticated"
+        },
+        "testcases": {
+          "$ref": "#/$defs/count"
+        },
+        "passed": {
+          "$ref": "#/$defs/count"
+        },
+        "failed": {
+          "$ref": "#/$defs/count"
+        },
+        "skipped": {
+          "$ref": "#/$defs/count"
+        }
+      }
+    },
+    "gates": {
+      "type": "array",
+      "minItems": 5,
+      "items": {
+        "$ref": "#/$defs/gate"
+      },
+      "allOf": [
+        {
+          "contains": {
+            "type": "object",
+            "required": [
+              "id",
+              "status"
+            ],
+            "properties": {
+              "id": {
+                "const": "provider_operation"
+              },
+              "status": {
+                "const": "pending_authentic_evidence"
+              }
+            }
+          }
+        },
+        {
+          "contains": {
+            "type": "object",
+            "required": [
+              "id",
+              "status"
+            ],
+            "properties": {
+              "id": {
+                "const": "authorized_canary"
+              },
+              "status": {
+                "const": "pending_authentic_evidence"
+              }
+            }
+          }
+        },
+        {
+          "contains": {
+            "type": "object",
+            "required": [
+              "id",
+              "status"
+            ],
+            "properties": {
+              "id": {
+                "const": "authorized_active"
+              },
+              "status": {
+                "const": "pending_authentic_evidence"
+              }
+            }
+          }
+        },
+        {
+          "contains": {
+            "type": "object",
+            "required": [
+              "id",
+              "status"
+            ],
+            "properties": {
+              "id": {
+                "const": "measured_benefit"
+              },
+              "status": {
+                "const": "pending_authentic_evidence"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gate_count",
+        "offline_gate_count",
+        "passed",
+        "failed",
+        "unrun",
+        "pending_authentic_evidence",
+        "passed_gates",
+        "failed_gates",
+        "unrun_gates",
+        "pending_gates",
+        "offline_complete",
+        "qualification_complete"
+      ],
+      "properties": {
+        "gate_count": {
+          "type": "integer",
+          "minimum": 5
+        },
+        "offline_gate_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "passed": {
+          "$ref": "#/$defs/count"
+        },
+        "failed": {
+          "$ref": "#/$defs/count"
+        },
+        "unrun": {
+          "$ref": "#/$defs/count"
+        },
+        "pending_authentic_evidence": {
+          "type": "integer",
+          "minimum": 4
+        },
+        "passed_gates": {
+          "$ref": "#/$defs/ids"
+        },
+        "failed_gates": {
+          "$ref": "#/$defs/ids"
+        },
+        "unrun_gates": {
+          "$ref": "#/$defs/ids"
+        },
+        "pending_gates": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/ids"
+            },
+            {
+              "minItems": 4
+            }
+          ]
+        },
+        "offline_complete": {
+          "type": "boolean"
+        },
+        "qualification_complete": {
+          "const": false
+        }
+      }
+    },
+    "target_code_executed": {
+      "const": false
+    },
+    "network_requests": {
+      "const": 0
+    },
+    "provider_qualification": {
+      "const": "not_run"
+    },
+    "observed_benefit": {
+      "const": false
+    },
+    "limits": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      }
+    }
+  },
+  "$defs": {
+    "sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "module": {
+      "type": "string",
+      "pattern": "^tests/test_[a-z0-9_]+\\.py$"
+    },
+    "gate_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{0,63}$"
+    },
+    "ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/gate_id"
+      }
+    },
+    "gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "kind",
+        "documented_status",
+        "required_modules",
+        "status",
+        "modules"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/gate_id"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "kind": {
+          "enum": [
+            "offline",
+            "authentic"
+          ]
+        },
+        "documented_status": {
+          "enum": [
+            "qualified_offline_synthetic",
+            "implemented_unqualified",
+            "pending"
+          ]
+        },
+        "required_modules": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/module"
+          }
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "unrun",
+            "pending_authentic_evidence"
+          ]
+        },
+        "modules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "module",
+              "cases",
+              "passed",
+              "failed",
+              "skipped"
+            ],
+            "properties": {
+              "module": {
+                "$ref": "#/$defs/module"
+              },
+              "cases": {
+                "$ref": "#/$defs/count"
+              },
+              "passed": {
+                "$ref": "#/$defs/count"
+              },
+              "failed": {
+                "$ref": "#/$defs/count"
+              },
+              "skipped": {
+                "$ref": "#/$defs/count"
+              }
+            }
+          }
+        }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "kind": {
+              "const": "authentic"
+            },
+            "documented_status": {
+              "const": "pending"
+            },
+            "status": {
+              "const": "pending_authentic_evidence"
+            },
+            "required_modules": {
+              "maxItems": 0
+            },
+            "modules": {
+              "maxItems": 0
+            }
+          }
+        },
+        {
+          "properties": {
+            "kind": {
+              "const": "offline"
+            },
+            "documented_status": {
+              "enum": [
+                "qualified_offline_synthetic",
+                "implemented_unqualified"
+              ]
+            },
+            "status": {
+              "enum": [
+                "passed",
+                "failed",
+                "unrun"
+              ]
+            },
+            "required_modules": {
+              "minItems": 1
+            },
+            "modules": {
+              "minItems": 1
+            }
+          }
+        }
+      ]
+    }
+  }
+}

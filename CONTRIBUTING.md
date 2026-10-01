@@ -42,6 +42,15 @@ and set `JEV_TEMPLATE_WHEELHOUSE` before running
 source, interpreter, skips and exact failure stage. Rebuild checksums after
 the final edit.
 
+Optionally, after a run that wrote `--junitxml`, summarize the registered-tool
+template gates with
+`python scripts/run_registered_tool_qualification.py --junit JUNIT_XML --out NEW_EXTERNAL_JSON`.
+This report step is not a required check. It runs no test or target, lists
+failed and unrun gates explicitly, and always leaves provider operation, canary,
+active and measured benefit pending. Keep its gate list, the
+[quickstart](references/registered-tool-template-quickstart-v1.md) support matrix
+and both report schema copies aligned.
+
 The six installed generated-adapter console tests also accept that explicit
 offline wheelhouse (`JEV_WINDOWS_TEMPLATE_WHEELHOUSE` for native Windows).
 They then install the newly built evaluator/host wheels and declared runtime
