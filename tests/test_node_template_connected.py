@@ -1,6 +1,7 @@
 """Installed CommonJS connected-shadow protocol with an offline typed transport."""
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
 import hashlib
 import json
 import os
@@ -30,6 +31,11 @@ from test_node_template_installed_upgrade import (
     NODE_SHA256, NPM_CLI_SHA256, NPM_TREE_SHA256, TRUSTED_TYPESCRIPT_TREE_SHA256,
     _observations,
 )
+
+
+def _utc(offset: timedelta) -> str:
+    """Fixture grant and scope times relative to this run, never a fixed date."""
+    return (datetime.now(timezone.utc) + offset).strftime('%Y-%m-%dT%H:%M:%SZ')
 
 
 PROJECT = Path(__file__).resolve().parents[1]
@@ -224,7 +230,7 @@ def test_installed_connected_shadow_cli_and_normal_command(tmp_path, fmt):
     grant = {'core_sha256': digest(core), 'mode': 'shadow',
         'endpoint': request['endpoint'], 'credential_ref': request['credential_ref'],
         'model': request['model'], 'environment_digest': env_digest,
-        'issued_at': '2026-09-28T00:00:00Z', 'expires_at': '2026-10-01T00:00:00Z'}
+        'issued_at': _utc(timedelta(days=-1)), 'expires_at': _utc(timedelta(days=1))}
     request['egress_grant'] = grant
     request_file = tmp_path / 'connected-request.json'
     request_file.write_text(json.dumps(request), encoding='utf-8')
@@ -263,7 +269,7 @@ def test_installed_connected_shadow_cli_and_normal_command(tmp_path, fmt):
         'reference': 'offline-connected-fixture', 'run_id': created_status['run_id'],
         'plan_sha256': descriptor['descriptor_sha256'],
         'trusted_session_head': created_status['session_head_sha256'],
-        'expires_at': '2026-10-01T00:00:00Z', 'revoked': False,
+        'expires_at': _utc(timedelta(days=1)), 'revoked': False,
         'grants': {'launch': True, 'stop': True, 'disable': True,
                    'rollback': False, 'upgrade': False}}
     scope['scope_sha256'] = digest(scope)
