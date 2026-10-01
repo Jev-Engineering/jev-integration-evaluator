@@ -32,6 +32,17 @@ class ConnectedDeliveryError(InputError):
 # These are reviewed host shapes, not grants.  The absent selector retains the
 # original Alpha plan representation and its exact canonical digest.
 _PROFILES = {
+    'retention-h-v1': {
+        'source': 'retention_host/host_retention_consumer.py',
+        'members': {'host': 'retention_host/host_retention_consumer.py',
+                    'console': 'retention_host/console.py',
+                    'loader': 'retention_host/connected_authority.py'},
+        'references': ('H_CONNECTED_REF', 'H_AUTH_PUBKEY_FILE'),
+        'allowed': frozenset({'H_COMMAND', 'H_EFFECT_DIRECTORY', 'H_READY_PATH',
+                              'H_RELEASE_PATH', 'H_HOLD', 'H_TASKS'}),
+        'binary': ('H_HOLD',),
+        'injected': ('H_CONNECTED_REF_SHA256', 'H_AUTH_PUBKEY_SHA256'),
+    },
     None: {
         'source': 'src/registered_alpha/host.py',
         'members': {'host': 'registered_alpha/host.py',
@@ -69,6 +80,19 @@ _PROFILES = {
                               'M_APPROVAL', 'M_CLAIM_SCENARIO'}),
         'binary': ('M_HOLD', 'M_APPROVAL'),
         'injected': ('M_CONNECTED_REF_SHA256', 'M_AUTH_PUBKEY_SHA256'),
+    },
+    'graph-l-v1': {
+        'source': 'graph_host/host_graph_consumer.py',
+        'members': {'host': 'graph_host/host_graph_consumer.py',
+                    'console': 'graph_host/console.py',
+                    'loader': 'graph_host/connected_authority.py'},
+        'references': ('L_CONNECTED_REF', 'L_AUTH_PUBKEY_FILE'),
+        'allowed': frozenset({'GRAPH_DB_PATH', 'GRAPH_EFFECT_PATH',
+                              'GRAPH_SECOND_EFFECT_PATH', 'GRAPH_READY_PATH',
+                              'L_TASKS', 'L_HOLD', 'L_RELEASE_PATH',
+                              'L_APPROVAL', 'L_EXPECTED_REVISION'}),
+        'binary': ('L_HOLD', 'L_APPROVAL'),
+        'injected': ('L_CONNECTED_REF_SHA256', 'L_AUTH_PUBKEY_SHA256'),
     },
     'registered-dual-connected-v1': {
         'source': {'JEV-DA938C3C7965': 'src/registered_dual/work_queue.py',
@@ -139,6 +163,16 @@ def plan_connected_delivery(install_plan: dict, *, trusted_install_receipt_sha25
     if requested_mode != 'shadow':
         raise ConnectedDeliveryError('connected_mode_requires_observed_gate')
     profile = _profile(host_profile)
+    if host_profile == 'retention-h-v1':
+        if type(launch_environment) is not dict:
+            raise ConnectedDeliveryError('connected_host_references_required')
+        if launch_environment.get('H_COMMAND') != '/prune':
+            raise ConnectedDeliveryError('connected_retention_requires_explicit_prune')
+        if (not {'H_EFFECT_DIRECTORY', 'H_READY_PATH'} <= set(launch_environment)
+                or launch_environment.get('H_TASKS', 'two') not in ('two', 'duplicate')
+                or (launch_environment.get('H_HOLD', '0') == '1'
+                    and 'H_RELEASE_PATH' not in launch_environment)):
+            raise ConnectedDeliveryError('connected_host_references_required')
     references = set(profile['references'])
     allowed = references | profile['allowed'] | {'SSL_CERT_FILE'}
     if (type(launch_environment) is not dict or not references <= set(launch_environment)
@@ -152,7 +186,10 @@ def plan_connected_delivery(install_plan: dict, *, trusted_install_receipt_sha25
                 or (launch_environment.get('M_HOLD') == '1' and 'M_RELEASE_PATH' not in launch_environment)
                 or launch_environment.get('M_TASKS', 'two') not in ('two', 'duplicate')
                 or launch_environment.get('M_CLAIM_SCENARIO', 'accept') not in (
-                    'accept', 'revise', 'request_evidence', 'fabricated', 'partial')))):
+                    'accept', 'revise', 'request_evidence', 'fabricated', 'partial')))
+            or (host_profile == 'graph-l-v1' and (
+                launch_environment.get('L_TASKS', 'two') not in ('two', 'duplicate')
+                or launch_environment.get('L_EXPECTED_REVISION', '0') not in ('0', '1')))):
         raise ConnectedDeliveryError('connected_host_references_required')
     if 'SSL_CERT_FILE' in launch_environment:
         _check_reference(launch_environment['SSL_CERT_FILE'])
@@ -287,7 +324,8 @@ def _open(directory: str | Path) -> tuple[Path, list[dict], dict, dict]:
 
 
 def create_connected_session(directory: str | Path, plan: dict,
-                             *, approved_plan_sha256: str) -> dict:
+                             *, approved_plan_sha256: str,
+                             generation_parent: dict | None = None) -> dict:
     offline._linux_profile()
     _check_plan(plan)
     if plan['plan_sha256'] != approved_plan_sha256:
@@ -299,9 +337,14 @@ def create_connected_session(directory: str | Path, plan: dict,
     _write_exclusive(target / 'plan.json', canonical(plan) + b'\n')
     _write_exclusive(target / 'events.jsonl', b'')
     state = {'schema_version': '1.0', 'kind': 'connected-delivery-session-v1',
-             'run_id': str(uuid.uuid4()), 'plan_sha256': plan['plan_sha256'],
-             'stage': 'installed', 'pending': None, 'launch_attempts': 0,
-             'process': None, 'failures': []}
+             'run_id': (generation_parent['run_id'] if generation_parent else str(uuid.uuid4())),
+             'plan_sha256': plan['plan_sha256'],
+             'stage': ('generation_pending' if generation_parent else 'installed'),
+             'pending': None, 'launch_attempts': 0,
+             'process': None, 'failures': (list(generation_parent['failure_history'])
+                                          if generation_parent else [])}
+    if generation_parent is not None:
+        state['generation_parent'] = copy.deepcopy(generation_parent)
     rows = []
     head = _event(target, rows, 'created', state)
     return _result(state, head, plan)
@@ -310,6 +353,11 @@ def create_connected_session(directory: str | Path, plan: dict,
 def _authority(scope: dict, approved_scope_sha256: str, head: str,
                state: dict, plan: dict, action: str) -> None:
     validate_contract(scope, 'connected-delivery-scope-v1')
+    parent = state.get('generation_parent')
+    if (action == 'launch' and parent is not None and
+            (datetime.now(timezone.utc) >= parse_utc(parent['original_expires_at'])
+             or parse_utc(scope['expires_at']) > parse_utc(parent['original_expires_at']))):
+        raise ConnectedDeliveryError('connected_original_cutoff_expired')
     if (scope['scope_sha256'] != approved_scope_sha256
             or scope['scope_sha256'] != digest({k: v for k, v in scope.items()
                                                 if k != 'scope_sha256'})

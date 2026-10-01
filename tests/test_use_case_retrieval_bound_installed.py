@@ -36,10 +36,12 @@ pytestmark = pytest.mark.skipif(
 
 
 def _applied(tmp_path: Path, name: str, version: str,
-             connected_authority_source: Path | None = None) -> dict:
+             connected_authority_source: Path | None = None,
+             generation_task: str | None = None) -> dict:
     target = tmp_path / name
     inventory, request = _bound_host(target, version=version, installed=True,
-                                    connected_authority_source=connected_authority_source)
+                                    connected_authority_source=connected_authority_source,
+                                    generation_task=generation_task)
     prepared = prepare_template_binding(target, request, BINDING)
     bound = prepared['request']
     spec = bound['implementation_spec']

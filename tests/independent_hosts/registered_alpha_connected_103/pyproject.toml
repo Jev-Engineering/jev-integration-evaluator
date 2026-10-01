@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools==84.0.0", "wheel==0.48.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jev-independent-registered-alpha"
+version = "1.0.3"
+requires-python = ">=3.13"
+dependencies = ["jev-integration-evaluator==1.3.0.dev12"]
+
+[project.scripts]
+registered-alpha = "registered_alpha.console:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["registered_alpha*"]
+
+[tool.setuptools.package-data]
+registered_alpha = ["*.lock", "*.json"]
