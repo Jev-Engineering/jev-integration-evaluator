@@ -96,6 +96,10 @@
   `windows_source_acl_not_reproducible`; the exact owner/DACL check is
   unchanged. The `windows-template-delivery` job now requires 86 cases;
   hosted execution of the six new cases is pending.
+- The runtime ledger's owning connection now waits up to two seconds for a
+  competing SQLite lock. Before, a read-only inspection that overlapped a
+  durable commit made the write fail at once and suspended the runtime.
+  A lock held past the bound still fails closed.
 
 ## Unreleased — connected shadow profiles and generation transfer
 

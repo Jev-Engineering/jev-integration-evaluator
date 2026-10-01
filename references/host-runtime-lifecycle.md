@@ -74,6 +74,11 @@ upper bounds, outstanding reservations, and durable revocation. A missing
 database, changed scope/limits, unresolved provider reservation or host effect,
 or prior revocation prevents a connected restart. Multiprocess use is rejected;
 the ledger is one workflow's local durability record, not a distributed quota.
+The owning connection waits at most two seconds for a competing SQLite lock,
+so a transient read-only inspection of the ledger does not suspend a live
+runtime. A lock held past that bound still fails the durable write closed
+and latches the owner off. Single ownership is enforced by the marker-file
+lock, not by this wait.
 
 | Requested mode | Required host authority and evidence | Effective behavior |
 |---|---|---|
