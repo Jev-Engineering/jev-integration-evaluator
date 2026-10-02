@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/banner.jpg" alt="Violet and cyan diagram of a magnifying lens scanning code files and routing a decision point into five options ending at a checkmark." width="100%"></p>
+
 <div align="center">
 
 # 🧭 JEV Integration Evaluator
