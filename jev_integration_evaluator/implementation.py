@@ -6,7 +6,7 @@ import os
 import re
 import subprocess
 from pathlib import Path
-from .io import InputError, atomic_text, digest, file_hash, safe_child, write_json, redact
+from .io import InputError, atomic_text, digest, file_hash, read_source, safe_child, write_json, redact
 from .questions import api_questions
 
 FORBIDDEN = re.compile(r"(?i)(^|/)(\.git|\.env(?:\.[^/]*)?|credentials?|secrets?)(/|$)|\.(pem|key|p12)$")
@@ -49,15 +49,7 @@ def _read_target(p: Path, reader):
 
     A native Windows read refusal becomes a fixed reason without the path.
     """
-    try:
-        return reader(p) if p.exists() else None
-    except OSError as exc:
-        if os.name != 'nt':
-            raise
-        from . import capabilities as cap
-        denied = cap._windows_oserror_reason(exc) == 'access_denied'
-        raise InputError('windows_source_read_access_denied' if denied
-                         else 'windows_source_read_unavailable') from None
+    return read_source(p, lambda q: reader(q) if q.exists() else None)
 
 
 def apply_patch_plan(root: str | Path, plan: dict, approval: str, *, progress=None,

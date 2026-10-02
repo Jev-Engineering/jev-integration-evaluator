@@ -26,6 +26,22 @@ def file_hash(path: Path) -> str:
             h.update(block)
     return h.hexdigest()
 
+def read_source(path: Path, reader):
+    """Apply ``reader`` to one selected host source path.
+
+    A native Windows read refusal becomes a fixed reason without the path.
+    Elsewhere the operating-system error propagates unchanged.
+    """
+    try:
+        return reader(path)
+    except OSError as exc:
+        if os.name != 'nt':
+            raise
+        from . import capabilities as cap
+        denied = cap._windows_oserror_reason(exc) == 'access_denied'
+        raise InputError('windows_source_read_access_denied' if denied
+                         else 'windows_source_read_unavailable') from None
+
 def finite(value: Any, name: str, low: float | None = None, high: float | None = None) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
         raise InputError(f"{name} must be a finite number")

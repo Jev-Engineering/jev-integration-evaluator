@@ -15,7 +15,7 @@ import stat
 from .. import __version__
 from ..contracts import seal, verify, validate_contract, utc_now
 from ..implementation import FORBIDDEN, apply_patch_plan, make_patch_plan, run_authorized_tests
-from ..io import InputError, atomic_text, digest, file_hash, loads, read_json, safe_child, write_json
+from ..io import InputError, atomic_text, digest, file_hash, loads, read_json, read_source, safe_child, write_json
 from .contracts import validate_inventory, validate_spec
 from .lifecycle import (_bundle_dir, _root_identity, _write_bytes, _sync_dir, _lock,
                         _journal, _record, _inspect_file, engine_identity)
@@ -55,7 +55,7 @@ def _selection(selection, specs):
 def _compose_file(root, rel, revisions):
     """Merge disjoint reviewed byte edits from the same original file."""
     path = safe_child(root, rel)
-    old = path.read_bytes() if path.is_file() else b''
+    old = read_source(path, Path.read_bytes) if path.is_file() else b''
     if len(revisions) == 1: return revisions[0][1].decode('utf-8')
     if not path.is_file() or not rel.endswith('.py'):
         first = revisions[0][1]
@@ -201,7 +201,7 @@ def plan_composite(root, inventory, selection, specs, output):
         path = safe_child(root,change['file'])
         old_mode = stat.S_IMODE(path.stat().st_mode) if path.exists() else None
         preimage = 'preimages/' + digest(change['file']) + '.utf8' if path.exists() else None
-        if preimage: _write_bytes(safe_child(bundle,preimage),path.read_bytes())
+        if preimage: _write_bytes(safe_child(bundle,preimage),read_source(path,Path.read_bytes))
         owned.append({'file':change['file'],'old_sha256':change['old_sha256'],
                       'new_sha256':change['new_sha256'],'old_mode':old_mode,
                       'new_mode':old_mode if old_mode is not None else (0o666 if os.name == 'nt' else 0o600),
@@ -301,7 +301,7 @@ def _check_discovery(root,plan,*,applied=False):
     for rel,row in plan['discovery_files'].items():
         path = safe_child(root,rel)
         expected = owned[rel]['new_sha256'] if applied and rel in owned else row['sha256']
-        if not path.is_file() or file_hash(path) != expected or stat.S_IMODE(path.stat().st_mode) != row['mode']:
+        if not path.is_file() or read_source(path,file_hash) != expected or stat.S_IMODE(path.stat().st_mode) != row['mode']:
             raise InputError('Composite reviewed source or mode drift')
 
 

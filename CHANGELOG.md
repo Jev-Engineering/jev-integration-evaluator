@@ -170,6 +170,33 @@
   competing SQLite lock. Before, a read-only inspection that overlapped a
   durable commit made the write fail at once and suspended the runtime.
   A lock held past the bound still fails closed.
+- Issue #61 follow-up: every selected-source read of the binding and bundle
+  lifecycle goes through one shared helper, `io.read_source`, so on native
+  Windows a read-denied or exclusively locked console entrypoint,
+  `pyproject.toml`, host module, package initializer, re-exported module,
+  reviewed inventory or runtime file, owned file or discovery file makes
+  `prepare_template_binding`, `bind_template`, `validate_template_request`,
+  `materialize_template`, `plan_implementation` (fresh and re-plan),
+  `implementation_status`, `verify_implementation`, `apply_implementation`,
+  `rollback_implementation` and the composite planner refuse with the fixed
+  path-free `windows_source_read_access_denied` (another read failure is
+  `windows_source_read_unavailable`) instead of a raw `PermissionError`
+  whose text held the path. The refusal chains no operating-system error
+  and writes no output directory, bundle, journal record or receipt. On
+  other platforms each read raises exactly what it raised before. 86 native
+  cases (`tests/test_windows_source_read_refusal.py`, a deny ACE and a
+  handle that shares nothing) and one cross-platform helper case cover
+  this; all 86 fail without the change. The adaptation family still reads
+  directly and is recorded, not fixed. The `windows-template-delivery` job
+  is split into two shards per interpreter, `lifecycle` (165 cases: the
+  preflight, package-input, ownership, session, run, install-fault,
+  install-death, source-mutation and read-refusal files) and `delivery`
+  (12 cases: the installed delivery file), balanced by measured per-test
+  durations; each shard keeps the same environment preparation, the same
+  `-k "not non_windows"` selector, zero-skip rejection and an exact
+  minimum, and `tests/test_windows_delivery_shards.py` fails when a native
+  delivery file is in no shard or a minimum differs from the collected
+  count. Hosted execution of the sharded job is pending.
 
 ## Unreleased — connected shadow profiles and generation transfer
 

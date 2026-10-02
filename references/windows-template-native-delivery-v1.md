@@ -21,6 +21,15 @@ at `1aff22197d0ff5c64b660544b77ed81e1ab310bc`.
 The `windows-template-delivery` CI job schedules the native preparation,
 ownership, package/install, Job Object session and retained-generation tests
 on disposable Windows Server 2022 runners with CPython 3.10, 3.13 and 3.14.
+Each interpreter runs two shards in parallel, `lifecycle` (the preflight,
+package-input, ownership, session, run, install-fault, install-death,
+source-mutation and read-refusal files; 165 cases) and `delivery` (the
+installed delivery file; 12 cases), split by measured per-test durations
+after the unsharded job reached 65 to 68 minutes of its 90-minute limit on
+CPython 3.10 and 3.13. Both shards run the same preparation steps and
+selector, reject any skipped case and require their exact collected count;
+`tests/test_windows_delivery_shards.py` fails when a native delivery test
+file is in no shard or a shard minimum differs from its collected count.
 The 3.14 entry was added to the matrix after the recorded Server runs: hosted
 3.14 delivery qualification is pending until that job's first run completes,
 and no hosted 3.14 delivery result is claimed here. It

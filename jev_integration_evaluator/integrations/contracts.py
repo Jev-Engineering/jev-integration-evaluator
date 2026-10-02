@@ -10,7 +10,7 @@ import re
 import jsonschema
 
 from ..config import load_config, validate_config
-from ..io import InputError, canonical, digest, read_json, safe_child, file_hash
+from ..io import InputError, canonical, digest, read_json, read_source, safe_child, file_hash
 from ..implementation import FORBIDDEN
 from ..questions import validate_questions
 from ..runtime import SafeRouter
@@ -158,15 +158,15 @@ def validate_inventory(root: Path, inventory: dict, spec: dict) -> dict:
         if rel in seen and seen[rel] != expected:
             raise InputError('Conflicting discovery hashes')
         p = safe_child(root, rel)
-        if not p.is_file() or file_hash(p) != expected:
+        if not p.is_file() or read_source(p, file_hash) != expected:
             raise InputError('Source drift from the reviewed inventory')
         seen[rel] = expected
     for row in spec.get('runtime_files', []):
         path = safe_child(root, row['file'])
         if (seen.get(row['file']) != row['old_sha256'] or not path.is_file()
-                or file_hash(path) != row['old_sha256']):
+                or read_source(path, file_hash) != row['old_sha256']):
             raise InputError('Runtime file changed since source review')
     p = safe_child(root, spec['source']['file'])
-    if not p.is_file() or file_hash(p) != spec['source']['file_sha256']:
+    if not p.is_file() or read_source(p, file_hash) != spec['source']['file_sha256']:
         raise InputError('Selected source changed since review')
     return copy.deepcopy(c)

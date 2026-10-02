@@ -71,11 +71,30 @@ Windows a deny ACE for file data reads, or a handle that shares nothing
 `windows_source_read_unavailable`. No plan is returned and nothing is
 written (`test_native_read_denied_source_refuses_plan_with_private_reason`,
 `test_native_exclusively_locked_source_refuses_plan_with_private_reason`).
-The bundle lifecycle readers are not covered: with a read-denied selected
-source, `prepare_template_binding`, `plan_implementation`,
-`implementation_status`, `verify_implementation`, `apply_implementation` and
-`rollback_implementation` stop before any write but still raise the raw
-`PermissionError`, whose text contains the path.
+The binding and bundle lifecycle readers use one shared helper,
+`jev_integration_evaluator.io.read_source`, for every selected-source read:
+the console entrypoint, `pyproject.toml`, the host module, package
+initializers and re-exported modules, reviewed inventory and runtime files,
+and owned and discovery files. With a read-denied or exclusively locked
+selected source, `prepare_template_binding`, `bind_template`,
+`validate_template_request`, `materialize_template`, `plan_implementation`
+(fresh and re-plan of an existing bundle), `implementation_status`,
+`verify_implementation`, `apply_implementation` and
+`rollback_implementation` refuse with the same two fixed reasons. The
+refusal carries no chained operating-system error; no output directory,
+bundle, journal record or receipt is written and no target entry changes
+(`tests/test_windows_source_read_refusal.py`, 86 cases over a deny ACE and
+a handle that shares nothing). The composite planner's own preimage and
+discovery reads use the same helper. On other platforms every one of these
+reads raises exactly what it raised before.
+
+Limits. The refusal covers file data reads; a path whose attributes cannot
+be queried at all is not exercised. An unreadable source during the
+isolated verification copy stays a failed scheduled case, as before. The
+adaptation family (`integrations/adaptation_*.py`) and the remaining
+composite console loader read still use direct reads and would surface the
+raw `PermissionError` with the path on native Windows; they are not part of
+the qualified native delivery journey and are recorded, not fixed.
 
 Before the first check of each change and again before each write, every
 component of the selected relative path is compared with the entries of its

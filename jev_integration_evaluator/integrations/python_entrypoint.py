@@ -13,7 +13,7 @@ try:
 except ModuleNotFoundError:  # Python 3.10
     import tomli as tomllib
 
-from ..io import InputError, file_hash, safe_child
+from ..io import InputError, file_hash, read_source, safe_child
 from .errors import UnsupportedShape
 from .package_bindings import StaticBindings, module_layout
 
@@ -26,7 +26,7 @@ def _source(root: Path, rel: str) -> tuple[bytes, ast.Module]:
     path = safe_child(root, rel)
     if not path.is_file() or path.is_symlink():
         raise UnsupportedShape('Console entrypoint source is unavailable')
-    raw = path.read_bytes()
+    raw = read_source(path, Path.read_bytes)
     if len(raw) > 2_000_000 or raw.startswith(b'\xef\xbb\xbf'):
         raise UnsupportedShape('Unsupported console entrypoint source encoding or size')
     try:
@@ -46,7 +46,10 @@ def _script(root: Path, name: str) -> tuple[str, str]:
     if not path.is_file() or path.is_symlink() or path.stat().st_size > 1_000_000:
         raise UnsupportedShape('Missing or unsupported pyproject.toml')
     try:
-        document = tomllib.loads(path.read_text(encoding='utf-8'))
+        document = tomllib.loads(read_source(path, lambda p: p.read_text(encoding='utf-8')))
+    except InputError:
+        # A native read refusal is not a malformed document.
+        raise
     except (ValueError, UnicodeError):
         raise UnsupportedShape('Invalid pyproject.toml') from None
     project = document.get('project')
@@ -180,8 +183,8 @@ def inspect_entrypoint(root: Path, spec: dict, binding: dict) -> dict:
            for row in spec['runtime_files']):
         raise UnsupportedShape('Console runtime files must sit beside the selected host module')
     return {'version': '1.0', 'kind': kind, 'script': binding['script'], 'module': module,
-            'function': symbol, 'file': entry_rel, 'file_sha256': file_hash(safe_child(root, entry_rel)),
-            'pyproject_sha256': file_hash(safe_child(root, 'pyproject.toml')),
+            'function': symbol, 'file': entry_rel, 'file_sha256': read_source(safe_child(root, entry_rel), file_hash),
+            'pyproject_sha256': read_source(safe_child(root, 'pyproject.toml'), file_hash),
             'request_symbol': request_name, 'item_symbol': item_name,
             'task_symbol': task_call.func.id,
             'startup_inputs': dict(binding['startup_inputs']),
