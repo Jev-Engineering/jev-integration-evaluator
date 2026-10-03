@@ -68,3 +68,29 @@ test('CommonJS later export replacement cannot escape reviewed entrypoint', () =
     'module.exports = seam;\nmodule.exports = original;\n');
   assert.equal(run(value).status, 2);
 });
+
+test('explicit source-owned cancellation binding forwards only AbortSignal options', () => {
+  const base = 'export async function seam(request) { return await original(request); }\nasync function original(request) { return request; }\n';
+  const value = request('host.mjs',base+'function hostOptions(request) { return {signal: request.signal}; }\n');
+  value.bindings = {...bindings,invocation_options:'hostOptions'};
+  const result = run(value);
+  assert.equal(result.status,0,result.stderr);
+  assert.match(JSON.parse(result.stdout).transformed_source,/hostOptions\(request\)\)/);
+  for (const source of [
+    'function hostOptions(request) { return {signal: request.signal,mode:"active"}; }',
+    'async function hostOptions(request) { return {signal: request.signal}; }',
+    'function hostOptions(request) { sideEffect(); return {signal: request.signal}; }',
+    'function hostOptions(request) { return {signal: createSignal()}; }']) {
+    const invalid=request('host.mjs',base+source+'\n');
+    invalid.bindings={...bindings,invocation_options:'hostOptions'};
+    assert.equal(run(invalid).status,2);
+  }
+  const bodyless=request('host.ts',
+    'export async function seam(request: {signal:AbortSignal}): Promise<string> { return await original(request); }\n' +
+    'async function original(request: {signal:AbortSignal}): Promise<string> { return "x"; }\n' +
+    'declare function hostOptions(request: {signal:AbortSignal}): {signal:AbortSignal};\n');
+  bodyless.bindings={...bindings,invocation_options:'hostOptions'};
+  const refused=run(bodyless);
+  assert.equal(refused.status,2);
+  assert.match(refused.stderr,/unsupported_js_invocation_options/);
+});

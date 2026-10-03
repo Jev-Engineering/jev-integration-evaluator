@@ -99,3 +99,11 @@ multi-process budget claims, yarn/pnpm/Bun, target compiler configuration,
 arbitrary bundlers/frameworks, unsupported JS source shapes and A–M recipes
 other than C are outside this entry. An incompatible request, manifest or
 lock needs explicit migration; rerender against current source for an upgrade.
+
+
+The additive [installed synthetic selected-effect profile](installed-node-synthetic-owner-v1.md)
+uses the same source-bound package and install path with authored offline receipts.
+Its optional invocation_options binding forwards only the real host-owned
+AbortSignal field; omitting it preserves the legacy transform. Selected effects,
+independently gated fallback and one private durable owner across two installed
+CommonJS placements do not qualify observed connected activation.

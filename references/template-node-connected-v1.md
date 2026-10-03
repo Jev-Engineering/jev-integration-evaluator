@@ -84,8 +84,8 @@ The offline fixture uses a fake transport **only in shadow** and is labeled
 `synthetic_protocol`. It verifies typed parsing, grant refusal, source drift,
 ledger replay, hardlink refusal, and installed supervised execution. The
 dedicated `connected-node24-qualification` CI job pins Linux CPython 3.13.5,
-Node 24.18.0, npm 11.16.0, and trusted TypeScript 5.8.3; it requires all 26
-installed tests and 19 native tests with zero skips. This job is a configured
+Node 24.18.0, npm 11.16.0, and trusted TypeScript 5.8.3; it requires all 32
+installed tests and 21 native tests with zero skips. This job is a configured
 gate until its exact revision has actually run. It is not a JEV live measurement.
 
 The [installed fault matrix](../tests/test_node_template_connected_faults.py)

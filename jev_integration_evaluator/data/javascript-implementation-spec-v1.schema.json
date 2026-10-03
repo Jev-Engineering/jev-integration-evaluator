@@ -24,7 +24,8 @@
       "properties": {
         "registry": {"$ref": "#/$defs/symbol"}, "gate": {"$ref": "#/$defs/symbol"},
         "validate": {"$ref": "#/$defs/symbol"}, "blocked": {"$ref": "#/$defs/symbol"},
-        "evidence": {"$ref": "#/$defs/symbol"}, "baseline_action": {"$ref": "#/$defs/symbol"}
+        "evidence": {"$ref": "#/$defs/symbol"}, "baseline_action": {"$ref": "#/$defs/symbol"},
+        "invocation_options": {"$ref": "#/$defs/symbol"}
       }
     },
     "runtime": {

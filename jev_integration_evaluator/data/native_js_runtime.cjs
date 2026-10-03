@@ -694,5 +694,35 @@ class ConnectedNativeOwner {
   close() { this.closed = true; this.budget.close(); }
 }
 
+// A host explicitly pins one runtime copy and a finite placement set. This
+// owner is for offline synthetic fixtures only, never connected authority.
+const runtimeOwners = new WeakSet();
+function createRuntimeOwner({specHashes, limits, ledgerPath}) {
+  if (!Array.isArray(specHashes) || specHashes.length < 2 || specHashes.length > 4 ||
+      new Set(specHashes).size !== specHashes.length ||
+      specHashes.some(value => typeof value !== 'string' || !/^[a-f0-9]{64}$/.test(value)))
+    fail('invalid_runtime_owner_placements');
+  const reviewed = Object.freeze([...specHashes].sort());
+  const budget = new DurableSharedBudget({limits, ledgerPath,
+    identity: digest({kind: 'synthetic-installed-placement-owner/v1', specHashes: reviewed, limits})});
+  const bound = new Set();
+  const owner = Object.freeze({runtimePath: __filename,
+    createRouter(options) {
+      const specHash = digest(options.spec);
+      if (!reviewed.includes(specHash) || bound.has(specHash) ||
+          options.client?.evidence_type !== 'synthetic') fail('runtime_owner_placement_mismatch');
+      const router = new NativeRouter({...options, budget});
+      bound.add(specHash);
+      return router;
+    },
+    status: () => Object.freeze({calls: budget.calls, cost: budget.cost,
+      suspended: budget.suspended, placements_bound: bound.size,
+      evidence_type: 'synthetic_installed_protocol'}),
+    close: () => budget.close()});
+  runtimeOwners.add(owner);
+  return owner;
+}
+function isRuntimeOwner(owner) { return runtimeOwners.has(owner); }
+
 module.exports = Object.freeze({digest, SharedBudget, DurableSharedBudget, NativeRouter,
-  TypeSafeConnectedClient, validateTypedResponse, ConnectedNativeOwner});
+  TypeSafeConnectedClient, validateTypedResponse, ConnectedNativeOwner, createRuntimeOwner, isRuntimeOwner});

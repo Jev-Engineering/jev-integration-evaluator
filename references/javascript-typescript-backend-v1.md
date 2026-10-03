@@ -121,3 +121,12 @@ an isolation boundary for hostile target code. It imports the target module
 with ordinary Node process privileges only after an explicit execution flag;
 current execution qualification uses project-owned synthetic hosts. A live
 target requires its own separately authorized isolation and policy review.
+
+## Additive offline installed qualification
+
+The [installed synthetic owner profile](installed-node-synthetic-owner-v1.md)
+retains the legacy six-role transform and runtime. An explicitly reviewed optional
+invocation_options function forwards only `{signal: request.signal}`. The finite
+installed fixtures also qualify selected/fallback/refusal behavior and one durable
+owner across two installed CommonJS placements, with separate per-adapter receipts.
+No connected authority or distributed-budget claim follows from this profile.

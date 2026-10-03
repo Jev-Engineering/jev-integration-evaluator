@@ -430,3 +430,11 @@ refuses further calls; the original process then observes the exhausted budget.
 This is offline ledger contention evidence. It does not establish concurrent
 distributed execution, installed cross-package composition, provider operation,
 or a selected installed application effect.
+
+
+The separate [installed synthetic selected-effect profile](installed-node-synthetic-owner-v1.md)
+uses exact source-bound CLI package/install steps and normal installed commands
+for each declared format. It covers source-owned cancellation and one shared
+durable owner across two installed CommonJS placements; a CommonJS installed CLI
+case additionally covers trusted-toolchain drift and interrupted-build recovery.
+These offline authored receipts are not observed provider activation.

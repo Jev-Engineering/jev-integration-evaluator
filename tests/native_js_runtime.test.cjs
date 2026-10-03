@@ -490,3 +490,21 @@ test('connected shadow owner checks independent grant and installed bytes before
     fs.rmSync(parent, {recursive: true, force: true});
   }
 });
+
+test('source-bound host owner shares one durable ledger across reviewed runtime copies',
+  {skip: process.platform !== 'linux' || process.version !== 'v24.18.0'}, () => {
+  const runtime = require('../jev_integration_evaluator/data/native_js_runtime.cjs');
+  const parent = fs.mkdtempSync(path.join(os.tmpdir(), 'jev-reviewed-owner-'));
+  fs.chmodSync(parent, 0o700);
+  const first = fixture('active'), second = fixture('active');
+  second.spec.candidate_id = 'second';
+  const hashes = [runtime.digest(first.spec),runtime.digest(second.spec)];
+  const owner = runtime.createRuntimeOwner({specHashes:hashes,limits:{max_calls:1,max_cost:1},
+    ledgerPath:path.join(parent,'ledger.sqlite')});
+  assert.equal(runtime.isRuntimeOwner(owner),true);
+  assert.equal(runtime.isRuntimeOwner({...owner}),false);
+  assert.throws(()=>owner.createRouter({spec:{...first.spec,candidate_id:'unreviewed'},client:{evidence_type:'synthetic'}}),
+    /runtime_owner_placement_mismatch/);
+  owner.close();
+  fs.rmSync(parent,{recursive:true,force:true});
+});

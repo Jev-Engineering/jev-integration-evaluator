@@ -117,6 +117,10 @@ adds an exact private descriptor, typed JEV client, independently authenticated
 grant callbacks, durable single-owner budget, and finite CLI launch. Its offline
 shadow fixture is synthetic protocol evidence; live provider and observed
 canary/active qualification remain pending, and live benefit is unknown.
+The separate [installed synthetic selected-effect profile](references/installed-node-synthetic-owner-v1.md)
+adds explicit source-owned cancellation, exact offline receipts and one durable
+owner shared by two installed placements. Its fixture commands remain synthetic;
+real provider authority and observed activation gates are unchanged.
 
 The [recipe lifecycle matrix](references/recipe-lifecycle-matrix-v1.md) records, for every Python recipe A–M and the separate JS/TS recipe C entry, which lifecycle stages a named offline synthetic test exercises and which remain pending or unsupported.
 The [six-use-case source matrix](references/use-case-template-matrix-v1.md)
