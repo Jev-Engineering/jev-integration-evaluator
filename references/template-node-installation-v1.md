@@ -420,3 +420,13 @@ Node session adds bounded offline process ownership and observation. Required
 full regressions, connected
 authority, async rejection/cancellation and cross-placement budget coverage
 remain pending before a complete issue #60 claim.
+
+The native runtime test `separate native processes cannot reset a held ledger
+or replay its settled effects` exercises two actual Node 24.18.0 processes
+against one private durable ledger. The peer is refused while the first owner
+holds the SQLite exclusive lock. After release, the peer retains the original
+charge and settled invocation tombstone, consumes the last reservation, and
+refuses further calls; the original process then observes the exhausted budget.
+This is offline ledger contention evidence. It does not establish concurrent
+distributed execution, installed cross-package composition, provider operation,
+or a selected installed application effect.
