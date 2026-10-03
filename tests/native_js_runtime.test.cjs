@@ -353,6 +353,65 @@ test('durable native ledger retains charges and refuses unresolved or revoked re
   }
 });
 
+test('separate native processes cannot reset a held ledger or replay its settled effects',
+  {skip: process.platform !== 'linux' || process.version !== 'v24.18.0'}, () => {
+  const {spawnSync} = require('node:child_process');
+  const parent = fs.mkdtempSync(path.join(os.tmpdir(), 'jev-node-contention-'));
+  fs.chmodSync(parent, 0o700);
+  const ledgerPath = path.join(parent, 'ledger.sqlite');
+  const limits = {max_calls: 2, max_cost: 2};
+  const identity = 'a'.repeat(64);
+  const runtime = require.resolve('../jev_integration_evaluator/data/native_js_runtime.cjs');
+  const child = mode => {
+    const result = spawnSync(process.execPath, ['-e', `
+      const assert = require('node:assert/strict');
+      const {DurableSharedBudget} = require(process.argv[1]);
+      const args = JSON.parse(process.argv[2]);
+      if (process.argv[3] === 'contend') {
+        assert.throws(() => new DurableSharedBudget(args), /locked/);
+      } else {
+        const ledger = new DurableSharedBudget(args);
+        try {
+          assert.equal(ledger.calls, 1);
+          assert.equal(ledger.cost, 1);
+          assert.throws(() => ledger.claimInvocation('one', 'first', 'candidate'),
+            /effect_replay_denied/);
+          const reservation = ledger.reserve('two', 1);
+          ledger.finishReservation(reservation);
+          assert.throws(() => ledger.reserve('three', 1), /budget_denied/);
+          assert.equal(ledger.calls, 2);
+          assert.equal(ledger.cost, 2);
+        } finally { ledger.close(); }
+      }
+      process.stdout.write('verified');
+    `, runtime, JSON.stringify({limits, ledgerPath, identity}), mode],
+      {encoding: 'utf8', timeout: 10000, env: {PATH: process.env.PATH}});
+    assert.equal(result.error, undefined);
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stdout, 'verified');
+  };
+  let ledger;
+  try {
+    ledger = new DurableSharedBudget({limits, ledgerPath, identity});
+    const reservation = ledger.reserve('one', 1);
+    ledger.finishReservation(reservation);
+    ledger.claimInvocation('one', 'first', 'candidate');
+    ledger.settleInvocation('one', 'first', 'candidate');
+    child('contend'); // a real peer process must fail before it can reserve
+    assert.equal(ledger.calls, 1);
+    assert.equal(ledger.cost, 1);
+    ledger.close(); ledger = null;
+    child('resume'); // release transfers ownership, never a fresh budget
+    ledger = new DurableSharedBudget({limits, ledgerPath, identity});
+    assert.equal(ledger.calls, 2);
+    assert.equal(ledger.cost, 2);
+    assert.throws(() => ledger.reserve('four', 1), /budget_denied/);
+  } finally {
+    if (ledger) ledger.close();
+    fs.rmSync(parent, {recursive: true, force: true});
+  }
+});
+
 test('connected shadow owner checks independent grant and installed bytes before fake transport',
   {skip: process.platform !== 'linux' || process.version !== 'v24.18.0'}, async () => {
   const parent = fs.mkdtempSync(path.join(os.tmpdir(), 'jev-connected-shadow-'));
