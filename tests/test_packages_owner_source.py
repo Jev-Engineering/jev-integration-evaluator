@@ -3,6 +3,45 @@ from pathlib import Path
 
 import pytest
 
+
+def test_owner_installation_import_uses_declared_pre311_tomli_fallback(monkeypatch):
+    """Simulate missing stdlib TOML; the hosted 3.10 job uses real tomli."""
+    import builtins
+    import importlib
+    import sys
+    try:
+        import tomllib as parser
+    except ModuleNotFoundError:
+        import tomli as parser
+    original_import = builtins.__import__
+    imports = []
+
+    def without_stdlib_toml(name, *args, **kwargs):
+        if name == 'tomllib':
+            raise ModuleNotFoundError("No module named 'tomllib'", name='tomllib')
+        if name == 'tomli':
+            imports.append(name)
+            return parser
+        return original_import(name, *args, **kwargs)
+
+    module_name = 'jev_integration_evaluator.template_packages_installation'
+    previous = sys.modules.pop(module_name, None)
+    try:
+        with monkeypatch.context() as scoped:
+            scoped.setattr(builtins, '__import__', without_stdlib_toml)
+            module = importlib.import_module(module_name)
+        assert imports == ['tomli']
+        assert module.tomllib.loads('[project]\nname="finite-owner"\n') == {
+            'project': {'name': 'finite-owner'}}
+    finally:
+        sys.modules.pop(module_name, None)
+        package = sys.modules['jev_integration_evaluator']
+        if previous is not None:
+            sys.modules[module_name] = previous
+            package.template_packages_installation = previous
+        elif hasattr(package, 'template_packages_installation'):
+            del package.template_packages_installation
+
 from jev_integration_evaluator import template_packages_owner as owner
 
 SOURCE = '''from jev_integration_evaluator.template_packages_runtime import baseline_packages_owner, connected_packages_owner

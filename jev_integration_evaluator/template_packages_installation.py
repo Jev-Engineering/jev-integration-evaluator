@@ -9,7 +9,10 @@ import importlib.metadata
 from pathlib import Path
 import re
 import sys
-import tomllib
+try:
+    import tomllib
+except ModuleNotFoundError:
+    import tomli as tomllib
 
 from packaging.utils import canonicalize_name
 
