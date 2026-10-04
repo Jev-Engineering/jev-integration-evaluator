@@ -192,7 +192,7 @@ def render_composite_console(root: Path, selection: dict, specs: dict) -> tuple[
             'e42159ca02c231a9374e3b8c71aaeeafe0c887ff1812c8a0381b5498f62d04d6') else []),
         *([
             f'    from jev_integration_evaluator.io import digest as {prefix}_digest',
-            f'    {prefix}_claim = ({names["runtime"]}.coordinator.claim_effect({names["task_id"]}, {prefix}_digest({task}), {ids[0]!r}, {('owner:' + first["task_symbol"])!r}) if {prefix}_connected else None)',
+            f'    {prefix}_claim = ({names["runtime"]}.coordinator.claim_effect({names["task_id"]}, {prefix}_digest({task}), {ids[0]!r}, {("owner:" + first["task_symbol"])!r}) if {prefix}_connected else None)',
         ] if generation_capable else []),
         f'    if {first["task_symbol"]}({task}) != 0:',
         '        raise RuntimeError("composite_primary_task_failed")',
@@ -214,7 +214,7 @@ def render_composite_console(root: Path, selection: dict, specs: dict) -> tuple[
             'e42159ca02c231a9374e3b8c71aaeeafe0c887ff1812c8a0381b5498f62d04d6') else []),
         *([
             f'    from jev_integration_evaluator.io import digest as {prefix}_digest',
-            f'    {prefix}_claim = ({names["runtime"]}.coordinator.claim_effect({names["task_id"]}, {prefix}_digest({task}), {ids[1]!r}, {('owner:' + second["task_symbol"])!r}) if {prefix}_connected else None)',
+            f'    {prefix}_claim = ({names["runtime"]}.coordinator.claim_effect({names["task_id"]}, {prefix}_digest({task}), {ids[1]!r}, {("owner:" + second["task_symbol"])!r}) if {prefix}_connected else None)',
         ] if generation_capable else []),
         f'    if {host_b}.{second["task_symbol"]}({task}) != 0:',
         '        raise RuntimeError("composite_secondary_task_failed")',
