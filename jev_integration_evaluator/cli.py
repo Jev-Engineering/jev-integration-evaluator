@@ -195,6 +195,29 @@ def parser():
     s.add_argument('--install-plan',required=True); s.add_argument('--install-receipt',required=True)
     s.add_argument('--trusted-package-receipt-sha256',required=True)
     s.add_argument('--trusted-install-receipt-sha256',required=True); s.add_argument('--out',required=True)
+    s=template_sub.add_parser('packages-owner-plan',help='Plan a finite source-owned Alpha/queue console without executing it')
+    s.add_argument('--repo',required=True); s.add_argument('--members',required=True)
+    s.add_argument('--source-root',required=True); s.add_argument('--trusted-binding-sha256',required=True)
+    s.add_argument('--out',required=True)
+    for action in ('packages-owner-apply','packages-owner-status','packages-owner-rollback'):
+        s=template_sub.add_parser(action,help='Apply, inspect or restore one exact finite owner source transaction')
+        s.add_argument('--plan',required=True)
+        if action=='packages-owner-apply': s.add_argument('--transaction',required=True)
+        else:
+            s.add_argument('--receipt',required=True); s.add_argument('--trusted-receipt-sha256',required=True)
+        if action!='packages-owner-status': s.add_argument('--approve-plan-sha256',required=True)
+    s=template_sub.add_parser('owner-package-plan',help='Plan genuine offline packaging of an applied finite owner')
+    s.add_argument('--request',required=True); s.add_argument('--out',required=True)
+    for action in ('owner-package-build','owner-install','owner-install-status'):
+        s=template_sub.add_parser(action,help='Build, install or inspect the genuine finite owner generation')
+        s.add_argument('--plan',required=True)
+        if action!='owner-install-status': s.add_argument('--approve-plan-sha256',required=True)
+    s=template_sub.add_parser('owner-install-plan',help='Plan a genuine owner environment from its built receipt')
+    s.add_argument('--package-plan',required=True); s.add_argument('--package-receipt',required=True)
+    s.add_argument('--out',required=True)
+    s=template_sub.add_parser('connected-packages-installed-bind',help='Derive two independent installed member origins and optional genuine owner')
+    s.add_argument('--members',required=True); s.add_argument('--owner',help='Genuine owner plans, receipts and external receipt hashes')
+    s.add_argument('--source-root',required=True); s.add_argument('--out',required=True)
     for action in ('install','install-status','install-recover'):
         s=template_sub.add_parser(action,help='Install, inspect, or explicitly recover one owned environment')
         s.add_argument('--plan',required=True)
@@ -421,6 +444,52 @@ def execute(args):
                 trusted_install_receipt_sha256=args.trusted_install_receipt_sha256)
             write_plan_exclusive(args.out,report,host_root=package_plan['request']['host_root'])
             return report
+        if args.template_action=='connected-packages-installed-bind':
+            from .template_connected_packages_binding import derive_installed_packages_binding
+            from .template_packages_owner_binding import derive_owned_packages_binding
+            from .template_installation import write_plan_exclusive
+            members=read_json(args.members)
+            report=(derive_owned_packages_binding(members,read_json(args.owner),source_root=args.source_root)
+                    if args.owner else derive_installed_packages_binding(members,source_root=args.source_root))
+            write_plan_exclusive(args.out,report,host_root=args.source_root)
+            return report
+        if args.template_action.startswith('packages-owner-'):
+            from .template_packages_owner import (plan_packages_owner,apply_packages_owner,
+                packages_owner_source_status,rollback_packages_owner)
+            from .template_installation import write_plan_exclusive
+            if args.template_action=='packages-owner-plan':
+                result=plan_packages_owner(args.repo,read_json(args.members),source_root=args.source_root,
+                    trusted_binding_sha256=args.trusted_binding_sha256)
+                write_plan_exclusive(args.out,result,host_root=args.repo)
+                return result
+            plan=read_json(args.plan)
+            if args.template_action=='packages-owner-apply':
+                return apply_packages_owner(plan,args.transaction,approved_plan_sha256=args.approve_plan_sha256)
+            receipt=read_json(args.receipt)
+            if args.template_action=='packages-owner-status':
+                return packages_owner_source_status(plan,receipt,trusted_receipt_sha256=args.trusted_receipt_sha256)
+            return rollback_packages_owner(plan,receipt,trusted_receipt_sha256=args.trusted_receipt_sha256,
+                approved_plan_sha256=args.approve_plan_sha256)
+        if args.template_action.startswith('owner-'):
+            from .template_packages_installation import (plan_owner_package,build_owner_package,
+                plan_owner_install,install_owner_package,owner_installation_status)
+            from .template_installation import write_plan_exclusive
+            action=args.template_action
+            if action=='owner-package-plan':
+                request=read_json(args.request)
+                result=plan_owner_package(request)
+                write_plan_exclusive(args.out,result,host_root=request['host_root'])
+                return result
+            if action=='owner-install-plan':
+                package_plan=read_json(args.package_plan)
+                result=plan_owner_install(package_plan,read_json(args.package_receipt))
+                write_plan_exclusive(args.out,result,host_root=package_plan['request']['host_root'])
+                return result
+            plan=read_json(args.plan)
+            if action=='owner-install-status': return owner_installation_status(plan)
+            if action=='owner-package-build':
+                return build_owner_package(plan,approved_plan_sha256=args.approve_plan_sha256)
+            return install_owner_package(plan,approved_plan_sha256=args.approve_plan_sha256)
         if args.template_action.startswith('connected-'):
             if args.template_action.startswith('connected-generation-'):
                 from .template_connected_generation import (

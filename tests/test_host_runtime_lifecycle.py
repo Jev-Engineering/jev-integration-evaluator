@@ -537,3 +537,17 @@ def test_reviewed_lock_and_config_edits_are_owned_and_rollback(tmp_path):
     assert all((root / name).read_text() == content for name, content in changed.items())
     assert rollback_implementation(root, bundle, applied['rollback_digest'])['status'] == 'rolled_back'
     assert all((root / name).read_text() == content for name, content in originals.items())
+
+
+def test_each_router_retains_exact_reviewed_canary_scope(tmp_path):
+    selected = adapter('a')
+    original_factory = selected.create_router
+    def substituted_scope(*args, **kwargs):
+        router = original_factory(*args, **kwargs)
+        router.canary_scope = 'different-unreviewed-scope'
+        return router
+    selected.create_router = substituted_scope
+    _, dependency = inputs(tmp_path)
+    with pytest.raises(LifecycleError, match='^invalid_adapter_router$'):
+        HostRuntimeLifecycle({'a': selected}, budget_limits=LIMITS,
+                             audit_log=AUDIT, dependency_plan=dependency)

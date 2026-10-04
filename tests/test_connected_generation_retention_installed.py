@@ -225,7 +225,7 @@ def test_bound_h_connected_upgrade_and_retained_rollback(tmp_path, monkeypatch):
         dual_selector = dict(plans[1], host_profile='registered-dual-connected-v1')
         dual_selector['plan_sha256'] = digest({key: value for key, value in
             dual_selector.items() if key != 'plan_sha256'})
-        with pytest.raises(InputError, match='profile_not_supported'):
+        with pytest.raises(InputError, match='^connected_generation_profile_binding_mismatch$'):
             generation._authority(dual_selector, {}, tmp_path / 'absent-signature')
         with pytest.raises(InputError):
             generation._installed(dual_selector, {'files': []}, limits)

@@ -40,4 +40,8 @@ off-mode provenance. Connected canary and active remain unavailable without
 an observed **combined** treatment study, raw recomputed gate evidence, and
 independently authenticated exact deployment and runtime receipts covering
 both placements. A single-placement study cannot authorize the composite.
-Connected upgrade and rollback remain separate pending work.
+The finite dual profile has an offline stopped-generation transfer path described
+in `connected-generation-transfer-v1.md`. Separate independent package
+composition uses a genuine installed owner and distinct contracts; see
+`connected-separate-packages-v1.md`. Neither path supplies live treatment or
+provider qualification.

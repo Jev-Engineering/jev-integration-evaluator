@@ -32,10 +32,9 @@ class ConnectedGenerationError(InputError):
     """Fixed diagnostic without source, credential, or private grant content."""
 
 
-# Finite single-placement host shapes with an installed two-generation
-# test. The composite selector and any unlisted name stay refused.
+# Finite source-reviewed host shapes; unlisted profiles stay refused.
 _TRANSFER_PROFILES = (None, 'retrieval-d-v1', 'retention-h-v1', 'graph-l-v1',
-                      'claim-m-v1', 'completion-e-v1')
+                      'claim-m-v1', 'completion-e-v1', 'registered-dual-connected-v1')
 
 
 _OPENSSL = Path('/usr/bin/openssl')
@@ -137,12 +136,20 @@ def _installed(plan: dict, dependency_plan: dict, limits: dict) -> dict:
     base = plan['off_provenance']
     receipt = delivery.offline._receipt(base['install_plan'],
                                          base['trusted_install_receipt_sha256'])
-    actual = derive_installed_binding(base['install_plan']['package_plan'],
+    composite = host_profile == 'registered-dual-connected-v1'
+    if composite:
+        from .template_connected_composite_binding import derive_installed_composite_binding
+        derive = derive_installed_composite_binding
+    else:
+        derive = derive_installed_binding
+    actual = derive(base['install_plan']['package_plan'],
         base['install_plan']['package_receipt'], base['install_plan'], receipt,
         trusted_package_receipt_sha256=plan['trusted_package_receipt_sha256'],
         trusted_install_receipt_sha256=base['trusted_install_receipt_sha256'])
+    origins = actual['shared_origins'] if composite else actual['origins']
+    placements = binding['placements'] if composite else {binding['candidate_id']: binding}
     if (actual != binding or actual['binding_sha256'] != plan['trusted_binding_sha256']
-            or 'loader' not in actual['origins']):
+            or 'loader' not in origins):
         raise ConnectedGenerationError('connected_generation_installed_binding_changed')
     delivery._check_profile_binding(actual, profile)
     for row in binding['source_plan']['files']:
@@ -176,7 +183,7 @@ def _installed(plan: dict, dependency_plan: dict, limits: dict) -> dict:
             or config.get('source_plan') != binding['source_plan']
             or config.get('source_root') != binding['site']
             or type(config.get('source_bindings')) is not dict
-            or set(config['source_bindings']) != {binding['candidate_id']}
+            or set(config['source_bindings']) != set(placements)
             or type(limits) is not dict):
         raise ConnectedGenerationError('connected_generation_runtime_binding_changed')
     cert = base['launch_environment'].get('SSL_CERT_FILE')
@@ -201,27 +208,29 @@ def _installed(plan: dict, dependency_plan: dict, limits: dict) -> dict:
                            manifest['signatures'].get('egress_grant', ''),
                            expected_public_sha256=plan['reference_sha256'][public_name])):
         raise ConnectedGenerationError('connected_generation_runtime_authority_unverified')
-    spec = _literal_spec(Path(binding['origins']['adapter']['path']))
-    candidate = binding['candidate_id']
-    bound = config['source_bindings'][candidate]
-    if (spec.get('candidate_id') != candidate
-            or spec.get('source', {}).get('file') != binding['source_file']
-            or spec['source'].get('file_sha256') != binding['reviewed_file_sha256']
-            or bound != {'reviewed_file_sha256': binding['reviewed_file_sha256'],
-                         'applied_file_sha256': binding['applied_file_sha256'],
-                         'adapter_path': binding['origins']['adapter']['wheel_member'],
-                         'adapter_sha256': binding['origins']['adapter']['sha256']}):
-        raise ConnectedGenerationError('connected_generation_adapter_binding_changed')
+    specs = {}
+    for candidate, placement in placements.items():
+        spec = _literal_spec(Path(placement['origins']['adapter']['path']))
+        bound = config['source_bindings'][candidate]
+        if (spec.get('candidate_id') != candidate
+                or spec.get('source', {}).get('file') != placement['source_file']
+                or spec['source'].get('file_sha256') != placement['reviewed_file_sha256']
+                or bound != {'reviewed_file_sha256': placement['reviewed_file_sha256'],
+                             'applied_file_sha256': placement['applied_file_sha256'],
+                             'adapter_path': placement['origins']['adapter']['wheel_member'],
+                             'adapter_sha256': placement['origins']['adapter']['sha256']}):
+            raise ConnectedGenerationError('connected_generation_adapter_binding_changed')
+        specs[candidate] = digest(spec)
     expected = {'endpoint': config['endpoint'], 'credential_ref': config['credential_ref'],
                 'model': config['model'], 'environment_digest': config['environment_digest'],
                 'source_digest': digest({'root': binding['site'], 'plan': binding['source_plan'],
                                          'bindings': config['source_bindings'],
                                          'installed_binding_sha256': binding['binding_sha256']}),
                 'dependency_digest': digest(dependency_plan), 'budget_digest': digest(limits),
-                'adapters_digest': digest({candidate: digest(spec)}), 'mode': 'shadow'}
+                'adapters_digest': digest(specs), 'mode': 'shadow'}
     if any(authority['egress_grant'].get(name) != value for name, value in expected.items()):
         raise ConnectedGenerationError('connected_generation_egress_binding_changed')
-    identity = digest({'adapters': {candidate: digest(spec)},
+    identity = digest({'adapters': specs,
                        'configuration': config, 'dependency_plan': dependency_plan,
                        'budget_limits': limits})
     ledger = Path(manifest['ledger_path'])
@@ -229,7 +238,8 @@ def _installed(plan: dict, dependency_plan: dict, limits: dict) -> dict:
             or not ledger.parent.is_dir()):
         raise ConnectedGenerationError('connected_generation_ledger_path_invalid')
     delivery.offline._private(ledger.parent)
-    return {'identity': identity, 'placement': candidate, 'ledger': ledger,
+    return {'identity': identity, 'placements': {name: placement['source_file']
+                for name, placement in placements.items()}, 'ledger': ledger,
             'binding_sha256': binding['binding_sha256'], 'public': public,
             'egress_expires_at': authority['egress_grant']['expires_at']}
 
@@ -277,6 +287,14 @@ def plan_connected_generation_transfer(old_session: str | Path, new_plan: dict,
         history = digest(ledger.generation_snapshot())
     finally:
         ledger.release()
+    old_placements = old.get('placements', {old.get('placement'): 'single'})
+    new_placements = new.get('placements', {new.get('placement'): 'single'})
+    if (len(set(old_placements.values())) != len(old_placements)
+            or set(old_placements.values()) != set(new_placements.values())
+            or len(new_placements) != len(old_placements)):
+        raise ConnectedGenerationError('connected_generation_placement_set_changed')
+    by_source = {source: name for name, source in old_placements.items()}
+    mapping = {name: by_source[source] for name, source in new_placements.items()}
     grant = {'schema_version': '1.0', 'kind': 'connected-generation-transfer-v1',
              'action': action, 'old_identity': old['identity'],
              'new_identity': new['identity'],
@@ -286,8 +304,8 @@ def plan_connected_generation_transfer(old_session: str | Path, new_plan: dict,
              'new_binding_sha256': new['binding_sha256'],
              'session_head_sha256': trusted_old_head,
              'history_sha256': history, 'limits': copy.deepcopy(limits),
-             'old_placements': [old['placement']],
-             'new_to_old_placements': {new['placement']: old['placement']},
+             'old_placements': sorted(old_placements),
+             'new_to_old_placements': mapping,
              'issued_at': issued_at, 'expires_at': expires_at}
     validate_contract(grant, 'connected-generation-transfer-v1')
     return grant
@@ -297,7 +315,15 @@ def _authority(plan: dict, grant: dict, signature_file: str | Path):
     if plan.get('host_profile') not in _TRANSFER_PROFILES:
         raise ConnectedGenerationError('connected_generation_profile_not_supported')
     binding = plan['installed_binding']
-    public_name = delivery._profile(plan.get('host_profile'))['references'][1]
+    profile = delivery._profile(plan.get('host_profile'))
+    if plan.get('host_profile') == 'registered-dual-connected-v1':
+        # Relabelling a single installed package cannot select the dual
+        # authority namespace. Refuse before reading any private reference.
+        try:
+            delivery._check_profile_binding(binding, profile)
+        except (InputError, KeyError, TypeError):
+            raise ConnectedGenerationError('connected_generation_profile_binding_mismatch') from None
+    public_name = profile['references'][1]
     public = Path(plan['off_provenance']['launch_environment'][public_name])
     delivery._check_reference(str(public))
     if file_hash(public) != plan['reference_sha256'][public_name]:

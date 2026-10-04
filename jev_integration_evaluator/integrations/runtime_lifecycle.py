@@ -38,20 +38,26 @@ class _NoEgressClient:
         raise LifecycleError('provider_unavailable_without_egress')
 
 
-def _sha(path: Path) -> str:
+def _sha(path: Path, maximum_bytes: int | None = None) -> str:
     h = hashlib.sha256()
+    consumed = 0
     with path.open('rb') as source:
         for chunk in iter(lambda: source.read(65536), b''):
+            consumed += len(chunk)
+            if maximum_bytes is not None and consumed > maximum_bytes:
+                raise LifecycleError('dependency_plan_drift')
             h.update(chunk)
     return h.hexdigest()
 
 
-def check_dependency_plan(plan: dict[str, Any]) -> None:
+def check_dependency_plan(plan: dict[str, Any], *, maximum: int = 64, maximum_bytes: int = 1_000_000) -> None:
     """Check an already prepared exact plan; never resolve or install packages."""
     if (type(plan) is not dict or set(plan) != {'files'} or type(plan['files']) is not list
-            or not 1 <= len(plan['files']) <= 64):
+            or not 1 <= len(plan['files']) <= maximum):
         raise LifecycleError('invalid_dependency_plan')
     seen = set()
+    total_bytes = 0
+    checked = []
     for row in plan['files']:
         if (type(row) is not dict or set(row) != {'path', 'sha256'}
                 or type(row['path']) is not str or not Path(row['path']).is_absolute()
@@ -62,9 +68,20 @@ def check_dependency_plan(plan: dict[str, Any]) -> None:
         seen.add(row['path'])
         path = Path(row['path'])
         try:
+            size = path.stat().st_size
+            total_bytes += size
+            if total_bytes > 64_000_000:
+                raise LifecycleError('dependency_plan_drift')
             if (any(component.is_symlink() for component in (path, *path.parents))
                     or not path.is_file() or not stat.S_ISREG(path.stat().st_mode)
-                    or path.stat().st_size > 1_000_000 or _sha(path) != row['sha256']):
+                    or size > maximum_bytes):
+                raise LifecycleError('dependency_plan_drift')
+            checked.append((path, row['sha256']))
+        except OSError:
+            raise LifecycleError('dependency_plan_unavailable') from None
+    for path, wanted in checked:
+        try:
+            if _sha(path, maximum_bytes) != wanted:
                 raise LifecycleError('dependency_plan_drift')
         except OSError:
             raise LifecycleError('dependency_plan_unavailable') from None
@@ -93,8 +110,12 @@ class HostRuntimeLifecycle:
         if startup_mode not in ('off', 'shadow', 'canary', 'active'):
             raise LifecycleError('activation_requires_separate_reviewed_runtime')
         connected = connected_config is not None
+        independent_member_scopes = False
         installed_binding = (connected_config.get('installed_binding')
                              if type(connected_config) is dict else None)
+        source_plan_limit = (4096 if type(installed_binding) is dict
+                             and installed_binding.get('kind') == 'connected-installed-packages-binding-v1'
+                             and 'owner' in installed_binding else 64)
         windows_installed = (type(installed_binding) is dict and
                              installed_binding.get('kind') ==
                              'windows-connected-installed-binding-v1')
@@ -122,33 +143,44 @@ class HostRuntimeLifecycle:
             raise LifecycleError('invalid_runtime_startup')
         check_dependency_plan(dependency_plan)
         if connected:
-            check_dependency_plan(connected_config['source_plan'])
+            check_dependency_plan(connected_config['source_plan'], maximum=source_plan_limit, maximum_bytes=(4_000_000 if source_plan_limit == 4096 else 1_000_000))
             if installed_binding is not None:
                 from ..contracts import validate_contract
                 try:
                     binding_kind = installed_binding['kind']
                     if binding_kind not in ('connected-installed-binding-v1',
                                             'connected-installed-composite-binding-v1',
+                                            'connected-installed-packages-binding-v1',
                                             'windows-connected-installed-binding-v1'):
                         raise LifecycleError('connected_installed_binding_unverified')
                     if windows_installed and os.name != 'nt':
                         raise LifecycleError('connected_installed_binding_platform')
                     validate_contract(installed_binding, binding_kind)
+                    if binding_kind == 'connected-installed-packages-binding-v1' and 'owner' not in installed_binding:
+                        raise LifecycleError('connected_installed_binding_unverified')
                     if (digest({key: value for key, value in installed_binding.items()
                                 if key != 'binding_sha256'}) != installed_binding['binding_sha256']
                             or connected_config['source_plan'] != installed_binding['source_plan']
                             or connected_config['source_root'] != installed_binding['site']
                             or verify_authority('installed_binding', installed_binding['binding_sha256']) is not True):
                         raise LifecycleError('connected_installed_binding_unverified')
-                    if binding_kind == 'connected-installed-composite-binding-v1':
+                    if binding_kind in ('connected-installed-composite-binding-v1',
+                                        'connected-installed-packages-binding-v1'):
                         if (set(installed_binding['candidate_ids']) != set(adapters)
-                                or set(installed_binding['placements']) != set(adapters)
+                                or set(installed_binding.get('placements', installed_binding.get('members', {}))) != set(adapters)
                                 or installed_binding['candidate_ids'] != sorted(adapters)):
                             raise LifecycleError('connected_installed_binding_unverified')
                 except (InputError, KeyError, TypeError, ValueError):
                     raise LifecycleError('connected_installed_binding_unverified') from None
-                if binding_kind == 'connected-installed-composite-binding-v1' and startup_mode in ('canary', 'active'):
+                if binding_kind in ('connected-installed-composite-binding-v1',
+                                    'connected-installed-packages-binding-v1') and startup_mode in ('canary', 'active'):
                     raise LifecycleError('connected_composite_combined_gate_required')
+                independent_member_scopes = (
+                    binding_kind == 'connected-installed-packages-binding-v1'
+                    and startup_mode == 'shadow'
+                    and installed_binding['owner']['kind'] == 'connected-installed-owner-binding-v1'
+                    and {member['source_file'] for member in installed_binding['members'].values()} ==
+                        {'src/registered_alpha/host.py', 'src/work_queue/engine.py'})
             root = Path(connected_config['source_root'])
             if (not root.is_absolute() or not root.is_dir() or
                     any(part.is_symlink() for part in (root, *root.parents))):
@@ -194,20 +226,27 @@ class HostRuntimeLifecycle:
                                    for row in (*origins.values(), *shared.values()))):
                         raise LifecycleError('connected_source_binding_mismatch')
                 elif installed_binding is not None:
-                    origins = installed_binding['origins']
-                    if (installed_binding['candidate_id'] != name
-                            or installed_binding['source_file'] != source_relative
-                            or installed_binding['reviewed_file_sha256'] != spec['source'].get('file_sha256')
-                            or installed_binding['applied_file_sha256'] != bound['applied_file_sha256']
+                    member = (installed_binding['members'][name] if binding_kind ==
+                              'connected-installed-packages-binding-v1' else installed_binding)
+                    if binding_kind == 'connected-installed-packages-binding-v1':
+                        validate_contract(member, 'connected-installed-binding-v1')
+                        if digest({key: value for key, value in member.items()
+                                   if key != 'binding_sha256'}) != member['binding_sha256']:
+                            raise LifecycleError('connected_installed_binding_unverified')
+                    origins = member['origins']
+                    if (member['candidate_id'] != name
+                            or member['source_file'] != source_relative
+                            or member['reviewed_file_sha256'] != spec['source'].get('file_sha256')
+                            or member['applied_file_sha256'] != bound['applied_file_sha256']
                             or adapter_relative != origins['adapter']['wheel_member']
                             or origin is None or Path(origin).resolve() != Path(origins['adapter']['path'])
                             or bound['adapter_sha256'] != origins['adapter']['sha256']
-                            or bound['reviewed_file_sha256'] != installed_binding['reviewed_file_sha256']
+                            or bound['reviewed_file_sha256'] != member['reviewed_file_sha256']
                             or covered.get(Path(origins['host']['path'])) != origins['host']['sha256']
                             or covered.get(Path(origins['adapter']['path'])) != origins['adapter']['sha256']
                             or covered.get(Path(origins['console']['path'])) != origins['console']['sha256']
-                            or covered.get(Path(installed_binding['reviewed_project_path'])) !=
-                               installed_binding['reviewed_project_sha256']):
+                            or covered.get(Path(member['reviewed_project_path'])) !=
+                               member['reviewed_project_sha256']):
                         raise LifecycleError('connected_source_binding_mismatch')
                     if ('loader' in origins and covered.get(Path(origins['loader']['path'])) !=
                             origins['loader']['sha256']):
@@ -329,7 +368,8 @@ class HostRuntimeLifecycle:
                 runtime = spec['runtime']
                 if (spec['candidate_id'] != name or runtime['configuration']['mode'] != 'off'
                         or type(runtime['task_field']) is not str or not runtime['task_field']
-                        or (scope is not None and runtime['canary_scope'] != scope)):
+                        or (scope is not None and runtime['canary_scope'] != scope
+                            and not independent_member_scopes)):
                     raise LifecycleError('runtime_configuration_binding_mismatch')
                 scope = runtime['canary_scope']
                 selected_config = copy.deepcopy(runtime['configuration'])
@@ -381,11 +421,15 @@ class HostRuntimeLifecycle:
         self._effective_mode = startup_mode
         self._connected_config_digest = digest(connected_config) if connected else None
         self._dependency_plan = copy.deepcopy(dependency_plan)
+        self._source_plan_limit = source_plan_limit
+        self._source_file_limit = 4_000_000 if source_plan_limit == 4096 else 1_000_000
         self._source_plan = copy.deepcopy(connected_config['source_plan']) if connected else None
         self._installed_binding_digest = (installed_binding['binding_sha256']
                                           if installed_binding is not None else None)
         if installed_binding is None:
             self._installed_origin_paths = ()
+        elif installed_binding['kind'] == 'connected-installed-packages-binding-v1':
+            self._installed_origin_paths = tuple(row['path'] for row in installed_binding['source_plan']['files'])
         elif installed_binding['kind'] == 'connected-installed-composite-binding-v1':
             self._installed_origin_paths = tuple(row['path'] for row in (
                 *installed_binding['shared_origins'].values(),
@@ -564,7 +608,7 @@ class HostRuntimeLifecycle:
         try:
             check_dependency_plan(self._dependency_plan)
             if self._source_plan is not None:
-                check_dependency_plan(self._source_plan)
+                check_dependency_plan(self._source_plan, maximum=self._source_plan_limit, maximum_bytes=self._source_file_limit)
                 if self._installed_binding_digest is not None:
                     if self._windows_installed_origins:
                         from ..windows_template_connected_binding import current_origin

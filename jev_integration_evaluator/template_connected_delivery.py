@@ -107,6 +107,16 @@ _PROFILES = {
         'binary': ('L_HOLD', 'L_APPROVAL'),
         'injected': ('L_CONNECTED_REF_SHA256', 'L_AUTH_PUBKEY_SHA256'),
     },
+    'registered-alpha-queue-pair-v1': {
+        'source': frozenset({'src/registered_alpha/host.py', 'src/work_queue/engine.py'}),
+        'members': {},
+        'references': ('PACKAGES_OWNER_CONNECTED_REF', 'PACKAGES_OWNER_AUTH_PUBKEY_FILE'),
+        'allowed': frozenset({'PACKAGES_OWNER_READY_PATH', 'PACKAGES_OWNER_RELEASE_PATH',
+                              'PACKAGES_OWNER_AUDIT_PATH', 'PACKAGES_OWNER_HOLD',
+                              'REGISTERED_ALPHA_EFFECTS', 'WORK_QUEUE_EFFECTS'}),
+        'binary': ('PACKAGES_OWNER_HOLD',),
+        'injected': ('PACKAGES_OWNER_CONNECTED_REF_SHA256', 'PACKAGES_OWNER_AUTH_PUBKEY_SHA256'),
+    },
     'registered-dual-connected-v1': {
         'source': {'JEV-DA938C3C7965': 'src/registered_dual/work_queue.py',
                    'JEV-EDF19BDB65F0': 'src/registered_dual/alpha.py'},
@@ -132,6 +142,12 @@ def _profile(name: str | None) -> dict:
 
 
 def _check_profile_binding(binding: dict, profile: dict) -> None:
+    if type(profile['source']) is frozenset:
+        if (binding['kind'] != 'connected-installed-packages-binding-v1' or 'owner' not in binding
+                or {row['source_file'] for row in binding['members'].values()} != profile['source']
+                or set(binding['candidate_ids']) != set(binding['members'])):
+            raise ConnectedDeliveryError('connected_host_profile_binding_mismatch')
+        return
     if type(profile['source']) is dict:
         sources = profile['source']
         if (binding['kind'] != 'connected-installed-composite-binding-v1'
@@ -156,12 +172,12 @@ def _private_file(path: Path, maximum: int) -> None:
     offline._owned_file(path, maximum=maximum)
 
 
-def _check_reference(path: str) -> None:
+def _check_reference(path: str, *, maximum: int = 256_000) -> None:
     target = Path(path)
     if (not target.is_absolute() or any(part.is_symlink() for part in (target, *target.parents))
             or not target.is_file()):
         raise ConnectedDeliveryError('connected_private_reference_invalid')
-    _private_file(target, 256_000)
+    _private_file(target, maximum)
     offline._private(target.parent)
 
 
@@ -220,7 +236,8 @@ def plan_connected_delivery(install_plan: dict, *, trusted_install_receipt_sha25
     if 'SSL_CERT_FILE' in launch_environment:
         _check_reference(launch_environment['SSL_CERT_FILE'])
     for name in references:
-        _check_reference(launch_environment[name])
+        _check_reference(launch_environment[name], maximum=(4_000_000 if host_profile ==
+            'registered-alpha-queue-pair-v1' and name == 'PACKAGES_OWNER_CONNECTED_REF' else 256_000))
     base = offline.plan_delivery(install_plan,
         trusted_install_receipt_sha256=trusted_install_receipt_sha256,
         observation=observation, launch_environment=launch_environment)
@@ -228,17 +245,29 @@ def plan_connected_delivery(install_plan: dict, *, trusted_install_receipt_sha25
             'ready', 'entrypoint_reached', 'integration_reachable', 'outcome_verified'}:
         raise ConnectedDeliveryError('connected_independent_outcome_schedule_required')
     receipt = offline._receipt(install_plan, trusted_install_receipt_sha256)
-    if host_profile == 'registered-dual-connected-v1':
-        from .template_connected_composite_binding import derive_installed_composite_binding
-        derive = derive_installed_composite_binding
+    if host_profile == 'registered-alpha-queue-pair-v1':
+        from .template_packages_owner_binding import derive_owned_packages_binding
+        package_plan = install_plan['package_plan']
+        source_plan = package_plan['request']['owner_source_plan']
+        actual = derive_owned_packages_binding(source_plan['packages'], {
+            'package_plan': package_plan, 'package_receipt': install_plan['package_receipt'],
+            'install_plan': install_plan, 'install_receipt': receipt,
+            'trusted_package_receipt_sha256': trusted_package_receipt_sha256,
+            'trusted_install_receipt_sha256': trusted_install_receipt_sha256},
+            source_root=source_plan['binding']['site'])
+        has_loader = 'owner' in actual
     else:
-        derive = derive_installed_binding
-    actual = derive(install_plan['package_plan'],
-        install_plan['package_receipt'], install_plan, receipt,
-        trusted_package_receipt_sha256=trusted_package_receipt_sha256,
-        trusted_install_receipt_sha256=trusted_install_receipt_sha256)
-    has_loader = ('loader' in actual['shared_origins'] if host_profile ==
-                  'registered-dual-connected-v1' else 'loader' in actual['origins'])
+        if host_profile == 'registered-dual-connected-v1':
+            from .template_connected_composite_binding import derive_installed_composite_binding
+            derive = derive_installed_composite_binding
+        else:
+            derive = derive_installed_binding
+        actual = derive(install_plan['package_plan'],
+            install_plan['package_receipt'], install_plan, receipt,
+            trusted_package_receipt_sha256=trusted_package_receipt_sha256,
+            trusted_install_receipt_sha256=trusted_install_receipt_sha256)
+        has_loader = ('loader' in actual['shared_origins'] if host_profile ==
+                      'registered-dual-connected-v1' else 'loader' in actual['origins'])
     if (actual != installed_binding or actual['binding_sha256'] != trusted_binding_sha256
             or not has_loader):
         raise ConnectedDeliveryError('connected_installed_binding_unverified')
@@ -520,7 +549,8 @@ def _result(state: dict, head: str, plan: dict) -> dict:
         try:
             target = Path(path)
             if private:
-                _check_reference(path)
+                _check_reference(path, maximum=(4_000_000 if plan.get('host_profile') ==
+                    'registered-alpha-queue-pair-v1' and path == base['launch_environment'].get('PACKAGES_OWNER_CONNECTED_REF') else 256_000))
             if origin:
                 info = target.stat()
                 if (info.st_uid != os.geteuid() or info.st_nlink != 1
@@ -530,7 +560,9 @@ def _result(state: dict, head: str, plan: dict) -> dict:
         except (OSError, InputError):
             return False
     binding = plan['installed_binding']
-    if binding['kind'] == 'connected-installed-composite-binding-v1':
+    if binding['kind'] == 'connected-installed-packages-binding-v1':
+        origin_paths = {row['path'] for row in binding['source_plan']['files']}
+    elif binding['kind'] == 'connected-installed-composite-binding-v1':
         origin_paths = {row['path'] for row in (
             *binding['shared_origins'].values(),
             *(origin for placement in binding['placements'].values()

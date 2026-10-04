@@ -1,0 +1,456 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "profile",
+    "owner_root",
+    "owner_file",
+    "owner_project_sha256",
+    "binding",
+    "trusted_binding_sha256",
+    "packages",
+    "adapter_specs_sha256",
+    "source_preimage",
+    "source_mode",
+    "patch_plan",
+    "plan_sha256"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "packages-owner-source-plan-v1"
+    },
+    "profile": {
+      "const": "registered-alpha-queue-pair-v1"
+    },
+    "owner_root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "owner_file": {
+      "const": "src/registered_packages/console.py"
+    },
+    "owner_project_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "binding": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "title": "Two independently installed package origins under one explicit owner root",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "kind",
+        "candidate_ids",
+        "site",
+        "members",
+        "distributions",
+        "source_plan",
+        "binding_sha256"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "1.0"
+        },
+        "kind": {
+          "const": "connected-installed-packages-binding-v1"
+        },
+        "candidate_ids": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "site": {
+          "type": "string",
+          "minLength": 1
+        },
+        "members": {
+          "type": "object",
+          "minProperties": 2,
+          "maxProperties": 2,
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "schema_version",
+              "kind",
+              "candidate_id",
+              "source_file",
+              "reviewed_file_sha256",
+              "applied_file_sha256",
+              "package_plan_sha256",
+              "package_receipt_sha256",
+              "install_plan_sha256",
+              "install_receipt_sha256",
+              "wheel_sha256",
+              "installed_files_sha256",
+              "site",
+              "origins",
+              "reviewed_project_path",
+              "reviewed_project_sha256",
+              "source_plan",
+              "binding_sha256"
+            ],
+            "properties": {
+              "schema_version": {
+                "const": "1.0"
+              },
+              "kind": {
+                "const": "connected-installed-binding-v1"
+              },
+              "candidate_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "source_file": {
+                "type": "string",
+                "minLength": 1
+              },
+              "reviewed_file_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "applied_file_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "package_plan_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "package_receipt_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "install_plan_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "install_receipt_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "wheel_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "installed_files_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "site": {
+                "type": "string",
+                "minLength": 1
+              },
+              "origins": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "host",
+                  "adapter",
+                  "console"
+                ],
+                "properties": {
+                  "host": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "path",
+                      "sha256",
+                      "wheel_member"
+                    ],
+                    "properties": {
+                      "path": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "sha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "wheel_member": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  },
+                  "adapter": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "path",
+                      "sha256",
+                      "wheel_member"
+                    ],
+                    "properties": {
+                      "path": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "sha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "wheel_member": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  },
+                  "console": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "path",
+                      "sha256",
+                      "wheel_member"
+                    ],
+                    "properties": {
+                      "path": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "sha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "wheel_member": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  },
+                  "loader": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "path",
+                      "sha256",
+                      "wheel_member"
+                    ],
+                    "properties": {
+                      "path": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "sha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "wheel_member": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                }
+              },
+              "reviewed_project_path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "reviewed_project_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "source_plan": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "files"
+                ],
+                "properties": {
+                  "files": {
+                    "type": "array",
+                    "minItems": 4,
+                    "maxItems": 5,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "path",
+                        "sha256"
+                      ],
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "sha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "binding_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            }
+          }
+        },
+        "distributions": {
+          "type": "object",
+          "minProperties": 2,
+          "maxProperties": 2,
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "candidate_id",
+              "version"
+            ],
+            "properties": {
+              "candidate_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "source_plan": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "files"
+          ],
+          "properties": {
+            "files": {
+              "type": "array",
+              "minItems": 10,
+              "maxItems": 4096,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "path",
+                  "sha256"
+                ],
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "binding_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "owner"
+            ]
+          },
+          "else": {
+            "properties": {
+              "source_plan": {
+                "properties": {
+                  "files": {
+                    "maxItems": 266
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "trusted_binding_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "packages": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "package_plan",
+          "package_receipt",
+          "install_plan",
+          "install_receipt",
+          "trusted_package_receipt_sha256",
+          "trusted_install_receipt_sha256"
+        ],
+        "properties": {
+          "package_plan": {
+            "type": "object"
+          },
+          "package_receipt": {
+            "type": "object"
+          },
+          "install_plan": {
+            "type": "object"
+          },
+          "install_receipt": {
+            "type": "object"
+          },
+          "trusted_package_receipt_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "trusted_install_receipt_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        }
+      }
+    },
+    "adapter_specs_sha256": {
+      "type": "object",
+      "minProperties": 2,
+      "maxProperties": 2,
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{64}$"
+      }
+    },
+    "source_preimage": {
+      "type": "string",
+      "maxLength": 65536
+    },
+    "source_mode": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 511
+    },
+    "patch_plan": {
+      "type": "object"
+    },
+    "plan_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}

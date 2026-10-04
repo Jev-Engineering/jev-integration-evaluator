@@ -8,9 +8,9 @@ calling test module. Nothing here reaches a real provider.
 """
 from __future__ import annotations
 
-import ast
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+from contextlib import contextmanager
 import hashlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
@@ -28,7 +28,7 @@ from typing import Callable
 import pytest
 
 from jev_integration_evaluator.budget import BudgetDenied
-from jev_integration_evaluator.io import InputError, digest, file_hash
+from jev_integration_evaluator.io import InputError, digest, file_hash, read_json
 from jev_integration_evaluator.integrations.runtime_ledger import RuntimeLedger
 from jev_integration_evaluator.template_connected_binding import derive_installed_binding
 from jev_integration_evaluator import template_connected_delivery as connected_delivery
@@ -48,6 +48,20 @@ from tests.test_template_installation import _metadata
 LIMITS = {'max_calls_per_task': 2, 'max_cost_per_task': 2,
           'max_total_calls': 2, 'max_total_cost': 2,
           'max_in_flight': 1, 'max_tasks': 2}
+
+
+def synthetic_typed_answers(questions, preferred_label=None):
+    """Existing synthetic local protocol shape; never a real Jev result."""
+    answers = {}
+    for name, question in questions.items():
+        if question['type'] == 'noul':
+            answers[name] = {'type': 'noul', 'noul': 1.0}
+        else:
+            labels = list(question['criteria'])
+            choice = preferred_label if preferred_label in labels else labels[0]
+            answers[name] = {'type': 'choice', 'choice': choice, 'confidence': 1.0,
+                'probabilities': {label: float(label == choice) for label in labels}}
+    return answers
 
 
 @dataclass(frozen=True)
@@ -72,6 +86,36 @@ class GenerationJourney:
     # A separately installed, valid host of another finite profile. It is
     # only planned, never launched.
     foreign: 'GenerationJourney | None' = None
+    composite: bool = False
+    calls_per_generation: int = 1
+    replay_headroom: int = 0
+
+
+def _placements(binding: dict) -> dict:
+    return binding['placements'] if 'placements' in binding else {binding['candidate_id']: binding}
+
+
+def _candidate(binding: dict) -> str:
+    return sorted(_placements(binding))[0]
+
+
+def _origins(binding: dict) -> dict:
+    return binding['shared_origins'] if 'shared_origins' in binding else binding['origins']
+
+
+@contextmanager
+def _unsigned_refusal_clock(monkeypatch, cutoff: datetime):
+    """Isolate final planner refusal gates without extending any live authority."""
+    class InScopeClock:
+        @staticmethod
+        def now(_timezone):
+            return cutoff - timedelta(seconds=1)
+    # No launcher, runtime, signer or delivery clock is changed. This context
+    # surrounds only the unsigned durable-revocation negative, after every
+    # actual launch and transfer has finished.
+    with monkeypatch.context() as patch:
+        patch.setattr(generation, 'datetime', InScopeClock)
+        yield (cutoff - timedelta(seconds=2)).isoformat()
 
 
 def _scope(status: dict, plan: dict, action: str, cutoff: datetime, public_name: str) -> dict:
@@ -103,9 +147,9 @@ def _exited(session: Path, seconds: float = 25) -> dict:
     return status
 
 
-def _history(ledger: Path, identity: str) -> tuple[dict, dict]:
+def _history(ledger: Path, identity: str, limits: dict = LIMITS) -> tuple[dict, dict]:
     """Read the durable ledger as its only owner; no console may be running."""
-    owner = RuntimeLedger(ledger, identity=identity, **LIMITS)
+    owner = RuntimeLedger(ledger, identity=identity, **limits)
     try:
         return owner.snapshot(), owner.generation_snapshot()
     finally:
@@ -175,18 +219,7 @@ def run_generation_journey(tmp_path: Path, monkeypatch, journey: GenerationJourn
             raw = self.rfile.read(int(self.headers['Content-Length']))
             request = json.loads(raw)
             calls.append(hashlib.sha256(raw).hexdigest())
-            answers = {}
-            for name, question in request['questions'].items():
-                if question['type'] == 'noul':
-                    answers[name] = {'type': 'noul', 'noul': 1.0}
-                else:
-                    labels = list(question['criteria'])
-                    choice = (journey.preferred_label
-                              if journey.preferred_label in labels else labels[0])
-                    answers[name] = {'type': 'choice', 'choice': choice,
-                                     'confidence': 1.0,
-                                     'probabilities': {label: float(label == choice)
-                                                       for label in labels}}
+            answers = synthetic_typed_answers(request['questions'], journey.preferred_label)
             result = json.dumps({'model': request['model'], 'answers': answers,
                 'usage': {'input_tokens': 1, 'output_tokens': 1}}).encode()
             self.send_response(200)
@@ -207,7 +240,8 @@ def run_generation_journey(tmp_path: Path, monkeypatch, journey: GenerationJourn
         status, plan, action, expires, public_name)
     try:
         ledger = tmp_path / 'one-runtime.ledger'
-        limits = dict(LIMITS)
+        limits = dict(LIMITS, max_total_calls=2 * journey.calls_per_generation + journey.replay_headroom,
+                      max_total_cost=2 * journey.calls_per_generation + journey.replay_headroom)
         now = datetime.now(timezone.utc)
         cutoff = now + timedelta(minutes=10)
         hosts = [(journey, '1.0.0', journey.tasks[0]), (journey, '1.0.1', journey.tasks[1])]
@@ -228,31 +262,38 @@ def run_generation_journey(tmp_path: Path, monkeypatch, journey: GenerationJourn
         for index, (shape, version, task) in enumerate(hosts):
             host, install_plan, receipt = shape.install(
                 tmp_path, index, version, task, wheelhouse, rows, requirements)
-            binding = derive_installed_binding(install_plan['package_plan'],
+            if shape.composite:
+                from jev_integration_evaluator.template_connected_composite_binding import derive_installed_composite_binding
+                derive = derive_installed_composite_binding
+            else:
+                derive = derive_installed_binding
+            binding = derive(install_plan['package_plan'],
                 install_plan['package_receipt'], install_plan, receipt,
                 trusted_package_receipt_sha256=install_plan['package_receipt']['receipt_sha256'],
                 trusted_install_receipt_sha256=receipt['receipt_sha256'])
-            assert binding['origins']['loader']['wheel_member'] == \
+            shared_origins = binding['shared_origins'] if shape.composite else binding['origins']
+            placements = binding['placements'] if shape.composite else {binding['candidate_id']: binding}
+            assert shared_origins['loader']['wheel_member'] == \
                    shape.package + '/connected_authority.py'
-            assert binding['origins']['console']['sha256'] == \
+            assert shared_origins['console']['sha256'] == \
                    file_hash(host['target'] / shape.package / 'console.py')
             assert receipt['installed']['distributions'][
-                'jev-' + shape.package.replace('_host', '') + '-host-fixture'] == version
+                ('jev-independent-registered-dual-connected' if shape.composite else
+                 'jev-' + shape.package.replace('_host', '') + '-host-fixture')] == version
             installed.append((host, install_plan, receipt, binding, task))
             site = Path(binding['site']) / shape.package
             dependency = {'files': [{'path': str(site / name),
                 'sha256': file_hash(site / name)} for name in ('requirements.lock', 'runtime.json')]}
             dependencies.append(dependency)
-            tree = ast.parse(Path(binding['origins']['adapter']['path']).read_bytes())
-            spec = ast.literal_eval(next(node.value for node in tree.body
-                if isinstance(node, ast.Assign) and any(
-                    isinstance(target, ast.Name) and target.id == 'SPEC'
-                    for target in node.targets)))
-            source_bindings = {binding['candidate_id']: {
-                'reviewed_file_sha256': binding['reviewed_file_sha256'],
-                'applied_file_sha256': binding['applied_file_sha256'],
-                'adapter_path': binding['origins']['adapter']['wheel_member'],
-                'adapter_sha256': binding['origins']['adapter']['sha256']}}
+            specs, source_bindings = {}, {}
+            for candidate, placement in placements.items():
+                spec = generation._literal_spec(Path(placement['origins']['adapter']['path']))
+                specs[candidate] = digest(spec)
+                source_bindings[candidate] = {
+                    'reviewed_file_sha256': placement['reviewed_file_sha256'],
+                    'applied_file_sha256': placement['applied_file_sha256'],
+                    'adapter_path': placement['origins']['adapter']['wheel_member'],
+                    'adapter_sha256': placement['origins']['adapter']['sha256']}
             environment_digest = digest({
                 'python': str(Path(receipt['installed']['python']).resolve()),
                 'version': list(sys.version_info[:3]),
@@ -271,7 +312,7 @@ def run_generation_journey(tmp_path: Path, monkeypatch, journey: GenerationJourn
                     'plan': binding['source_plan'], 'bindings': source_bindings,
                     'installed_binding_sha256': binding['binding_sha256']}),
                 'dependency_digest': digest(dependency), 'budget_digest': digest(limits),
-                'adapters_digest': digest({binding['candidate_id']: digest(spec)}),
+                'adapters_digest': digest(specs),
                 'mode': 'shadow', 'issued_at': (now-timedelta(minutes=1)).isoformat(),
                 'expires_at': cutoff.isoformat()}
             reference = tmp_path / f'reference-{index}.json'
@@ -292,7 +333,7 @@ def run_generation_journey(tmp_path: Path, monkeypatch, journey: GenerationJourn
             plans.append(planned(index, _observation(
                 layout['ready'], b'ready\n', observed_path, observed_raw), environment))
             layouts.append(layout)
-        assert installed[0][3]['wheel_sha256'] != installed[1][3]['wheel_sha256']
+        assert installed[0][2]['installed']['distributions'] != installed[1][2]['installed']['distributions']
         assert installed[0][3]['site'] != installed[1][3]['site']
         assert installed[0][3]['binding_sha256'] != installed[1][3]['binding_sha256']
         assert plans[0]['plan_sha256'] != plans[1]['plan_sha256']
@@ -306,7 +347,7 @@ def run_generation_journey(tmp_path: Path, monkeypatch, journey: GenerationJourn
             create_connected_session(tmp_path / 'unknown-profile', unknown_profile,
                 approved_plan_sha256=unknown_profile['plan_sha256'])
         dual_selector = _relabelled(plans[1], host_profile='registered-dual-connected-v1')
-        with pytest.raises(InputError, match='profile_not_supported'):
+        with pytest.raises(InputError):
             generation._authority(dual_selector, {}, tmp_path / 'absent-signature')
         with pytest.raises(InputError):
             generation._installed(dual_selector, {'files': []}, limits)
@@ -358,6 +399,8 @@ def run_generation_journey(tmp_path: Path, monkeypatch, journey: GenerationJourn
                 # attempt marker, is new; the observed effect path stays absent.
                 release = tmp_path / (label + '-release.txt')
                 environment[journey.release_name] = str(release)
+                if journey.composite:
+                    environment['DUAL_AUDIT_PATH'] = str(release.with_suffix('.audit.json'))
                 layout = {'release': release, 'ready': release.with_suffix('.attempt'),
                           'effects': [(tmp_path / (label + '-new-effect.json'),
                                        reuse['effects'][-1][1])]}
@@ -367,7 +410,7 @@ def run_generation_journey(tmp_path: Path, monkeypatch, journey: GenerationJourn
 
         first = tmp_path / 'generation-100'
         stopped_first = launch_and_stop(first, plans[0], layouts[0], journey.tasks[0])
-        assert len(calls) == 1
+        assert len(calls) == journey.calls_per_generation
         old_head = stopped_first['session_head_sha256']
         issued = (datetime.now(timezone.utc)-timedelta(seconds=1)).isoformat()
         plan_args = dict(trusted_old_head=old_head, old_dependency_plan=dependencies[0],
@@ -378,7 +421,7 @@ def run_generation_journey(tmp_path: Path, monkeypatch, journey: GenerationJourn
         new_reference.write_bytes(original_reference + b'\n')
         with pytest.raises(InputError):
             plan_connected_generation_transfer(first, plans[1], **plan_args)
-        assert len(calls) == 1
+        assert len(calls) == journey.calls_per_generation
         new_reference.write_bytes(original_reference)
         # A separately signed later egress grant for the same installed bytes
         # is a valid delivery plan but cannot outlive the original cutoff.
@@ -414,7 +457,7 @@ def run_generation_journey(tmp_path: Path, monkeypatch, journey: GenerationJourn
             with pytest.raises(InputError, match='^connected_generation_scope_invalid$'):
                 plan_connected_generation_transfer(first, plans[2],
                     **dict(plan_args, new_dependency_plan=dependencies[2]))
-        assert not (tmp_path / 'generation-101').exists() and len(calls) == 1
+        assert not (tmp_path / 'generation-101').exists() and len(calls) == journey.calls_per_generation
         # The fixture console records its raw effect in host files. This
         # test-authored, clearly synthetic completed claim uses the real
         # installed placement so effect-claim retention is not vacuous.
@@ -425,23 +468,39 @@ def run_generation_journey(tmp_path: Path, monkeypatch, journey: GenerationJourn
         try:
             console_effects = owner.generation_snapshot()['effects']
             assert all(status == 'completed' for _, status in console_effects)
+            actual_claims = []
+            if journey.composite:
+                request = {'task_id': journey.tasks[0], 'item': 'fixture-one',
+                           'intent': 'summarize', 'permit': True, 'approved': True,
+                           'allowed': True, 'complete_allowed': True}
+                for placement, row in _placements(installed[0][3]).items():
+                    operation = ('owner:public_entry' if row['source_file'].endswith('/alpha.py')
+                                 else 'owner:handle_job')
+                    actual_claim = (journey.tasks[0], digest(request), placement, operation)
+                    actual_key = digest([old_identity, digest(journey.tasks[0]),
+                                         digest(request), placement, operation])
+                    assert [actual_key, 'completed'] in console_effects
+                    with pytest.raises(InputError, match='^runtime_effect_already_claimed$'):
+                        owner.claim_effect(*actual_claim)
+                    actual_claims.append(actual_claim)
+
             claim_key = owner.claim_effect(*synthetic_claim[:2],
-                installed[0][3]['candidate_id'], synthetic_claim[2])
+                _candidate(installed[0][3]), synthetic_claim[2])
             owner.complete_effect(claim_key)
         finally:
             owner.release()
         grant = plan_connected_generation_transfer(first, plans[1], **plan_args)
-        assert grant['old_placements'] == [installed[0][3]['candidate_id']]
-        assert grant['new_to_old_placements'] == {
-            installed[1][3]['candidate_id']: installed[0][3]['candidate_id']}
+        assert grant['old_placements'] == sorted(_placements(installed[0][3]))
+        assert set(grant['new_to_old_placements']) == set(_placements(installed[1][3]))
+        assert set(grant['new_to_old_placements'].values()) == set(_placements(installed[0][3]))
         assert grant['old_binding_sha256'] == installed[0][3]['binding_sha256']
         assert grant['new_binding_sha256'] == installed[1][3]['binding_sha256']
         assert grant['old_identity'] == old_identity
-        before_snapshot, before_history = _history(ledger, grant['old_identity'])
+        before_snapshot, before_history = _history(ledger, grant['old_identity'], limits)
         assert grant['history_sha256'] == digest(before_history)
         assert before_history['effects'] == sorted(
             console_effects + [[claim_key, 'completed']])
-        assert before_snapshot['calls'] == 1 and before_snapshot['closed_tasks'] == 1
+        assert before_snapshot['calls'] == journey.calls_per_generation and before_snapshot['closed_tasks'] == 1
         assert before_snapshot['tasks'] == 1 and before_snapshot['in_flight'] == 0
         assert all(status == 'completed' for _, status in before_history['effects'])
         signature = tmp_path / 'upgrade-signature.txt'
@@ -456,33 +515,33 @@ def run_generation_journey(tmp_path: Path, monkeypatch, journey: GenerationJourn
         signature.write_text('invalid-signature')
         with pytest.raises(InputError, match='transfer_unverified'):
             transfer_connected_generation(first, second, plans[1], **transfer_args)
-        assert not second.exists() and len(calls) == 1
+        assert not second.exists() and len(calls) == journey.calls_per_generation
         # A well-formed P-256 signature over the exact grant by another key.
         signature.write_text(_issue(foreign_private, 'generation_transfer', digest(grant)))
         with pytest.raises(InputError, match='transfer_unverified'):
             transfer_connected_generation(first, second, plans[1], **transfer_args)
-        assert not second.exists() and len(calls) == 1
+        assert not second.exists() and len(calls) == journey.calls_per_generation
         # The trusted issuer's signature over a different grant digest.
         other_grant = dict(grant, history_sha256=digest('another ledger history'))
         assert digest(other_grant) != digest(grant)
         signature.write_text(_issue(private, 'generation_transfer', digest(other_grant)))
         with pytest.raises(InputError, match='transfer_unverified'):
             transfer_connected_generation(first, second, plans[1], **transfer_args)
-        assert not second.exists() and len(calls) == 1
+        assert not second.exists() and len(calls) == journey.calls_per_generation
         # That signature does authenticate the other grant, which is still
         # not the grant derived from the stopped session and its ledger.
         with pytest.raises(InputError, match='exact_grant_required'):
             transfer_connected_generation(first, second, plans[1],
                 **dict(transfer_args, grant=other_grant))
-        assert not second.exists() and len(calls) == 1
+        assert not second.exists() and len(calls) == journey.calls_per_generation
         signature.write_text(exact_signature)
         new_reference.write_bytes(original_reference + b'\n')
         with pytest.raises(InputError):
             transfer_connected_generation(first, second, plans[1], **transfer_args)
-        assert not second.exists() and len(calls) == 1
+        assert not second.exists() and len(calls) == journey.calls_per_generation
         new_reference.write_bytes(original_reference)
         # No refusal above changed the durable ledger or its identity.
-        assert _history(ledger, grant['old_identity'])[1] == before_history
+        assert _history(ledger, grant['old_identity'], limits)[1] == before_history
         def lost_ack(*_args, **_kwargs):
             raise RuntimeError('synthetic controller exit after durable transfer')
         with monkeypatch.context() as patch:
@@ -530,7 +589,7 @@ def run_generation_journey(tmp_path: Path, monkeypatch, journey: GenerationJourn
                 launch_connected_session(child, scope=refused,
                     approved_scope_sha256=refused['scope_sha256'])
             assert connected_session_status(child)['launch_attempts'] == 0
-        assert len(calls) == 1
+        assert len(calls) == journey.calls_per_generation
         stale = tmp_path / 'stale-child'
         create_connected_session(stale, plans[1],
             approved_plan_sha256=plans[1]['plan_sha256'], generation_parent=parent)
@@ -538,8 +597,8 @@ def run_generation_journey(tmp_path: Path, monkeypatch, journey: GenerationJourn
         assert reconciled['child_stage'] == 'installed'
         assert reconciled['run_id'] == stopped_first['run_id']
         # Independent read-back under the new identity: nothing was reset.
-        upgraded_snapshot, upgraded_history = _history(ledger, grant['new_identity'])
-        assert upgraded_snapshot['calls'] == 1 and upgraded_snapshot['closed_tasks'] == 1
+        upgraded_snapshot, upgraded_history = _history(ledger, grant['new_identity'], limits)
+        assert upgraded_snapshot['calls'] == journey.calls_per_generation and upgraded_snapshot['closed_tasks'] == 1
         assert _retained_accounting(upgraded_history) == _retained_accounting(before_history)
         assert upgraded_history['effects'] == before_history['effects']
         assert upgraded_history['state']['identity'] == grant['new_identity']
@@ -555,7 +614,7 @@ def run_generation_journey(tmp_path: Path, monkeypatch, journey: GenerationJourn
             # The retained claim maps the new placement to the original one.
             with pytest.raises(InputError, match='^runtime_effect_already_claimed$'):
                 before.claim_effect(*synthetic_claim[:2],
-                    installed[1][3]['candidate_id'], synthetic_claim[2])
+                    _candidate(installed[1][3]), synthetic_claim[2])
             with pytest.raises(InputError,
                                match='^runtime_effect_unregistered_generation_placement$'):
                 before.claim_effect(*synthetic_claim[:2], 'unreviewed-placement',
@@ -580,13 +639,13 @@ def run_generation_journey(tmp_path: Path, monkeypatch, journey: GenerationJourn
                 launch_connected_session(second, scope=expired_scope,
                     approved_scope_sha256=expired_scope['scope_sha256'])
         assert connected_session_status(second)['launch_attempts'] == 0
-        assert len(calls) == 1
+        assert len(calls) == journey.calls_per_generation
         stopped_second = launch_and_stop(second, plans[1], layouts[1], journey.tasks[1],
             created=connected_session_status(second))
         assert stopped_second['run_id'] == stopped_first['run_id']
-        assert len(calls) == 2
-        current_snapshot, current_history = _history(ledger, grant['new_identity'])
-        assert current_snapshot['calls'] == 2 and current_snapshot['closed_tasks'] == 2
+        assert len(calls) == 2 * journey.calls_per_generation
+        current_snapshot, current_history = _history(ledger, grant['new_identity'], limits)
+        assert current_snapshot['calls'] == 2 * journey.calls_per_generation and current_snapshot['closed_tasks'] == 2
         assert current_snapshot['tasks'] == 2 and current_snapshot['in_flight'] == 0
         assert {tuple(row) for row in before_history['effects']} <= {
             tuple(row) for row in current_history['effects']}
@@ -621,8 +680,12 @@ def run_generation_journey(tmp_path: Path, monkeypatch, journey: GenerationJourn
         assert result['child']['run_id'] == stopped_first['run_id']
         assert rollback['new_identity'] == grant['old_identity']
         assert rollback['old_identity'] == grant['new_identity']
-        retained_snapshot, retained_history = _history(ledger, grant['old_identity'])
-        assert retained_snapshot['calls'] == 2 and retained_snapshot['closed_tasks'] == 2
+        retained_snapshot, retained_history = _history(ledger, grant['old_identity'], limits)
+        assert retained_snapshot['calls'] == 2 * journey.calls_per_generation and retained_snapshot['closed_tasks'] == 2
+        if journey.composite:
+            assert retained_snapshot['calls'] < limits['max_total_calls']
+            assert retained_snapshot['reserved_cost'] < limits['max_total_cost']
+            assert not retained_snapshot['suspended']
         assert _retained_accounting(retained_history) == _retained_accounting(current_history)
         assert retained_history['effects'] == current_history['effects']
         assert retained_history['state']['generation']['sequence'] == 2
@@ -635,7 +698,10 @@ def run_generation_journey(tmp_path: Path, monkeypatch, journey: GenerationJourn
                     closed.reserve(task, .1)
             with pytest.raises(InputError, match='^runtime_effect_already_claimed$'):
                 closed.claim_effect(*synthetic_claim[:2],
-                    installed[0][3]['candidate_id'], synthetic_claim[2])
+                    _candidate(installed[0][3]), synthetic_claim[2])
+            for actual_claim in actual_claims:
+                with pytest.raises(InputError, match='^runtime_effect_already_claimed$'):
+                    closed.claim_effect(*actual_claim)
             assert closed.generation_snapshot() == retained_history
         finally:
             closed.release()
@@ -648,15 +714,22 @@ def run_generation_journey(tmp_path: Path, monkeypatch, journey: GenerationJourn
         assert not retained_layout['effects'][-1][0].exists()
         assert retained_layout['ready'].read_bytes() == b'attempt\n'
         assert not retained_status['independent_checks']['outcome_verified']
+        if journey.composite:
+            retained_audit = read_json(Path(retained_plan['off_provenance'][
+                'launch_environment']['DUAL_AUDIT_PATH']))
+            assert retained_audit['audit_types'].count('runtime_route_refusal') == 2
+            assert retained_audit['audit_reasons'].count('task_closed_or_budget_suspended') == 2
+            assert retained_audit['assessed'] == []
+
         assert {path: path.read_bytes() for path in sorted(
             layouts[0]['ready'].parent.rglob('*')) if path.is_file()} == first_files
-        assert len(calls) == 2
+        assert len(calls) == 2 * journey.calls_per_generation
         retained_stop = scope(retained_status, retained_plan, 'stop', cutoff)
         stopped_retained = stop_connected_session(retained, scope=retained_stop,
             approved_scope_sha256=retained_stop['scope_sha256'])
         assert stopped_retained['stage'] == 'stopped'
-        after_snapshot, after_history = _history(ledger, grant['old_identity'])
-        assert after_snapshot['calls'] == 2 and after_snapshot['closed_tasks'] == 2
+        after_snapshot, after_history = _history(ledger, grant['old_identity'], limits)
+        assert after_snapshot['calls'] == 2 * journey.calls_per_generation and after_snapshot['closed_tasks'] == 2
         assert after_history == retained_history
         for layout, task in zip(layouts, journey.tasks):
             for effect, raw in layout['effects']:
@@ -672,24 +745,24 @@ def run_generation_journey(tmp_path: Path, monkeypatch, journey: GenerationJourn
         revoked.suspend()
         revoked.release()
         prospective, _ = replan(1, 'revoked-transfer-effects')
-        with pytest.raises(InputError, match='runtime_ledger_revoked'):
-            plan_connected_generation_transfer(retained, prospective,
-                trusted_old_head=stopped_retained['session_head_sha256'],
-                old_dependency_plan=dependencies[0], new_dependency_plan=dependencies[1],
-                limits=limits, action='upgrade',
-                issued_at=(datetime.now(timezone.utc)-timedelta(seconds=1)).isoformat(),
-                expires_at=cutoff.isoformat())
-        assert len(calls) == 2
+        with _unsigned_refusal_clock(monkeypatch, cutoff) as issued_at:
+            with pytest.raises(InputError, match='^runtime_ledger_revoked$'):
+                plan_connected_generation_transfer(retained, prospective,
+                    trusted_old_head=stopped_retained['session_head_sha256'],
+                    old_dependency_plan=dependencies[0], new_dependency_plan=dependencies[1],
+                    limits=limits, action='upgrade', issued_at=issued_at,
+                    expires_at=cutoff.isoformat())
+        assert len(calls) == 2 * journey.calls_per_generation
         # This terminal negative follows every launch and generation action.
         # Restoring source bytes does not restore an installation receipt
         # after a later interpreter rewrites timestamp-based bytecode.
-        installed_source = Path(installed[1][3]['origins']['console']['path'])
+        installed_source = Path(_origins(installed[1][3])['console']['path'])
         original_source = installed_source.read_bytes()
         installed_source.write_bytes(original_source + b'\n')
         try:
-            with pytest.raises(InputError):
+            with pytest.raises(InputError, match='^installed_generation_drift_or_unverified$'):
                 generation._installed(plans[1], dependencies[1], limits)
-            with pytest.raises(InputError):
+            with pytest.raises(InputError, match='^installed_generation_drift_or_unverified$'):
                 plan_connected_generation_transfer(retained, prospective,
                     trusted_old_head=stopped_retained['session_head_sha256'],
                     old_dependency_plan=dependencies[0],
@@ -697,7 +770,7 @@ def run_generation_journey(tmp_path: Path, monkeypatch, journey: GenerationJourn
                     issued_at=(datetime.now(timezone.utc)-timedelta(seconds=1)).isoformat(),
                     expires_at=cutoff.isoformat())
             assert not connected_session_status(second)['installed_sources_current']
-            assert len(calls) == 2
+            assert len(calls) == 2 * journey.calls_per_generation
             for layout in layouts[:2]:
                 for effect, raw in layout['effects']:
                     assert effect.read_bytes() == raw

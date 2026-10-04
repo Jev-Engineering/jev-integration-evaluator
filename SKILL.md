@@ -57,9 +57,21 @@ For independently reviewed method, async, or fixed-positional Python tail calls 
 
 For the separately reviewed Alpha 1.0.2 fixture, an additive [installed binding](references/connected-installed-binding-v1.md) maps source to wheel RECORD and installed origins. Its [connected shadow delivery](references/connected-delivery-v1.md) uses a host-owned private options loader, authenticated exact egress grants, a durable ledger and a separate one-attempt supervisor. The finite [D retrieval shadow profile](references/retrieval-template-connected-v1.md) and [E completion shadow profile](references/completion-template-connected-v1.md) carry fresh source bindings through installed local synthetic protocols. Package/install remain off. Offline normal-console tests do not establish provider reachability or measured benefit. Canary and active await observed raw gates and independently authenticated receipts. For the ordered recipe C operator journey, expected receipts, run identity, pins and the support matrix with pending gates, read the [registered-tool template quickstart](references/registered-tool-template-quickstart-v1.md).
 
-For the independent dual 1.0.2 host, [composite installed binding](references/connected-composite-binding-v1.md) maps two reviewed placements plus a shared console and public-only loader to exact installed origins. Its opt-in connected shadow profile retains one durable task owner and budget across both normal-console decisions. The installed local TLS and effect tests are offline synthetic evidence; real provider reachability, combined observed canary/active gates, connected upgrade/rollback and benefit are pending.
+For the independent dual 1.0.2 host, [composite installed binding](references/connected-composite-binding-v1.md) maps two reviewed placements plus a shared console and public-only loader to exact installed origins. Its opt-in connected shadow profile retains one durable task owner and budget across both normal-console decisions. The installed local TLS and effect tests are offline synthetic evidence; real provider reachability, combined observed canary/active gates and benefit are pending. The finite offline dual generation path carries both placements through upgrade and signed retained rollback; it does not qualify live acceptance.
 
-A separate [stopped connected generation transfer](references/connected-generation-transfer-v1.md) links two reviewed installed Alpha versions, or two versions of one finite D, H, L, M or E use-case host, under one run ID and durable ledger. Transfer requires an issuer-signed exact grant, stopped source-bound session, unchanged limits and original cutoff, and an inert child reconciled from the durable transfer receipt before launch. Local synthetic protocol qualification does not grant live egress or activation.
+For two independently installed Alpha/queue packages, read the
+[finite separate-package owner reference](references/connected-separate-packages-v1.md).
+Use genuine member and owner receipts, an explicit private common source root,
+and separately authenticated binding/egress/launch authorities. The primitive
+binder cannot activate a runtime. Source-owner edits and package/install effects
+require their exact plan approvals; ordinary planning never imports members.
+The normal installed owner preserves application actions and journals actual
+entrypoint invocations separately from shadow treatment Context. Full executable
+closure, captured source loading, original task/input identity, shared budget,
+durable closed tasks and unknown-effect refusal remain mandatory. Source rollback
+restores only owned source; installed-owner generation transfer remains unavailable.
+
+A separate [stopped connected generation transfer](references/connected-generation-transfer-v1.md) links two reviewed installed Alpha versions, or two versions of one finite D, H, L, M or E use-case host, or the two-placement dual host, under one run ID and durable ledger. Transfer requires an issuer-signed exact grant, stopped source-bound session, unchanged limits and original cutoff, and an inert child reconciled from the durable transfer receipt before launch. Local synthetic protocol qualification does not grant live egress or activation.
 
 For two to four compatible reviewed placements in one unchanged source snapshot,
 use the separate `implement-composite-*` transaction described in

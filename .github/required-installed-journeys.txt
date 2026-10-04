@@ -26,3 +26,5 @@ tests.test_use_case_retrieval_connected
 tests.test_use_case_claim_connected
 tests.test_use_case_retention_connected
 tests.test_use_case_completion_connected
+tests.test_connected_generation_dual_installed
+tests.test_connected_packages_installed

@@ -200,9 +200,12 @@ def _current_observation(plan: dict, role: str, alive: bool,
 def _receipt(plan: dict, trusted_sha256: str) -> dict:
     """Re-read installer-owned bytes; the caller retains the digest elsewhere."""
     composite = plan.get('kind') == 'template-composite-install-plan-v1'
-    validate_contract(plan, 'template-composite-install-plan-v1' if composite
-                      else 'template-install-plan-v1')
-    if composite:
+    from .template_installation import _install_contract
+    validate_contract(plan, _install_contract(plan))
+    if plan.get('kind') == 'packages-owner-install-plan-v1':
+        from .template_packages_installation import plan_owner_install, owner_installation_status
+        planner, status = plan_owner_install, owner_installation_status
+    elif composite:
         from .template_installation import (plan_composite_install,
                                             composite_installation_status)
         planner, status = plan_composite_install, composite_installation_status
@@ -214,8 +217,7 @@ def _receipt(plan: dict, trusted_sha256: str) -> dict:
     if root.is_symlink() or not (root / 'install-receipt.json').is_file():
         raise DeliveryError('installed_receipt_unavailable')
     receipt = read_json(root / 'install-receipt.json')
-    validate_contract(receipt, 'template-composite-install-receipt-v1' if composite
-                      else 'template-install-receipt-v1')
+    validate_contract(receipt, _install_contract(plan).replace('-plan-', '-receipt-'))
     if receipt['receipt_sha256'] != trusted_sha256 or digest({
             key: value for key, value in receipt.items() if key != 'receipt_sha256'}) != trusted_sha256:
         raise DeliveryError('externally_retained_install_receipt_required')

@@ -20,8 +20,13 @@ CONFIG = 'src/registered_alpha/runtime.json'
 ADAPTER = 'src/registered_alpha/_jev_registered_alpha.py'
 
 
-def source_matched_request(root: Path = ROOT) -> tuple[dict, dict]:
+def source_matched_request(root: Path = ROOT, *, runtime_timeout_ms: int | None = None) -> tuple[dict, dict]:
     """Bind only the current scanned bytes; this grants no runtime authority."""
+    cfg = load_config()
+    if runtime_timeout_ms is not None:
+        if type(runtime_timeout_ms) is not int or runtime_timeout_ms != 10_000:
+            raise InputError('offline_owner_fixture_timeout_not_supported')
+        cfg['runtime']['timeout_ms'] = runtime_timeout_ms
     checkpoint = next(row for row in use_case_matrix()['independent_host_checkpoints']
                       if row['kind'] == 'registered-alpha-connected-shadow-v1')
     reviewed = {'host': HOST, 'console': CONSOLE,
@@ -30,7 +35,6 @@ def source_matched_request(root: Path = ROOT) -> tuple[dict, dict]:
     if any(file_hash(root / relative) != checkpoint[name + '_sha256']
            for name, relative in reviewed.items()):
         raise InputError('connected_alpha_source_review_changed')
-    cfg = load_config()
     inventory = scan_repo(root, cfg)
     candidate = next(c for c in inventory['candidates']
                      if c['source']['symbol'] == 'select_registered_tool')
