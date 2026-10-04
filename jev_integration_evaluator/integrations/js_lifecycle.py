@@ -36,10 +36,10 @@ def _check_spec(spec: dict) -> dict:
             or type(spec['source']['file']) is not str
             or not re.fullmatch(r'[A-Za-z_$][\w$-]*\.(mjs|cjs|ts)', spec['source']['file'])
             or type(spec['source']['sha256']) is not str or not HEX.fullmatch(spec['source']['sha256'])
-            or type(spec['bindings']) is not dict or set(spec['bindings']) != BINDING_ROLES
+            or type(spec['bindings']) is not dict or set(spec['bindings']) not in (BINDING_ROLES, BINDING_ROLES | {'invocation_options'})
             or any(type(x) is not str or not re.fullmatch(r'[A-Za-z_$][\w$]*', x)
                    for x in spec['bindings'].values())
-            or len(set(spec['bindings'].values())) != len(BINDING_ROLES)
+            or len(set(spec['bindings'].values())) != len(spec['bindings'])
             or type(spec['verification_sha256']) is not str
             or not HEX.fullmatch(spec['verification_sha256'])
             or type(spec['verification_cases_count']) is not int

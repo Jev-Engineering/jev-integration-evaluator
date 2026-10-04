@@ -174,12 +174,24 @@ function initialize(options = {{}}) {{
   if (owner !== null) throw Error('runtime_already_started');
   attestSource();
   const budget = options.budget || new SharedBudget({{max_calls: 1, max_cost: 1}});
-  owner = new NativeRouter({{spec: SPEC, budget, audit: options.audit || defaultAudit,
+  const ownerOptions = {{spec: SPEC, budget, audit: options.audit || defaultAudit,
     client: options.client || null, mode: options.mode || 'off',
     activation: options.activation || null,
     trusted_activation_sha256: options.trusted_activation_sha256 || null,
     sourceAttest: attestSource,
-    now: options.now || (() => Date.now())}});
+    now: options.now || (() => Date.now())}};
+  if (options.runtimeOwner) {{
+    const runtimeFile = options.runtimeOwner.runtimePath;
+    const localFile = path.join(__dirname, {json.dumps(runtime_path)});
+    if (typeof runtimeFile !== 'string' || !path.isAbsolute(runtimeFile) ||
+        fs.realpathSync(runtimeFile) !== runtimeFile ||
+        crypto.createHash('sha256').update(fs.readFileSync(runtimeFile)).digest('hex') !==
+        crypto.createHash('sha256').update(fs.readFileSync(localFile)).digest('hex'))
+      throw Error('runtime_owner_code_mismatch');
+    const pinnedRuntime = require(runtimeFile);
+    if (!pinnedRuntime.isRuntimeOwner(options.runtimeOwner)) throw Error('runtime_owner_identity_mismatch');
+    owner = options.runtimeOwner.createRouter(ownerOptions);
+  }} else owner = new NativeRouter(ownerOptions);
   return owner;
 }}
 function initializeConnected(descriptor, hostAuthority) {{

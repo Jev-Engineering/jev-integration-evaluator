@@ -132,6 +132,12 @@ A qualified platform cell therefore does not mean every stage runs there.
   external Node tooling. Native Windows is `unsupported` by its manifest. It
   provides no coverage for any Python row, and no Python row provides
   coverage for it.
+  The separate installed selected-effect fixture now covers real host-owned
+  AbortSignal, offline selected/fallback/refusal schedules and one durable owner
+  across two installed CommonJS placements. It also adds installed CLI build
+  recovery and toolchain-drift evidence to package_install. These authored
+  synthetic receipts leave the observed canary_active cell pending; see
+  [installed-node-synthetic-owner-v1.md](installed-node-synthetic-owner-v1.md).
 
 No two rows cite the same test module for an installed or connected stage.
 One passing C host therefore cannot mark another recipe, language or platform

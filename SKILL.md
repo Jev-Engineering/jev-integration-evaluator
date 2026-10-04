@@ -117,6 +117,11 @@ authenticated grants, typed JEV client, and durable single-owner ledger.
 Only offline shadow protocol fixtures are qualified; live provider and
 observed canary/active outcomes remain pending.
 It does not extend the Python #56 supervisor or grant connected authority.
+For the separate finite offline selected-effect, cancellation and shared-owner
+qualification, read [installed-node-synthetic-owner-v1.md](references/installed-node-synthetic-owner-v1.md).
+Its optional invocation_options binding forwards only the source-owned AbortSignal;
+the two-package fixture uses one exact pinned runtime and private durable owner.
+Synthetic receipts do not authorize connected provider operation or production activation.
 
 The [recipe lifecycle matrix](references/recipe-lifecycle-matrix-v1.md) gives each Python recipe A–M and the separate JS/TS recipe C entry explicit per-stage and per-platform cells; one qualified host never qualifies another recipe, language or platform.
 The [issue #59 use-case matrix](references/use-case-template-matrix-v1.md)

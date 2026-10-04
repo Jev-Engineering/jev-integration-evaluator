@@ -32,8 +32,10 @@ function transform(input) {
       input.symbol === input.original || input.adapter_alias === input.symbol ||
       input.adapter_alias === input.original ||
       !input.bindings || typeof input.bindings !== 'object' || Array.isArray(input.bindings) ||
-      Object.keys(input.bindings).sort().join('|') !==
-        ['registry', 'gate', 'validate', 'blocked', 'evidence', 'baseline_action'].sort().join('|') ||
+      ![
+        ['registry', 'gate', 'validate', 'blocked', 'evidence', 'baseline_action'],
+        ['registry', 'gate', 'validate', 'blocked', 'evidence', 'baseline_action', 'invocation_options']
+      ].some(roles => Object.keys(input.bindings).sort().join('|') === roles.sort().join('|')) ||
       Object.values(input.bindings).some(x => !identifier(x)) ||
       typeof input.adapter_path !== 'string' ||
       !/^\.\/[A-Za-z_$][\w$-]*\.cjs$/.test(input.adapter_path))
@@ -94,9 +96,29 @@ function transform(input) {
   };
   visit(source);
   if (forbidden) refuse('unsupported_js_binding_or_syntax');
-  const roles = Object.keys(input.bindings).sort();
+  // The optional seam is deliberately finite: it forwards only the source-owned
+  // AbortSignal field. It may not call a function or generate runtime options.
+  if (input.bindings.invocation_options) {
+    const options = source.statements.find(x => ts.isFunctionDeclaration(x) &&
+      x.name?.text === input.bindings.invocation_options);
+    const param = options.parameters[0];
+    const result = options.body?.statements[0];
+    const value = result?.expression;
+    const property = value?.properties?.[0];
+    if (options.parameters.length !== 1 || !param || !ts.isIdentifier(param.name) ||
+        param.initializer || param.dotDotDotToken || options.asteriskToken ||
+        modifiers(options, ts.SyntaxKind.AsyncKeyword) || options.typeParameters?.length ||
+        !options.body || options.body.statements.length !== 1 || !ts.isReturnStatement(result) ||
+        !ts.isObjectLiteralExpression(value) || value.properties.length !== 1 ||
+        !ts.isPropertyAssignment(property) || nameOf(property.name) !== 'signal' ||
+        !ts.isPropertyAccessExpression(property.initializer) ||
+        nameOf(property.initializer.expression) !== param.name.text ||
+        property.initializer.name.text !== 'signal') refuse('unsupported_js_invocation_options');
+  }
+  const roles = Object.keys(input.bindings).filter(role => role !== 'invocation_options').sort();
   const bindings = roles.map(role => `${role}: ${input.bindings[role]}`).join(', ');
-  const replacement = `${input.adapter_alias}.invoke(${input.original}, ${argument}, {${bindings}})`;
+  const options = input.bindings.invocation_options ? `, ${input.bindings.invocation_options}(${argument})` : '';
+  const replacement = `${input.adapter_alias}.invoke(${input.original}, ${argument}, {${bindings}}${options})`;
   let rewritten = input.source.slice(0, call.getStart(source)) + replacement + input.source.slice(call.end);
   const newline = input.source.includes('\r\n') ? '\r\n' : '\n';
   if (input.source.includes('\r') && !input.source.includes('\r\n')) refuse('unsupported_js_newline');

@@ -198,3 +198,13 @@ def test_schema_rejects_omitted_cells_and_qualification_without_evidence():
     inherited = recipe_lifecycle_matrix()
     inherited["rows"][1]["id"] = "python.C"
     assert not validator.is_valid(inherited)
+
+
+def test_installed_node_selected_fixture_extends_package_evidence_only():
+    row = recipe_lifecycle_row(JS_ROW)
+    path = 'tests/test_node_template_installed_selected.py'
+    assert path in row['stages']['package_install']['evidence']
+    assert path in row['platforms']['linux']['evidence']
+    assert path in row['platforms']['node']['evidence']
+    for stage in NEVER_OFFLINE_QUALIFIED:
+        assert row['stages'][stage] == {'status': 'pending', 'evidence': []}
