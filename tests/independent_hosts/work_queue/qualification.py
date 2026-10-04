@@ -5,7 +5,7 @@ import ast
 from pathlib import Path
 
 from jev_integration_evaluator.config import load_config
-from jev_integration_evaluator.io import digest, file_hash
+from jev_integration_evaluator.io import InputError, digest, file_hash
 from jev_integration_evaluator.scanner import scan_repo
 from jev_integration_evaluator.scoring import apply_reviews
 from jev_integration_evaluator.integrations.recipes import anchor_hash
@@ -19,8 +19,12 @@ CONFIG = 'src/work_queue/runtime.json'
 ADAPTER = 'src/work_queue/_jev_work_queue.py'
 
 
-def source_matched_request(root: Path = ROOT) -> tuple[dict, dict]:
+def source_matched_request(root: Path = ROOT, *, runtime_timeout_ms: int | None = None) -> tuple[dict, dict]:
     configuration = load_config()
+    if runtime_timeout_ms is not None:
+        if type(runtime_timeout_ms) is not int or runtime_timeout_ms != 10_000:
+            raise InputError('offline_owner_fixture_timeout_not_supported')
+        configuration['runtime']['timeout_ms'] = runtime_timeout_ms
     inventory = scan_repo(root, configuration)
     candidate = next(row for row in inventory['candidates']
                      if row['source']['symbol'] == 'choose_operation')

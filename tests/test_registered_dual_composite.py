@@ -22,6 +22,13 @@ from tests.independent_hosts.registered_dual import installed_journey
 pytestmark = pytest.mark.skipif(sys.platform != 'linux', reason='Linux owned effect paths')
 
 
+def test_dual_renderer_source_compiles_on_the_actual_supported_interpreter():
+    """The matrix's real 3.10 compiler must accept renderer f-string syntax."""
+    source = (Path(__file__).resolve().parents[1] / 'jev_integration_evaluator'
+              / 'integrations' / 'composite_console.py')
+    compile(source.read_bytes(), str(source), 'exec')
+
+
 def test_frozen_dual_baselines_write_two_independent_raw_effects(tmp_path):
     effects = tmp_path / 'effects'
     effects.mkdir(mode=0o700)

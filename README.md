@@ -83,6 +83,17 @@ owned installer-process death on both Server interpreters, with zero skips in
 the [PR #110 merge run](https://github.com/Jev-Engineering/jev-integration-evaluator/actions/runs/36669705064).
 Broader source-filesystem and connected qualification remain pending.
 
+A finite [independent-package owner](references/connected-separate-packages-v1.md)
+composes separately installed Alpha and queue distributions through a third
+source-reviewed installed console. Its public source/package/install APIs and
+`template packages-owner-*`, `owner-*` and `connected-packages-installed-bind`
+commands bind exact member and owner origins to one durable task ledger.
+The [dual stopped-generation transfer](references/connected-generation-transfer-v1.md)
+retains both placements through upgrade and signed retained rollback. Normal
+entrypoint claims, shared budgets and closed-task replay are offline software
+gates; real provider, combined treatment, canary/active and benefit criteria
+remain open. Source rollback does not restart an installed workload.
+
 The separate [JavaScript recipe C template catalog](references/javascript-recipe-c-template-v1.md)
 validates reviewed ESM, CommonJS and TypeScript source through trusted external
 tooling and materializes source-bound planner inputs on Linux.

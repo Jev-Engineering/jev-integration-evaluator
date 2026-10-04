@@ -16,9 +16,11 @@ stopped session, including the original cutoff and failure history, and
 refuse a child whose recorded link differs in any field.
 This controller accepts the legacy Alpha profile and the finite
 `retrieval-d-v1`, `retention-h-v1`, `graph-l-v1`, `claim-m-v1` and
-`completion-e-v1` profiles only, and refuses a transfer between different
-profiles. Composite placement and Windows generation transfer have no path
-here.
+`completion-e-v1` and `registered-dual-connected-v1` profiles only, and refuses
+a transfer between different profiles. The finite dual path binds both
+placements by their unchanged source-file identities and transfers the complete
+bijection in one ledger transaction. Windows generation transfer and separately
+installed owner generation transfer have no path here.
 
 Signature verification compares the exact public PEM snapshot to the
 externally anchored public-key hash before inspecting P-256 or checking the
@@ -154,3 +156,25 @@ durability or production activation. The controller rechecks private key and
 signature references at the transaction boundary. An external revocation
 exactly concurrent with a host transaction requires a trusted issuer epoch
 or lease or later reconciliation. No model can grant transfer authority.
+
+
+The new dual generation fixture authors two fresh task IDs, source versions,
+six-call admission scope and a reentrant startup observation before scanning
+and review. Four synthetic protocol requests leave admission headroom for the
+retained task replay. The generated console journals both actual normal host
+entrypoint invocations as `owner:public_entry` and `owner:handle_job`, with exact
+input digests and placements. These are source-owned entrypoint claims, not
+shadow treatment registry claims. A retained normal invocation reaches the
+shared runtime and checks both closed task routes before either entrypoint;
+the old exclusive fixture marker is not used as runtime replay proof. The
+required executable test is `test_connected_generation_dual_installed.py`.
+Its passing immutable-source receipt is required before reporting that journey
+as qualified. Earlier marker-only receipts remain narrower fixture evidence.
+
+After all real fixture launches, signing and transfers finish, the final
+unsigned revocation negative uses an explicitly injected planner-only clock
+inside the original cutoff. It isolates durable ledger revocation from elapsed
+fixture expiry and restores that clock immediately. No launch, runtime,
+delivery clock or signed cutoff changes. The expired-launch negative still
+proves the original cutoff; the terminal source mutation must produce the
+exact installed-generation drift refusal before the planner's expiry check.

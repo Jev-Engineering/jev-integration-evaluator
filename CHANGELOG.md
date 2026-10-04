@@ -2,6 +2,15 @@
 
 ## Unreleased — native Windows delivery gap qualification
 
+- Offline #57 follow-up: finite stopped dual-placement transfer with a complete
+  source-file bijection, actual source-owner entrypoint claims and runtime
+  closed-task replay checks. A distinct public owner source/package/install
+  contract composes two independently installed Alpha/queue packages and binds
+  their full executable closures, owner command/evaluator origins, one canonical
+  input/task and durable shared ledger. Owner-only closure limits are 4096 files,
+  4 MB per file and 64 MB total; legacy runtime limits are preserved. These
+  software fixtures do not qualify real provider or observed treatment gates.
+
 - Issue #60 follow-up: explicit owned recovery of an interrupted Node package
   build or install. New read-only `plan_node_package_recovery` and
   `plan_node_install_recovery` (CLI `template node-package-recovery-plan` and

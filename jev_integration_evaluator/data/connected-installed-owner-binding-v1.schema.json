@@ -1,0 +1,185 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "package_plan_sha256",
+    "package_receipt_sha256",
+    "install_plan_sha256",
+    "install_receipt_sha256",
+    "owner_source_plan_sha256",
+    "wheel_sha256",
+    "installed_files_sha256",
+    "binding_sha256",
+    "schema_version",
+    "kind",
+    "environment",
+    "site",
+    "origins",
+    "source_plan"
+  ],
+  "properties": {
+    "package_plan_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "package_receipt_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "install_plan_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "install_receipt_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "owner_source_plan_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "wheel_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "installed_files_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "binding_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "connected-installed-owner-binding-v1"
+    },
+    "environment": {
+      "type": "string",
+      "minLength": 1
+    },
+    "site": {
+      "type": "string",
+      "minLength": 1
+    },
+    "origins": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "console",
+        "command",
+        "evaluator",
+        "project"
+      ],
+      "properties": {
+        "console": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "sha256"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          }
+        },
+        "command": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "sha256"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          }
+        },
+        "evaluator": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "sha256"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          }
+        },
+        "project": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "sha256"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          }
+        }
+      }
+    },
+    "source_plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "files"
+      ],
+      "properties": {
+        "files": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4096,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "sha256"
+            ],
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

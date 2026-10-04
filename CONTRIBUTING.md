@@ -78,3 +78,15 @@ traceability/scoring callers. A failed batch must leave the input inventory inta
 success must preserve existing candidate references. Rebuild source-linked bridge
 examples when scoring or bridge code changes, because engine hashes invalidate old
 preparations. Keep issue #7 open until its full selection contract is delivered.
+
+
+For the finite independent-package owner or dual generation path, keep public
+CLI/API, genuine owner contracts and both schema copies aligned. Run
+`tests/test_connected_packages_installed.py` and
+`tests/test_connected_generation_dual_installed.py` on explicitly scoped Linux
+x86-64 CPython 3.13 with the prepared offline wheelhouse. Both modules are in the
+hosted required installed-case list; skipped or missing cases fail that gate.
+Stabilize code, schemas, packaged references and documentation before building
+any qualification wheel, then freeze them through the complete installed run.
+Retain failed runs separately. Entry-point claims in shadow mode describe actual
+source-owned invocations, not treatment registry effects or provider benefit.

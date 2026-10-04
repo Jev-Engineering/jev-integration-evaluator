@@ -13,7 +13,7 @@ import pytest
 from jev_integration_evaluator.template_connected_generation import _verify, _OPENSSL_ENV
 from jev_integration_evaluator import template_connected_generation as generation
 from jev_integration_evaluator.integrations.runtime_ledger import RuntimeLedger
-from jev_integration_evaluator.io import digest
+from jev_integration_evaluator.io import InputError, digest
 
 
 @pytest.mark.skipif(sys.platform != 'linux', reason='fixed OpenSSL verifier is Linux only')
@@ -136,6 +136,43 @@ def test_transfer_plan_derives_from_existing_ledger_history(tmp_path, monkeypatc
     assert grant['new_identity'] == digest('new reviewed runtime')
 
 
+def test_unsigned_revocation_negative_isolates_expiry_and_restores_only_planner_clock(tmp_path, monkeypatch):
+    from tests.connected_generation_journey import _unsigned_refusal_clock
+    from jev_integration_evaluator import template_connected_delivery as delivery
+    ledger, arguments = _planned(monkeypatch, tmp_path)
+    old = generation._installed({}, {}, LIMITS)
+    new = generation._installed({}, {}, LIMITS)
+    cutoff = datetime.now(timezone.utc) - timedelta(minutes=1)
+    old['egress_expires_at'] = new['egress_expires_at'] = cutoff.isoformat()
+    monkeypatch.setattr(generation, '_installed', lambda plan, *_args:
+                        old if plan['plan_sha256'] == 'a' * 64 else new)
+    revoked = RuntimeLedger(ledger, identity=old['identity'], **LIMITS)
+    revoked.suspend()
+    revoked.release()
+    before = {p.name: p.read_bytes() for p in tmp_path.glob('runtime-ledger*') if p.is_file()}
+    arguments.update(issued_at=(cutoff-timedelta(seconds=2)).isoformat(),
+                     expires_at=cutoff.isoformat())
+    calls = []
+    real_ledger = generation.RuntimeLedger
+    def recorded_ledger(*args, **kwargs):
+        calls.append(True)
+        return real_ledger(*args, **kwargs)
+    monkeypatch.setattr(generation, 'RuntimeLedger', recorded_ledger)
+    original_clock, delivery_clock = generation.datetime, delivery.datetime
+    with pytest.raises(generation.ConnectedGenerationError, match='^connected_generation_scope_invalid$'):
+        generation.plan_connected_generation_transfer(tmp_path / 'old', {'plan_sha256': 'f' * 64}, **arguments)
+    assert calls == []
+    with _unsigned_refusal_clock(monkeypatch, cutoff) as issued_at:
+        assert generation.datetime.now(timezone.utc) == cutoff-timedelta(seconds=1)
+        assert delivery.datetime is delivery_clock
+        with pytest.raises(InputError, match='^runtime_ledger_revoked$'):
+            generation.plan_connected_generation_transfer(tmp_path / 'old',
+                {'plan_sha256': 'f' * 64}, **dict(arguments, issued_at=issued_at))
+    assert generation.datetime is original_clock and delivery.datetime is delivery_clock
+    assert calls == [True]
+    assert {p.name: p.read_bytes() for p in tmp_path.glob('runtime-ledger*') if p.is_file()} == before
+
+
 def test_transfer_plan_refuses_mixed_profile_generations(tmp_path, monkeypatch):
     ledger, arguments = _planned(monkeypatch, tmp_path)
     RuntimeLedger(ledger, identity=digest('old reviewed runtime'), **LIMITS).release()
@@ -149,14 +186,26 @@ def test_transfer_plan_refuses_mixed_profile_generations(tmp_path, monkeypatch):
 NEW_PROFILES = ('graph-l-v1', 'claim-m-v1', 'completion-e-v1')
 
 
-def test_transfer_profiles_are_finite_single_placement_shapes(tmp_path):
+def test_relabelled_single_binding_cannot_select_dual_authority_namespace(tmp_path, monkeypatch):
+    def no_reference_read(*_args, **_kwargs):
+        raise AssertionError('reference must not be read for a mismatched binding')
+    monkeypatch.setattr(generation.delivery, '_check_reference', no_reference_read)
+    plan = {'host_profile': 'registered-dual-connected-v1',
+            'installed_binding': {'kind': 'connected-installed-binding-v1'},
+            'off_provenance': {'launch_environment': {}}}
+    with pytest.raises(generation.ConnectedGenerationError,
+                       match='^connected_generation_profile_binding_mismatch$'):
+        generation._authority(plan, {}, tmp_path / 'absent-signature')
+
+
+def test_transfer_profiles_are_finite_reviewed_shapes(tmp_path):
     assert generation._TRANSFER_PROFILES == (
-        None, 'retrieval-d-v1', 'retention-h-v1', *NEW_PROFILES)
+        None, 'retrieval-d-v1', 'retention-h-v1', *NEW_PROFILES, 'registered-dual-connected-v1')
     for name in generation._TRANSFER_PROFILES:
         profile = generation.delivery._profile(name)
-        # One reviewed source file and one loader: never a composite placement map.
-        assert type(profile['source']) is str and 'loader' in profile['members']
-    for refused in ('registered-dual-connected-v1', 'unregistered-host', 'GRAPH-L-V1', ''):
+        assert 'loader' in profile['members']
+        assert type(profile['source']) is (dict if name == 'registered-dual-connected-v1' else str)
+    for refused in ('unregistered-host', 'GRAPH-L-V1', ''):
         assert refused not in generation._TRANSFER_PROFILES
         with pytest.raises(generation.ConnectedGenerationError,
                            match='^connected_generation_profile_not_supported$'):
@@ -249,3 +298,37 @@ def test_generation_status_refuses_any_changed_parent_link(tmp_path, monkeypatch
     with pytest.raises(generation.ConnectedGenerationError,
                        match='^connected_generation_child_changed$'):
         generation.connected_generation_status(tmp_path / 'old', tmp_path / 'new', **arguments)
+
+
+@pytest.mark.parametrize('mapping', [
+    {'new-a': 'src/a.py', 'new-b': 'src/b.py'},
+    {'new-a': 'src/a.py'},
+    {'new-a': 'src/a.py', 'new-b': 'src/a.py'},
+    {'new-a': 'src/a.py', 'new-b': 'src/c.py'},
+])
+def test_dual_transfer_derives_complete_bijective_source_mapping(tmp_path, monkeypatch, mapping):
+    ledger, arguments = _planned(monkeypatch, tmp_path)
+    RuntimeLedger(ledger, identity=digest('old reviewed runtime'), **LIMITS).release()
+    far = (datetime.now(timezone.utc) + timedelta(days=1)).isoformat()
+    old = {'identity': digest('old reviewed runtime'),
+           'placements': {'old-a': 'src/a.py', 'old-b': 'src/b.py'},
+           'ledger': ledger, 'binding_sha256': 'b' * 64, 'public': 'c' * 64,
+           'egress_expires_at': far}
+    new = dict(old, identity=digest('new reviewed runtime'), placements=mapping)
+    installed = iter((old, new))
+    monkeypatch.setattr(generation, '_installed', lambda *_args: next(installed))
+    if mapping == {'new-a': 'src/a.py', 'new-b': 'src/b.py'}:
+        grant = generation.plan_connected_generation_transfer(
+            tmp_path / 'old', {'plan_sha256': 'f' * 64}, **arguments)
+        assert grant['old_placements'] == ['old-a', 'old-b']
+        assert grant['new_to_old_placements'] == {'new-a': 'old-a', 'new-b': 'old-b'}
+    else:
+        with pytest.raises(generation.ConnectedGenerationError,
+                           match='^connected_generation_placement_set_changed$'):
+            generation.plan_connected_generation_transfer(
+                tmp_path / 'old', {'plan_sha256': 'f' * 64}, **arguments)
+    owner = RuntimeLedger(ledger, identity=old['identity'], **LIMITS)
+    try:
+        assert owner.snapshot()['calls'] == 0
+    finally:
+        owner.release()

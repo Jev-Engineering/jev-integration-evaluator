@@ -82,11 +82,17 @@ def render_composite_console(root: Path, selection: dict, specs: dict) -> tuple[
     connected_capable = (
         ids == ['JEV-DA938C3C7965', 'JEV-EDF19BDB65F0']
         and first['file'] == 'src/registered_dual/console.py'
-        and hashlib.sha256(raw).hexdigest() ==
-            'bf3516e197d2ca6cc90514edd663125d0593003c274185d60b0f3e94e47c1dd9'
+        and hashlib.sha256(raw).hexdigest() in (
+            'bf3516e197d2ca6cc90514edd663125d0593003c274185d60b0f3e94e47c1dd9',
+            # Authored two-task, four-call synthetic generation consoles.
+            'b989858b85486ffd6752585269968142ef09e146e61269a11416195b2cf0f144',
+            'e42159ca02c231a9374e3b8c71aaeeafe0c887ff1812c8a0381b5498f62d04d6')
         and loader_anchored
         and hashlib.sha256(loader.read_bytes()).hexdigest() ==
             '406cec77bbe986efbada92d1f7385042b43714f2f9fcc1dab88015905be67a68')
+    generation_capable = connected_capable and hashlib.sha256(raw).hexdigest() in (
+        'b989858b85486ffd6752585269968142ef09e146e61269a11416195b2cf0f144',
+        'e42159ca02c231a9374e3b8c71aaeeafe0c887ff1812c8a0381b5498f62d04d6')
     entry = _function(tree, first['function'], 0)
     _function(tree, 'observe_composite_runtime', 3)
     statement = entry.body[-1]
@@ -169,14 +175,55 @@ def render_composite_console(root: Path, selection: dict, specs: dict) -> tuple[
         f'    {host_b}.{secondary["bindings"]["runtime"]} = {names["runtime"]}.runtime_binding({ids[1]!r})',
         f'    {adapter_a}.ENABLED = {prefix}_enabled',
         f'    {adapter_b}.ENABLED = {prefix}_enabled',
+        *([
+            f'    {prefix}_refused = []',
+            f'    for {prefix}_placement in {ids!r}:',
+            '        try:',
+            f'            {names["runtime"]}.router({prefix}_placement, {task})',
+            f'        except Exception as {prefix}_denied:',
+            f'            if str({prefix}_denied) != "task_closed_or_budget_suspended":',
+            '                raise',
+            f'            {prefix}_refused.append({prefix}_placement)',
+            f'            {a["audit_log"]}().append({{"type": "runtime_route_refusal", "candidate_id": {prefix}_placement, "reason": "task_closed_or_budget_suspended"}})',
+            f'    if {prefix}_refused:',
+            '        raise RuntimeError("composite_task_closed_or_budget_suspended")',
+        ] if connected_capable and hashlib.sha256(raw).hexdigest() in (
+            'b989858b85486ffd6752585269968142ef09e146e61269a11416195b2cf0f144',
+            'e42159ca02c231a9374e3b8c71aaeeafe0c887ff1812c8a0381b5498f62d04d6') else []),
+        *([
+            f'    from jev_integration_evaluator.io import digest as {prefix}_digest',
+            f'    {prefix}_claim = ({names["runtime"]}.coordinator.claim_effect({names["task_id"]}, {prefix}_digest({task}), {ids[0]!r}, {("owner:" + first["task_symbol"])!r}) if {prefix}_connected else None)',
+        ] if generation_capable else []),
         f'    if {first["task_symbol"]}({task}) != 0:',
         '        raise RuntimeError("composite_primary_task_failed")',
         f'    if type({task}) is not dict or {task}.get({primary["runtime"]["task_field"]!r}) != {names["task_id"]}:',
         '        raise RuntimeError("task_identity_changed")',
+        *([
+            f'    if {prefix}_claim is not None:',
+            f'        {names["runtime"]}.coordinator.complete_effect({prefix}_claim)',
+        ] if generation_capable else []),
+        *([
+            f'    if {prefix}_connected:',
+            f'        {prefix}_settle = {names["runtime"]}.router({ids[0]!r}, {task})',
+            f'        with {prefix}_settle.lock:',
+            f'            {prefix}_pending = tuple({prefix}_settle.futures)',
+            f'        for {prefix}_future in {prefix}_pending:',
+            f'            {prefix}_future.result(timeout=10)',
+        ] if connected_capable and hashlib.sha256(raw).hexdigest() in (
+            'b989858b85486ffd6752585269968142ef09e146e61269a11416195b2cf0f144',
+            'e42159ca02c231a9374e3b8c71aaeeafe0c887ff1812c8a0381b5498f62d04d6') else []),
+        *([
+            f'    from jev_integration_evaluator.io import digest as {prefix}_digest',
+            f'    {prefix}_claim = ({names["runtime"]}.coordinator.claim_effect({names["task_id"]}, {prefix}_digest({task}), {ids[1]!r}, {("owner:" + second["task_symbol"])!r}) if {prefix}_connected else None)',
+        ] if generation_capable else []),
         f'    if {host_b}.{second["task_symbol"]}({task}) != 0:',
         '        raise RuntimeError("composite_secondary_task_failed")',
         f'    if type({task}) is not dict or {task}.get({primary["runtime"]["task_field"]!r}) != {names["task_id"]}:',
         '        raise RuntimeError("task_identity_changed")',
+        *([
+            f'    if {prefix}_claim is not None:',
+            f'        {names["runtime"]}.coordinator.complete_effect({prefix}_claim)',
+        ] if generation_capable else []),
         f'    observe_composite_runtime({names["runtime"]}, {task}, {tuple(ids)!r})',
         '    return 0',
         'finally:',

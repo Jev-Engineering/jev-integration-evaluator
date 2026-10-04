@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "plan_sha256",
+    "source_sha256",
+    "wheel_filename",
+    "wheel_sha256",
+    "project_name",
+    "project_version",
+    "entry_point",
+    "profile",
+    "runtime_activation_authorized",
+    "receipt_sha256"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "packages-owner-package-receipt-v1"
+    },
+    "plan_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "source_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "wheel_filename": {
+      "type": "string",
+      "minLength": 1
+    },
+    "wheel_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "project_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "project_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "entry_point": {
+      "type": "string",
+      "minLength": 1
+    },
+    "profile": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "python",
+        "soabi",
+        "platform",
+        "interpreter_sha256",
+        "executable_path",
+        "sys_prefix"
+      ],
+      "properties": {
+        "python": {
+          "type": "string",
+          "minLength": 1
+        },
+        "soabi": {
+          "type": "string",
+          "minLength": 1
+        },
+        "platform": {
+          "type": "string",
+          "minLength": 1
+        },
+        "interpreter_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "executable_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sys_prefix": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "runtime_activation_authorized": {
+      "const": false
+    },
+    "receipt_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}
