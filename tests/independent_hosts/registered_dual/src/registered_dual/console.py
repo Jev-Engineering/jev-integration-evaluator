@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import sys
 import time
+from concurrent.futures import TimeoutError as FutureTimeout
 
 from .alpha import public_entry
 from .work_queue import handle_job
@@ -65,6 +66,21 @@ def options_queue() -> dict:
 
 def observe_composite_runtime(runtime, request, candidate_ids) -> None:
     routers = [runtime.router(candidate, request) for candidate in candidate_ids]
+    def settle_shadow() -> None:
+        # The host owns task completion. Let each scheduled comparison finish
+        # while that stable task remains open, so its budget denial is observed
+        # before generated teardown closes the shared coordinator.
+        deadline = time.monotonic() + 10
+        for router in routers:
+            with router.lock:
+                pending = tuple(router.futures)
+            for future in pending:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise FutureTimeout('dual_shadow_comparison_timeout')
+                future.result(timeout=remaining)
+
+    settle_shadow()
     repeated: list[str] = []
     if os.environ.get('DUAL_REPEAT') == '1':
         # These call the transformed seams while both adapters still share
@@ -75,6 +91,7 @@ def observe_composite_runtime(runtime, request, candidate_ids) -> None:
                 repeated.append('unexpected_success')
             except RuntimeError as error:
                 repeated.append(str(error))
+        settle_shadow()
     snapshot = runtime.coordinator.snapshot()
     OBSERVATION.update({'tokens': [str(id(router.budget_coordinator)) for router in routers],
                         'scopes': [router.canary_scope for router in routers],
