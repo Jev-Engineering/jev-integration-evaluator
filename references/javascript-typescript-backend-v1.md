@@ -19,6 +19,11 @@ getter exports, top-level side effects that alter the selected binding, and
 unsupported compiler syntax before a target write. Support for one shape cannot
 be inferred from analysis-only discovery of another shape.
 
+The generated declaration follows the initial string-literal directive prologue,
+including directives terminated by automatic semicolon insertion, and any
+shebang. The transformed source is parsed again before it is accepted. This
+does not extend the supported source shapes or permit target compiler settings.
+
 ## Tool and runtime boundary
 
 The trusted TypeScript 5.8.3 compiler under this package's tooling directory
