@@ -129,11 +129,17 @@ function transform(input) {
   if (rewritten.startsWith('#!')) insertion = rewritten.indexOf('\n') + 1;
   // Keep directive prologues intact. In particular, inserting a require before
   // 'use strict' silently changes CommonJS execution semantics.
+  let hasDirective = false;
   for (const statement of source.statements) {
     if (!ts.isExpressionStatement(statement) || !ts.isStringLiteral(statement.expression)) break;
     insertion = statement.end;
+    hasDirective = true;
   }
-  rewritten = rewritten.slice(0, insertion) + importLine + rewritten.slice(insertion);
+  // A directive may end by automatic semicolon insertion. Separate it from
+  // the generated declaration even when its original terminator was a newline.
+  const separator = hasDirective ? `${input.source[insertion - 1] === ';' ? '' : ';'}${newline}` : '';
+  rewritten = rewritten.slice(0, insertion) + separator +
+    importLine + rewritten.slice(insertion);
   const finalSource = ts.createSourceFile(input.file, rewritten, ts.ScriptTarget.ES2022, true,
     format === 'typescript' ? ts.ScriptKind.TS : ts.ScriptKind.JS);
   if (finalSource.parseDiagnostics.length) refuse('generated_js_syntax_invalid');
